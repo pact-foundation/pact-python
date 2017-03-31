@@ -1,0 +1,28 @@
+version: '2'
+services:
+  app:
+    command: ['-d']
+    image: jazzdd/alpine-flask
+    volumes:
+      - ./app.py:/app/app.py
+
+  pactverifier:
+    command: ['tail', '-f', '/dev/null']
+    image: dius/pact-provider-verifier-docker
+    depends_on:
+      - app
+    volumes:
+      - ./pacts:/tmp/pacts
+    environment:
+      - pact_urls=/tmp/pacts/consumer-provider.json
+      - provider_base_url=http://app
+      - provider_states_url=http://app/_pact/provider-states
+      - provider_states_active_url=http://app/_pact/provider-states/active
+
+  pactmockservice:
+    image: madkom/pact-mock-service
+    ports:
+      - "1234:1234"
+    volumes:
+      - ./pacts:/var/log/pacto
+      - ./pacts:/opt/contracts

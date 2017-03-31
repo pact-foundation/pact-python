@@ -1,0 +1,4 @@
+include LICENSE
+include *.txt
+include *.md
+prune *test
