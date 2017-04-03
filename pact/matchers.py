@@ -186,7 +186,7 @@ def from_term(term):
         return term
     elif isinstance(term, (six.string_types, int, float)):
         return term
-    if isinstance(term, dict):
+    elif isinstance(term, dict):
         return {k: from_term(v) for k, v in term.items()}
     elif isinstance(term, list):
         return [from_term(t) for i, t in enumerate(term)]

@@ -103,8 +103,7 @@ class Pact(object):
 
         return self
 
-    def will_respond_with(
-            self, status, headers=None, body=None):
+    def will_respond_with(self, status, headers=None, body=None):
         """
         Define the response the server is expected to create.
 
