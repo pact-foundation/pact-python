@@ -10,4 +10,7 @@ sudo: false
 
 install: pip install -r requirements_dev.txt
 
-script: make test
+script:
+  - flake8
+  - pydocstyle pact
+  - tox --develop
