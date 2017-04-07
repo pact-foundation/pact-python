@@ -1,0 +1,106 @@
+import requests
+import unittest
+
+from pact import EachLike, SomethingLike, Term
+from pact.consumer import Consumer
+from pact.provider import Provider
+
+
+class BaseTestCase(unittest.TestCase):
+    def setUp(self):
+        self.pact = Consumer('consumer').has_pact_with(
+            Provider('provider'))
+
+
+class ExactMatches(BaseTestCase):
+    def test_get_user_sparse(self):
+        expected = {'name': 'Jonas'}
+        (self.pact
+            .given('a simple json blob exists')
+            .upon_receiving('a request for a user')
+            .with_request('get', '/users/Jonas')
+            .will_respond_with(200, body=expected))
+
+        with self.pact:
+            result = requests.get('http://localhost:1234/users/Jonas')
+
+        self.assertEqual(result.json(), expected)
+
+    def test_post_user_complex(self):
+        expected = {'name': 'Jonas'}
+        (self.pact
+         .given('a simple json blob exists')
+         .upon_receiving('a query for the user Jonas')
+         .with_request(
+            'post',
+            '/users/',
+            body={'kind': 'name'},
+            headers={'Accept': 'application/json'},
+            query='Jonas')
+         .will_respond_with(
+            200,
+            body=expected,
+            headers={'Content-Type': 'application/json'}))
+
+        with self.pact:
+            result = requests.post(
+                'http://localhost:1234/users/?Jonas',
+                headers={'Accept': 'application/json'},
+                json={'kind': 'name'})
+
+        self.assertEqual(result.json(), expected)
+
+
+class InexactMatches(BaseTestCase):
+    def test_sparse(self):
+        (self.pact
+         .given('the user `bob` exists')
+         .upon_receiving('a request for the user object of `bob`')
+         .with_request('get', '/users/bob')
+         .will_respond_with(200, body={
+             'username': SomethingLike('bob'),
+             'id': Term('\d+', '123')}))
+
+        with self.pact:
+            result = requests.get('http://localhost:1234/users/bob')
+
+        self.assertEqual(result.json(), {'username': 'bob', 'id': '123'})
+
+    def test_nested(self):
+        (self.pact
+         .given('a list of users exists')
+         .upon_receiving('a query of all users')
+         .with_request('get', '/users/', query={'limit': Term('\d+', '5')})
+         .will_respond_with(200, body={'results': EachLike({
+            'username': Term('\w+', 'bob'),
+            'id': SomethingLike(123),
+            'groups': EachLike(123),
+         }, minimum=2)}))
+
+        with self.pact:
+            results = requests.get(
+                'http://localhost:1234/users/?limit=4')
+
+        self.assertEqual(results.json(), {
+            'results': [
+                {'username': 'bob', 'id': 123, 'groups': [123]},
+                {'username': 'bob', 'id': 123, 'groups': [123]}]})
+
+
+class SyntaxErrors(BaseTestCase):
+    def test_incorrect_number_of_arguments(self):
+        (self.pact
+         .given('a list of users exists')
+         .upon_receiving('a request for a user')
+         .with_request('get', '/users/')
+         .will_respond_with(200, body={'results': []}))
+
+        def two(a, b):
+            print('Requires two arguments')
+
+        with self.assertRaises(TypeError) as e:
+            with self.pact:
+                two('one')
+
+        self.assertEqual(
+            e.exception.message, 'two() takes exactly 2 arguments (1 given)')
