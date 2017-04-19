@@ -23,16 +23,22 @@ class ConsumerTestCase(TestCase):
         self.assertIs(result, self.mock_service.return_value)
         self.mock_service.assert_called_once_with(
             consumer=self.consumer, provider=self.provider,
-            host_name='localhost', port=1234)
+            host_name='localhost', port=1234,
+            log_dir=None, ssl=False, sslcert=None, sslkey=None,
+            cors=False, pact_dir=None, version='2.0.0')
 
-    def test_has_pact_with_customer_host_name_and_port(self):
+    def test_has_pact_with_customer_all_options(self):
         result = self.consumer.has_pact_with(
-            self.provider, host_name='example.com', port=1111)
+            self.provider, host_name='example.com', port=1111,
+            log_dir='/logs', ssl=True,  sslcert='/ssl.cert', sslkey='ssl.pem',
+            cors=True, pact_dir='/pacts', version='3.0.0')
 
         self.assertIs(result, self.mock_service.return_value)
         self.mock_service.assert_called_once_with(
             consumer=self.consumer, provider=self.provider,
-            host_name='example.com', port=1111)
+            host_name='example.com', port=1111,
+            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='ssl.pem',
+            cors=True, pact_dir='/pacts', version='3.0.0')
 
     def test_has_pact_with_not_a_provider(self):
         with self.assertRaises(ValueError):

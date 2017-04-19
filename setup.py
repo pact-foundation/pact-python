@@ -5,7 +5,7 @@ import platform
 import sys
 import tarfile
 
-from setuptools import find_packages, setup
+from setuptools import setup
 from setuptools.command.install import install
 
 
@@ -94,7 +94,7 @@ setup_args = dict(
     author_email='matthew.balvanz@workiva.com',
     url='https://github.com/pact-foundation/pact-python',
     install_requires=dependencies,
-    packages=find_packages(exclude=['*.test', '*.test.*', 'test.*', 'test']),
+    packages=['pact'],
     package_data={'pact': ['bin/*']},
     package_dir={'pact': 'pact'},
     license=read('LICENSE'))

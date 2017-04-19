@@ -31,7 +31,9 @@ class Consumer(object):
         self.name = name
         self.service_cls = service_cls
 
-    def has_pact_with(self, provider, host_name='localhost', port=1234):
+    def has_pact_with(self, provider, host_name='localhost', port=1234,
+                      log_dir=None, ssl=False, sslcert=None, sslkey=None,
+                      cors=False, pact_dir=None, version='2.0.0'):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -56,6 +58,28 @@ class Consumer(object):
             This will need to tbe the same port used by your code under test
             to contact the mock service. It defaults to: 1234
         :type port: int
+        :param log_dir: The directory where logs should be written. Defaults to
+            the current directory.
+        :type log_dir: str
+        :param ssl: Flag to control the use of a self-signed SSL cert to run
+            the server over HTTPS , defaults to False.
+        :type ssl: bool
+        :param sslcert: Path to a custom self-signed SSL cert file, 'ssl'
+            option must be set to True to use this option. Defaults to None.
+        :type sslcert: str
+        :param sslkey: Path to a custom key and self-signed SSL cert key file,
+            'ssl' option must be set to True to use this option.
+            Defaults to None.
+        :type sslkey: str
+        :param cors: Allow CORS OPTION requests to be accepted,
+            defaults to False.
+        :type cors: bool
+        :param pact_dir: Directory where the resulting pact files will be
+            written. Defaults to the current directory.
+        :type pact_dir: str
+        :param version: The Pact Specification version to use, defaults to
+            '2.0.0'.
+        :type version: str
         :return: A Pact object which you can use to define the specific
             interactions your code will have with the provider.
         :rtype: pact.Pact
@@ -68,4 +92,11 @@ class Consumer(object):
             consumer=self,
             provider=provider,
             host_name=host_name,
-            port=port)
+            port=port,
+            log_dir=log_dir,
+            ssl=ssl,
+            sslcert=sslcert,
+            sslkey=sslkey,
+            cors=cors,
+            pact_dir=pact_dir,
+            version=version)

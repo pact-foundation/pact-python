@@ -1,8 +1,10 @@
+import os
 from unittest import TestCase
 
 from mock import patch, call, Mock
 
-from .. import Consumer, Provider
+from .. import Consumer, Provider, pact
+from ..constants import MOCK_SERVICE_PATH
 from ..pact import Pact, FromTerms, Request, Response
 
 
@@ -13,9 +15,18 @@ class PactTestCase(TestCase):
 
     def test_init_defaults(self):
         target = Pact(self.consumer, self.provider)
-        self.assertEqual(target.BASE_URI, 'http://localhost:1234')
         self.assertIs(target.consumer, self.consumer)
+        self.assertIs(target.cors, False)
+        self.assertEqual(target.host_name, 'localhost')
+        self.assertEqual(target.log_dir, os.getcwd())
+        self.assertEqual(target.pact_dir, os.getcwd())
+        self.assertEqual(target.port, 1234)
         self.assertIs(target.provider, self.provider)
+        self.assertIs(target.ssl, False)
+        self.assertIsNone(target.sslcert)
+        self.assertIsNone(target.sslkey)
+        self.assertEqual(target.uri, 'http://localhost:1234')
+        self.assertEqual(target.version, '2.0.0')
         self.assertIsNone(target._description)
         self.assertIsNone(target._provider_state)
         self.assertIsNone(target._request)
@@ -24,11 +35,22 @@ class PactTestCase(TestCase):
 
     def test_init_custom_mock_service(self):
         target = Pact(
-            self.consumer, self.provider, host_name='192.168.1.1', port=8000)
+            self.consumer, self.provider, host_name='192.168.1.1', port=8000,
+            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='/ssl.pem',
+            cors=True, pact_dir='/pacts', version='3.0.0')
 
-        self.assertEqual(target.BASE_URI, 'http://192.168.1.1:8000')
         self.assertIs(target.consumer, self.consumer)
+        self.assertIs(target.cors, True)
+        self.assertEqual(target.host_name, '192.168.1.1')
+        self.assertEqual(target.log_dir, '/logs')
+        self.assertEqual(target.pact_dir, '/pacts')
+        self.assertEqual(target.port, 8000)
         self.assertIs(target.provider, self.provider)
+        self.assertIs(target.ssl, True)
+        self.assertEqual(target.sslcert, '/ssl.cert')
+        self.assertEqual(target.sslkey, '/ssl.pem')
+        self.assertEqual(target.uri, 'https://192.168.1.1:8000')
+        self.assertEqual(target.version, '3.0.0')
         self.assertIsNone(target._description)
         self.assertIsNone(target._provider_state)
         self.assertIsNone(target._request)
@@ -85,11 +107,97 @@ class PactTestCase(TestCase):
             'headers': {'Content-Type': 'application/json'}})
 
 
+class PactStartStopTestCase(TestCase):
+    def setUp(self):
+        super(PactStartStopTestCase, self).setUp()
+        self.addCleanup(patch.stopall)
+        self.mock_Popen = patch.object(pact, 'Popen', autospec=True).start()
+        self.mock_Popen.return_value.returncode = 0
+
+    def test_start_fails(self):
+        self.mock_Popen.return_value.returncode = 1
+        pact = Pact(Consumer('consumer'), Provider('provider'),
+                    log_dir='/logs', pact_dir='/pacts')
+
+        with self.assertRaises(RuntimeError):
+            pact.start()
+
+        self.mock_Popen.assert_called_once_with([
+            MOCK_SERVICE_PATH, 'start',
+            '--host=localhost',
+            '--port=1234',
+            '--log="/logs/pact-mock-service.log"',
+            '--pact-dir="/pacts"',
+            '--pact-specification-version="2.0.0"',
+            '--consumer="consumer"',
+            '--provider="provider"'])
+
+        self.mock_Popen.return_value.communicate.assert_called_once_with()
+
+    def test_start_no_ssl(self):
+        pact = Pact(Consumer('consumer'), Provider('provider'),
+                    log_dir='/logs', pact_dir='/pacts')
+        pact.start()
+
+        self.mock_Popen.assert_called_once_with([
+            MOCK_SERVICE_PATH, 'start',
+            '--host=localhost',
+            '--port=1234',
+            '--log="/logs/pact-mock-service.log"',
+            '--pact-dir="/pacts"',
+            '--pact-specification-version="2.0.0"',
+            '--consumer="consumer"',
+            '--provider="provider"'])
+
+        self.mock_Popen.return_value.communicate.assert_called_once_with()
+
+    def test_start_with_ssl(self):
+        pact = Pact(Consumer('consumer'), Provider('provider'),
+                    log_dir='/logs', pact_dir='/pacts',
+                    ssl=True, sslcert='/ssl.cert', sslkey='/ssl.key')
+        pact.start()
+
+        self.mock_Popen.assert_called_once_with([
+            MOCK_SERVICE_PATH, 'start',
+            '--host=localhost',
+            '--port=1234',
+            '--log="/logs/pact-mock-service.log"',
+            '--pact-dir="/pacts"',
+            '--pact-specification-version="2.0.0"',
+            '--consumer="consumer"',
+            '--provider="provider"',
+            '--ssl',
+            '--sslcert="/ssl.cert"',
+            '--sslkey="/ssl.key"'])
+
+        self.mock_Popen.return_value.communicate.assert_called_once_with()
+
+    def test_stop(self):
+        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact.stop()
+
+        self.mock_Popen.assert_called_once_with(
+            [MOCK_SERVICE_PATH, 'stop', '--port=1234'])
+        self.mock_Popen.return_value.communicate.assert_called_once_with()
+
+    def test_stop_fails(self):
+        self.mock_Popen.return_value.returncode = 1
+        pact = Pact(Consumer('consumer'), Provider('provider'))
+        with self.assertRaises(RuntimeError):
+            pact.stop()
+
+        self.mock_Popen.assert_called_once_with(
+            [MOCK_SERVICE_PATH, 'stop', '--port=1234'])
+        self.mock_Popen.return_value.communicate.assert_called_once_with()
+
+
 class PactContextManagerTestCase(TestCase):
     def setUp(self):
         super(PactContextManagerTestCase, self).setUp()
         self.addCleanup(patch.stopall)
         self.mock_requests = patch('requests.api.request').start()
+        self.mock_start = patch.object(Pact, 'start', autospec=True).start()
+        self.mock_stop = patch.object(Pact, 'stop', autospec=True).start()
         self.consumer = Consumer('TestConsumer')
         self.provider = Provider('TestProvider')
         self.target = Pact(self.consumer, self.provider)
@@ -123,7 +231,7 @@ class PactContextManagerTestCase(TestCase):
             'post', 'http://localhost:1234/pact',
             data=None,
             headers={'X-Pact-Mock-Service': 'true'},
-            json={'pact_dir': '/opt/contracts',
+            json={'pact_dir': os.getcwd(),
                   'consumer': {'name': 'TestConsumer'},
                   'provider': {'name': 'TestProvider'}})
 
@@ -137,6 +245,8 @@ class PactContextManagerTestCase(TestCase):
         self.mock_requests.assert_has_calls([
             self.delete_call, self.post_interactions_call,
             self.get_verification_call, self.post_publish_pacts_call])
+        self.mock_start.assert_called_once_with(self.target)
+        self.mock_stop.assert_called_once_with(self.target)
 
     def test_error_deleting_interactions(self):
         self.mock_requests.side_effect = iter([
@@ -148,6 +258,8 @@ class PactContextManagerTestCase(TestCase):
         self.assertEqual(str(e.exception), 'deletion error')
         self.assertEqual(self.mock_requests.call_count, 1)
         self.mock_requests.assert_has_calls([self.delete_call])
+        self.mock_start.assert_called_once_with(self.target)
+        self.mock_stop.assert_called_once_with(self.target)
 
     def test_error_posting_interactions(self):
         self.mock_requests.side_effect = iter([
@@ -161,11 +273,14 @@ class PactContextManagerTestCase(TestCase):
         self.assertEqual(self.mock_requests.call_count, 2)
         self.mock_requests.assert_has_calls(
             [self.delete_call, self.post_interactions_call])
+        self.mock_start.assert_called_once_with(self.target)
+        self.mock_stop.assert_called_once_with(self.target)
 
     def test_error_raised(self):
         self.mock_requests.side_effect = TypeError('type error')
         self.target.__exit__(TypeError, 'type error', Mock())
         self.assertFalse(self.mock_requests.called)
+        self.mock_stop.assert_called_once_with(self.target)
 
     def test_error_verifying_interactions(self):
         self.mock_requests.side_effect = iter([
@@ -178,6 +293,7 @@ class PactContextManagerTestCase(TestCase):
         self.assertEqual(self.mock_requests.call_count, 1)
         self.mock_requests.assert_has_calls([
             self.get_verification_call])
+        self.mock_stop.assert_called_once_with(self.target)
 
     def test_error_writing_pacts_to_file(self):
         self.mock_requests.side_effect = iter([
@@ -191,6 +307,7 @@ class PactContextManagerTestCase(TestCase):
         self.assertEqual(self.mock_requests.call_count, 2)
         self.mock_requests.assert_has_calls([
             self.get_verification_call, self.post_publish_pacts_call])
+        self.mock_stop.assert_called_once_with(self.target)
 
 
 class FromTermsTestCase(TestCase):
