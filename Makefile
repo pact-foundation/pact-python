@@ -10,6 +10,7 @@ endef
 
 help:
 	@echo ""
+	@echo "  clean      to clear build and distribution directories"
 	@echo "  deps       to install the required files for development"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
@@ -19,6 +20,13 @@ help:
 
 .PHONY: release
 release: deps test package
+
+
+.PHONY: clean
+clean:
+	rm -rf build
+	rm -rf dist
+	rm -rf pact/bin
 
 
 .PHONY: deps
@@ -42,13 +50,17 @@ e2e:
 		docker-compose down'
 
 .PHONY: package
-package:
+package: pact/bin
 	python setup.py sdist
+
+
+pact/bin:
+	scripts/build.sh
 
 
 export VERSION_CHECK
 .PHONY: test
-test: deps
+test: deps pact/bin
 	@echo "Checking version consistency..."
 	python -c "$$VERSION_CHECK"
 

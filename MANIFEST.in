@@ -1,4 +1,6 @@
 include LICENSE
+include *.gz
 include *.txt
 include *.md
 prune *test
+prune e2e/*
