@@ -40,14 +40,19 @@ def user(user_name):
 Then `Consumer`'s contract test might look something like this:
 
 ```python
+import atexit
 import unittest
 
 from pact import Consumer, Provider
 
 
+pact = Consumer('Consumer').has_pact_with(Provider('Provider'))
+pact.start()
+atexit.register(pact.stop)
+
+
 class GetUserInfoContract(unittest.TestCase):
   def test_get_user(self):
-    pact = Consumer('Consumer').has_pact_with(Provider('Provider'))
     expected = {
       'username': 'UserA',
       'id': 123,
@@ -88,13 +93,12 @@ pact = Consumer('Consumer').has_pact_with(
     Provider('Provider'), host_name='mockservice', port=8080)
 ```
 
-This can be useful if you are running your tests and the mock service inside a Docker
-network, where you want to reference the service by its Docker name, instead of via
-the `localhost` interface. It is important to note that the code you are testing with
-this contract _must_ contact the mock service. So in this example, the `user` method
-could accept an argument to specify the location of the server, or retrieve it from an
-environment variable so you can change its URI during the test. Another option is to
-specify a Docker network alias so the requests that you make will go to the container.
+This can be useful if you need to run to create more than one Pact for your test
+because your code interacts with two different services. It is important to note
+that the code you are testing with this contract _must_ contact the mock service.
+So in this example, the `user` method could accept an argument to specify the
+location of the server, or retrieve it from an environment variable so you can
+change its URI during the test.
 
 The mock service offers you several important features when building your contracts:
 - It provides a real HTTP server that your code can contact during the test and provides the responses you defined.

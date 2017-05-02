@@ -39,9 +39,6 @@ e2e:
 	sh -c '\
 		cd e2e; \
 		docker-compose pull > /dev/null; \
-		docker-compose up -d pactmockservice; \
-		while ! nc -z localhost 1234; do sleep 0.1; done; \
-		docker-compose logs --follow > ./pacts/mock-service-logs.txt & \
 		nosetests ./contracts; \
 		docker-compose down; \
 		docker-compose up -d app pactverifier; \

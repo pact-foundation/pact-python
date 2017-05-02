@@ -198,7 +198,6 @@ class Pact(object):
 
         Sets up the mock service to expect the client requests.
         """
-        self.start()
         try:
             payload = {
                 'description': self._description,
@@ -217,7 +216,6 @@ class Pact(object):
 
             assert resp.status_code == 200, resp.content
         except AssertionError:
-            self.stop()
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -228,24 +226,20 @@ class Pact(object):
         expected, and has it write out the contracts to disk.
         """
         if (exc_type, exc_val, exc_tb) != (None, None, None):
-            self.stop()
             return
 
-        try:
-            resp = requests.get(
-                self.uri + '/interactions/verification',
-                headers=self.HEADERS)
-            assert resp.status_code == 200, resp.content
-            payload = {
-                'consumer': {'name': self.consumer.name},
-                'provider': {'name': self.provider.name},
-                'pact_dir': self.pact_dir
-            }
-            resp = requests.post(
-                self.uri + '/pact', headers=self.HEADERS, json=payload)
-            assert resp.status_code == 200, resp.content
-        finally:
-            self.stop()
+        resp = requests.get(
+            self.uri + '/interactions/verification',
+            headers=self.HEADERS)
+        assert resp.status_code == 200, resp.content
+        payload = {
+            'consumer': {'name': self.consumer.name},
+            'provider': {'name': self.provider.name},
+            'pact_dir': self.pact_dir
+        }
+        resp = requests.post(
+            self.uri + '/pact', headers=self.HEADERS, json=payload)
+        assert resp.status_code == 200, resp.content
 
 
 class FromTerms(object):

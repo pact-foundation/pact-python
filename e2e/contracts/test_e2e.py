@@ -1,3 +1,5 @@
+import atexit
+
 import requests
 import unittest
 
@@ -7,6 +9,8 @@ from pact.provider import Provider
 
 
 pact = Consumer('consumer').has_pact_with(Provider('provider'))
+pact.start()
+atexit.register(pact.stop)
 
 
 class BaseTestCase(unittest.TestCase):
