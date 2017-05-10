@@ -106,7 +106,29 @@ class Pact(object):
         self._provider_state = provider_state
         return self
 
-    def start(self):
+    def setup(self):
+        """Configure the Mock Service to ready it for a test."""
+        try:
+            payload = {
+                'description': self._description,
+                'provider_state': self._provider_state,
+                'request': self._request,
+                'response': self._response
+            }
+
+            resp = requests.delete(
+                self.uri + '/interactions', headers=self.HEADERS)
+
+            assert resp.status_code == 200, resp.content
+            resp = requests.post(
+                self.uri + '/interactions',
+                headers=self.HEADERS, json=payload)
+
+            assert resp.status_code == 200, resp.content
+        except AssertionError:
+            raise
+
+    def start_service(self):
         """Start the external Mock Service."""
         command = [
             MOCK_SERVICE_PATH,
@@ -131,7 +153,7 @@ class Pact(object):
         if process.returncode != 0:
             raise RuntimeError('The Pact mock service failed to start.')
 
-    def stop(self):
+    def stop_service(self):
         """Stop the external Mock Service."""
         command = [MOCK_SERVICE_PATH, 'stop', '--port={}'.format(self.port)]
         popen = Popen(command)
@@ -150,6 +172,28 @@ class Pact(object):
         """
         self._description = scenario
         return self
+
+    def verify(self):
+        """
+        Have the mock service verify all interactions occurred.
+
+        Calls the mock service to verify that all interactions occurred as
+        expected, and has it write out the contracts to disk.
+
+        :raises AssertionError: When not all interactions are found.
+        """
+        resp = requests.get(
+            self.uri + '/interactions/verification',
+            headers=self.HEADERS)
+        assert resp.status_code == 200, resp.content
+        payload = {
+            'consumer': {'name': self.consumer.name},
+            'provider': {'name': self.provider.name},
+            'pact_dir': self.pact_dir
+        }
+        resp = requests.post(
+            self.uri + '/pact', headers=self.HEADERS, json=payload)
+        assert resp.status_code == 200, resp.content
 
     def with_request(self, method, path, body=None, headers=None, query=None):
         """
@@ -198,25 +242,7 @@ class Pact(object):
 
         Sets up the mock service to expect the client requests.
         """
-        try:
-            payload = {
-                'description': self._description,
-                'provider_state': self._provider_state,
-                'request': self._request,
-                'response': self._response
-            }
-
-            resp = requests.delete(
-                self.uri + '/interactions', headers=self.HEADERS)
-
-            assert resp.status_code == 200, resp.content
-            resp = requests.post(
-                self.uri + '/interactions',
-                headers=self.HEADERS, json=payload)
-
-            assert resp.status_code == 200, resp.content
-        except AssertionError:
-            raise
+        self.setup()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
@@ -228,18 +254,7 @@ class Pact(object):
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             return
 
-        resp = requests.get(
-            self.uri + '/interactions/verification',
-            headers=self.HEADERS)
-        assert resp.status_code == 200, resp.content
-        payload = {
-            'consumer': {'name': self.consumer.name},
-            'provider': {'name': self.provider.name},
-            'pact_dir': self.pact_dir
-        }
-        resp = requests.post(
-            self.uri + '/pact', headers=self.HEADERS, json=payload)
-        assert resp.status_code == 200, resp.content
+        self.verify()
 
 
 class FromTerms(object):

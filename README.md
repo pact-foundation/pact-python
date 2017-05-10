@@ -47,8 +47,8 @@ from pact import Consumer, Provider
 
 
 pact = Consumer('Consumer').has_pact_with(Provider('Provider'))
-pact.start()
-atexit.register(pact.stop)
+pact.start_service()
+atexit.register(pact.stop_service)
 
 
 class GetUserInfoContract(unittest.TestCase):
@@ -82,7 +82,22 @@ This does a few important things:
 Using the Pact object as a [context manager], we call our method under test
 which will then communicate with the Pact mock service. The mock service will respond with
 the items we defined, allowing us to assert that the method processed the response and
-returned the expected value.
+returned the expected value. If you want more control over when the mock service is 
+configured and the interactions verified, use the `setup` and `verify` methods, respectively:
+
+```python
+   (pact
+     .given('UserA exists and is not an administrator')
+     .upon_receiving('a request for UserA')
+     .with_request('get', '/users/UserA')
+     .will_respond_with(200, body=expected))
+
+    pact.setup()
+    # Some additional steps before running the code under test
+    result = user('UserA')
+    # Some additional steps before verifying all interactions have occurred
+    pact.verify()
+````
 
 The default hostname and port for the Pact mock service will be
 `localhost:1234` but you can adjust this during Pact creation:
