@@ -1,6 +1,11 @@
 """API for creating a contract and configuring the mock service."""
+from __future__ import unicode_literals
+import os
+from subprocess import Popen
+
 import requests
 
+from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
 
 
@@ -18,7 +23,7 @@ class Pact(object):
     ...  .with_request('get', '/echo', query={'text': 'Hello!'})
     ...  .will_respond_with(200, body='Hello!'))
     >>> with pact:
-    ...   requests.get('http://localhost:1234/echo?text=Hello!')
+    ...   requests.get(pact.uri + '/echo?text=Hello!')
 
     The GET request is made to the mock service, which will verify that it
     was a GET to /echo with a query string with a key named `text` and its
@@ -28,7 +33,9 @@ class Pact(object):
 
     HEADERS = {'X-Pact-Mock-Service': 'true'}
 
-    def __init__(self, consumer, provider, host_name='localhost', port=1234):
+    def __init__(self, consumer, provider, host_name='localhost', port=1234,
+                 log_dir=None, ssl=False, sslcert=None, sslkey=None,
+                 cors=False, pact_dir=None, version='2.0.0'):
         """
         Constructor for Pact.
 
@@ -40,12 +47,44 @@ class Pact(object):
         :type host_name: str
         :param port: The port number where the mock service is running.
         :type port: int
+        :param log_dir: The directory where logs should be written. Defaults to
+            the current directory.
+        :type log_dir: str
+        :param ssl: Flag to control the use of a self-signed SSL cert to run
+            the server over HTTPS , defaults to False.
+        :type ssl: bool
+        :param sslcert: Path to a custom self-signed SSL cert file, 'ssl'
+            option must be set to True to use this option. Defaults to None.
+        :type sslcert: str
+        :param sslkey: Path to a custom key and self-signed SSL cert key file,
+            'ssl' option must be set to True to use this option.
+            Defaults to None.
+        :type sslkey: str
+        :param cors: Allow CORS OPTION requests to be accepted,
+            defaults to False.
+        :type cors: bool
+        :param pact_dir: Directory where the resulting pact files will be
+            written. Defaults to the current directory.
+        :type pact_dir: str
+        :param version: The Pact Specification version to use, defaults to
+            '2.0.0'.
+        :type version: str
         """
-        self.BASE_URI = 'http://{host_name}:{port}'.format(
-            host_name=host_name, port=port)
+        scheme = 'https' if ssl else 'http'
+        self.uri = '{scheme}://{host_name}:{port}'.format(
+            host_name=host_name, port=port, scheme=scheme)
 
         self.consumer = consumer
+        self.cors = cors
+        self.host_name = host_name
+        self.log_dir = log_dir or os.getcwd()
+        self.pact_dir = pact_dir or os.getcwd()
+        self.port = port
         self.provider = provider
+        self.ssl = ssl
+        self.sslcert = sslcert
+        self.sslkey = sslkey
+        self.version = version
         self._description = None
         self._provider_state = None
         self._request = None
@@ -67,6 +106,62 @@ class Pact(object):
         self._provider_state = provider_state
         return self
 
+    def setup(self):
+        """Configure the Mock Service to ready it for a test."""
+        try:
+            payload = {
+                'description': self._description,
+                'provider_state': self._provider_state,
+                'request': self._request,
+                'response': self._response
+            }
+
+            resp = requests.delete(
+                self.uri + '/interactions', headers=self.HEADERS)
+
+            assert resp.status_code == 200, resp.content
+            resp = requests.post(
+                self.uri + '/interactions',
+                headers=self.HEADERS, json=payload)
+
+            assert resp.status_code == 200, resp.content
+        except AssertionError:
+            raise
+
+    def start_service(self):
+        """Start the external Mock Service."""
+        command = [
+            MOCK_SERVICE_PATH,
+            'start',
+            '--host={}'.format(self.host_name),
+            '--port={}'.format(self.port),
+            '--log', '{}/pact-mock-service.log'.format(self.log_dir),
+            '--pact-dir', self.pact_dir,
+            '--pact-specification-version={}'.format(self.version),
+            '--consumer', self.consumer.name,
+            '--provider', self.provider.name]
+
+        if self.ssl:
+            command.append('--ssl')
+        if self.sslcert:
+            command.extend(['--sslcert', self.sslcert])
+        if self.sslkey:
+            command.extend(['--sslkey', self.sslkey])
+
+        process = Popen(command)
+        process.communicate()
+        if process.returncode != 0:
+            raise RuntimeError('The Pact mock service failed to start.')
+
+    def stop_service(self):
+        """Stop the external Mock Service."""
+        command = [MOCK_SERVICE_PATH, 'stop', '--port={}'.format(self.port)]
+        popen = Popen(command)
+        popen.communicate()
+        if popen.returncode != 0:
+            raise RuntimeError(
+                'There was an error when stopping the Pact mock service.')
+
     def upon_receiving(self, scenario):
         """
         Define the name of this contract.
@@ -77,6 +172,28 @@ class Pact(object):
         """
         self._description = scenario
         return self
+
+    def verify(self):
+        """
+        Have the mock service verify all interactions occurred.
+
+        Calls the mock service to verify that all interactions occurred as
+        expected, and has it write out the contracts to disk.
+
+        :raises AssertionError: When not all interactions are found.
+        """
+        resp = requests.get(
+            self.uri + '/interactions/verification',
+            headers=self.HEADERS)
+        assert resp.status_code == 200, resp.content
+        payload = {
+            'consumer': {'name': self.consumer.name},
+            'provider': {'name': self.provider.name},
+            'pact_dir': self.pact_dir
+        }
+        resp = requests.post(
+            self.uri + '/pact', headers=self.HEADERS, json=payload)
+        assert resp.status_code == 200, resp.content
 
     def with_request(self, method, path, body=None, headers=None, query=None):
         """
@@ -125,22 +242,7 @@ class Pact(object):
 
         Sets up the mock service to expect the client requests.
         """
-        payload = {
-            'description': self._description,
-            'provider_state': self._provider_state,
-            'request': self._request,
-            'response': self._response
-        }
-
-        resp = requests.delete(
-            self.BASE_URI + '/interactions', headers=self.HEADERS)
-
-        assert resp.status_code == 200, resp.content
-        resp = requests.post(
-            self.BASE_URI + '/interactions',
-            headers=self.HEADERS, json=payload)
-
-        assert resp.status_code == 200, resp.content
+        self.setup()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
@@ -152,17 +254,7 @@ class Pact(object):
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             return
 
-        resp = requests.get(
-            self.BASE_URI + '/interactions/verification', headers=self.HEADERS)
-        assert resp.status_code == 200, resp.content
-        payload = {
-            'consumer': {'name': self.consumer.name},
-            'provider': {'name': self.provider.name},
-            'pact_dir': '/opt/contracts'
-        }
-        resp = requests.post(
-            self.BASE_URI + '/pact', headers=self.HEADERS, json=payload)
-        assert resp.status_code == 200, resp.content
+        self.verify()
 
 
 class FromTerms(object):

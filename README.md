@@ -40,14 +40,19 @@ def user(user_name):
 Then `Consumer`'s contract test might look something like this:
 
 ```python
+import atexit
 import unittest
 
 from pact import Consumer, Provider
 
 
+pact = Consumer('Consumer').has_pact_with(Provider('Provider'))
+pact.start_service()
+atexit.register(pact.stop_service)
+
+
 class GetUserInfoContract(unittest.TestCase):
   def test_get_user(self):
-    pact = Consumer('Consumer').has_pact_with(Provider('Provider'))
     expected = {
       'username': 'UserA',
       'id': 123,
@@ -77,7 +82,22 @@ This does a few important things:
 Using the Pact object as a [context manager], we call our method under test
 which will then communicate with the Pact mock service. The mock service will respond with
 the items we defined, allowing us to assert that the method processed the response and
-returned the expected value.
+returned the expected value. If you want more control over when the mock service is 
+configured and the interactions verified, use the `setup` and `verify` methods, respectively:
+
+```python
+   (pact
+     .given('UserA exists and is not an administrator')
+     .upon_receiving('a request for UserA')
+     .with_request('get', '/users/UserA')
+     .will_respond_with(200, body=expected))
+
+    pact.setup()
+    # Some additional steps before running the code under test
+    result = user('UserA')
+    # Some additional steps before verifying all interactions have occurred
+    pact.verify()
+````
 
 The default hostname and port for the Pact mock service will be
 `localhost:1234` but you can adjust this during Pact creation:
@@ -88,13 +108,12 @@ pact = Consumer('Consumer').has_pact_with(
     Provider('Provider'), host_name='mockservice', port=8080)
 ```
 
-This can be useful if you are running your tests and the mock service inside a Docker
-network, where you want to reference the service by its Docker name, instead of via
-the `localhost` interface. It is important to note that the code you are testing with
-this contract _must_ contact the mock service. So in this example, the `user` method
-could accept an argument to specify the location of the server, or retrieve it from an
-environment variable so you can change its URI during the test. Another option is to
-specify a Docker network alias so the requests that you make will go to the container.
+This can be useful if you need to run to create more than one Pact for your test
+because your code interacts with two different services. It is important to note
+that the code you are testing with this contract _must_ contact the mock service.
+So in this example, the `user` method could accept an argument to specify the
+location of the server, or retrieve it from an environment variable so you can
+change its URI during the test.
 
 The mock service offers you several important features when building your contracts:
 - It provides a real HTTP server that your code can contact during the test and provides the responses you defined.
