@@ -46,7 +46,7 @@ package() {
 
 
 echo "Packaging the Mock Service for distribution."
-export GEM_VERSION=0.12.1
+export GEM_VERSION=2.1.0
 export RELEASE_VERSION=1
 export PACKAGE_VERSION=${GEM_VERSION}-${RELEASE_VERSION}
 
@@ -79,7 +79,7 @@ export EXTENSION='tar.gz'
 package
 
 echo "Packaging the Verifier for distribution."
-export GEM_VERSION=0.0.13
+export GEM_VERSION=1.0.1
 export RELEASE_VERSION=1
 export PACKAGE_VERSION=${GEM_VERSION}-${RELEASE_VERSION}
 export PROJECT_NAME='pact-provider-verifier'

@@ -8,7 +8,9 @@ from pact.consumer import Consumer
 from pact.provider import Provider
 
 
-pact = Consumer('consumer').has_pact_with(Provider('provider'))
+pact = Consumer('consumer').has_pact_with(
+    Provider('provider'), pact_dir='./pacts')
+
 pact.start_service()
 atexit.register(pact.stop_service)
 
