@@ -1,3 +1,4 @@
 v0.1.0, 2017-03-30 -- Basic support for authoring contracts against a separately running mock service
 v0.2.0, 2017-04-22 -- Pact Python manages the Pact mock service
 v0.3.0, 2017-05-13 -- Upgraded Pact mock service to v2.1.0 and Pact provider verifier to v1.0.1
+v0.4.0, 2017-05-19 -- New pact-verifier command for running Pact verification against providers
