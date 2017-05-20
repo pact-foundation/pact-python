@@ -225,59 +225,56 @@ services:
 > the command line to be `8080`, your tests would need to contact `localhost:8080`.
 
 ## Verifying Pacts Against a Service
-> pact-python does not yet have any involvement in the process of verifying a contract against
-> a provider. This section is included to provide insight into the full cycle of a
-> contract for those getting started.
 
-Like the mock service, the provider verifier can be run in two ways:
+In addition to writing Pacts for Python consumers, you can also verify those Pacts
+against a provider of any language. After installing pact-python a `pact-verifier`
+application should be available. To get details about its use you can call it with the
+help argument:
 
-1. [Install and use it as a Ruby application][pact-provider-verifier]
-2. Run it as a Docker container
-
-> Both choices have very similar configuration options. We will illustrate the Docker
-> method below, but the Ruby method supports the same features.
-
-When verifying your contracts, you may find it easier to run the provider application
-and the verifier in separate Docker containers. This gives you a nice isolated
-network, where you can set the DNS records of the services to anything you desire
-and not have to worry about port conflicts with other services on your computer.
-Launching the provider verifier in a `docker-compose.yml` might look like this:
-
-```yaml
-version: '2'
-services:
-  app:
-    image: the-provider-application-to-test
-
-  pactverifier:
-    command: ['tail', '-f', '/dev/null']
-    image: dius/pact-provider-verifier-docker
-    depends_on:
-      - app
-    volumes:
-      - ./contracts:/tmp/pacts
-    environment:
-      - pact_urls=/tmp/pacts/consumer-provider.json
-      - provider_base_url=http://app
-      - provider_states_url=http://app/_pact/provider-states
-      - provider_states_active_url=http://app/_pact/provider-states/active
+```bash
+pact-verifier --help
 ```
 
-In this example, our `app` container may take a few moments to start, so we don't
-immediately start running the verification, and instead `tail -f /dev/null` which will keep
-the container running forever. We can then use `docker-compose` to run the tests like so:
+The simplest example is verifying a server with locally stored Pact files and no provider
+states:
 
-```
-docker-compose up -d
-# Insert code to check that `app` has finished starting and is ready for requests
-docker-compose exec pactverifier bundle exec rake verify_pacts
+```bash
+pact-verifier --provider-base-url=http://localhost:8080 --pact-urls=./pacts/consumer-provider.json
 ```
 
-You configure the verifier in Docker using 4 environment variables:
-- `pact_urls` - a comma delimited list of pact file urls
-- `provider_base_url` - the base url of the pact provider
-- `provider_states_url` - the full url of the endpoint which returns provider states by consumer
-- `provider_states_active_url` - the full url of the endpoint which sets the active pact consumer and provider state
+Which will immediately invoke the Pact verifier, making HTTP requests to the server located
+at `http://localhost:8080` based on the Pacts in `./pacts/consumer-provider.json` and
+reporting the results.
+
+There are several options for configuring how the Pacts are verified:
+
+###### --provider-base-url
+
+Required. Defines the URL of the server to make requests to when verifying the Pacts.  
+
+###### --pact-urls
+
+Required. The location of the Pact files you want to verify. This can be a URL to a [Pact Broker]
+or one or more local paths, separated by a comma.
+
+###### --provider-states-url
+
+The URL where your provider application will produce the list of available provider states.
+The verifier calls this URL to ensure the Pacts specify valid states before making the HTTP
+requests.
+
+###### --provider-states-setup-url
+
+The URL which should be called to setup a specific provider state before a Pact is verified.
+ 
+###### --pact-broker-username
+
+The username to use when contacting the Pact Broker.
+
+###### --pact-broker-password
+
+The password to use when contacting the Pact Broker. You can also specify this value
+as the environment variable `PACT_BROKER_PASSWORD`. 
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
@@ -310,6 +307,7 @@ End to end: `make e2e`
 
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
 [Pact]: https://www.gitbook.com/book/pact-foundation/pact/details
+[Pact Broker]: https://docs.pact.io/documentation/sharings_pacts.html
 [Pact documentation]: https://docs.pact.io/
 [Pact Mock Service]: https://github.com/bethesque/pact-mock_service
 [Provider States]: https://docs.pact.io/documentation/provider_states.html

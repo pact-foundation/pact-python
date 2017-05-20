@@ -81,8 +81,11 @@ def read(filename):
         return f.read().decode('utf-8')
 
 
-dependencies = [
-    dep.strip() for dep in read('requirements.txt').split('\n') if dep.strip()]
+dependencies = read('requirements.txt').split()
+
+if sys.version_info.major == 2:
+    dependencies.append('subprocess32')
+
 setup_args = dict(
     cmdclass={'install': PactPythonInstallCommand},
     name='pact-python',
@@ -93,6 +96,10 @@ setup_args = dict(
     author='Matthew Balvanz',
     author_email='matthew.balvanz@workiva.com',
     url='https://github.com/pact-foundation/pact-python',
+    entry_points='''
+        [console_scripts]
+        pact-verifier=pact.verify:main
+    ''',
     install_requires=dependencies,
     packages=['pact'],
     package_data={'pact': ['bin/*']},
