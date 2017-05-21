@@ -189,41 +189,6 @@ EachLike({
 
 For more information see [Matching](https://docs.pact.io/documentation/matching.html)
 
-## Running the Mock Service
-This library does not yet automatically handle running the [Pact Mock Service] so you will need to
-start that manually before running the tests. There are two primary ways to run the mock service:
-
-1. [Install it and run it using Ruby](https://github.com/bethesque/pact-mock_service#usage)
-2. Run it as a Docker container
-
-Using the Docker container additionally has two options. You can run it via the `docker` command:
-
-```
-docker run -d -p "1234:1234" -v /tmp/log:/var/log/pacto -v $(pwd)/contracts:/opt/contracts madkom/pact-mock-service
-```
-
-Which will start the service and expose it as port `1234` on your computer, mount
-`/tmp/log` on your machine to house the mock service log files, and the directory
-`contracts` in the current working directory to house the contracts when they are published.
-
-Additionally, you could run the mock service using `docker-compose`:
-
-```yaml
-version: '2'
-services:
-  pactmockservice:
-    image: madkom/pact-mock-service
-    ports:
-      - "1234:1234"
-    volumes:
-      - /tmp/pact:/var/log/pacto
-      - ./contracts:/opt/contracts
-```
-
-> Note: How you run the mock service may change what hostname and port you should
-> use when running your consumer tests. For example: If you change the host port on
-> the command line to be `8080`, your tests would need to contact `localhost:8080`.
-
 ## Verifying Pacts Against a Service
 > pact-python does not yet have any involvement in the process of verifying a contract against
 > a provider. This section is included to provide insight into the full cycle of a
@@ -300,17 +265,42 @@ For more information about provider states, refer to the [Pact documentation] on
 # Development
 Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
-Create a Python virtualenv for use with this project
+This project needs a combination of Python and Ruby, as the Pact mock service and verifier
+are currently Ruby based. To setup a development environment:
+
+1. Install Ruby 2.2.2 using a tool like [rvm] or [rbenv]
+2. Install the [bundler] package manager for Ruby with `gem install bundler`
+3. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv] 
+4. Its recommended to create a Python [virtualenv] for the project
+
+The setup the environment, run tests, and package the application, run:
 `make release`
 
+If you are just interested in packaging pact-python so you can install it using pip:
+
+`make package`
+
+This creates a `dist/pact-python-N.N.N.tar.gz` file, where the Ns are the current version.
+From there you can use pip to install it:
+
+`pip install ./dist/pact-python-N.N.N.tar.gz`
+
 ## Testing
+
+This project has unit and end to end tests, which can both be run from make:
+
 Unit: `make test`
 
 End to end: `make e2e`
 
+[bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
 [Pact]: https://www.gitbook.com/book/pact-foundation/pact/details
 [Pact documentation]: https://docs.pact.io/
 [Pact Mock Service]: https://github.com/bethesque/pact-mock_service
 [Provider States]: https://docs.pact.io/documentation/provider_states.html
 [pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
+[pyenv]: https://github.com/pyenv/pyenv
+[rvm]: https://rvm.io/
+[rbenv]: https://github.com/rbenv/rbenv
+[virtualenv]: http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/
