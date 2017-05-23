@@ -268,7 +268,7 @@ on the provider application or a separate one. Some strategies for managing stat
 For more information about provider states, refer to the [Pact documentation] on [Provider States].
 
 # Development
-Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+Please read [CONTRIBUTING.md](CONTRIBUTING.md)
 
 This project needs a combination of Python and Ruby, as the Pact mock service and verifier
 are currently Ruby based. To setup a development environment:
