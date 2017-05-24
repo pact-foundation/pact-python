@@ -255,7 +255,7 @@ states to communicate from the consumer what data should exist on the provider.
 
 When setting up the testing of a provider you will also need to setup the management of
 these provider states. The Pact verifier does this by making additional HTTP requests to
-the `provider_states_url` and `provider_stats_active_url` you provide. These URLs could be
+the `provider_states_url` and `provider_states_setup_url` you provide. These URLs could be
 on the provider application or a separate one. Some strategies for managing state include:
 
 - Having endpoints in your application that are not active in production that create and delete your datastore state
