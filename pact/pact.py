@@ -326,7 +326,7 @@ class Response(FromTerms):
     def json(self):
         """Convert the Response to a JSON version for the mock service."""
         response = {'status': self.status}
-        if self.body:
+        if self.body is not None:
             response['body'] = self.body
 
         if self.headers:
