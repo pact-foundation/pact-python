@@ -56,7 +56,7 @@ e2e:
 
 
 .PHONY: package
-package: pact/bin
+package:
 	python setup.py sdist
 
 
