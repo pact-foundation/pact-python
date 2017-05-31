@@ -1,12 +1,5 @@
 DOCS_DIR := ./docs
 
-define VERSION_CHECK
-import setup
-import pact
-msg = 'pact.__version__ must match the last version in CHANGES.txt'
-assert setup.get_version() == pact.__version__, msg
-endef
-
 
 help:
 	@echo ""
@@ -71,12 +64,8 @@ pact/bin:
 	scripts/build.sh
 
 
-export VERSION_CHECK
 .PHONY: test
 test: deps pact/bin
-	@echo "Checking version consistency..."
-	python -c "$$VERSION_CHECK"
-
 	flake8
 	pydocstyle pact
 	coverage erase

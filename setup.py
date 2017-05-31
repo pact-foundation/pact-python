@@ -8,6 +8,8 @@ import tarfile
 from setuptools import setup
 from setuptools.command.install import install
 
+import pact
+
 
 class PactPythonInstallCommand(install):
     """
@@ -67,13 +69,6 @@ class PactPythonInstallCommand(install):
             f.extractall(os.path.join(bin_path, 'verifier'))
 
 
-def get_version():
-    """Return latest version noted in CHANGES.txt."""
-    lastline = [line for line in read('CHANGES.txt').split('\n') if line][-1]
-    version = lastline.split(',')[0]
-    return version[1:]
-
-
 def read(filename):
     """Read file contents."""
     path = os.path.realpath(os.path.join(os.path.dirname(__file__), filename))
@@ -89,7 +84,7 @@ if sys.version_info.major == 2:
 setup_args = dict(
     cmdclass={'install': PactPythonInstallCommand},
     name='pact-python',
-    version=get_version(),
+    version=pact.__version__,
     description=('Tools for creating and verifying consumer driven contracts'
                  ' using the Pact framework.'),
     long_description=read('README.md'),
