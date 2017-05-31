@@ -366,6 +366,14 @@ class RequestTestCase(TestCase):
             'headers': {'Accept': 'application/json'},
             'query': 'term=test'})
 
+    def test_falsey_body(self):
+        target = Request('GET', '/path', body=[])
+        result = target.json()
+        self.assertEqual(result, {
+            'method': 'GET',
+            'path': '/path',
+            'body': []})
+
 
 class ResponseTestCase(TestCase):
     def test_sparse(self):
@@ -382,3 +390,8 @@ class ResponseTestCase(TestCase):
             'status': 202,
             'body': 'the body',
             'headers': {'Content-Type': 'application/json'}})
+
+    def test_falsey_body(self):
+        target = Response(200, body=[])
+        result = target.json()
+        self.assertEqual(result, {'status': 200, 'body': []})

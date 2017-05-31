@@ -296,7 +296,7 @@ class Request(FromTerms):
         if self.headers:
             request['headers'] = self.headers
 
-        if self.body:
+        if self.body is not None:
             request['body'] = self.body
 
         if self.query:

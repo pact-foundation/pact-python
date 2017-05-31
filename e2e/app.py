@@ -26,7 +26,11 @@ provider_states = {
             headers={'Content-Type': 'application/json'},
             response=json.dumps({'results': [
                 {'username': 'bob', 'id': 101, 'groups': [234, 123]},
-                {'username': 'sue', 'id': 102, 'groups': [345, 123]}]}))
+                {'username': 'sue', 'id': 102, 'groups': [345, 123]}]})),
+        'no users exist': Response(
+            status=200,
+            headers={'Content-Type': 'application/json'},
+            response=json.dumps([]))
     }}
 
 

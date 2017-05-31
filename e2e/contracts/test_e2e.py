@@ -93,6 +93,18 @@ class InexactMatches(BaseTestCase):
                 {'username': 'bob', 'id': 123, 'groups': [123]},
                 {'username': 'bob', 'id': 123, 'groups': [123]}]})
 
+    def test_falsey_bodies(self):
+        (pact
+         .given('no users exist')
+         .upon_receiving('a request to insert no users')
+         .with_request('post', '/users/', body=[])
+         .will_respond_with(200, body=[]))
+
+        with pact:
+            results = requests.post('http://localhost:1234/users/', json=[])
+
+        self.assertEqual(results.json(), [])
+
 
 class SyntaxErrors(BaseTestCase):
     def test_incorrect_number_of_arguments(self):
