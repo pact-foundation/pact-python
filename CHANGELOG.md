@@ -1,3 +1,11 @@
+### v0.4.1
+* 66cf151 - Add RELEASING.md closes #18 (Matthew Balvanz, Tue May 30 22:41:06 2017 -0500)
+* 3f61c91 - Add support for request bodies that are False in Python (Matthew Balvanz, Tue May 30 21:57:46 2017 -0500)
+* a39c62f - Merge pull request #19 from ftobia/patch-1 (Matthew Balvanz, Tue May 30 21:42:41 2017 -0500)
+* 95aa93a - Allow falsy responses (e.g. 0 not as a string). (Frank Tobia, Mon May 29 19:22:13 2017 -0400)
+* dd3c703 - Merge pull request #16 from jduan/master (Jose Salvatierra, Thu May 25 09:20:10 2017 +0100)
+* 978d9f3 - fix typo (Jingjing Duan, Wed May 24 15:48:43 2017 -0700)
+
 ### v0.4.0
 * 8bec271 - Setup Travis CI to publish to PyPi (Matthew Balvanz, Wed May 24 16:51:05 2017 -0500)
 * d67a015 - Merge pull request #14 from pact-foundation/verify-pacts (Matthew Balvanz, Wed May 24 16:46:49 2017 -0500)
