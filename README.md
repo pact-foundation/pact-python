@@ -267,13 +267,10 @@ For more information about provider states, refer to the [Pact documentation] on
 # Development
 Please read [CONTRIBUTING.md](CONTRIBUTING.md)
 
-This project needs a combination of Python and Ruby, as the Pact mock service and verifier
-are currently Ruby based. To setup a development environment:
+To setup a development environment:
 
-1. Install Ruby 2.2.2 using a tool like [rvm] or [rbenv]
-2. Install the [bundler] package manager for Ruby with `gem install bundler`
-3. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv] 
-4. Its recommended to create a Python [virtualenv] for the project
+1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv] 
+2. Its recommended to create a Python [virtualenv] for the project
 
 The setup the environment, run tests, and package the application, run:
 `make release`

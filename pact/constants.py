@@ -20,7 +20,7 @@ def provider_verifier_exe():
 
 
 MOCK_SERVICE_PATH = normpath(join(
-    dirname(__file__), 'bin', 'mock-service', 'bin', mock_service_exe()))
+    dirname(__file__), 'bin', 'pact', 'bin', mock_service_exe()))
 
 VERIFIER_PATH = normpath(join(
-    dirname(__file__), 'bin', 'verifier', 'bin', provider_verifier_exe()))
+    dirname(__file__), 'bin', 'pact', 'bin', provider_verifier_exe()))

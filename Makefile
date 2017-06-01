@@ -5,6 +5,7 @@ help:
 	@echo ""
 	@echo "  clean      to clear build and distribution directories"
 	@echo "  deps       to install the required files for development"
+	@echo "  e2e        to run the end to end tests"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
@@ -58,10 +59,6 @@ e2e:
 .PHONY: package
 package:
 	python setup.py sdist
-
-
-pact/bin:
-	scripts/build.sh
 
 
 .PHONY: test
