@@ -57,6 +57,36 @@ class ExactMatches(BaseTestCase):
 
         self.assertEqual(result.json(), expected)
 
+    def test_multiple_exact_matches(self):
+        expected = {'name': 'Jonas'}
+        (pact
+         .given('a simple json blob exists')
+         .upon_receiving('a request for a user')
+         .with_request('get', '/users/Jonas')
+         .will_respond_with(200, body=expected)
+         .given('a complex json blob exists')
+         .upon_receiving('a query for the user Jonas')
+         .with_request(
+            'post',
+            '/users/',
+            body={'kind': 'name'},
+            headers={'Accept': 'application/json'},
+            query='Jonas')
+         .will_respond_with(
+            200,
+            body=expected,
+            headers={'Content-Type': 'application/json'}))
+
+        with pact:
+            result_get = requests.get('http://localhost:1234/users/Jonas')
+            result_post = requests.post(
+                'http://localhost:1234/users/?Jonas',
+                headers={'Accept': 'application/json'},
+                json={'kind': 'name'})
+
+        self.assertEqual(result_get.json(), expected)
+        self.assertEqual(result_post.json(), expected)
+
 
 class InexactMatches(BaseTestCase):
     def test_sparse(self):

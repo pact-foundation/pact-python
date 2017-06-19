@@ -1,5 +1,6 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
+
 import os
 from subprocess import Popen
 
@@ -85,11 +86,7 @@ class Pact(object):
         self.sslcert = sslcert
         self.sslkey = sslkey
         self.version = version
-        self._description = None
-        self._provider_state = None
-        self._request = None
-        self._response = None
-        self._scenario = None
+        self._interactions = []
 
     def given(self, provider_state):
         """
@@ -103,26 +100,20 @@ class Pact(object):
         :type provider_state: basestring
         :rtype: Pact
         """
-        self._provider_state = provider_state
+        self._interactions.insert(0, {'provider_state': provider_state})
         return self
 
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
         try:
-            payload = {
-                'description': self._description,
-                'provider_state': self._provider_state,
-                'request': self._request,
-                'response': self._response
-            }
-
             resp = requests.delete(
                 self.uri + '/interactions', headers=self.HEADERS)
 
             assert resp.status_code == 200, resp.content
-            resp = requests.post(
+            resp = requests.put(
                 self.uri + '/interactions',
-                headers=self.HEADERS, json=payload)
+                headers=self.HEADERS,
+                json={"interactions": self._interactions})
 
             assert resp.status_code == 200, resp.content
         except AssertionError:
@@ -170,7 +161,7 @@ class Pact(object):
         :type scenario: basestring
         :rtype: Pact
         """
-        self._description = scenario
+        self._interactions[0]['description'] = scenario
         return self
 
     def verify(self):
@@ -182,6 +173,7 @@ class Pact(object):
 
         :raises AssertionError: When not all interactions are found.
         """
+        self._interactions = []
         resp = requests.get(
             self.uri + '/interactions/verification',
             headers=self.HEADERS)
@@ -215,9 +207,8 @@ class Pact(object):
         :type query: dict, basestring, or None
         :rtype: Pact
         """
-        self._request = Request(
+        self._interactions[0]['request'] = Request(
             method, path, body=body, headers=headers, query=query).json()
-
         return self
 
     def will_respond_with(self, status, headers=None, body=None):
@@ -233,7 +224,9 @@ class Pact(object):
         :type body: Matcher, dict, list, basestring, or None
         :rtype: Pact
         """
-        self._response = Response(status, headers=headers, body=body).json()
+        self._interactions[0]['response'] = Response(status,
+                                                     headers=headers,
+                                                     body=body).json()
         return self
 
     def __enter__(self):

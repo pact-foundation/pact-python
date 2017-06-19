@@ -27,11 +27,7 @@ class PactTestCase(TestCase):
         self.assertIsNone(target.sslkey)
         self.assertEqual(target.uri, 'http://localhost:1234')
         self.assertEqual(target.version, '2.0.0')
-        self.assertIsNone(target._description)
-        self.assertIsNone(target._provider_state)
-        self.assertIsNone(target._request)
-        self.assertIsNone(target._response)
-        self.assertIsNone(target._scenario)
+        self.assertEqual(len(target._interactions), 0)
 
     def test_init_custom_mock_service(self):
         target = Pact(
@@ -51,11 +47,7 @@ class PactTestCase(TestCase):
         self.assertEqual(target.sslkey, '/ssl.pem')
         self.assertEqual(target.uri, 'https://192.168.1.1:8000')
         self.assertEqual(target.version, '3.0.0')
-        self.assertIsNone(target._description)
-        self.assertIsNone(target._provider_state)
-        self.assertIsNone(target._request)
-        self.assertIsNone(target._response)
-        self.assertIsNone(target._scenario)
+        self.assertEqual(len(target._interactions), 0)
 
     def test_definition_sparse(self):
         target = Pact(self.consumer, self.provider)
@@ -65,15 +57,20 @@ class PactTestCase(TestCase):
          .with_request('GET', '/path')
          .will_respond_with(200, body='success'))
 
+        self.assertEqual(len(target._interactions), 1)
+
         self.assertEqual(
-            target._provider_state,
+            target._interactions[0]['provider_state'],
             'I am creating a new pact using the Pact class')
 
         self.assertEqual(
-            target._description, 'a specific request to the server')
+            target._interactions[0]['description'],
+            'a specific request to the server')
 
-        self.assertEqual(target._request, {'path': '/path', 'method': 'GET'})
-        self.assertEqual(target._response, {'status': 200, 'body': 'success'})
+        self.assertEqual(target._interactions[0]['request'],
+                         {'path': '/path', 'method': 'GET'})
+        self.assertEqual(target._interactions[0]['response'],
+                         {'status': 200, 'body': 'success'})
 
     def test_definition_all_options(self):
         target = Pact(self.consumer, self.provider)
@@ -89,22 +86,61 @@ class PactTestCase(TestCase):
              body='success', headers={'Content-Type': 'application/json'}))
 
         self.assertEqual(
-            target._provider_state,
+            target._interactions[0]['provider_state'],
             'I am creating a new pact using the Pact class')
 
         self.assertEqual(
-            target._description, 'a specific request to the server')
+            target._interactions[0]['description'],
+            'a specific request to the server')
 
-        self.assertEqual(target._request, {
+        self.assertEqual(target._interactions[0]['request'], {
             'path': '/path',
             'method': 'GET',
             'body': {'key': 'value'},
             'headers': {'Accept': 'application/json'},
             'query': {'search': 'test'}})
-        self.assertEqual(target._response, {
+        self.assertEqual(target._interactions[0]['response'], {
             'status': 200,
             'body': 'success',
             'headers': {'Content-Type': 'application/json'}})
+
+    def test_definition_multiple_interactions(self):
+        target = Pact(self.consumer, self.provider)
+        (target
+         .given('I am creating a new pact using the Pact class')
+         .upon_receiving('a specific request to the server')
+         .with_request('GET', '/foo')
+         .will_respond_with(200, body='success')
+         .given('I am creating another new pact using the Pact class')
+         .upon_receiving('a different request to the server')
+         .with_request('GET', '/bar')
+         .will_respond_with(200, body='success'))
+
+        self.assertEqual(len(target._interactions), 2)
+
+        self.assertEqual(
+            target._interactions[1]['provider_state'],
+            'I am creating a new pact using the Pact class')
+        self.assertEqual(
+            target._interactions[0]['provider_state'],
+            'I am creating another new pact using the Pact class')
+
+        self.assertEqual(
+            target._interactions[1]['description'],
+            'a specific request to the server')
+        self.assertEqual(
+            target._interactions[0]['description'],
+            'a different request to the server')
+
+        self.assertEqual(target._interactions[1]['request'],
+                         {'path': '/foo', 'method': 'GET'})
+        self.assertEqual(target._interactions[0]['request'],
+                         {'path': '/bar', 'method': 'GET'})
+
+        self.assertEqual(target._interactions[1]['response'],
+                         {'status': 200, 'body': 'success'})
+        self.assertEqual(target._interactions[0]['response'],
+                         {'status': 200, 'body': 'success'})
 
 
 class PactSetupTestCase(PactTestCase):
@@ -122,16 +158,16 @@ class PactSetupTestCase(PactTestCase):
         self.delete_call = call('delete', 'http://localhost:1234/interactions',
                                 headers={'X-Pact-Mock-Service': 'true'})
 
-        self.post_interactions_call = call(
-            'post', 'http://localhost:1234/interactions',
+        self.put_interactions_call = call(
+            'put', 'http://localhost:1234/interactions',
             data=None,
             headers={'X-Pact-Mock-Service': 'true'},
-            json={
+            json={'interactions': [{
                 'response': {'status': 200, 'body': 'success'},
                 'request': {'path': '/path', 'method': 'GET'},
                 'description': 'a specific request to the server',
                 'provider_state': 'I am creating a new pact using the '
-                                  'Pact class'})
+                                  'Pact class'}]})
 
     def test_error_deleting_interactions(self):
         self.mock_requests.side_effect = iter([
@@ -155,7 +191,7 @@ class PactSetupTestCase(PactTestCase):
         self.assertEqual(str(e.exception), 'post interactions error')
         self.assertEqual(self.mock_requests.call_count, 2)
         self.mock_requests.assert_has_calls(
-            [self.delete_call, self.post_interactions_call])
+            [self.delete_call, self.put_interactions_call])
 
     def test_successful(self):
         self.mock_requests.side_effect = iter([Mock(status_code=200)] * 4)
@@ -163,7 +199,7 @@ class PactSetupTestCase(PactTestCase):
 
         self.assertEqual(self.mock_requests.call_count, 2)
         self.mock_requests.assert_has_calls([
-            self.delete_call, self.post_interactions_call])
+            self.delete_call, self.put_interactions_call])
 
 
 class PactStartShutdownServerTestCase(TestCase):
