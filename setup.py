@@ -15,7 +15,7 @@ import pact
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '0.0.1'
+PACT_STANDALONE_VERSION = '1.0.0'
 
 
 class PactPythonDevelopCommand(develop):

@@ -53,7 +53,7 @@ endef
 export E2E
 .PHONY: e2e
 e2e:
-	sh -c "$$E2E"
+	bash -c "$$E2E"
 
 
 .PHONY: package
@@ -62,7 +62,7 @@ package:
 
 
 .PHONY: test
-test: deps pact/bin
+test: deps
 	flake8
 	pydocstyle pact
 	coverage erase
