@@ -1,3 +1,7 @@
+### v0.5.0
+* c085a01 - Merge pull request #26 from AnObfuscator/stub-multiple-requests (Matthew Balvanz, Mon Jun 19 09:14:51 2017 -0500)
+* 22c0272 - Add support for stubbing multiple requests at the same time (AnObfuscator, Fri Jun 16 23:18:01 2017 -0500)
+
 ### v0.4.1
 * 66cf151 - Add RELEASING.md closes #18 (Matthew Balvanz, Tue May 30 22:41:06 2017 -0500)
 * 3f61c91 - Add support for request bodies that are False in Python (Matthew Balvanz, Tue May 30 21:57:46 2017 -0500)

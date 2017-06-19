@@ -10,6 +10,10 @@ current_state = ''
 
 provider_states = {
     'consumer': {
+        'a complex json blob exists': Response(
+            status=200,
+            response=json.dumps({'name': 'Jonas'}),
+            headers=Headers([('Content-Type', 'application/json')])),
         'a simple json blob exists': Response(
             status=200,
             response=json.dumps({'name': 'Jonas'}),
