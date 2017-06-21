@@ -1,5 +1,7 @@
 # Raising issues
 
+_Before raising an issue, please ensure that you are using the latest version of pact-python._
+
 Please provide the following information with your issue to enable us to respond as quickly as possible.
 
 * The relevant versions of the packages you are using.
