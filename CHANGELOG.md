@@ -1,3 +1,9 @@
+### v0.6.0
+* 10aaaf6 - Merge pull request #27 from pact-foundation/download-pre-package-mock-service-and-verifier (Matthew Balvanz, Tue Jun 20 21:51:40 2017 -0500)
+* a9b991b - Update to pact-ruby-standalone 1.0.0 (Matthew Balvanz, Mon Jun 19 10:17:09 2017 -0500)
+* ab43c8b - Switch to installing the packages from pact-ruby-standalone (Matthew Balvanz, Wed May 31 21:00:51 2017 -0500)
+* db3e7c3 - Use the compiled Ruby applications from pact-mock-service and pact-provider-verifier (Matthew Balvanz, Mon May 29 22:18:47 2017 -0500)
+
 ### v0.5.0
 * c085a01 - Merge pull request #26 from AnObfuscator/stub-multiple-requests (Matthew Balvanz, Mon Jun 19 09:14:51 2017 -0500)
 * 22c0272 - Add support for stubbing multiple requests at the same time (AnObfuscator, Fri Jun 16 23:18:01 2017 -0500)
