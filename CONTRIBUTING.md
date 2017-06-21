@@ -5,7 +5,7 @@ Please provide the following information with your issue to enable us to respond
 * The relevant versions of the packages you are using.
 * The steps to recreate your issue.
 * The full stacktrace if there is an exception.
-* An executable code example where possible. You can use the [e2e] directory to quickly recreate your issue.
+* An executable code example where possible. You can fork this repository and use the [e2e] directory to quickly recreate your issue.
 
 # Contributing
 
