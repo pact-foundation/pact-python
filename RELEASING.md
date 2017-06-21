@@ -3,7 +3,8 @@
 1. Increment the version according to semantic versioning rules in `pact/__init__.py`
 
 2. To upgrade the the versions of `pact-mock_service` and `pact-provider-verifier`, change the
-   appropriate `GEM_VESRION` variable in `scripts/build.sh` to the new version.
+   `PACT_STANDALONE_VERSION` in `setup.py` to match the latest version available from the
+   [pact-ruby-standalone](https://github.com/pact-foundation/pact-ruby-standalone/releases) repository.
 
 3. Update the `CHANGELOG.md` using:
 

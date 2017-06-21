@@ -18,12 +18,8 @@ install: pip install -r requirements_dev.txt
 script:
   - flake8
   - pydocstyle pact
-  - tox --develop
-  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then rvm install 2.2.2; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then rvm use 2.2.2; fi
-  - ruby --version
-  - bundler --version
-  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then make package; fi
+  - tox
+  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then make package && pip install ./dist/pact-python-*.tar.gz && make e2e; fi
 
 before_deploy:
   - export RELEASE_PACKAGE=$(ls dist/pact-python-*.tar.gz)
