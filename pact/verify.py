@@ -18,12 +18,17 @@ else:
     help='Base URL of the provider to verify against.',
     required=True)
 @click.option(
-    'pact_urls', '--pact-urls',
+    'pact_url', '--pact-url',
     help='The URI of the pact to verify.'
          ' Can be an HTTP URI or a local file path.'
          ' It can be specified multiple times to verify several pacts.',
-    multiple=True,
-    required=True)
+    multiple=True)
+@click.option(
+    'pact_urls', '--pact-urls',
+    default='',
+    help='The URI(s) of the pact to verify.'
+         ' Can be an HTTP URI(s) or local file path(s).'
+         ' Provide multiple URI separated by a comma.')
 @click.option(
     'states_url', '--provider-states-url',
     help='URL to fetch the provider states for the given provider API.')
@@ -44,14 +49,14 @@ else:
     help='The duration in seconds we should wait to confirm verification'
          ' process was successful. Defaults to 30.',
     type=int)
-def main(base_url, pact_urls, states_url, states_setup_url, username,
+def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
          password, timeout):
     """
     Verify one or more contracts against a provider service.
 
     Minimal example:
 
-        pact-verifier --provider-base-url=http://localhost:8080 --pact-urls=./pacts
+        pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pact
     """  # NOQA
     error = click.style('Error:', fg='red')
     if bool(states_url) != bool(states_setup_url):
@@ -61,7 +66,15 @@ def main(base_url, pact_urls, states_url, states_setup_url, username,
               ' --provider-states-url and --provider-states-setup-url.')
         raise click.Abort()
 
-    missing_files = [path for path in pact_urls if not path_exists(path)]
+    all_pact_urls = list(pact_url)
+    all_pact_urls.extend(p for p in pact_urls.split(',') if p)
+    if not all_pact_urls:
+        click.echo(
+            error
+            + ' At least one of --pact-url or --pact-urls is required.')
+        raise click.Abort()
+
+    missing_files = [path for path in all_pact_urls if not path_exists(path)]
     if missing_files:
         click.echo(
             error
@@ -71,7 +84,7 @@ def main(base_url, pact_urls, states_url, states_setup_url, username,
 
     options = {
         '--provider-base-url': base_url,
-        '--pact-urls': ','.join(pact_urls),
+        '--pact-urls': ','.join(all_pact_urls),
         '--provider-states-url': states_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,

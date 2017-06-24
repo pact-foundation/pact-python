@@ -37,11 +37,14 @@ class mainTestCase(TestCase):
         self.runner = CliRunner()
         self.default_call = [
             '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json']
+            '--pact-urls=./pacts/consumer-provider.json,'
+            './pacts/consumer-provider2.json,./pacts/consumer-provider3.json']
 
         self.default_opts = [
             '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json']
+            '--pact-url=./pacts/consumer-provider.json',
+            '--pact-urls=./pacts/consumer-provider2.json,'
+            './pacts/consumer-provider3.json']
 
     def assertProcess(self, *expected):
         self.assertEqual(self.mock_Popen.call_count, 1)
@@ -59,8 +62,9 @@ class mainTestCase(TestCase):
     def test_pact_urls_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
-        self.assertEqual(result.exit_code, 2)
-        self.assertIn(b'--pact-urls', result.output_bytes)
+        print(result)
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn(b'--pact-url or --pact-urls', result.output_bytes)
         self.assertFalse(self.mock_Popen.called)
 
     def test_local_pact_urls_must_exist(self):
@@ -121,7 +125,10 @@ class mainTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, [
             '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json',
+            '--pact-urls=./pacts/consumer-provider.json,'
+            './pacts/consumer-provider2.json',
+            '--pact-url=./pacts/consumer-provider3.json',
+            '--pact-url=./pacts/consumer-provider4.json',
             '--provider-states-url=http=//localhost/provider-states',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--pact-broker-username=user',
@@ -132,7 +139,9 @@ class mainTestCase(TestCase):
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
             '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json',
+            '--pact-urls=./pacts/consumer-provider3.json,'
+            './pacts/consumer-provider4.json,'
+            './pacts/consumer-provider.json,./pacts/consumer-provider2.json',
             '--provider-states-url=http=//localhost/provider-states',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--broker-username=user',

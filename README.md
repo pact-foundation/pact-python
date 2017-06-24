@@ -222,7 +222,7 @@ The simplest example is verifying a server with locally stored Pact files and no
 states:
 
 ```bash
-pact-verifier --provider-base-url=http://localhost:8080 --pact-urls=./pacts/consumer-provider.json
+pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/consumer-provider.json
 ```
 
 Which will immediately invoke the Pact verifier, making HTTP requests to the server located
@@ -235,10 +235,20 @@ There are several options for configuring how the Pacts are verified:
 
 Required. Defines the URL of the server to make requests to when verifying the Pacts.  
 
+###### --pact-url
+
+Required if --pact-urls not specified. The location of a Pact file you want
+to verify. This can be a URL to a [Pact Broker] or a local path, to provide
+multiple files, specify multiple arguments.
+
+```
+pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/one.json --pact-url=./pacts/two.json
+```
+
 ###### --pact-urls
 
-Required. The location of the Pact files you want to verify. This can be a URL to a [Pact Broker]
-or one or more local paths, separated by a comma.
+Required if --pact-url not specified. The location of the Pact files you want
+to verify. This can be a URL to a [Pact Broker] or one or more local paths, separated by a comma.
 
 ###### --provider-states-url
 
