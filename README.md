@@ -165,12 +165,25 @@ SomethingLike(123)  # Matches if the value is an integer
 SomethingLike('hello world')  # Matches if the value is a string
 SomethingLike(3.14)  # Matches if the value is a float
 ```
-
 The argument supplied to `SomethingLike` will be what the mock service responds with.
 
-### EachLike(matcher, minimum=None, maximum=None)
+When a dictionary is used as an argument for SomethingLike, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
+
+```python
+SomethingLike({
+    'username': Term('[a-zA-Z]+', 'username'),
+    'id': 123, # integer
+    'confirmed': false, # boolean
+    'address': { # dictionary
+        'street': '200 Bourke St' # string
+    }
+})
+
+```
+
+### EachLike(matcher, minimum=1)
 Asserts the value is an array type that consists of elements
-like the ones passed in. It can be used to assert simple arrays:
+like the one passed in. It can be used to assert simple arrays:
 
 ```python
 from pact import EachLike
@@ -184,7 +197,7 @@ Or other matchers can be nested inside to assert more complex objects:
 from pact import EachLike, SomethingLike, Term
 EachLike({
     'username': Term('[a-zA-Z]+', 'username'),
-    'id': SomethingLike(123),
+    'id': 123,
     'groups': EachLike('administrators')
 })
 ```
@@ -229,13 +242,13 @@ or one or more local paths, separated by a comma.
 
 ###### --provider-states-url
 
-The URL where your provider application will produce the list of available provider states.
+_DEPRECATED AFTER v 0.6.0._ The URL where your provider application will produce the list of available provider states.
 The verifier calls this URL to ensure the Pacts specify valid states before making the HTTP
 requests.
 
 ###### --provider-states-setup-url
 
-The URL which should be called to setup a specific provider state before a Pact is verified.
+The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', states: ['a thing exists']}`. Note that the current pact specification version (v2) only supports a single provider state, however, v3 will support multiple states, and the set-up call is designed to be forwards compatible with the planned change.
  
 ###### --pact-broker-username
 
@@ -255,7 +268,7 @@ states to communicate from the consumer what data should exist on the provider.
 
 When setting up the testing of a provider you will also need to setup the management of
 these provider states. The Pact verifier does this by making additional HTTP requests to
-the `provider_states_url` and `provider_states_setup_url` you provide. These URLs could be
+the `provider_states_setup_url` you provide. This URL could be
 on the provider application or a separate one. Some strategies for managing state include:
 
 - Having endpoints in your application that are not active in production that create and delete your datastore state
