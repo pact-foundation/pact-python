@@ -149,6 +149,25 @@ class mainTestCase(TestCase):
         self.mock_Popen.return_value.communicate.assert_called_once_with(
             timeout=60)
 
+    def test_deprecated_pact_urls(self):
+        self.mock_Popen.return_value.returncode = 0
+        result = self.runner.invoke(verify.main, [
+            '--provider-base-url=http://localhost',
+            '--pact-urls=./pacts/consumer-provider.json',
+            '--pact-urls=./pacts/consumer-provider2.json'
+        ])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(
+            b'Multiple --pact-urls arguments are deprecated.',
+            result.output_bytes)
+        self.assertEqual(self.mock_Popen.call_count, 1)
+        self.assertProcess(
+            '--provider-base-url=http://localhost',
+            '--pact-urls=./pacts/consumer-provider.json,'
+            './pacts/consumer-provider2.json')
+        self.mock_Popen.return_value.communicate.assert_called_once_with(
+            timeout=30)
+
 
 class path_existsTestCase(TestCase):
     def setUp(self):

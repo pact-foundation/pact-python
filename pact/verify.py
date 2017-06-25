@@ -28,7 +28,8 @@ else:
     default='',
     help='The URI(s) of the pact to verify.'
          ' Can be an HTTP URI(s) or local file path(s).'
-         ' Provide multiple URI separated by a comma.')
+         ' Provide multiple URI separated by a comma.',
+    multiple=True)  # Remove in major version 1.0.0
 @click.option(
     'states_url', '--provider-states-url',
     help='URL to fetch the provider states for the given provider API.')
@@ -59,6 +60,7 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
         pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pact
     """  # NOQA
     error = click.style('Error:', fg='red')
+    warning = click.style('Warning:', fg='yellow')
     if bool(states_url) != bool(states_setup_url):
         click.echo(
             error
@@ -67,7 +69,16 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
         raise click.Abort()
 
     all_pact_urls = list(pact_url)
-    all_pact_urls.extend(p for p in pact_urls.split(',') if p)
+    for urls in pact_urls:  # Remove in major version 1.0.0
+        all_pact_urls.extend(p for p in urls.split(',') if p)
+
+    if len(pact_urls) > 1:
+        click.echo(
+            warning
+            + ' Multiple --pact-urls arguments are deprecated. '
+              'Please provide a comma separated list of pacts to --pact-urls, '
+              'or multiple --pact-url arguments.')
+
     if not all_pact_urls:
         click.echo(
             error
