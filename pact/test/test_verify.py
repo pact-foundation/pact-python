@@ -113,7 +113,7 @@ class mainTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, self.default_opts)
         self.assertEqual(result.exit_code, 0)
-        self.assertProcess(*self.default_call + ['--pact-broker-password=pwd'])
+        self.assertProcess(*self.default_call + ['--broker-password=pwd'])
         self.mock_Popen.return_value.communicate.assert_called_once_with(
             timeout=30)
 
@@ -135,8 +135,8 @@ class mainTestCase(TestCase):
             '--pact-urls=./pacts/consumer-provider.json',
             '--provider-states-url=http=//localhost/provider-states',
             '--provider-states-setup-url=http://localhost/provider-states/set',
-            '--pact-broker-username=user',
-            '--pact-broker-password=pass')
+            '--broker-username=user',
+            '--broker-password=pass')
         self.mock_Popen.return_value.communicate.assert_called_once_with(
             timeout=60)
 
