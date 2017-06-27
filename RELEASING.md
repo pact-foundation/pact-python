@@ -12,7 +12,7 @@
 
 4. Add files to git
 
-    $ git add CHANGELOG.md pact/__init__.py
+    $ git add CHANGELOG.md pact/__version__.py
 
 5. Commit
 

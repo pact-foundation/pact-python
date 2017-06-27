@@ -1,3 +1,7 @@
+### v0.6.2
+* 69caa40 - Merge pull request #35 from pact-foundation/fix-broker-credentials (Matt Fellows, Tue Jun 27 20:49:35 2017 +1000)
+* d60f37f - Fix the use of broker credentials (Matthew Balvanz, Mon Jun 26 21:14:53 2017 -0500)
+
 ### v0.6.1
 * 14968ea - Merge pull request #34 from hartror/rh_version_fix (Matthew Balvanz, Mon Jun 26 20:23:29 2017 -0500)
 * aca520f - pydocstyle is fussy, should have run it before pushing (Rory Hart, Sun Jun 25 20:11:26 2017 +1000)
