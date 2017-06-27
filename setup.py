@@ -11,11 +11,16 @@ from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
-import pact
-
 
 IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = '1.0.0'
+
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+about = {}
+with open(os.path.join(here, "pact", "__version__.py")) as f:
+    exec(f.read(), about)
 
 
 class PactPythonDevelopCommand(develop):
@@ -107,7 +112,7 @@ setup_args = dict(
     cmdclass={'develop': PactPythonDevelopCommand,
               'install': PactPythonInstallCommand},
     name='pact-python',
-    version=pact.__version__,
+    version=about['__version__'],
     description=('Tools for creating and verifying consumer driven contracts'
                  ' using the Pact framework.'),
     long_description=read('README.md'),
