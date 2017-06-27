@@ -1,3 +1,15 @@
+### v0.6.1
+* 14968ea - Merge pull request #34 from hartror/rh_version_fix (Matthew Balvanz, Mon Jun 26 20:23:29 2017 -0500)
+* aca520f - pydocstyle is fussy, should have run it before pushing (Rory Hart, Sun Jun 25 20:11:26 2017 +1000)
+* b70103c - Added docstring for __version__.py (Rory Hart, Sun Jun 25 20:08:50 2017 +1000)
+* 2076e34 - Disabled flake8 F401 for __version__ import (Rory Hart, Sun Jun 25 20:05:24 2017 +1000)
+* 2912e07 - Version in setup.py reading __version__.py directly (Rory Hart, Sun Jun 25 19:40:08 2017 +1000)
+* d137a21 - Split tox environments into test & install to replicate installation issue #31 (Rory Hart, Sun Jun 25 19:16:57 2017 +1000)
+* f549ddf - Merge pull request #30 from bethesque/contributing (Matthew Balvanz, Sat Jun 24 12:43:30 2017 -0500)
+* 1f19a0e - Update CONTRIBUTING.md (Beth Skurrie, Thu Jun 22 08:51:35 2017 +1000)
+* 3198817 - Update CONTRIBUTING.md (Beth Skurrie, Thu Jun 22 08:36:57 2017 +1000)
+* 7a08bb2 - Update CONTRIBUTING.md (Beth Skurrie, Thu Jun 22 08:35:27 2017 +1000)
+
 ### v0.6.0
 * 10aaaf6 - Merge pull request #27 from pact-foundation/download-pre-package-mock-service-and-verifier (Matthew Balvanz, Tue Jun 20 21:51:40 2017 -0500)
 * a9b991b - Update to pact-ruby-standalone 1.0.0 (Matthew Balvanz, Mon Jun 19 10:17:09 2017 -0500)
