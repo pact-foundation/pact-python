@@ -74,8 +74,8 @@ def main(base_url, pact_urls, states_url, states_setup_url, username,
         '--pact-urls': ','.join(pact_urls),
         '--provider-states-url': states_url,
         '--provider-states-setup-url': states_setup_url,
-        '--pact-broker-username': username,
-        '--pact-broker-password': password
+        '--broker-username': username,
+        '--broker-password': password
     }
 
     command = [VERIFIER_PATH] + [
