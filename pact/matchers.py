@@ -117,7 +117,7 @@ class SomethingLike(Matcher):
         """
         return {
             'json_class': 'Pact::SomethingLike',
-            'contents': self.matcher}
+            'contents': from_term(self.matcher)}
 
 
 class Term(Matcher):
