@@ -34,5 +34,4 @@ deploy:
     repo: pact-foundation/pact-python
     python: "2.7"
     tags: true
-  server: https://pypi.python.org/pypi
   skip_cleanup: true
