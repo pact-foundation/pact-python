@@ -112,6 +112,10 @@ class InexactMatches(BaseTestCase):
             'username': Term('\w+', 'bob'),
             'id': SomethingLike(123),
             'groups': EachLike(123),
+            'meta': SomethingLike({
+                'name': Term('.+', 'sample'),
+                'value': Term('.+', 'data')
+            })
          }, minimum=2)}))
 
         with pact:
@@ -120,8 +124,10 @@ class InexactMatches(BaseTestCase):
 
         self.assertEqual(results.json(), {
             'results': [
-                {'username': 'bob', 'id': 123, 'groups': [123]},
-                {'username': 'bob', 'id': 123, 'groups': [123]}]})
+                {'username': 'bob', 'id': 123, 'groups': [123],
+                 'meta': {'name': 'sample', 'value': 'data'}},
+                {'username': 'bob', 'id': 123, 'groups': [123],
+                 'meta': {'name': 'sample', 'value': 'data'}}]})
 
     def test_falsey_bodies(self):
         (pact

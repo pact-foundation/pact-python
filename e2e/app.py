@@ -29,8 +29,10 @@ provider_states = {
             status=200,
             headers={'Content-Type': 'application/json'},
             response=json.dumps({'results': [
-                {'username': 'bob', 'id': 101, 'groups': [234, 123]},
-                {'username': 'sue', 'id': 102, 'groups': [345, 123]}]})),
+                {'username': 'bob', 'id': 101, 'groups': [234, 123],
+                 'meta': {'name': 'favorite-color', 'value': 'blue'}},
+                {'username': 'sue', 'id': 102, 'groups': [345, 123],
+                 'meta': {'name': 'supervisor', 'value': 'mary'}}]})),
         'no users exist': Response(
             status=200,
             headers={'Content-Type': 'application/json'},

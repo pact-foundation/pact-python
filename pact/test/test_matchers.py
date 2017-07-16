@@ -69,12 +69,30 @@ class SomethingLikeTestCase(TestCase):
 
         self.assertIn('matcher must be one of ', str(e.exception))
 
-    def test_call(self):
+    def test_basic_type(self):
         generate = SomethingLike(123).generate()
 
         self.assertEqual(
             generate,
             {'json_class': 'Pact::SomethingLike', 'contents': 123})
+
+    def test_complex_type(self):
+        generate = SomethingLike({'name': Term('.+', 'admin')}).generate()
+
+        self.assertEqual(
+            generate,
+            {'json_class': 'Pact::SomethingLike',
+             'contents': {'name': {
+                 'json_class': 'Pact::Term',
+                 'data': {
+                     'matcher': {
+                         'json_class': 'Regexp',
+                         's': '.+',
+                         'o': 0
+                     },
+                     'generate': 'admin'
+                 }
+             }}})
 
 
 class TermTestCase(TestCase):
