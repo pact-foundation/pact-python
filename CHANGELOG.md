@@ -1,3 +1,13 @@
+### v0.7.0
+ * 223ea76 - Merge pull request #32 from SimKev2/pacturls (Matthew Balvanz, Sun Jul 16 08:41:14 2017 -0500)
+ * e382eb4 - Add tests for #36 SomethingLike not supporting Terms (Matthew Balvanz, Sun Jul 16 08:36:58 2017 -0500)
+ * 05b4d70 - Merge pull request #37 from jeanbaptistepriez/fix-somethinglike (Matthew Balvanz, Sun Jul 16 08:30:28 2017 -0500)
+ * 29a2518 - Fix json generation of SomethingLike (https://github.com/pact-foundation/pact-python/issues/36) (jean-baptiste.priez, Wed Jul 12 20:01:58 2017 +0200)
+ * b6e1a8b - Issue: Cannot supply multiple files to pact-verifier  - PR: Added deprecation warning instead of making api-breaking change (simkev2, Sat Jun 24 20:05:05 2017 -0500)
+ * 17aa15b - Issue: Cannot supply multiple files to pact-verifier  - Updated '--pact-urls' to be a single comma separated string argument  - Added '--pact-url' which can be specified multiple times (simkev2, Sat Jun 24 12:57:51 2017 -0500)
+ * 65b493d - Merge pull request #33 from bethesque/reamde (Matthew Balvanz, Tue Jun 27 08:58:08 2017 -0500)
+ * f5a5958 - Update README.md (Beth Skurrie, Sun Jun 25 10:37:03 2017 +1000)
+
 ### v0.6.2
 * 69caa40 - Merge pull request #35 from pact-foundation/fix-broker-credentials (Matt Fellows, Tue Jun 27 20:49:35 2017 +1000)
 * d60f37f - Fix the use of broker credentials (Matthew Balvanz, Mon Jun 26 21:14:53 2017 -0500)

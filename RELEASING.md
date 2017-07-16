@@ -8,19 +8,19 @@
 
 3. Update the `CHANGELOG.md` using:
 
-    $ git log --pretty=format:'  * %h - %s (%an, %ad)' vX.Y.Z..HEAD
+    `$ git log --pretty=format:'  * %h - %s (%an, %ad)' vX.Y.Z..HEAD`
 
 4. Add files to git
 
-    $ git add CHANGELOG.md pact/__version__.py
+    `$ git add CHANGELOG.md pact/__version__.py`
 
 5. Commit
 
-    $ git commit -m "Releasing version X.Y.Z"
+    `$ git commit -m "Releasing version X.Y.Z"`
 
 6. Tag
 
-    $ git tag -a vX.Y.Z -m "Releasing version X.Y.Z" && git push origin --tags
+    `$ git tag -a vX.Y.Z -m "Releasing version X.Y.Z" && git push origin --tags`
 
 7. Wait until travis has run and the new tag is available at https://github.com/pact-foundation/pact-python/releases/tag/vX.Y.Z
 
