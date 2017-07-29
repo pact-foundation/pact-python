@@ -74,17 +74,6 @@ class mainTestCase(TestCase):
         self.assertIn(b'./pacts/consumer-provider.json', result.output_bytes)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_must_provide_both_provide_states_options(self):
-        result = self.runner.invoke(verify.main, [
-            '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json',
-            '--provider-states-url=http://localhost/provider-state'
-        ])
-        self.assertEqual(result.exit_code, 1)
-        self.assertIn(b'--provider-states-url', result.output_bytes)
-        self.assertIn(b'--provider-states-setup-url', result.output_bytes)
-        self.assertFalse(self.mock_Popen.called)
-
     def test_verification_timeout(self):
         self.mock_Popen.return_value.communicate.side_effect = TimeoutExpired(
             [], 30)
@@ -129,7 +118,6 @@ class mainTestCase(TestCase):
             './pacts/consumer-provider2.json',
             '--pact-url=./pacts/consumer-provider3.json',
             '--pact-url=./pacts/consumer-provider4.json',
-            '--provider-states-url=http=//localhost/provider-states',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
@@ -142,7 +130,6 @@ class mainTestCase(TestCase):
             '--pact-urls=./pacts/consumer-provider3.json,'
             './pacts/consumer-provider4.json,'
             './pacts/consumer-provider.json,./pacts/consumer-provider2.json',
-            '--provider-states-url=http=//localhost/provider-states',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--broker-username=user',
             '--broker-password=pass')
