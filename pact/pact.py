@@ -2,9 +2,13 @@
 from __future__ import unicode_literals
 
 import os
+import platform
 from subprocess import Popen
 
+import psutil
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3 import Retry
 
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
@@ -87,6 +91,7 @@ class Pact(object):
         self.sslkey = sslkey
         self.version = version
         self._interactions = []
+        self._process = None
 
     def given(self, provider_state):
         """
@@ -120,10 +125,14 @@ class Pact(object):
             raise
 
     def start_service(self):
-        """Start the external Mock Service."""
+        """
+        Start the external Mock Service.
+
+        :raises RuntimeError: if there is a problem starting the mock service.
+        """
         command = [
             MOCK_SERVICE_PATH,
-            'start',
+            'service',
             '--host={}'.format(self.host_name),
             '--port={}'.format(self.port),
             '--log', '{}/pact-mock-service.log'.format(self.log_dir),
@@ -139,17 +148,22 @@ class Pact(object):
         if self.sslkey:
             command.extend(['--sslkey', self.sslkey])
 
-        process = Popen(command)
-        process.communicate()
-        if process.returncode != 0:
-            raise RuntimeError('The Pact mock service failed to start.')
+        self._process = Popen(command)
+        self._wait_for_server_start()
 
     def stop_service(self):
         """Stop the external Mock Service."""
-        command = [MOCK_SERVICE_PATH, 'stop', '--port={}'.format(self.port)]
-        popen = Popen(command)
-        popen.communicate()
-        if popen.returncode != 0:
+        is_windows = 'windows' in platform.platform().lower()
+        if is_windows:
+            # Send the signal to ruby.exe, not the *.bat process
+            p = psutil.Process(self._process.pid)
+            for child in p.children(recursive=True):
+                child.terminate()
+        else:
+            self._process.terminate()
+
+        self._process.communicate()
+        if self._process.returncode != 0:
             raise RuntimeError(
                 'There was an error when stopping the Pact mock service.')
 
@@ -228,6 +242,23 @@ class Pact(object):
                                                      headers=headers,
                                                      body=body).json()
         return self
+
+    def _wait_for_server_start(self):
+        """
+        Wait for the mock service to be ready for requests.
+
+        :rtype: None
+        :raises RuntimeError: If there is a problem starting the mock service.
+        """
+        s = requests.Session()
+        retries = Retry(total=15, backoff_factor=0.1)
+        s.mount('http://', HTTPAdapter(max_retries=retries))
+        resp = s.get(self.uri, headers=self.HEADERS)
+        if resp.status_code != 200:
+            self._process.terminate()
+            self._process.communicate()
+            raise RuntimeError(
+                'There was a problem starting the mock service: %s', resp.text)
 
     def __enter__(self):
         """

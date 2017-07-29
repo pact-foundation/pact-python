@@ -1,7 +1,9 @@
 import os
+from subprocess import Popen
 from unittest import TestCase
 
 from mock import patch, call, Mock
+from psutil import Process
 
 from .. import Consumer, Provider, pact
 from ..constants import MOCK_SERVICE_PATH
@@ -208,9 +210,16 @@ class PactStartShutdownServerTestCase(TestCase):
         self.addCleanup(patch.stopall)
         self.mock_Popen = patch.object(pact, 'Popen', autospec=True).start()
         self.mock_Popen.return_value.returncode = 0
+        self.mock_Process = patch.object(
+            pact.psutil, 'Process', autospec=True).start()
+        self.mock_platform = patch.object(
+            pact.platform, 'platform', autospec=True).start()
+        self.mock_wait_for_server_start = patch.object(
+            pact.Pact, '_wait_for_server_start', autospec=True).start()
 
     def test_start_fails(self):
         self.mock_Popen.return_value.returncode = 1
+        self.mock_wait_for_server_start.side_effect = RuntimeError
         pact = Pact(Consumer('consumer'), Provider('provider'),
                     log_dir='/logs', pact_dir='/pacts')
 
@@ -218,7 +227,7 @@ class PactStartShutdownServerTestCase(TestCase):
             pact.start_service()
 
         self.mock_Popen.assert_called_once_with([
-            MOCK_SERVICE_PATH, 'start',
+            MOCK_SERVICE_PATH, 'service',
             '--host=localhost',
             '--port=1234',
             '--log', '/logs/pact-mock-service.log',
@@ -226,8 +235,6 @@ class PactStartShutdownServerTestCase(TestCase):
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
             '--provider', 'provider'])
-
-        self.mock_Popen.return_value.communicate.assert_called_once_with()
 
     def test_start_no_ssl(self):
         pact = Pact(Consumer('consumer'), Provider('provider'),
@@ -235,7 +242,7 @@ class PactStartShutdownServerTestCase(TestCase):
         pact.start_service()
 
         self.mock_Popen.assert_called_once_with([
-            MOCK_SERVICE_PATH, 'start',
+            MOCK_SERVICE_PATH, 'service',
             '--host=localhost',
             '--port=1234',
             '--log', '/logs/pact-mock-service.log',
@@ -243,8 +250,6 @@ class PactStartShutdownServerTestCase(TestCase):
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
             '--provider', 'provider'])
-
-        self.mock_Popen.return_value.communicate.assert_called_once_with()
 
     def test_start_with_ssl(self):
         pact = Pact(Consumer('consumer'), Provider('provider'),
@@ -253,7 +258,7 @@ class PactStartShutdownServerTestCase(TestCase):
         pact.start_service()
 
         self.mock_Popen.assert_called_once_with([
-            MOCK_SERVICE_PATH, 'start',
+            MOCK_SERVICE_PATH, 'service',
             '--host=localhost',
             '--port=1234',
             '--log', '/logs/pact-mock-service.log',
@@ -265,25 +270,86 @@ class PactStartShutdownServerTestCase(TestCase):
             '--sslcert', '/ssl.cert',
             '--sslkey', '/ssl.key'])
 
-        self.mock_Popen.return_value.communicate.assert_called_once_with()
-
-    def test_stop(self):
+    def test_stop_posix(self):
+        self.mock_platform.return_value = 'Linux'
         pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact._process = Mock(spec=Popen, pid=999, returncode=0)
         pact.stop_service()
 
-        self.mock_Popen.assert_called_once_with(
-            [MOCK_SERVICE_PATH, 'stop', '--port=1234'])
-        self.mock_Popen.return_value.communicate.assert_called_once_with()
+        pact._process.terminate.assert_called_once_with()
+        pact._process.communicate.assert_called_once_with()
+        self.assertFalse(self.mock_Process.called)
+
+    def test_stop_windows(self):
+        self.mock_platform.return_value = 'Windows'
+        ruby_exe = Mock(spec=Process)
+        self.mock_Process.return_value.children.return_value = [ruby_exe]
+        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact._process = Mock(spec=Popen, pid=999, returncode=0)
+        pact.stop_service()
+
+        self.assertFalse(pact._process.terminate.called)
+        pact._process.communicate.assert_called_once_with()
+        self.mock_Process.assert_called_once_with(999)
+        self.mock_Process.return_value.children.assert_called_once_with(
+            recursive=True)
+        ruby_exe.terminate.assert_called_once_with()
 
     def test_stop_fails(self):
         self.mock_Popen.return_value.returncode = 1
         pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact._process = Mock(spec=Popen, pid=999, returncode=1)
         with self.assertRaises(RuntimeError):
             pact.stop_service()
 
-        self.mock_Popen.assert_called_once_with(
-            [MOCK_SERVICE_PATH, 'stop', '--port=1234'])
-        self.mock_Popen.return_value.communicate.assert_called_once_with()
+        pact._process.terminate.assert_called_once_with()
+        pact._process.communicate.assert_called_once_with()
+
+
+class PactWaitForServerStartTestCase(TestCase):
+    def setUp(self):
+        super(PactWaitForServerStartTestCase, self).setUp()
+        self.addCleanup(patch.stopall)
+        self.mock_HTTPAdapter = patch.object(
+            pact, 'HTTPAdapter', autospec=True).start()
+        self.mock_Retry = patch.object(pact, 'Retry', autospec=True).start()
+        self.mock_Session = patch.object(
+            pact.requests, 'Session', autospec=True).start()
+
+    def test_wait_for_server_start_success(self):
+        self.mock_Session.return_value.get.return_value.status_code = 200
+        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact._process = Mock(spec=Popen)
+        pact._wait_for_server_start()
+
+        session = self.mock_Session.return_value
+        session.mount.assert_called_once_with(
+            'http://', self.mock_HTTPAdapter.return_value)
+        session.get.assert_called_once_with(
+            'http://localhost:1234', headers={'X-Pact-Mock-Service': 'true'})
+        self.mock_HTTPAdapter.assert_called_once_with(
+            max_retries=self.mock_Retry.return_value)
+        self.mock_Retry.assert_called_once_with(total=15, backoff_factor=0.1)
+        self.assertFalse(pact._process.communicate.called)
+        self.assertFalse(pact._process.terminate.called)
+
+    def test_wait_for_server_start_failure(self):
+        self.mock_Session.return_value.get.return_value.status_code = 500
+        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact._process = Mock(spec=Popen)
+        with self.assertRaises(RuntimeError):
+            pact._wait_for_server_start()
+
+        session = self.mock_Session.return_value
+        session.mount.assert_called_once_with(
+            'http://', self.mock_HTTPAdapter.return_value)
+        session.get.assert_called_once_with(
+            'http://localhost:1234', headers={'X-Pact-Mock-Service': 'true'})
+        self.mock_HTTPAdapter.assert_called_once_with(
+            max_retries=self.mock_Retry.return_value)
+        self.mock_Retry.assert_called_once_with(total=15, backoff_factor=0.1)
+        pact._process.communicate.assert_called_once_with()
+        pact._process.terminate.assert_called_once_with()
 
 
 class PactVerifyTestCase(PactTestCase):
