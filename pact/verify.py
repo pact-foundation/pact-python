@@ -32,7 +32,8 @@ else:
     multiple=True)  # Remove in major version 1.0.0
 @click.option(
     'states_url', '--provider-states-url',
-    help='URL to fetch the provider states for the given provider API.')
+    help='DEPRECATED: URL to fetch the provider states for'
+         ' the given provider API.')  # Remove in major version 1.0.0
 @click.option(
     'states_setup_url', '--provider-states-setup-url',
     help='URL to send PUT requests to setup a given provider state.')
@@ -61,13 +62,6 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
     """  # NOQA
     error = click.style('Error:', fg='red')
     warning = click.style('Warning:', fg='yellow')
-    if bool(states_url) != bool(states_setup_url):
-        click.echo(
-            error
-            + ' To use provider states you must provide both'
-              ' --provider-states-url and --provider-states-setup-url.')
-        raise click.Abort()
-
     all_pact_urls = list(pact_url)
     for urls in pact_urls:  # Remove in major version 1.0.0
         all_pact_urls.extend(p for p in urls.split(',') if p)
@@ -96,7 +90,6 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
     options = {
         '--provider-base-url': base_url,
         '--pact-urls': ','.join(all_pact_urls),
-        '--provider-states-url': states_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
         '--broker-password': password
