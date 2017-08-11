@@ -1,3 +1,10 @@
+### 0.8.0
+ * edb6c72 - Merge pull request #41 from pact-foundation/fix-running-on-windows (Matthew Balvanz, Thu Aug 10 21:39:27 2017 -0500)
+ * 244fff1 - Merge pull request #42 from pact-foundation/deprecate-provider-states-url (Matthew Balvanz, Thu Aug 10 21:38:44 2017 -0500)
+ * 447b8bb - Resolve #17: Deprecate --provider-states-url (Matthew Balvanz, Sat Jul 29 11:53:05 2017 -0500)
+ * 4661406 - Move to using the `service` command with pact-mock-service (Matthew Balvanz, Sat Jul 29 10:00:47 2017 -0500)
+ * 04107db - Remove the PyPi server declaration to use the defaults (Matthew Balvanz, Sun Jul 16 09:05:30 2017 -0500)
+
 ### v0.7.0
  * 223ea76 - Merge pull request #32 from SimKev2/pacturls (Matthew Balvanz, Sun Jul 16 08:41:14 2017 -0500)
  * e382eb4 - Add tests for #36 SomethingLike not supporting Terms (Matthew Balvanz, Sun Jul 16 08:36:58 2017 -0500)
