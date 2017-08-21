@@ -10,6 +10,10 @@ current_state = ''
 
 provider_states = {
     'consumer': {
+        'a complex json blob exists': Response(
+            status=200,
+            response=json.dumps({'name': 'Jonas'}),
+            headers=Headers([('Content-Type', 'application/json')])),
         'a simple json blob exists': Response(
             status=200,
             response=json.dumps({'name': 'Jonas'}),
@@ -25,8 +29,14 @@ provider_states = {
             status=200,
             headers={'Content-Type': 'application/json'},
             response=json.dumps({'results': [
-                {'username': 'bob', 'id': 101, 'groups': [234, 123]},
-                {'username': 'sue', 'id': 102, 'groups': [345, 123]}]}))
+                {'username': 'bob', 'id': 101, 'groups': [234, 123],
+                 'meta': {'name': 'favorite-color', 'value': 'blue'}},
+                {'username': 'sue', 'id': 102, 'groups': [345, 123],
+                 'meta': {'name': 'supervisor', 'value': 'mary'}}]})),
+        'no users exist': Response(
+            status=200,
+            headers={'Content-Type': 'application/json'},
+            response=json.dumps([]))
     }}
 
 
@@ -51,4 +61,4 @@ def catch_all(path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='80')
+    app.run(port='5000')

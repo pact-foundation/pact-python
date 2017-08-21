@@ -1,9 +1,14 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
+
 import os
+import platform
 from subprocess import Popen
 
+import psutil
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3 import Retry
 
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
@@ -85,11 +90,8 @@ class Pact(object):
         self.sslcert = sslcert
         self.sslkey = sslkey
         self.version = version
-        self._description = None
-        self._provider_state = None
-        self._request = None
-        self._response = None
-        self._scenario = None
+        self._interactions = []
+        self._process = None
 
     def given(self, provider_state):
         """
@@ -103,36 +105,34 @@ class Pact(object):
         :type provider_state: basestring
         :rtype: Pact
         """
-        self._provider_state = provider_state
+        self._interactions.insert(0, {'provider_state': provider_state})
         return self
 
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
         try:
-            payload = {
-                'description': self._description,
-                'provider_state': self._provider_state,
-                'request': self._request,
-                'response': self._response
-            }
-
             resp = requests.delete(
                 self.uri + '/interactions', headers=self.HEADERS)
 
             assert resp.status_code == 200, resp.content
-            resp = requests.post(
+            resp = requests.put(
                 self.uri + '/interactions',
-                headers=self.HEADERS, json=payload)
+                headers=self.HEADERS,
+                json={"interactions": self._interactions})
 
             assert resp.status_code == 200, resp.content
         except AssertionError:
             raise
 
     def start_service(self):
-        """Start the external Mock Service."""
+        """
+        Start the external Mock Service.
+
+        :raises RuntimeError: if there is a problem starting the mock service.
+        """
         command = [
             MOCK_SERVICE_PATH,
-            'start',
+            'service',
             '--host={}'.format(self.host_name),
             '--port={}'.format(self.port),
             '--log', '{}/pact-mock-service.log'.format(self.log_dir),
@@ -148,17 +148,22 @@ class Pact(object):
         if self.sslkey:
             command.extend(['--sslkey', self.sslkey])
 
-        process = Popen(command)
-        process.communicate()
-        if process.returncode != 0:
-            raise RuntimeError('The Pact mock service failed to start.')
+        self._process = Popen(command)
+        self._wait_for_server_start()
 
     def stop_service(self):
         """Stop the external Mock Service."""
-        command = [MOCK_SERVICE_PATH, 'stop', '--port={}'.format(self.port)]
-        popen = Popen(command)
-        popen.communicate()
-        if popen.returncode != 0:
+        is_windows = 'windows' in platform.platform().lower()
+        if is_windows:
+            # Send the signal to ruby.exe, not the *.bat process
+            p = psutil.Process(self._process.pid)
+            for child in p.children(recursive=True):
+                child.terminate()
+        else:
+            self._process.terminate()
+
+        self._process.communicate()
+        if self._process.returncode != 0:
             raise RuntimeError(
                 'There was an error when stopping the Pact mock service.')
 
@@ -170,7 +175,7 @@ class Pact(object):
         :type scenario: basestring
         :rtype: Pact
         """
-        self._description = scenario
+        self._interactions[0]['description'] = scenario
         return self
 
     def verify(self):
@@ -182,6 +187,7 @@ class Pact(object):
 
         :raises AssertionError: When not all interactions are found.
         """
+        self._interactions = []
         resp = requests.get(
             self.uri + '/interactions/verification',
             headers=self.HEADERS)
@@ -215,9 +221,8 @@ class Pact(object):
         :type query: dict, basestring, or None
         :rtype: Pact
         """
-        self._request = Request(
+        self._interactions[0]['request'] = Request(
             method, path, body=body, headers=headers, query=query).json()
-
         return self
 
     def will_respond_with(self, status, headers=None, body=None):
@@ -233,8 +238,27 @@ class Pact(object):
         :type body: Matcher, dict, list, basestring, or None
         :rtype: Pact
         """
-        self._response = Response(status, headers=headers, body=body).json()
+        self._interactions[0]['response'] = Response(status,
+                                                     headers=headers,
+                                                     body=body).json()
         return self
+
+    def _wait_for_server_start(self):
+        """
+        Wait for the mock service to be ready for requests.
+
+        :rtype: None
+        :raises RuntimeError: If there is a problem starting the mock service.
+        """
+        s = requests.Session()
+        retries = Retry(total=15, backoff_factor=0.1)
+        s.mount('http://', HTTPAdapter(max_retries=retries))
+        resp = s.get(self.uri, headers=self.HEADERS)
+        if resp.status_code != 200:
+            self._process.terminate()
+            self._process.communicate()
+            raise RuntimeError(
+                'There was a problem starting the mock service: %s', resp.text)
 
     def __enter__(self):
         """
@@ -296,7 +320,7 @@ class Request(FromTerms):
         if self.headers:
             request['headers'] = self.headers
 
-        if self.body:
+        if self.body is not None:
             request['body'] = self.body
 
         if self.query:
@@ -326,7 +350,7 @@ class Response(FromTerms):
     def json(self):
         """Convert the Response to a JSON version for the mock service."""
         response = {'status': self.status}
-        if self.body:
+        if self.body is not None:
             response['body'] = self.body
 
         if self.headers:

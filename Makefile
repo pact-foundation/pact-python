@@ -1,17 +1,11 @@
 DOCS_DIR := ./docs
 
-define VERSION_CHECK
-import setup
-import pact
-msg = 'pact.__version__ must match the last version in CHANGES.txt'
-assert setup.get_version() == pact.__version__, msg
-endef
-
 
 help:
 	@echo ""
 	@echo "  clean      to clear build and distribution directories"
 	@echo "  deps       to install the required files for development"
+	@echo "  e2e        to run the end to end tests"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
@@ -34,38 +28,43 @@ deps:
 	pip install -r requirements_dev.txt
 
 
+define E2E
+	set -e
+	cd e2e
+	nosetests ./contracts
+	python app.py &
+	APP_PID=$$!
+	function teardown {
+	    echo 'Tearing down Flask server'
+	    kill $$APP_PID
+	}
+	trap teardown EXIT
+	while ! nc -z localhost 5000; do
+		sleep 0.1
+	done
+	pact-verifier \
+		--provider-base-url=http://localhost:5000 \
+		--pact-urls=./pacts/consumer-provider.json \
+		--provider-states-url=http://localhost:5000/_pact/provider-states \
+		--provider-states-setup-url=http://localhost:5000/_pact/provider-states/active
+endef
+
+
+export E2E
 .PHONY: e2e
 e2e:
-	sh -c '\
-		cd e2e; \
-		docker-compose pull > /dev/null; \
-		nosetests ./contracts; \
-		docker-compose down; \
-		docker-compose up -d app pactverifier; \
-		docker-compose logs --follow >> ./pact/verifier-logs.txt & \
-		docker-compose exec pactverifier bundle exec rake verify_pacts; \
-		docker-compose down'
+	bash -c "$$E2E"
+
 
 .PHONY: package
-package: pact/bin
+package:
 	python setup.py sdist
 
 
-pact/bin:
-	scripts/build.sh
-
-
-export VERSION_CHECK
 .PHONY: test
-test: deps pact/bin
-	@echo "Checking version consistency..."
-	python -c "$$VERSION_CHECK"
-
-	@echo "flake8..."
+test: deps
 	flake8
-
-	@echo "pydocstyle..."
 	pydocstyle pact
-
-	@echo "testing..."
+	coverage erase
 	tox
+	coverage report --fail-under=100

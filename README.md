@@ -1,4 +1,9 @@
 # pact-python
+
+[![Join the chat at https://gitter.im/realestate-com-au/pact](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/realestate-com-au/pact?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/pact-foundation/pact-python.svg?branch=master)](https://travis-ci.org/pact-foundation/pact-python)
+[![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
+
 Python version of Pact. Enables consumer driven contract testing,
 providing a mock service and DSL for the consumer project, and
 interaction playback and verification for the service provider project.
@@ -160,12 +165,25 @@ SomethingLike(123)  # Matches if the value is an integer
 SomethingLike('hello world')  # Matches if the value is a string
 SomethingLike(3.14)  # Matches if the value is a float
 ```
-
 The argument supplied to `SomethingLike` will be what the mock service responds with.
 
-### EachLike(matcher, minimum=None, maximum=None)
+When a dictionary is used as an argument for SomethingLike, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
+
+```python
+SomethingLike({
+    'username': Term('[a-zA-Z]+', 'username'),
+    'id': 123, # integer
+    'confirmed': false, # boolean
+    'address': { # dictionary
+        'street': '200 Bourke St' # string
+    }
+})
+
+```
+
+### EachLike(matcher, minimum=1)
 Asserts the value is an array type that consists of elements
-like the ones passed in. It can be used to assert simple arrays:
+like the one passed in. It can be used to assert simple arrays:
 
 ```python
 from pact import EachLike
@@ -179,7 +197,7 @@ Or other matchers can be nested inside to assert more complex objects:
 from pact import EachLike, SomethingLike, Term
 EachLike({
     'username': Term('[a-zA-Z]+', 'username'),
-    'id': SomethingLike(123),
+    'id': 123,
     'groups': EachLike('administrators')
 })
 ```
@@ -189,95 +207,67 @@ EachLike({
 
 For more information see [Matching](https://docs.pact.io/documentation/matching.html)
 
-## Running the Mock Service
-This library does not yet automatically handle running the [Pact Mock Service] so you will need to
-start that manually before running the tests. There are two primary ways to run the mock service:
-
-1. [Install it and run it using Ruby](https://github.com/bethesque/pact-mock_service#usage)
-2. Run it as a Docker container
-
-Using the Docker container additionally has two options. You can run it via the `docker` command:
-
-```
-docker run -d -p "1234:1234" -v /tmp/log:/var/log/pacto -v $(pwd)/contracts:/opt/contracts madkom/pact-mock-service
-```
-
-Which will start the service and expose it as port `1234` on your computer, mount
-`/tmp/log` on your machine to house the mock service log files, and the directory
-`contracts` in the current working directory to house the contracts when they are published.
-
-Additionally, you could run the mock service using `docker-compose`:
-
-```yaml
-version: '2'
-services:
-  pactmockservice:
-    image: madkom/pact-mock-service
-    ports:
-      - "1234:1234"
-    volumes:
-      - /tmp/pact:/var/log/pacto
-      - ./contracts:/opt/contracts
-```
-
-> Note: How you run the mock service may change what hostname and port you should
-> use when running your consumer tests. For example: If you change the host port on
-> the command line to be `8080`, your tests would need to contact `localhost:8080`.
-
 ## Verifying Pacts Against a Service
-> pact-python does not yet have any involvement in the process of verifying a contract against
-> a provider. This section is included to provide insight into the full cycle of a
-> contract for those getting started.
 
-Like the mock service, the provider verifier can be run in two ways:
+In addition to writing Pacts for Python consumers, you can also verify those Pacts
+against a provider of any language. After installing pact-python a `pact-verifier`
+application should be available. To get details about its use you can call it with the
+help argument:
 
-1. [Install and use it as a Ruby application][pact-provider-verifier]
-2. Run it as a Docker container
-
-> Both choices have very similar configuration options. We will illustrate the Docker
-> method below, but the Ruby method supports the same features.
-
-When verifying your contracts, you may find it easier to run the provider application
-and the verifier in separate Docker containers. This gives you a nice isolated
-network, where you can set the DNS records of the services to anything you desire
-and not have to worry about port conflicts with other services on your computer.
-Launching the provider verifier in a `docker-compose.yml` might look like this:
-
-```yaml
-version: '2'
-services:
-  app:
-    image: the-provider-application-to-test
-
-  pactverifier:
-    command: ['tail', '-f', '/dev/null']
-    image: dius/pact-provider-verifier-docker
-    depends_on:
-      - app
-    volumes:
-      - ./contracts:/tmp/pacts
-    environment:
-      - pact_urls=/tmp/pacts/consumer-provider.json
-      - provider_base_url=http://app
-      - provider_states_url=http://app/_pact/provider-states
-      - provider_states_active_url=http://app/_pact/provider-states/active
+```bash
+pact-verifier --help
 ```
 
-In this example, our `app` container may take a few moments to start, so we don't
-immediately start running the verification, and instead `tail -f /dev/null` which will keep
-the container running forever. We can then use `docker-compose` to run the tests like so:
+The simplest example is verifying a server with locally stored Pact files and no provider
+states:
 
-```
-docker-compose up -d
-# Insert code to check that `app` has finished starting and is ready for requests
-docker-compose exec pactverifier bundle exec rake verify_pacts
+```bash
+pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/consumer-provider.json
 ```
 
-You configure the verifier in Docker using 4 environment variables:
-- `pact_urls` - a comma delimited list of pact file urls
-- `provider_base_url` - the base url of the pact provider
-- `provider_states_url` - the full url of the endpoint which returns provider states by consumer
-- `provider_states_active_url` - the full url of the endpoint which sets the active pact consumer and provider state
+Which will immediately invoke the Pact verifier, making HTTP requests to the server located
+at `http://localhost:8080` based on the Pacts in `./pacts/consumer-provider.json` and
+reporting the results.
+
+There are several options for configuring how the Pacts are verified:
+
+###### --provider-base-url
+
+Required. Defines the URL of the server to make requests to when verifying the Pacts.  
+
+###### --pact-url
+
+Required if --pact-urls not specified. The location of a Pact file you want
+to verify. This can be a URL to a [Pact Broker] or a local path, to provide
+multiple files, specify multiple arguments.
+
+```
+pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/one.json --pact-url=./pacts/two.json
+```
+
+###### --pact-urls
+
+Required if --pact-url not specified. The location of the Pact files you want
+to verify. This can be a URL to a [Pact Broker] or one or more local paths, separated by a comma.
+
+###### --provider-states-url
+
+_DEPRECATED AFTER v 0.6.0._ The URL where your provider application will produce the list of available provider states.
+The verifier calls this URL to ensure the Pacts specify valid states before making the HTTP
+requests.
+
+###### --provider-states-setup-url
+
+The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', states: ['a thing exists']}`. Note that the current pact specification version (v2) only supports a single provider state, however, v3 will support multiple states, and the set-up call is designed to be forwards compatible with the planned change.
+ 
+###### --pact-broker-username
+
+The username to use when contacting the Pact Broker.
+
+###### --pact-broker-password
+
+The password to use when contacting the Pact Broker. You can also specify this value
+as the environment variable `PACT_BROKER_PASSWORD`. 
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
@@ -288,7 +278,7 @@ states to communicate from the consumer what data should exist on the provider.
 
 When setting up the testing of a provider you will also need to setup the management of
 these provider states. The Pact verifier does this by making additional HTTP requests to
-the `provider_states_url` and `provider_stats_active_url` you provide. These URLs could be
+the `provider_states_setup_url` you provide. This URL could be
 on the provider application or a separate one. Some strategies for managing state include:
 
 - Having endpoints in your application that are not active in production that create and delete your datastore state
@@ -298,19 +288,42 @@ on the provider application or a separate one. Some strategies for managing stat
 For more information about provider states, refer to the [Pact documentation] on [Provider States].
 
 # Development
-Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+Please read [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Create a Python virtualenv for use with this project
+To setup a development environment:
+
+1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv] 
+2. Its recommended to create a Python [virtualenv] for the project
+
+The setup the environment, run tests, and package the application, run:
 `make release`
 
+If you are just interested in packaging pact-python so you can install it using pip:
+
+`make package`
+
+This creates a `dist/pact-python-N.N.N.tar.gz` file, where the Ns are the current version.
+From there you can use pip to install it:
+
+`pip install ./dist/pact-python-N.N.N.tar.gz`
+
 ## Testing
+
+This project has unit and end to end tests, which can both be run from make:
+
 Unit: `make test`
 
 End to end: `make e2e`
 
+[bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
 [Pact]: https://www.gitbook.com/book/pact-foundation/pact/details
+[Pact Broker]: https://docs.pact.io/documentation/sharings_pacts.html
 [Pact documentation]: https://docs.pact.io/
 [Pact Mock Service]: https://github.com/bethesque/pact-mock_service
 [Provider States]: https://docs.pact.io/documentation/provider_states.html
 [pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
+[pyenv]: https://github.com/pyenv/pyenv
+[rvm]: https://rvm.io/
+[rbenv]: https://github.com/rbenv/rbenv
+[virtualenv]: http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/

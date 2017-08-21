@@ -57,6 +57,36 @@ class ExactMatches(BaseTestCase):
 
         self.assertEqual(result.json(), expected)
 
+    def test_multiple_exact_matches(self):
+        expected = {'name': 'Jonas'}
+        (pact
+         .given('a simple json blob exists')
+         .upon_receiving('a request for a user')
+         .with_request('get', '/users/Jonas')
+         .will_respond_with(200, body=expected)
+         .given('a complex json blob exists')
+         .upon_receiving('a query for the user Jonas')
+         .with_request(
+            'post',
+            '/users/',
+            body={'kind': 'name'},
+            headers={'Accept': 'application/json'},
+            query='Jonas')
+         .will_respond_with(
+            200,
+            body=expected,
+            headers={'Content-Type': 'application/json'}))
+
+        with pact:
+            result_get = requests.get('http://localhost:1234/users/Jonas')
+            result_post = requests.post(
+                'http://localhost:1234/users/?Jonas',
+                headers={'Accept': 'application/json'},
+                json={'kind': 'name'})
+
+        self.assertEqual(result_get.json(), expected)
+        self.assertEqual(result_post.json(), expected)
+
 
 class InexactMatches(BaseTestCase):
     def test_sparse(self):
@@ -82,6 +112,10 @@ class InexactMatches(BaseTestCase):
             'username': Term('\w+', 'bob'),
             'id': SomethingLike(123),
             'groups': EachLike(123),
+            'meta': SomethingLike({
+                'name': Term('.+', 'sample'),
+                'value': Term('.+', 'data')
+            })
          }, minimum=2)}))
 
         with pact:
@@ -90,8 +124,22 @@ class InexactMatches(BaseTestCase):
 
         self.assertEqual(results.json(), {
             'results': [
-                {'username': 'bob', 'id': 123, 'groups': [123]},
-                {'username': 'bob', 'id': 123, 'groups': [123]}]})
+                {'username': 'bob', 'id': 123, 'groups': [123],
+                 'meta': {'name': 'sample', 'value': 'data'}},
+                {'username': 'bob', 'id': 123, 'groups': [123],
+                 'meta': {'name': 'sample', 'value': 'data'}}]})
+
+    def test_falsey_bodies(self):
+        (pact
+         .given('no users exist')
+         .upon_receiving('a request to insert no users')
+         .with_request('post', '/users/', body=[])
+         .will_respond_with(200, body=[]))
+
+        with pact:
+            results = requests.post('http://localhost:1234/users/', json=[])
+
+        self.assertEqual(results.json(), [])
 
 
 class SyntaxErrors(BaseTestCase):
