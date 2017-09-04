@@ -156,24 +156,25 @@ as `generate`, in this case `2016-12-15T20:16:01`. When the contract is verified
 provider, the regex will be used to search the response from the real provider service
 and the test will be considered successful if the regex finds a match in the response.
 
-### SomethingLike(matcher)
+### Like(matcher)
 Asserts the element's type matches the matcher. For example:
 
 ```python
-from pact import SomethingLike
-SomethingLike(123)  # Matches if the value is an integer
-SomethingLike('hello world')  # Matches if the value is a string
-SomethingLike(3.14)  # Matches if the value is a float
+from pact import Like
+Like(123)  # Matches if the value is an integer
+Like('hello world')  # Matches if the value is a string
+Like(3.14)  # Matches if the value is a float
 ```
-The argument supplied to `SomethingLike` will be what the mock service responds with.
+The argument supplied to `Like` will be what the mock service responds with.
 
-When a dictionary is used as an argument for SomethingLike, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
+When a dictionary is used as an argument for Like, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
 
 ```python
-SomethingLike({
+from pact import Like, Term
+Like({
     'username': Term('[a-zA-Z]+', 'username'),
     'id': 123, # integer
-    'confirmed': false, # boolean
+    'confirmed': False, # boolean
     'address': { # dictionary
         'street': '200 Bourke St' # string
     }
@@ -194,7 +195,7 @@ EachLike('hello')  # All items are strings
 Or other matchers can be nested inside to assert more complex objects:
 
 ```python
-from pact import EachLike, SomethingLike, Term
+from pact import EachLike, Term
 EachLike({
     'username': Term('[a-zA-Z]+', 'username'),
     'id': 123,
