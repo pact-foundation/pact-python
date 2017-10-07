@@ -102,7 +102,36 @@ configured and the interactions verified, use the `setup` and `verify` methods, 
     result = user('UserA')
     # Some additional steps before verifying all interactions have occurred
     pact.verify()
-````
+```
+
+### Requests
+
+When defining the expected HTTP request that your code is expected to make you
+can specify the method, path, body, headers, and query:
+
+```python
+pact.with_request(
+    method='GET',
+    path='/api/v1/my-resources/',
+    query={'search': 'example'}
+)
+```
+
+`query` is used to specify URL query parameters, so the above example expects
+a request made to `/api/v1/my-resources/?search=example`.
+
+```python
+pact.with_request(
+    method='POST',
+    path='/api/v1/my-resources/123',
+    body={'user_ids': [1, 2, 3]},
+    headers={'Content-Type': 'application/json'},
+)
+```
+
+You can define exact values for your expected request like the examples above,
+or you can use the matchers defined later to assist in handling values that are
+variable.
 
 The default hostname and port for the Pact mock service will be
 `localhost:1234` but you can adjust this during Pact creation:
