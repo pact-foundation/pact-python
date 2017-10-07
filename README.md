@@ -7,6 +7,7 @@
 Python version of Pact. Enables consumer driven contract testing,
 providing a mock service and DSL for the consumer project, and
 interaction playback and verification for the service provider project.
+Currently supports version 2 of the [Pact specification].
 
 For more information about what Pact is, and how it can help you
 test your code more efficiently, check out the [Pact documentation].
@@ -351,6 +352,7 @@ End to end: `make e2e`
 [Pact Broker]: https://docs.pact.io/documentation/sharings_pacts.html
 [Pact documentation]: https://docs.pact.io/
 [Pact Mock Service]: https://github.com/bethesque/pact-mock_service
+[Pact specification]: https://github.com/pact-foundation/pact-specification
 [Provider States]: https://docs.pact.io/documentation/provider_states.html
 [pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
 [pyenv]: https://github.com/pyenv/pyenv
