@@ -156,6 +156,56 @@ class mainTestCase(TestCase):
             timeout=30)
 
 
+class expand_directoriesTestCase(TestCase):
+    def setUp(self):
+        super(expand_directoriesTestCase, self).setUp()
+
+        def posix_join(*args):
+            return '/'.join(args)
+
+        self.addCleanup(patch.stopall)
+        self.mock_isdir = patch.object(verify, 'isdir', autospec=True).start()
+        self.mock_join = patch.object(
+            verify, 'join', new=posix_join).start()
+        self.mock_listdir = patch.object(
+            verify, 'listdir', autospec=True).start()
+
+    def test_directory(self):
+        self.mock_isdir.return_value = True
+        self.mock_listdir.return_value = [
+            'consumer-provider.json',
+            'consumer2-provider.json',
+            'unrelated-file.txt']
+
+        result = verify.expand_directories(['/tmp'])
+        self.assertEqual(result, [
+            '/tmp/consumer-provider.json',
+            '/tmp/consumer2-provider.json',
+        ])
+
+    def test_file(self):
+        self.mock_isdir.return_value = False
+        result = verify.expand_directories(['/tmp/consumer-provider.json'])
+        self.assertEqual(result, ['/tmp/consumer-provider.json'])
+
+    def test_uri(self):
+        result = verify.expand_directories(['http://broker'])
+        self.assertEqual(result, ['http://broker'])
+
+    def test_windows_directories(self):
+        self.mock_isdir.return_value = True
+        self.mock_listdir.return_value = [
+            'consumer-provider.json',
+            'consumer2-provider.json',
+            'unrelated-file.txt']
+
+        result = verify.expand_directories(['C:\\tmp'])
+        self.assertEqual(result, [
+            'C:/tmp/consumer-provider.json',
+            'C:/tmp/consumer2-provider.json',
+        ])
+
+
 class path_existsTestCase(TestCase):
     def setUp(self):
         super(path_existsTestCase, self).setUp()

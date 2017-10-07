@@ -1,6 +1,7 @@
 """Methods to verify previously created pacts."""
 import sys
-from os.path import isfile
+from os import listdir
+from os.path import isfile, isdir, join
 
 import click
 
@@ -20,7 +21,7 @@ else:
 @click.option(
     'pact_url', '--pact-url',
     help='The URI of the pact to verify.'
-         ' Can be an HTTP URI or a local file path.'
+         ' Can be an HTTP URI, a local file or directory path. '
          ' It can be specified multiple times to verify several pacts.',
     multiple=True)
 @click.option(
@@ -79,6 +80,7 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
             + ' At least one of --pact-url or --pact-urls is required.')
         raise click.Abort()
 
+    all_pact_urls = expand_directories(all_pact_urls)
     missing_files = [path for path in all_pact_urls if not path_exists(path)]
     if missing_files:
         click.echo(
@@ -101,6 +103,30 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
     p = subprocess.Popen(command)
     p.communicate(timeout=timeout)
     sys.exit(p.returncode)
+
+
+def expand_directories(paths):
+    """
+    Iterate over paths and expand any that are directories into file paths.
+
+    :param paths: A list of file paths to expand.
+    :type paths: list
+    :return: A list of file paths with any directory paths replaced with the
+        JSON files in those directories.
+    :rtype: list
+    """
+    paths_ = []
+    for path in paths:
+        if path.startswith('http://') or path.startswith('https://'):
+            paths_.append(path)
+        elif isdir(path):
+            paths_.extend(
+                [join(path, p) for p in listdir(path) if p.endswith('.json')])
+        else:
+            paths_.append(path)
+
+    # Ruby pact verifier expects forward slashes regardless of OS
+    return [p.replace('\\', '/') for p in paths_]
 
 
 def path_exists(path):
