@@ -157,5 +157,7 @@ class SyntaxErrors(BaseTestCase):
             with pact:
                 two('one')
 
-        self.assertEqual(
-            e.exception.message, 'two() takes exactly 2 arguments (1 given)')
+            self.assertEqual(
+                e.exception.message,
+                'two() takes exactly 2 arguments (1 given)'
+            )
