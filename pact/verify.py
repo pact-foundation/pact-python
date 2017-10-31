@@ -51,8 +51,18 @@ else:
     help='The duration in seconds we should wait to confirm verification'
          ' process was successful. Defaults to 30.',
     type=int)
+@click.option(
+    'provider_app_version', '-a', '--provider-app-version',
+    help='The provider application version, required for publishing verification results'
+    )
+@click.option(
+    'publish_verification_results', '-r', '--publish-verification-results',
+    default=False,
+    help='Publish verification results to the broker',
+    is_flag=True,)
+
 def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
-         password, timeout):
+         password, timeout, provider_app_version, publish_verification_results):
     """
     Verify one or more contracts against a provider service.
 
@@ -94,10 +104,19 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
         '--broker-username': username,
         '--broker-password': password
     }
-
+    
     command = [VERIFIER_PATH] + [
         '{}={}'.format(k, v) for k, v in options.items() if v]
-
+    
+    if publish_verification_results:
+        if not provider_app_version:
+            click.echo(
+                error
+                + 'Provider application version is required '
+                + 'to publish verification results to broker'
+            )
+            raise click.Abort()
+        command.extend(["--provider-app-version", provider_app_version, "--publish-verification-results"])
     p = subprocess.Popen(command)
     p.communicate(timeout=timeout)
     sys.exit(p.returncode)
