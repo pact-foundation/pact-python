@@ -173,7 +173,7 @@ class PactSetupTestCase(PactTestCase):
 
     def test_error_deleting_interactions(self):
         self.mock_requests.side_effect = iter([
-            Mock(status_code=500, content='deletion error')])
+            Mock(status_code=500, text='deletion error')])
 
         with self.assertRaises(AssertionError) as e:
             self.target.setup()
@@ -185,7 +185,7 @@ class PactSetupTestCase(PactTestCase):
     def test_error_posting_interactions(self):
         self.mock_requests.side_effect = iter([
             Mock(status_code=200),
-            Mock(status_code=500, content='post interactions error')])
+            Mock(status_code=500, text='post interactions error')])
 
         with self.assertRaises(AssertionError) as e:
             self.target.setup()
@@ -387,7 +387,7 @@ class PactVerifyTestCase(PactTestCase):
 
     def test_error_verifying_interactions(self):
         self.mock_requests.side_effect = iter([
-            Mock(status_code=500, content='verification error')])
+            Mock(status_code=500, text='verification error')])
 
         with self.assertRaises(AssertionError) as e:
             self.target.verify()
@@ -400,7 +400,7 @@ class PactVerifyTestCase(PactTestCase):
     def test_error_writing_pacts_to_file(self):
         self.mock_requests.side_effect = iter([
             Mock(status_code=200),
-            Mock(status_code=500, content='error writing pact to file')])
+            Mock(status_code=500, text='error writing pact to file')])
 
         with self.assertRaises(AssertionError) as e:
             self.target.verify()

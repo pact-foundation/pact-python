@@ -103,7 +103,12 @@ def read(filename):
         return f.read().decode('utf-8')
 
 
-dependencies = read('requirements.txt').split()
+dependencies = [
+    'click>=2.0.0',
+    'psutil>=2.0.0',
+    'requests>=2.5.0',
+    'six>=1.9.0',
+]
 
 if sys.version_info.major == 2:
     dependencies.append('subprocess32')

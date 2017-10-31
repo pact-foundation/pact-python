@@ -7,6 +7,7 @@
 Python version of Pact. Enables consumer driven contract testing,
 providing a mock service and DSL for the consumer project, and
 interaction playback and verification for the service provider project.
+Currently supports version 2 of the [Pact specification].
 
 For more information about what Pact is, and how it can help you
 test your code more efficiently, check out the [Pact documentation].
@@ -102,7 +103,36 @@ configured and the interactions verified, use the `setup` and `verify` methods, 
     result = user('UserA')
     # Some additional steps before verifying all interactions have occurred
     pact.verify()
-````
+```
+
+### Requests
+
+When defining the expected HTTP request that your code is expected to make you
+can specify the method, path, body, headers, and query:
+
+```python
+pact.with_request(
+    method='GET',
+    path='/api/v1/my-resources/',
+    query={'search': 'example'}
+)
+```
+
+`query` is used to specify URL query parameters, so the above example expects
+a request made to `/api/v1/my-resources/?search=example`.
+
+```python
+pact.with_request(
+    method='POST',
+    path='/api/v1/my-resources/123',
+    body={'user_ids': [1, 2, 3]},
+    headers={'Content-Type': 'application/json'},
+)
+```
+
+You can define exact values for your expected request like the examples above,
+or you can use the matchers defined later to assist in handling values that are
+variable.
 
 The default hostname and port for the Pact mock service will be
 `localhost:1234` but you can adjust this during Pact creation:
@@ -156,24 +186,25 @@ as `generate`, in this case `2016-12-15T20:16:01`. When the contract is verified
 provider, the regex will be used to search the response from the real provider service
 and the test will be considered successful if the regex finds a match in the response.
 
-### SomethingLike(matcher)
+### Like(matcher)
 Asserts the element's type matches the matcher. For example:
 
 ```python
-from pact import SomethingLike
-SomethingLike(123)  # Matches if the value is an integer
-SomethingLike('hello world')  # Matches if the value is a string
-SomethingLike(3.14)  # Matches if the value is a float
+from pact import Like
+Like(123)  # Matches if the value is an integer
+Like('hello world')  # Matches if the value is a string
+Like(3.14)  # Matches if the value is a float
 ```
-The argument supplied to `SomethingLike` will be what the mock service responds with.
+The argument supplied to `Like` will be what the mock service responds with.
 
-When a dictionary is used as an argument for SomethingLike, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
+When a dictionary is used as an argument for Like, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
 
 ```python
-SomethingLike({
+from pact import Like, Term
+Like({
     'username': Term('[a-zA-Z]+', 'username'),
     'id': 123, # integer
-    'confirmed': false, # boolean
+    'confirmed': False, # boolean
     'address': { # dictionary
         'street': '200 Bourke St' # string
     }
@@ -194,7 +225,7 @@ EachLike('hello')  # All items are strings
 Or other matchers can be nested inside to assert more complex objects:
 
 ```python
-from pact import EachLike, SomethingLike, Term
+from pact import EachLike, Term
 EachLike({
     'username': Term('[a-zA-Z]+', 'username'),
     'id': 123,
@@ -278,7 +309,7 @@ states to communicate from the consumer what data should exist on the provider.
 
 When setting up the testing of a provider you will also need to setup the management of
 these provider states. The Pact verifier does this by making additional HTTP requests to
-the `provider_states_setup_url` you provide. This URL could be
+the `--provider-states-setup-url` you provide. This URL could be
 on the provider application or a separate one. Some strategies for managing state include:
 
 - Having endpoints in your application that are not active in production that create and delete your datastore state
@@ -321,6 +352,7 @@ End to end: `make e2e`
 [Pact Broker]: https://docs.pact.io/documentation/sharings_pacts.html
 [Pact documentation]: https://docs.pact.io/
 [Pact Mock Service]: https://github.com/bethesque/pact-mock_service
+[Pact specification]: https://github.com/pact-foundation/pact-specification
 [Provider States]: https://docs.pact.io/documentation/provider_states.html
 [pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
 [pyenv]: https://github.com/pyenv/pyenv

@@ -66,7 +66,7 @@ class EachLike(Matcher):
             'min': self.minimum}
 
 
-class SomethingLike(Matcher):
+class Like(Matcher):
     """
     Expect the type of the value to be the same as matcher.
 
@@ -79,7 +79,7 @@ class SomethingLike(Matcher):
     ...  .upon_receiving('a request for a random number')
     ...  .with_request('get', '/generate-number')
     ...  .will_respond_with(200, body={
-    ...    'number': SomethingLike(1111222233334444)
+    ...    'number': Like(1111222233334444)
     ...  }))
 
     Would expect the response body to be a JSON object, containing the key
@@ -118,6 +118,10 @@ class SomethingLike(Matcher):
         return {
             'json_class': 'Pact::SomethingLike',
             'contents': from_term(self.matcher)}
+
+
+# Remove SomethingLike in major version 1.0.0
+SomethingLike = Like
 
 
 class Term(Matcher):

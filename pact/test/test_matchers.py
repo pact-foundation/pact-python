@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from ..matchers import EachLike, Matcher, SomethingLike, Term, from_term
+from ..matchers import EachLike, Like, Matcher, SomethingLike, Term, from_term
 
 
 class MatcherTestCase(TestCase):
@@ -54,6 +54,11 @@ class EachLikeTestCase(TestCase):
                      'json_class': 'Pact::SomethingLike',
                      'contents': 123}},
              'min': 1})
+
+
+class LikeTestCase(TestCase):
+    def test_is_something_like(self):
+        self.assertIs(SomethingLike, Like)
 
 
 class SomethingLikeTestCase(TestCase):

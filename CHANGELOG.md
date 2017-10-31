@@ -1,3 +1,20 @@
+### 0.9.0
+  * 735aa87 - Set new project minimum requirements (Matthew Balvanz, Sun Oct 22 16:30:12 2017 -0500)
+  * 295f17c - Merge pull request #60 from ftobia/requirements (Matthew Balvanz, Sun Oct 22 16:09:59 2017 -0500)
+  * 1dc72da - Merge pull request #48 from bassdread/allow-later-versions-of-requests (Matthew Balvanz, Sun Oct 22 16:09:39 2017 -0500)
+  * 3265b45 - add suggestion (Chris Hannam, Fri Oct 20 09:33:05 2017 +0100)
+  * 33504a6 - Resolve #51 verify outputs text instead of bytes (Matthew Balvanz, Thu Oct 19 21:28:39 2017 -0500)
+  * 51dcda3 - Merge pull request #57 from jceplaras/fix-e2e-test-incorrect-number-of-arg (Matthew Balvanz, Thu Oct 19 20:57:49 2017 -0500)
+  * 1a4d136 - Relax version requirements in setup.py (vs requirements.txt) (ftobia, Fri Oct 13 19:42:46 2017 -0400)
+  * 8ece1d6 - Fix incorrect indent on test_incorrect_number_of_arguments on test_e2e (James Plaras, Fri Oct 13 12:54:56 2017 +0800)
+  * 5f8257b - Resolve #50: Note which version of the Pact specification is supported (Matthew Balvanz, Sat Oct 7 14:05:26 2017 -0500)
+  * e728301 - Resolve #45: Document request query parameter (Matthew Balvanz, Sat Oct 7 13:58:07 2017 -0500)
+  * 5de7200 - Merge pull request #49 from pact-foundation/rename-somethinglike (Matt Fellows, Wed Oct 4 22:36:21 2017 +1100)
+  * d73aa1c - Resolve #43: Rename SomethingLike to Like (Matthew Balvanz, Mon Sep 4 15:49:13 2017 -0500)
+  * a07c8b6 - Merge pull request #46 from bassdread/fix-setup-url-name (Matthew Balvanz, Mon Sep 4 15:44:45 2017 -0500)
+  * b5e1f95 - allow later versions of requests (Chris Hannam, Tue Aug 29 13:38:42 2017 +0100)
+  * 08fe123 - make setup-url name format match above reference (Chris Hannam, Fri Aug 25 11:03:35 2017 +0100)
+
 ### 0.8.0
  * edb6c72 - Merge pull request #41 from pact-foundation/fix-running-on-windows (Matthew Balvanz, Thu Aug 10 21:39:27 2017 -0500)
  * 244fff1 - Merge pull request #42 from pact-foundation/deprecate-provider-states-url (Matthew Balvanz, Thu Aug 10 21:38:44 2017 -0500)

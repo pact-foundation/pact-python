@@ -114,13 +114,13 @@ class Pact(object):
             resp = requests.delete(
                 self.uri + '/interactions', headers=self.HEADERS)
 
-            assert resp.status_code == 200, resp.content
+            assert resp.status_code == 200, resp.text
             resp = requests.put(
                 self.uri + '/interactions',
                 headers=self.HEADERS,
                 json={"interactions": self._interactions})
 
-            assert resp.status_code == 200, resp.content
+            assert resp.status_code == 200, resp.text
         except AssertionError:
             raise
 
@@ -191,7 +191,7 @@ class Pact(object):
         resp = requests.get(
             self.uri + '/interactions/verification',
             headers=self.HEADERS)
-        assert resp.status_code == 200, resp.content
+        assert resp.status_code == 200, resp.text
         payload = {
             'consumer': {'name': self.consumer.name},
             'provider': {'name': self.provider.name},
@@ -199,7 +199,7 @@ class Pact(object):
         }
         resp = requests.post(
             self.uri + '/pact', headers=self.HEADERS, json=payload)
-        assert resp.status_code == 200, resp.content
+        assert resp.status_code == 200, resp.text
 
     def with_request(self, method, path, body=None, headers=None, query=None):
         """

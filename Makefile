@@ -25,7 +25,7 @@ clean:
 
 .PHONY: deps
 deps:
-	pip install -r requirements_dev.txt
+	pip install -r requirements_dev.txt -e .
 
 
 define E2E
