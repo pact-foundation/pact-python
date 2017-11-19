@@ -105,10 +105,8 @@ def main(base_url, pact_url, pact_urls, states_url,
         '--broker-username': username,
         '--broker-password': password
     }
-    
     command = [VERIFIER_PATH] + [
         '{}={}'.format(k, v) for k, v in options.items() if v]
-    
     if publish_verification_results:
         if not provider_app_version:
             click.echo(
