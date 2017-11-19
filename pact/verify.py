@@ -53,16 +53,17 @@ else:
     type=int)
 @click.option(
     'provider_app_version', '-a', '--provider-app-version',
-    help='The provider application version, required for publishing verification results'
+    help='The provider application version, '
+         'required for publishing verification results'
     )
 @click.option(
     'publish_verification_results', '-r', '--publish-verification-results',
     default=False,
     help='Publish verification results to the broker',
-    is_flag=True,)
-
-def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
-         password, timeout, provider_app_version, publish_verification_results):
+    is_flag=True)
+def main(base_url, pact_url, pact_urls, states_url,
+         states_setup_url, username, password, timeout, provider_app_version,
+         publish_verification_results):
     """
     Verify one or more contracts against a provider service.
 
@@ -116,7 +117,9 @@ def main(base_url, pact_url, pact_urls, states_url, states_setup_url, username,
                 + 'to publish verification results to broker'
             )
             raise click.Abort()
-        command.extend(["--provider-app-version", provider_app_version, "--publish-verification-results"])
+        command.extend(["--provider-app-version",
+                        provider_app_version,
+                        "--publish-verification-results"])
     p = subprocess.Popen(command)
     p.communicate(timeout=timeout)
     sys.exit(p.returncode)
