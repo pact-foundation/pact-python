@@ -1,3 +1,7 @@
+### 0.10.0
+  * 821671e - Merge pull request #53 from pact-foundation/verify-directories (Matthew Balvanz, Sat Nov 18 23:26:05 2017 -0600)
+  * 8291bb7 - Resolve #22: --pact-url accepts directories (Matthew Balvanz, Sat Oct 7 11:35:37 2017 -0500)
+
 ### 0.9.0
   * 735aa87 - Set new project minimum requirements (Matthew Balvanz, Sun Oct 22 16:30:12 2017 -0500)
   * 295f17c - Merge pull request #60 from ftobia/requirements (Matthew Balvanz, Sun Oct 22 16:09:59 2017 -0500)
