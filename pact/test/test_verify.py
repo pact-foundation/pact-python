@@ -21,8 +21,11 @@ class mainTestCase(TestCase):
         # terminal wants to handle unicode. Because we mock Popen to avoid
         # calling the real verifier, we need to get the actual result of
         # locale to provide it to Click during the test run.
-        cls.locale = Popen(
-            ['locale', '-a'], stdout=PIPE, stderr=PIPE).communicate()[0]
+        if os.name == 'nt':
+            cls.locale = ''  # pragma: no cover
+        else:
+            cls.locale = Popen(
+                ['locale', '-a'], stdout=PIPE, stderr=PIPE).communicate()[0]
 
     def setUp(self):
         super(mainTestCase, self).setUp()
@@ -33,6 +36,9 @@ class mainTestCase(TestCase):
 
         self.mock_isfile = patch.object(
             verify, 'isfile', autospec=True).start()
+
+        self.mock_rerun_command = patch.object(
+            verify, 'rerun_command', autospec=True).start()
 
         self.runner = CliRunner()
         self.default_call = [
@@ -48,10 +54,14 @@ class mainTestCase(TestCase):
 
     def assertProcess(self, *expected):
         self.assertEqual(self.mock_Popen.call_count, 1)
-        actual = self.mock_Popen.mock_calls[0][1][0]
+        call = self.mock_Popen.mock_calls[0]
+        actual = call[1][0]
         self.assertEqual(actual[0], VERIFIER_PATH)
         self.assertEqual(len(set(actual)), len(expected) + 1)
         self.assertEqual(set(actual[1:]), set(expected))
+        self.assertEqual(
+            call[2]['env']['PACT_INTERACTION_RERUN_COMMAND'],
+            self.mock_rerun_command.return_value)
 
     def test_provider_base_url_is_required(self):
         result = self.runner.invoke(verify.main, [])
@@ -62,7 +72,7 @@ class mainTestCase(TestCase):
     def test_pact_urls_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
-        print(result)
+
         self.assertEqual(result.exit_code, 1)
         self.assertIn(b'--pact-url or --pact-urls', result.output_bytes)
         self.assertFalse(self.mock_Popen.called)
@@ -121,6 +131,8 @@ class mainTestCase(TestCase):
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
+            '--publish-verification-results',
+            '--provider-app-version=1.2.3',
             '--timeout=60'
         ])
         self.assertEqual(result.exit_code, 0)
@@ -132,7 +144,9 @@ class mainTestCase(TestCase):
             './pacts/consumer-provider.json,./pacts/consumer-provider2.json',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--broker-username=user',
-            '--broker-password=pass')
+            '--broker-password=pass',
+            '--publish-verification-results',
+            '--provider-app-version', '1.2.3')
         self.mock_Popen.return_value.communicate.assert_called_once_with(
             timeout=60)
 
@@ -154,6 +168,17 @@ class mainTestCase(TestCase):
             './pacts/consumer-provider2.json')
         self.mock_Popen.return_value.communicate.assert_called_once_with(
             timeout=30)
+
+    def test_publishing_missing_version(self):
+        result = self.runner.invoke(verify.main, [
+            '--pact-urls=./pacts/consumer-provider.json',
+            '--provider-base-url=http://localhost',
+            '--publish-verification-results'
+        ])
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn(
+            b'Provider application version is required', result.output_bytes)
+        self.assertFalse(self.mock_Popen.return_value.communicate.called)
 
 
 class expand_directoriesTestCase(TestCase):
@@ -236,3 +261,34 @@ class path_existsTestCase(TestCase):
         self.assertIs(result, False)
         self.mock_isfile.assert_called_once_with(
             './pacts/consumer-provider.json')
+
+
+class rerun_commandTestCase(TestCase):
+    def setUp(self):
+        self.addCleanup(patch.stopall)
+        self.mock_platform = patch.object(
+            verify.platform, 'platform', autospec=True).start()
+
+    @patch.object(verify.sys, 'argv', new=[
+        'pact-verifier', '--pact-url=./consumer-provider.json'])
+    def test_posix(self):
+        self.mock_platform.return_value = 'linux'
+        result = verify.rerun_command()
+        self.assertEqual(
+            result, "PACT_DESCRIPTION='<PACT_DESCRIPTION>'"
+                    " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
+                    " pact-verifier --pact-url=./consumer-provider.json")
+
+    @patch.object(verify.sys, 'argv', new=[
+        'pact-verifier.exe', '--pact-url=./consumer-provider.json'])
+    def test_windows(self):
+        self.mock_platform.return_value = 'Windows'
+        result = verify.rerun_command()
+        self.assertEqual(
+            result, "cmd.exe /v /c \""
+                    "set PACT_DESCRIPTION=<PACT_DESCRIPTION>"
+                    "& set PACT_PROVIDER_STATE=<PACT_PROVIDER_STATE>"
+                    "& pact-verifier.exe"
+                    " --pact-url=./consumer-provider.json"
+                    " & set PACT_DESCRIPTION="
+                    " & set PACT_PROVIDER_STATE=\"")
