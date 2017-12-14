@@ -308,7 +308,7 @@ class Request(FromTerms):
         :type query: str or dict
         """
         self.method = method
-        self.path = path
+        self.path = from_term(path)
         self.body = from_term(body)
         self.headers = from_term(headers)
         self.query = from_term(query)
