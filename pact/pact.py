@@ -297,7 +297,7 @@ class Request(FromTerms):
         Create a new instance of Request.
 
         :param method: The HTTP method that is expected.
-        :type method: str
+        :type method: str, Matcher
         :param path: The URI path that is expected on this request.
         :type path: str
         :param body: The contents of the body of the expected request.
