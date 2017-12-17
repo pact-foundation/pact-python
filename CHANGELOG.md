@@ -1,3 +1,10 @@
+### 0.12.0
+ * 149dfc7 - Merge pull request #67 from jawu/enable-possibility-to-use-mathers-in-path (Matthew Balvanz, Sun Dec 17 10:32:34 2017 -0600)
+ * fb97d2f - fixed doc string of Request (Janneck Wullschleger, Sat Dec 16 20:44:11 2017 +0100)
+ * c2c24cc - adjusted doc string of Request calss to allow str and Matcher as path parameter (Janneck Wullschleger, Sat Dec 16 20:40:35 2017 +0100)
+ * 697a6a2 - fixed port parameter in e2e test for python 2.7 (Janneck Wullschleger, Thu Dec 14 15:08:05 2017 +0100)
+ * ca2eb92 - added from_term call in Request constructor to process path property for json transport (Janneck Wullschleger, Thu Dec 14 14:45:11 2017 +0100)
+
 ### 0.11.0
  * ad69039 - Merge pull request #63 from pact-foundation/run-specific-interactions (Matthew Balvanz, Sun Dec 17 09:53:35 2017 -0600)
  * eb63864 - Output a rerun command when a verification fails (Matthew Balvanz, Sun Nov 19 20:44:06 2017 -0600)

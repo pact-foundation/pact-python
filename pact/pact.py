@@ -208,7 +208,7 @@ class Pact(object):
         :param method: The HTTP method.
         :type method: str
         :param path: The path portion of the URI the client will access.
-        :type path: str
+        :type path: str, Matcher
         :param body: The request body, can be a string or an object that will
             serialize to JSON, like list or dict, defaults to None.
         :type body: list, dict or None
