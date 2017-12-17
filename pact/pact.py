@@ -299,7 +299,7 @@ class Request(FromTerms):
         :param method: The HTTP method that is expected.
         :type method: str
         :param path: The URI path that is expected on this request.
-        :type path: str
+        :type path: str, Matcher
         :param body: The contents of the body of the expected request.
         :type body: str, dict, list
         :param headers: The headers of the expected request.
@@ -308,7 +308,7 @@ class Request(FromTerms):
         :type query: str or dict
         """
         self.method = method
-        self.path = path
+        self.path = from_term(path)
         self.body = from_term(body)
         self.headers = from_term(headers)
         self.query = from_term(query)

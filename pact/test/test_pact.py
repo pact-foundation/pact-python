@@ -5,7 +5,7 @@ from unittest import TestCase
 from mock import patch, call, Mock
 from psutil import Process
 
-from .. import Consumer, Provider, pact
+from .. import Consumer, Provider, Term, pact
 from ..constants import MOCK_SERVICE_PATH
 from ..pact import Pact, FromTerms, Request, Response
 
@@ -475,6 +475,11 @@ class RequestTestCase(TestCase):
             'method': 'GET',
             'path': '/path',
             'body': []})
+
+    def test_matcher_in_path_gets_converted(self):
+        target = Request('GET', Term('\/.+', '/test-path'))
+        result = target.json()
+        self.assertTrue(isinstance(result['path'], dict))
 
 
 class ResponseTestCase(TestCase):
