@@ -13,7 +13,7 @@ from setuptools.command.install import install
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.1.1'
+PACT_STANDALONE_VERSION = '1.8.0'
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -86,7 +86,12 @@ def install_ruby_app(bin_path):
     path = os.path.join(bin_path, suffix)
     resp = urlopen(uri.format(version=PACT_STANDALONE_VERSION, suffix=suffix))
     with open(path, 'wb') as f:
-        f.write(resp.read())
+        if resp.code == 200:
+            f.write(resp.read())
+        else:
+            raise RuntimeError(
+                'Received HTTP {} when downloading {}'.format(
+                    resp.code, resp.url))
 
     if 'windows' in platform.platform().lower():
         with ZipFile(path) as f:

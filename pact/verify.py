@@ -1,4 +1,6 @@
 """Methods to verify previously created pacts."""
+import os
+import platform
 import sys
 from os import listdir
 from os.path import isfile, isdir, join
@@ -109,6 +111,7 @@ def main(base_url, pact_url, pact_urls, states_url,
     }
     command = [VERIFIER_PATH] + [
         '{}={}'.format(k, v) for k, v in options.items() if v]
+
     if publish_verification_results:
         if not provider_app_version:
             click.echo(
@@ -120,7 +123,10 @@ def main(base_url, pact_url, pact_urls, states_url,
         command.extend(["--provider-app-version",
                         provider_app_version,
                         "--publish-verification-results"])
-    p = subprocess.Popen(command)
+
+    env = os.environ.copy()
+    env['PACT_INTERACTION_RERUN_COMMAND'] = rerun_command()
+    p = subprocess.Popen(command, env=env)
     p.communicate(timeout=timeout)
     sys.exit(p.returncode)
 
@@ -165,6 +171,27 @@ def path_exists(path):
         return True
 
     return isfile(path)
+
+
+def rerun_command():
+    """
+    Create a rerun command template for failed interactions.
+
+    :rtype: str
+    """
+    is_windows = 'windows' in platform.platform().lower()
+    if is_windows:
+        return (
+            'cmd.exe /v /c "'
+            'set PACT_DESCRIPTION=<PACT_DESCRIPTION>'
+            '& set PACT_PROVIDER_STATE=<PACT_PROVIDER_STATE>'
+            '& {command}'
+            ' & set PACT_DESCRIPTION='
+            ' & set PACT_PROVIDER_STATE="'.format(command=' '.join(sys.argv)))
+    else:
+        return ("PACT_DESCRIPTION='<PACT_DESCRIPTION>'"
+                " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
+                " {command}".format(command=' '.join(sys.argv)))
 
 
 if __name__ == '__main__':
