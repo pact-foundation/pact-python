@@ -1,3 +1,13 @@
+### 0.11.0
+ * ad69039 - Merge pull request #63 from pact-foundation/run-specific-interactions (Matthew Balvanz, Sun Dec 17 09:53:35 2017 -0600)
+ * eb63864 - Output a rerun command when a verification fails (Matthew Balvanz, Sun Nov 19 20:44:06 2017 -0600)
+ * 7c7bc7d - Merge pull request #62 from dhoomakethu/master (Matthew Balvanz, Sun Nov 19 19:53:48 2017 -0600)
+ * c27a7a9 - #62 Fix flake8 issues 2 (sanjay, Sun Nov 19 11:18:15 2017 +0530)
+ * 382c46c - #62 fix flake issues (sanjay, Sun Nov 19 11:13:58 2017 +0530)
+ * cdcc85d - Add support to publish verification result to pact broker (sanjay, Tue Oct 31 12:41:52 2017 +0530)
+ * c1a5402 - Merge pull request #2 from pact-foundation/master (dhoomakethu, Tue Oct 31 12:15:53 2017 +0530)
+ * b91f6c3 - Merge pull request #1 from pact-foundation/master (dhoomakethu, Mon Aug 21 12:36:15 2017 +0530)
+
 ### 0.10.0
   * 821671e - Merge pull request #53 from pact-foundation/verify-directories (Matthew Balvanz, Sat Nov 18 23:26:05 2017 -0600)
   * 8291bb7 - Resolve #22: --pact-url accepts directories (Matthew Balvanz, Sat Oct 7 11:35:37 2017 -0500)
