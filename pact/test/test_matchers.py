@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from ..matchers import EachLike, Like, Matcher, SomethingLike, Term, from_term
+from ..matchers import EachLike, Like, Matcher, SomethingLike, \
+    Term, from_term, get_generated_values
 
 
 class MatcherTestCase(TestCase):
@@ -118,7 +119,6 @@ class TermTestCase(TestCase):
 class FromTermTestCase(TestCase):
     def test_dict(self):
         expected = {'administrator': False, 'id': 123, 'username': 'user'}
-
         self.assertEqual(from_term(expected), expected)
 
     def test_none(self):
@@ -184,3 +184,57 @@ class FromTermTestCase(TestCase):
     def test_unknown_type(self):
         with self.assertRaises(ValueError):
             from_term(set())
+
+
+class GetGeneratedValuesTestCase(TestCase):
+    def test_none(self):
+        self.assertIsNone(get_generated_values(None))
+
+    def test_bool(self):
+        self.assertFalse(get_generated_values(False))
+
+    def test_unicode(self):
+        self.assertEqual(get_generated_values(u'testing'), 'testing')
+
+    def test_int(self):
+        self.assertEqual(get_generated_values(123), 123)
+
+    def test_float(self):
+        self.assertEqual(get_generated_values(3.14), 3.14)
+
+    def test_list(self):
+        term = [1, 123, 'sample']
+        self.assertEqual(get_generated_values(term), term)
+
+    def test_dict(self):
+        expected = {'administrator': False, 'id': 123, 'username': 'user'}
+        self.assertEqual(get_generated_values(expected), expected)
+
+    def test_each_like(self):
+        self.assertEqual(
+            get_generated_values(EachLike({'a': 1})), [{'a': 1}])
+
+    def test_each_like_minimum(self):
+        self.assertEqual(get_generated_values(EachLike({'a': 1}, minimum=5)),
+                         [{'a': 1}] * 5)
+
+    def test_something_like(self):
+        self.assertEqual(
+            get_generated_values(SomethingLike(123)), 123)
+
+    def test_term(self):
+        self.assertEqual(
+            get_generated_values(Term('[a-f0-9]+', 'abc123')), 'abc123')
+
+    def test_nested(self):
+        input = [
+            EachLike({
+                'username': Term('[a-zA-Z]+', 'firstlast'),
+                'id': SomethingLike(123)})]
+        self.assertEqual(
+            get_generated_values(input),
+            [[{'username': 'firstlast', 'id': 123}]])
+
+    def test_unknown_type(self):
+        with self.assertRaises(ValueError):
+            get_generated_values(set())

@@ -198,3 +198,30 @@ def from_term(term):
         return term.generate()
     else:
         raise ValueError('Unknown type: %s' % type(term))
+
+
+def get_generated_values(input):
+    """
+    Resolve (nested) Matchers to their generated values for assertion.
+
+    :param input: The input to be resolved to its generated values.
+    :type input: None, list, dict, int, float, bool, str, unicode, Matcher
+    :return: The input resolved to its generated value(s)
+    :rtype: None, list, dict, int, float, bool, str, unicode, Matcher
+    """
+    if input is None:
+        return input
+    if isinstance(input, (six.string_types, int, float, bool)):
+        return input
+    if isinstance(input, dict):
+        return {k: get_generated_values(v) for k, v in input.items()}
+    if isinstance(input, list):
+        return [get_generated_values(t) for i, t in enumerate(input)]
+    elif isinstance(input, Like):
+        return get_generated_values(input.matcher)
+    elif isinstance(input, EachLike):
+        return [get_generated_values(input.matcher)] * input.minimum
+    elif isinstance(input, Term):
+        return input.generate()['data']['generate']
+    else:
+        raise ValueError('Unknown type: %s' % type(input))
