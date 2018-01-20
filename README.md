@@ -64,7 +64,7 @@ class GetUserInfoContract(unittest.TestCase):
       'id': 123,
       'groups': ['Editors']
     }
-      
+
     (pact
      .given('UserA exists and is not an administrator')
      .upon_receiving('a request for UserA')
@@ -73,7 +73,7 @@ class GetUserInfoContract(unittest.TestCase):
 
     with pact:
       result = user('UserA')
-    
+
     self.assertEqual(result, expected)
 
 ```
@@ -88,7 +88,7 @@ This does a few important things:
 Using the Pact object as a [context manager], we call our method under test
 which will then communicate with the Pact mock service. The mock service will respond with
 the items we defined, allowing us to assert that the method processed the response and
-returned the expected value. If you want more control over when the mock service is 
+returned the expected value. If you want more control over when the mock service is
 configured and the interactions verified, use the `setup` and `verify` methods, respectively:
 
 ```python
@@ -264,7 +264,7 @@ There are several options for configuring how the Pacts are verified:
 
 ###### --provider-base-url
 
-Required. Defines the URL of the server to make requests to when verifying the Pacts.  
+Required. Defines the URL of the server to make requests to when verifying the Pacts.
 
 ###### --pact-url
 
@@ -289,8 +289,8 @@ requests.
 
 ###### --provider-states-setup-url
 
-The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', states: ['a thing exists']}`. Note that the current pact specification version (v2) only supports a single provider state, however, v3 will support multiple states, and the set-up call is designed to be forwards compatible with the planned change.
- 
+The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', state: 'a thing exists'}`.
+
 ###### --pact-broker-username
 
 The username to use when contacting the Pact Broker.
@@ -298,7 +298,7 @@ The username to use when contacting the Pact Broker.
 ###### --pact-broker-password
 
 The password to use when contacting the Pact Broker. You can also specify this value
-as the environment variable `PACT_BROKER_PASSWORD`. 
+as the environment variable `PACT_BROKER_PASSWORD`.
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
@@ -323,7 +323,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md)
 
 To setup a development environment:
 
-1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv] 
+1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv]
 2. Its recommended to create a Python [virtualenv] for the project
 
 The setup the environment, run tests, and package the application, run:
