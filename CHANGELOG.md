@@ -1,3 +1,10 @@
+### 0.13.0
+  * 3316743 - Merge pull request #69 from jawu/#52-helper-function-for-assertion-with-matchers (Matthew Balvanz, Sat Jan 20 16:43:56 2018 -0600)
+  * ae7f333 - Merge pull request #70 from bethesque/issues/pact-provider-verifier-19 (Matthew Balvanz, Sat Jan 20 16:40:31 2018 -0600)
+  * 81597d9 - docs: remove reference to v3 pact in provider-states-setup-url (Beth Skurrie, Tue Jan 9 12:27:18 2018 +1100)
+  * 8bedfd4 - removed local files (Janneck Wullschleger, Wed Dec 20 05:12:08 2017 +0100)
+  * 5ab2648 - solves #52 added get_generated_values to resolve Mathers to their generated value for assertion (Janneck Wullschleger, Wed Dec 20 05:06:33 2017 +0100)
+
 ### 0.12.0
  * 149dfc7 - Merge pull request #67 from jawu/enable-possibility-to-use-mathers-in-path (Matthew Balvanz, Sun Dec 17 10:32:34 2017 -0600)
  * fb97d2f - fixed doc string of Request (Janneck Wullschleger, Sat Dec 16 20:44:11 2017 +0100)
