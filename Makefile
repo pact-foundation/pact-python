@@ -44,9 +44,9 @@ define E2E
 	done
 	pact-verifier \
 		--provider-base-url=http://localhost:5000 \
-		--pact-urls=./pacts/consumer-provider.json \
 		--provider-states-url=http://localhost:5000/_pact/provider-states \
-		--provider-states-setup-url=http://localhost:5000/_pact/provider-states/active
+		--provider-states-setup-url=http://localhost:5000/_pact/provider-states/active \
+		./pacts/consumer-provider.json
 endef
 
 

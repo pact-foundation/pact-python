@@ -40,7 +40,8 @@ class Pact(object):
 
     def __init__(self, consumer, provider, host_name='localhost', port=1234,
                  log_dir=None, ssl=False, sslcert=None, sslkey=None,
-                 cors=False, pact_dir=None, version='2.0.0'):
+                 cors=False, pact_dir=None, version='2.0.0',
+                 file_write_mode='overwrite'):
         """
         Constructor for Pact.
 
@@ -74,6 +75,13 @@ class Pact(object):
         :param version: The Pact Specification version to use, defaults to
             '2.0.0'.
         :type version: str
+        :param file_write_mode: `overwrite` or `merge`. Use `merge` when
+            running multiple mock service instances in parallel for the same
+            consumer/provider pair. Ensure the pact file is deleted before
+            running tests when using this option so that interactions deleted
+            from the code are not maintained in the file. Defaults to
+            `overwrite`.
+        :type file_write_mode: str
         """
         scheme = 'https' if ssl else 'http'
         self.uri = '{scheme}://{host_name}:{port}'.format(
@@ -81,6 +89,7 @@ class Pact(object):
 
         self.consumer = consumer
         self.cors = cors
+        self.file_write_mode = file_write_mode
         self.host_name = host_name
         self.log_dir = log_dir or os.getcwd()
         self.pact_dir = pact_dir or os.getcwd()
@@ -137,6 +146,7 @@ class Pact(object):
             '--port={}'.format(self.port),
             '--log', '{}/pact-mock-service.log'.format(self.log_dir),
             '--pact-dir', self.pact_dir,
+            '--pact-file-write-mode', self.file_write_mode,
             '--pact-specification-version={}'.format(self.version),
             '--consumer', self.consumer.name,
             '--provider', self.provider.name]
@@ -192,13 +202,8 @@ class Pact(object):
             self.uri + '/interactions/verification',
             headers=self.HEADERS)
         assert resp.status_code == 200, resp.text
-        payload = {
-            'consumer': {'name': self.consumer.name},
-            'provider': {'name': self.provider.name},
-            'pact_dir': self.pact_dir
-        }
         resp = requests.post(
-            self.uri + '/pact', headers=self.HEADERS, json=payload)
+            self.uri + '/pact', headers=self.HEADERS)
         assert resp.status_code == 200, resp.text
 
     def with_request(self, method, path, body=None, headers=None, query=None):
