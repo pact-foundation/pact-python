@@ -1,3 +1,7 @@
+### 0.14.0
+  * 3070638 - Merge pull request #71 from pact-foundation/update-standalone-1-9-0 (Matthew Balvanz, Sat Feb 3 23:25:37 2018 -0600)
+  * 475703c - Resolves #58: Update to pact-ruby-standalone 1.9.0 (Matthew Balvanz, Sat Feb 3 23:12:22 2018 -0600)
+
 ### 0.13.0
   * 3316743 - Merge pull request #69 from jawu/#52-helper-function-for-assertion-with-matchers (Matthew Balvanz, Sat Jan 20 16:43:56 2018 -0600)
   * ae7f333 - Merge pull request #70 from bethesque/issues/pact-provider-verifier-19 (Matthew Balvanz, Sat Jan 20 16:40:31 2018 -0600)
