@@ -16,20 +16,23 @@ else:
 
 
 @click.command()
+@click.argument('pacts', nargs=-1)
 @click.option(
     'base_url', '--provider-base-url',
     help='Base URL of the provider to verify against.',
     required=True)
 @click.option(
     'pact_url', '--pact-url',
-    help='The URI of the pact to verify.'
+    help='DEPRECATED: specify pacts as arguments instead.\n'
+         'The URI of the pact to verify.'
          ' Can be an HTTP URI, a local file or directory path. '
          ' It can be specified multiple times to verify several pacts.',
-    multiple=True)
+    multiple=True)  # Remove in major version 1.0.0
 @click.option(
     'pact_urls', '--pact-urls',
     default='',
-    help='The URI(s) of the pact to verify.'
+    help='DEPRECATED: specify pacts as arguments instead.\n'
+         'The URI(s) of the pact to verify.'
          ' Can be an HTTP URI(s) or local file path(s).'
          ' Provide multiple URI separated by a comma.',
     multiple=True)  # Remove in major version 1.0.0
@@ -64,7 +67,7 @@ else:
     default=False,
     help='Publish verification results to the broker',
     is_flag=True)
-def main(base_url, pact_url, pact_urls, states_url,
+def main(pacts, base_url, pact_url, pact_urls, states_url,
          states_setup_url, username, password, timeout, provider_app_version,
          publish_verification_results):
     """
@@ -72,11 +75,11 @@ def main(base_url, pact_url, pact_urls, states_url,
 
     Minimal example:
 
-        pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pact
+        pact-verifier --provider-base-url=http://localhost:8080 ./pacts
     """  # NOQA
     error = click.style('Error:', fg='red')
     warning = click.style('Warning:', fg='yellow')
-    all_pact_urls = list(pact_url)
+    all_pact_urls = list(pacts) + list(pact_url)
     for urls in pact_urls:  # Remove in major version 1.0.0
         all_pact_urls.extend(p for p in urls.split(',') if p)
 
@@ -90,7 +93,7 @@ def main(base_url, pact_url, pact_urls, states_url,
     if not all_pact_urls:
         click.echo(
             error
-            + ' At least one of --pact-url or --pact-urls is required.')
+            + ' You must supply at least one pact file or directory to verify')
         raise click.Abort()
 
     all_pact_urls = expand_directories(all_pact_urls)
@@ -104,13 +107,13 @@ def main(base_url, pact_url, pact_urls, states_url,
 
     options = {
         '--provider-base-url': base_url,
-        '--pact-urls': ','.join(all_pact_urls),
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
         '--broker-password': password
     }
-    command = [VERIFIER_PATH] + [
-        '{}={}'.format(k, v) for k, v in options.items() if v]
+    command = [VERIFIER_PATH]
+    command.extend(all_pact_urls)
+    command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
     if publish_verification_results:
         if not provider_app_version:

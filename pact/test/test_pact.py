@@ -35,7 +35,8 @@ class PactTestCase(TestCase):
         target = Pact(
             self.consumer, self.provider, host_name='192.168.1.1', port=8000,
             log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='/ssl.pem',
-            cors=True, pact_dir='/pacts', version='3.0.0')
+            cors=True, pact_dir='/pacts', version='3.0.0',
+            file_write_mode='merge')
 
         self.assertIs(target.consumer, self.consumer)
         self.assertIs(target.cors, True)
@@ -49,6 +50,7 @@ class PactTestCase(TestCase):
         self.assertEqual(target.sslkey, '/ssl.pem')
         self.assertEqual(target.uri, 'https://192.168.1.1:8000')
         self.assertEqual(target.version, '3.0.0')
+        self.assertEqual(target.file_write_mode, 'merge')
         self.assertEqual(len(target._interactions), 0)
 
     def test_definition_sparse(self):
@@ -232,6 +234,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--port=1234',
             '--log', '/logs/pact-mock-service.log',
             '--pact-dir', '/pacts',
+            '--pact-file-write-mode', 'overwrite',
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
             '--provider', 'provider'])
@@ -247,6 +250,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--port=1234',
             '--log', '/logs/pact-mock-service.log',
             '--pact-dir', '/pacts',
+            '--pact-file-write-mode', 'overwrite',
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
             '--provider', 'provider'])
@@ -263,6 +267,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--port=1234',
             '--log', '/logs/pact-mock-service.log',
             '--pact-dir', '/pacts',
+            '--pact-file-write-mode', 'overwrite',
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
             '--provider', 'provider',
@@ -373,9 +378,7 @@ class PactVerifyTestCase(PactTestCase):
             'post', 'http://localhost:1234/pact',
             data=None,
             headers={'X-Pact-Mock-Service': 'true'},
-            json={'pact_dir': os.getcwd(),
-                  'consumer': {'name': 'TestConsumer'},
-                  'provider': {'name': 'TestProvider'}})
+            json=None)
 
     def test_success(self):
         self.mock_requests.side_effect = iter([Mock(status_code=200)] * 2)

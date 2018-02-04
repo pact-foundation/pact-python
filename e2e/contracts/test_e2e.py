@@ -93,7 +93,7 @@ class InexactMatches(BaseTestCase):
         (pact
          .given('the user `bob` exists')
          .upon_receiving('a request for the user object of `bob`')
-         .with_request('get', '/users/bob')
+         .with_request('get', Term('/users/[a-z]+', '/users/bob'))
          .will_respond_with(200, body={
              'username': SomethingLike('bob'),
              'id': Term('\d+', '123')}))

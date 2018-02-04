@@ -42,9 +42,10 @@ class mainTestCase(TestCase):
 
         self.runner = CliRunner()
         self.default_call = [
-            '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json,'
-            './pacts/consumer-provider2.json,./pacts/consumer-provider3.json']
+            './pacts/consumer-provider.json',
+            './pacts/consumer-provider2.json',
+            './pacts/consumer-provider3.json',
+            '--provider-base-url=http://localhost']
 
         self.default_opts = [
             '--provider-base-url=http://localhost',
@@ -74,7 +75,7 @@ class mainTestCase(TestCase):
             verify.main, ['--provider-base-url=http://localhost'])
 
         self.assertEqual(result.exit_code, 1)
-        self.assertIn(b'--pact-url or --pact-urls', result.output_bytes)
+        self.assertIn(b'at least one', result.output_bytes)
         self.assertFalse(self.mock_Popen.called)
 
     def test_local_pact_urls_must_exist(self):
@@ -123,6 +124,7 @@ class mainTestCase(TestCase):
     def test_all_options(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, [
+            './pacts/consumer-provider5.json',
             '--provider-base-url=http://localhost',
             '--pact-urls=./pacts/consumer-provider.json,'
             './pacts/consumer-provider2.json',
@@ -135,13 +137,15 @@ class mainTestCase(TestCase):
             '--provider-app-version=1.2.3',
             '--timeout=60'
         ])
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 0, result.output)
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
+            './pacts/consumer-provider5.json',
+            './pacts/consumer-provider3.json',
+            './pacts/consumer-provider4.json',
+            './pacts/consumer-provider.json',
+            './pacts/consumer-provider2.json',
             '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider3.json,'
-            './pacts/consumer-provider4.json,'
-            './pacts/consumer-provider.json,./pacts/consumer-provider2.json',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--broker-username=user',
             '--broker-password=pass',
@@ -163,9 +167,9 @@ class mainTestCase(TestCase):
             result.output_bytes)
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
-            '--provider-base-url=http://localhost',
-            '--pact-urls=./pacts/consumer-provider.json,'
-            './pacts/consumer-provider2.json')
+            './pacts/consumer-provider.json',
+            './pacts/consumer-provider2.json',
+            '--provider-base-url=http://localhost')
         self.mock_Popen.return_value.communicate.assert_called_once_with(
             timeout=30)
 
