@@ -334,7 +334,7 @@ class PactWaitForServerStartTestCase(TestCase):
             'http://localhost:1234', headers={'X-Pact-Mock-Service': 'true'})
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
-        self.mock_Retry.assert_called_once_with(total=15, backoff_factor=0.1)
+        self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1)
         self.assertFalse(pact._process.communicate.called)
         self.assertFalse(pact._process.terminate.called)
 
@@ -352,7 +352,7 @@ class PactWaitForServerStartTestCase(TestCase):
             'http://localhost:1234', headers={'X-Pact-Mock-Service': 'true'})
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
-        self.mock_Retry.assert_called_once_with(total=15, backoff_factor=0.1)
+        self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1)
         pact._process.communicate.assert_called_once_with()
         pact._process.terminate.assert_called_once_with()
 
