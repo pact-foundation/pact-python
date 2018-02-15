@@ -129,6 +129,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
 
     env = os.environ.copy()
     env['PACT_INTERACTION_RERUN_COMMAND'] = rerun_command()
+    env['BUNDLE_FROZEN'] = '1'
     p = subprocess.Popen(command, env=env)
     p.communicate(timeout=timeout)
     sys.exit(p.returncode)

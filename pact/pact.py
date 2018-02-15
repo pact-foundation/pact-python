@@ -158,7 +158,7 @@ class Pact(object):
         if self.sslkey:
             command.extend(['--sslkey', self.sslkey])
 
-        self._process = Popen(command)
+        self._process = Popen(command, env={'BUNDLE_FROZEN': '1'})
         self._wait_for_server_start()
 
     def stop_service(self):
