@@ -228,32 +228,40 @@ class PactStartShutdownServerTestCase(TestCase):
         with self.assertRaises(RuntimeError):
             pact.start_service()
 
-        self.mock_Popen.assert_called_once_with([
-            MOCK_SERVICE_PATH, 'service',
-            '--host=localhost',
-            '--port=1234',
-            '--log', '/logs/pact-mock-service.log',
-            '--pact-dir', '/pacts',
-            '--pact-file-write-mode', 'overwrite',
-            '--pact-specification-version=2.0.0',
-            '--consumer', 'consumer',
-            '--provider', 'provider'])
+        self.mock_Popen.assert_called_once_with(
+            [
+                MOCK_SERVICE_PATH, 'service',
+                '--host=localhost',
+                '--port=1234',
+                '--log', '/logs/pact-mock-service.log',
+                '--pact-dir', '/pacts',
+                '--pact-file-write-mode', 'overwrite',
+                '--pact-specification-version=2.0.0',
+                '--consumer', 'consumer',
+                '--provider', 'provider'
+            ],
+            env={'BUNDLE_FROZEN', '1'},
+        )
 
     def test_start_no_ssl(self):
         pact = Pact(Consumer('consumer'), Provider('provider'),
                     log_dir='/logs', pact_dir='/pacts')
         pact.start_service()
 
-        self.mock_Popen.assert_called_once_with([
-            MOCK_SERVICE_PATH, 'service',
-            '--host=localhost',
-            '--port=1234',
-            '--log', '/logs/pact-mock-service.log',
-            '--pact-dir', '/pacts',
-            '--pact-file-write-mode', 'overwrite',
-            '--pact-specification-version=2.0.0',
-            '--consumer', 'consumer',
-            '--provider', 'provider'])
+        self.mock_Popen.assert_called_once_with(
+            [
+                MOCK_SERVICE_PATH, 'service',
+                '--host=localhost',
+                '--port=1234',
+                '--log', '/logs/pact-mock-service.log',
+                '--pact-dir', '/pacts',
+                '--pact-file-write-mode', 'overwrite',
+                '--pact-specification-version=2.0.0',
+                '--consumer', 'consumer',
+                '--provider', 'provider'
+            ],
+            env={'BUNDLE_FROZEN', '1'},
+        )
 
     def test_start_with_ssl(self):
         pact = Pact(Consumer('consumer'), Provider('provider'),
@@ -261,19 +269,23 @@ class PactStartShutdownServerTestCase(TestCase):
                     ssl=True, sslcert='/ssl.cert', sslkey='/ssl.key')
         pact.start_service()
 
-        self.mock_Popen.assert_called_once_with([
-            MOCK_SERVICE_PATH, 'service',
-            '--host=localhost',
-            '--port=1234',
-            '--log', '/logs/pact-mock-service.log',
-            '--pact-dir', '/pacts',
-            '--pact-file-write-mode', 'overwrite',
-            '--pact-specification-version=2.0.0',
-            '--consumer', 'consumer',
-            '--provider', 'provider',
-            '--ssl',
-            '--sslcert', '/ssl.cert',
-            '--sslkey', '/ssl.key'])
+        self.mock_Popen.assert_called_once_with(
+            [
+                MOCK_SERVICE_PATH, 'service',
+                '--host=localhost',
+                '--port=1234',
+                '--log', '/logs/pact-mock-service.log',
+                '--pact-dir', '/pacts',
+                '--pact-file-write-mode', 'overwrite',
+                '--pact-specification-version=2.0.0',
+                '--consumer', 'consumer',
+                '--provider', 'provider',
+                '--ssl',
+                '--sslcert', '/ssl.cert',
+                '--sslkey', '/ssl.key'
+            ],
+            env={'BUNDLE_FROZEN', '1'},
+        )
 
     def test_stop_posix(self):
         self.mock_platform.return_value = 'Linux'
