@@ -3,15 +3,15 @@ import sys
 from unittest import TestCase
 
 from click.testing import CliRunner
-from mock import patch
+from mock import patch, Mock, call
 
 from .. import verify
 from ..constants import VERIFIER_PATH
 
 if sys.version_info.major == 2:
-    from subprocess32 import PIPE, Popen, TimeoutExpired
+    from subprocess32 import PIPE, Popen
 else:
-    from subprocess import PIPE, Popen, TimeoutExpired
+    from subprocess import PIPE, Popen
 
 
 class mainTestCase(TestCase):
@@ -31,7 +31,9 @@ class mainTestCase(TestCase):
         super(mainTestCase, self).setUp()
         self.addCleanup(patch.stopall)
         self.mock_Popen = patch.object(
-            verify.subprocess, 'Popen', spec=verify.subprocess.Popen).start()
+            verify.subprocess, 'Popen', spec=verify.subprocess.Popen,
+            stdout=['6 interactions, 0 failures']).start()
+
         self.mock_Popen.return_value.communicate.return_value = self.locale
 
         self.mock_isfile = patch.object(
@@ -85,32 +87,17 @@ class mainTestCase(TestCase):
         self.assertIn(b'./pacts/consumer-provider.json', result.output_bytes)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_verification_timeout(self):
-        self.mock_Popen.return_value.communicate.side_effect = TimeoutExpired(
-            [], 30)
-
-        result = self.runner.invoke(verify.main, self.default_opts)
-        self.assertEqual(result.exit_code, -1)
-        self.assertIsInstance(result.exception, TimeoutExpired)
-        self.assertProcess(*self.default_call)
-        self.mock_Popen.return_value.communicate.assert_called_once_with(
-            timeout=30)
-
     def test_failed_verification(self):
         self.mock_Popen.return_value.returncode = 3
         result = self.runner.invoke(verify.main, self.default_opts)
         self.assertEqual(result.exit_code, 3)
         self.assertProcess(*self.default_call)
-        self.mock_Popen.return_value.communicate.assert_called_once_with(
-            timeout=30)
 
     def test_successful_verification(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, self.default_opts)
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call)
-        self.mock_Popen.return_value.communicate.assert_called_once_with(
-            timeout=30)
 
     @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd'})
     def test_password_from_env_var(self):
@@ -118,8 +105,6 @@ class mainTestCase(TestCase):
         result = self.runner.invoke(verify.main, self.default_opts)
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call + ['--broker-password=pwd'])
-        self.mock_Popen.return_value.communicate.assert_called_once_with(
-            timeout=30)
 
     def test_all_options(self):
         self.mock_Popen.return_value.returncode = 0
@@ -135,7 +120,8 @@ class mainTestCase(TestCase):
             '--pact-broker-password=pass',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
-            '--timeout=60'
+            '--timeout=60',
+            '--verbose'
         ])
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertEqual(self.mock_Popen.call_count, 1)
@@ -150,9 +136,8 @@ class mainTestCase(TestCase):
             '--broker-username=user',
             '--broker-password=pass',
             '--publish-verification-results',
-            '--provider-app-version', '1.2.3')
-        self.mock_Popen.return_value.communicate.assert_called_once_with(
-            timeout=60)
+            '--provider-app-version', '1.2.3',
+            '--verbose')
 
     def test_deprecated_pact_urls(self):
         self.mock_Popen.return_value.returncode = 0
@@ -170,8 +155,6 @@ class mainTestCase(TestCase):
             './pacts/consumer-provider.json',
             './pacts/consumer-provider2.json',
             '--provider-base-url=http://localhost')
-        self.mock_Popen.return_value.communicate.assert_called_once_with(
-            timeout=30)
 
     def test_publishing_missing_version(self):
         result = self.runner.invoke(verify.main, [
@@ -296,3 +279,36 @@ class rerun_commandTestCase(TestCase):
                     " --pact-url=./consumer-provider.json"
                     " & set PACT_DESCRIPTION="
                     " & set PACT_PROVIDER_STATE=\"")
+
+
+class sanitize_logsTestCase(TestCase):
+    def setUp(self):
+        self.addCleanup(patch.stopall)
+        self.mock_write = patch.object(
+            verify.sys.stdout, 'write', autospec=True).start()
+
+        self.process = Mock(Popen, stdout=[
+            'Actual: {"username":123,"id":"100","groups":["users","admins"]}',
+            '# /Users/matthewbalvanz/dev/pact-python/pact/bin/pact/lib/vendor'
+            '/ruby/2.2.0/gems/pact-provider-verifier-1.6.0/lib/pact/provider'
+            '_verifier/cli/custom_thor.rb:17:in `start\'',
+            '# /Users/matthewbalvanz/dev/pact-python/pact/bin/pact/lib/app'
+            '/pact-provider-verifier.rb:2:in `<main>\''
+        ])
+
+    def test_verbose(self):
+        verify.sanitize_logs(self.process, True)
+        self.mock_write.assert_has_calls([
+            call('Actual: {"username":123,"id":"100","groups":'
+                 '["users","admins"]}'),
+            call('# /Users/matthewbalvanz/dev/pact-python/pact/bin/pact/lib'
+                 '/vendor/ruby/2.2.0/gems/pact-provider-verifier-1.6.0/lib'
+                 '/pact/provider_verifier/cli/custom_thor.rb:17:in `start\''),
+            call('# /Users/matthewbalvanz/dev/pact-python/pact/bin/pact/lib'
+                 '/app/pact-provider-verifier.rb:2:in `<main>\'')
+        ])
+
+    def test_terse(self):
+        verify.sanitize_logs(self.process, False)
+        self.mock_write.assert_called_once_with(
+            'Actual: {"username":123,"id":"100","groups":["users","admins"]}')

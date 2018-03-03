@@ -67,9 +67,13 @@ else:
     default=False,
     help='Publish verification results to the broker',
     is_flag=True)
+@click.option(
+    '--verbose/--no-verbose',
+    default=False,
+    help='Toggle verbose logging, defaults to False.')
 def main(pacts, base_url, pact_url, pact_urls, states_url,
          states_setup_url, username, password, timeout, provider_app_version,
-         publish_verification_results):
+         publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
 
@@ -127,10 +131,15 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
                         provider_app_version,
                         "--publish-verification-results"])
 
+    if verbose:
+        command.extend(['--verbose'])
+
     env = os.environ.copy()
     env['PACT_INTERACTION_RERUN_COMMAND'] = rerun_command()
-    p = subprocess.Popen(command, env=env)
-    p.communicate(timeout=timeout)
+    p = subprocess.Popen(command, bufsize=1, env=env, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, universal_newlines=True)
+
+    sanitize_logs(p, verbose)
     sys.exit(p.returncode)
 
 
@@ -195,6 +204,25 @@ def rerun_command():
         return ("PACT_DESCRIPTION='<PACT_DESCRIPTION>'"
                 " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
                 " {command}".format(command=' '.join(sys.argv)))
+
+
+def sanitize_logs(process, verbose):
+    """
+    Print the logs from a process while removing Ruby stack traces.
+
+    :param process: The Ruby pact verifier process.
+    :type process: subprocess.Popen
+    :param verbose: Flag to toggle more verbose logging.
+    :type verbose: bool
+    :rtype: None
+    """
+    for line in process.stdout:
+        if (not verbose and line.lstrip().startswith('#')
+            and ('vendor/ruby' in line
+                 or 'pact-provider-verifier.rb' in line)):
+            continue
+        else:
+            sys.stdout.write(line)
 
 
 if __name__ == '__main__':

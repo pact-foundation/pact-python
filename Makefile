@@ -67,4 +67,4 @@ test: deps
 	pydocstyle pact
 	coverage erase
 	tox
-	coverage report --fail-under=100
+	coverage report -m --fail-under=100
