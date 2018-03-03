@@ -1,3 +1,11 @@
+### 0.15.0
+  * eb925c3 - Merge pull request #77 from pact-foundation/standalone-1-9-1 (Matthew Balvanz☃, Fri Mar 2 21:22:35 2018 -0600)
+  * 2a2dcd1 - Upgrade to pact-ruby-standalone 1.9.1 (Matthew Balvanz, Fri Mar 2 21:18:25 2018 -0600)
+  * 53545be - Merge pull request #72 from fabianbuechler/reduce-server-start-timeout (Matthew Balvanz☃, Fri Mar 2 21:04:03 2018 -0600)
+  * b782e43 - Merge pull request #76 from pact-foundation/hide-ruby-stacks (Matthew Balvanz☃, Fri Mar 2 21:03:14 2018 -0600)
+  * 589224a - Hide Ruby stack traces by default (Matthew Balvanz, Fri Mar 2 20:56:59 2018 -0600)
+  * e952b37 - Reduce timeout in _wait_for_server_start to 25s (Fabian Büchler, Fri Feb 9 11:04:01 2018 +0100)
+
 ### 0.14.0
   * 3070638 - Merge pull request #71 from pact-foundation/update-standalone-1-9-0 (Matthew Balvanz, Sat Feb 3 23:25:37 2018 -0600)
   * 475703c - Resolves #58: Update to pact-ruby-standalone 1.9.0 (Matthew Balvanz, Sat Feb 3 23:12:22 2018 -0600)
