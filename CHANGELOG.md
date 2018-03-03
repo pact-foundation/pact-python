@@ -1,3 +1,7 @@
+### 0.16.0
+  * 30af240 - Merge pull request #78 from pact-foundation/standalone-1-29-2 (Matthew Balvanz☃, Fri Mar 2 22:05:12 2018 -0600)
+  * d428951 - Update to pact-ruby-standalone 1.29.2 (Matthew Balvanz, Fri Mar 2 21:59:08 2018 -0600)
+ 
 ### 0.15.0
   * eb925c3 - Merge pull request #77 from pact-foundation/standalone-1-9-1 (Matthew Balvanz☃, Fri Mar 2 21:22:35 2018 -0600)
   * 2a2dcd1 - Upgrade to pact-ruby-standalone 1.9.1 (Matthew Balvanz, Fri Mar 2 21:18:25 2018 -0600)
