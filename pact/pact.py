@@ -169,13 +169,18 @@ class Pact(object):
             p = psutil.Process(self._process.pid)
             for child in p.children(recursive=True):
                 child.terminate()
+            p.wait()
+            if psutil.pid_exists(self._process.pid):
+                raise RuntimeError(
+                    'There was an error when stopping the Pact mock service.')
+
         else:
             self._process.terminate()
 
-        self._process.communicate()
-        if self._process.returncode != 0:
-            raise RuntimeError(
-                'There was an error when stopping the Pact mock service.')
+            self._process.communicate()
+            if self._process.returncode != 0:
+                raise RuntimeError(
+                    'There was an error when stopping the Pact mock service.')
 
     def upon_receiving(self, scenario):
         """

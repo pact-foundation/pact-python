@@ -218,6 +218,8 @@ class PactStartShutdownServerTestCase(TestCase):
             pact.platform, 'platform', autospec=True).start()
         self.mock_wait_for_server_start = patch.object(
             pact.Pact, '_wait_for_server_start', autospec=True).start()
+        self.mock_Pid_exists = patch.object(
+            pact.psutil, 'pid_exists', autospec=True).start()
 
     def test_start_fails(self):
         self.mock_Popen.return_value.returncode = 1
@@ -289,18 +291,22 @@ class PactStartShutdownServerTestCase(TestCase):
         self.mock_platform.return_value = 'Windows'
         ruby_exe = Mock(spec=Process)
         self.mock_Process.return_value.children.return_value = [ruby_exe]
+        self.mock_Pid_exists.return_value = False
         pact = Pact(Consumer('consumer'), Provider('provider'))
-        pact._process = Mock(spec=Popen, pid=999, returncode=0)
+        pact._process = Mock(spec=Popen, pid=999)
         pact.stop_service()
 
         self.assertFalse(pact._process.terminate.called)
-        pact._process.communicate.assert_called_once_with()
+        self.assertFalse(pact._process.communicate.called)
         self.mock_Process.assert_called_once_with(999)
         self.mock_Process.return_value.children.assert_called_once_with(
             recursive=True)
         ruby_exe.terminate.assert_called_once_with()
+        self.mock_Process.return_value.wait.assert_called_once_with()
+        self.mock_Pid_exists.assert_called_once_with(999)
 
-    def test_stop_fails(self):
+    def test_stop_fails_posix(self):
+        self.mock_platform.return_value = 'Linux'
         self.mock_Popen.return_value.returncode = 1
         pact = Pact(Consumer('consumer'), Provider('provider'))
         pact._process = Mock(spec=Popen, pid=999, returncode=1)
@@ -309,6 +315,24 @@ class PactStartShutdownServerTestCase(TestCase):
 
         pact._process.terminate.assert_called_once_with()
         pact._process.communicate.assert_called_once_with()
+
+    def test_stop_fails_windows(self):
+        self.mock_platform.return_value = 'Windows'
+        self.mock_Popen.return_value.returncode = 15
+        self.mock_Pid_exists.return_value = True
+
+        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact._process = Mock(spec=Popen, pid=999, returncode=15)
+        with self.assertRaises(RuntimeError):
+            pact.stop_service()
+
+        self.assertFalse(pact._process.terminate.called)
+        self.assertFalse(pact._process.communicate.called)
+        self.mock_Process.assert_called_once_with(999)
+        self.mock_Process.return_value.children.assert_called_once_with(
+            recursive=True)
+        self.mock_Process.return_value.wait.assert_called_once_with()
+        self.mock_Pid_exists.assert_called_once_with(999)
 
 
 class PactWaitForServerStartTestCase(TestCase):
