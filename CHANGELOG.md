@@ -1,3 +1,7 @@
+### 0.16.1
+  * eecbb60 - Merge pull request #79 from shahha/fix-stopping-mock-service-on-windows (Matthew Balvanz, Fri Mar 16 08:45:19 2018 -0500)
+  * 4115264 - Added windows specific code to check if mock service is stopped. (Hardik Shah, Wed Mar 7 10:44:33 2018 +1100)
+
 ### 0.16.0
   * 30af240 - Merge pull request #78 from pact-foundation/standalone-1-29-2 (Matthew Balvanz☃, Fri Mar 2 22:05:12 2018 -0600)
   * d428951 - Update to pact-ruby-standalone 1.29.2 (Matthew Balvanz, Fri Mar 2 21:59:08 2018 -0600)
