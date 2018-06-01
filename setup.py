@@ -13,7 +13,7 @@ from setuptools.command.install import install
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.29.2'
+PACT_STANDALONE_VERSION = '1.44.3'
 
 
 here = os.path.abspath(os.path.dirname(__file__))
