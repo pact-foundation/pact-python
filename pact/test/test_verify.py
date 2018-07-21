@@ -124,6 +124,7 @@ class mainTestCase(TestCase):
             '--verbose'
         ])
         self.assertEqual(result.exit_code, 0, result.output)
+        self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
             './pacts/consumer-provider5.json',
@@ -150,6 +151,7 @@ class mainTestCase(TestCase):
         self.assertIn(
             b'Multiple --pact-urls arguments are deprecated.',
             result.output_bytes)
+        self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
             './pacts/consumer-provider.json',

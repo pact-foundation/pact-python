@@ -29,24 +29,42 @@ deps:
 
 
 define E2E
-	set -e
+	set -ex
 	cd e2e
 	nosetests ./contracts
 	python app.py &
 	APP_PID=$$!
 	function teardown {
-	    echo 'Tearing down Flask server'
-	    kill $$APP_PID
+		echo 'Tearing down Flask server'
+		kill $$APP_PID
 	}
 	trap teardown EXIT
 	while ! nc -z localhost 5000; do
 		sleep 0.1
 	done
+
+	set +e
+	pact-verifier \
+		--provider-base-url=http://localhost:5000 \
+		--provider-states-url=http://localhost:5000/_pact/provider-states \
+		--provider-states-setup-url=http://localhost:5000/_pact/provider-states/active \
+		./pacts/failing-consumer-provider.json
+	EXIT_CODE=$$?
+	set -e
+
+	if [ $$EXIT_CODE -eq 1 ]; then
+		echo "Failing verification exited with 1 as expected"
+	else
+		echo "Failing verification did not exit with 1 as expected"
+		exit 1
+	fi
+
 	pact-verifier \
 		--provider-base-url=http://localhost:5000 \
 		--provider-states-url=http://localhost:5000/_pact/provider-states \
 		--provider-states-setup-url=http://localhost:5000/_pact/provider-states/active \
 		./pacts/consumer-provider.json
+
 endef
 
 

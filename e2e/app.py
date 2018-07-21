@@ -37,7 +37,14 @@ provider_states = {
             status=200,
             headers={'Content-Type': 'application/json'},
             response=json.dumps([]))
-    }}
+    },
+    'failing-consumer': {
+        'the user Bob is returned instead of Robert': Response(
+            status=200,
+            response=json.dumps({'name': 'Bob'}),
+            headers=Headers([('Content-Type', 'application/json')]))
+    }
+}
 
 
 @app.route('/_pact/provider-states', methods=['GET'])

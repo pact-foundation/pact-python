@@ -140,6 +140,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
                          stderr=subprocess.STDOUT, universal_newlines=True)
 
     sanitize_logs(p, verbose)
+    p.wait()
     sys.exit(p.returncode)
 
 
