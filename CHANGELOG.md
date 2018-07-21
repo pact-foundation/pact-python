@@ -1,3 +1,10 @@
+### 0.17.0
+  * cf5d5bc - Merge pull request #87 from acabelloj/custom-provider-header-support (Matthew Balvanz, Fri Jul 20 22:27:33 2018 -0500)
+  * cc61427 - Fixes #83 The verifier always returns exit code 0 (Matthew Balvanz, Fri Jul 20 22:08:26 2018 -0500)
+  * 239da1c - Remove Python 3.3 from Travis builds (Matthew Balvanz, Wed Jul 4 10:39:12 2018 -0500)
+  * 273b3fd - Remove Python 3.3 testing (Matthew Balvanz, Wed Jul 4 10:36:01 2018 -0500)
+  * 01c6763 - Add support to custom provider header (Alejandro Cabello Jiménez, Fri Jun 1 11:40:32 2018 +0200)
+
 ### 0.16.1
   * eecbb60 - Merge pull request #79 from shahha/fix-stopping-mock-service-on-windows (Matthew Balvanz, Fri Mar 16 08:45:19 2018 -0500)
   * 4115264 - Added windows specific code to check if mock service is stopped. (Hardik Shah, Wed Mar 7 10:44:33 2018 +1100)
