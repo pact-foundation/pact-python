@@ -52,6 +52,13 @@ else:
     help='Password for Pact Broker basic authentication. Can also be specified'
          ' via the environment variable PACT_BROKER_PASSWORD')
 @click.option(
+    'header', '--custom-provider-header',
+    envvar='CUSTOM_PROVIDER_HEADER',
+    help='Header to add to provider state set up and '
+         'pact verification requests. '
+         'eg \'Authorization: Basic cGFjdDpwYWN0\'. '
+         'May be specified multiple times.')
+@click.option(
     'timeout', '-t', '--timeout',
     default=30,
     help='The duration in seconds we should wait to confirm verification'
@@ -72,8 +79,8 @@ else:
     default=False,
     help='Toggle verbose logging, defaults to False.')
 def main(pacts, base_url, pact_url, pact_urls, states_url,
-         states_setup_url, username, password, timeout, provider_app_version,
-         publish_verification_results, verbose):
+         states_setup_url, username, password, header, timeout,
+         provider_app_version, publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
 
@@ -113,7 +120,8 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
         '--provider-base-url': base_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
-        '--broker-password': password
+        '--broker-password': password,
+        '--custom-provider-header': header,
     }
     command = [VERIFIER_PATH]
     command.extend(all_pact_urls)
