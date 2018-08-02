@@ -1,6 +1,6 @@
 # pact-python
 
-[![Join the chat at https://gitter.im/realestate-com-au/pact](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/realestate-com-au/pact?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
 [![Build Status](https://travis-ci.org/pact-foundation/pact-python.svg?branch=master)](https://travis-ci.org/pact-foundation/pact-python)
 [![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
 
@@ -345,6 +345,15 @@ This project has unit and end to end tests, which can both be run from make:
 Unit: `make test`
 
 End to end: `make e2e`
+
+## Contact
+
+Join us in slack: [![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
+
+or
+
+- Twitter: [@pact_up]
+- Stack Overflow: stackoverflow.com/questions/tagged/pact
 
 [bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
