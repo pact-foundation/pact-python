@@ -1,3 +1,7 @@
+### 0.18.0
+  * 4e8bb85 - Upgrade pact-ruby-standalone (Matthew Balvanz, Tue Aug 21 08:56:53 2018 -0500)
+  * 8a44feb - chore(docs): update contact information (Matt Fellows, Thu Aug 2 17:18:43 2018 +1000)
+
 ### 0.17.0
   * cf5d5bc - Merge pull request #87 from acabelloj/custom-provider-header-support (Matthew Balvanz, Fri Jul 20 22:27:33 2018 -0500)
   * cc61427 - Fixes #83 The verifier always returns exit code 0 (Matthew Balvanz, Fri Jul 20 22:08:26 2018 -0500)
