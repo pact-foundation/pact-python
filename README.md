@@ -236,7 +236,16 @@ EachLike({
 > Note, you do not need to specify everything that will be returned from the Provider in a
 > JSON response, any extra data that is received will be ignored and the tests will still pass.
 
-For more information see [Matching](https://docs.pact.io/documentation/matching.html)
+> Note, to get the generated values from an object that can contain matchers like Term, Like, EachLike, etc. 
+> for assertion in self.assertEqual(result, expected) you may need to use get_generated_values() helper function:
+
+'''python
+from pact.matchers import get_generated_values
+self.assertEqual(result, get_generated_values(expected))
+
+'''
+
+For more information see [Matching](https://docs.pact.io/getting_started/matching)
 
 ## Verifying Pacts Against a Service
 
