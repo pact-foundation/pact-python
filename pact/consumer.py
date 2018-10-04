@@ -81,11 +81,11 @@ class Consumer(object):
         :param version: The Pact Specification version to use, defaults to
             '2.0.0'.
         :type version: str
-        :param file_write_mode: How the mock service should apply multiple calls
-            to .verify(). Pass 'overwrite' to overwrite the generated JSON
-            file on every call to .verify() or pass 'merge' to merge all
+        :param file_write_mode: How the mock service should apply multiple
+            calls to .verify(). Pass 'overwrite' to overwrite the generated
+            JSON file on every call to .verify() or pass 'merge' to merge all
             interactions into the same JSON file. When using 'merge', make
-            sure to delete any existing JSON file before calling .verify() 
+            sure to delete any existing JSON file before calling .verify()
             for the first time. Defaults to 'overwrite'.
         :type version: str
         :return: A Pact object which you can use to define the specific
