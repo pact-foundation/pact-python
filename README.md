@@ -3,6 +3,7 @@
 [![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
 [![Build Status](https://travis-ci.org/pact-foundation/pact-python.svg?branch=master)](https://travis-ci.org/pact-foundation/pact-python)
 [![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
+[![PyPI version](https://badge.fury.io/py/pact-python.svg)](https://badge.fury.io/py/pact-python)
 
 Python version of Pact. Enables consumer driven contract testing,
 providing a mock service and DSL for the consumer project, and
