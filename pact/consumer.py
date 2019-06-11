@@ -48,7 +48,8 @@ class Consumer(object):
                       log_dir=None, ssl=False, sslcert=None, sslkey=None,
                       cors=False, publish_to_broker=False,
                       broker_base_url=None, broker_username=None,
-                      broker_password=None, pact_dir=None, version='2.0.0'):
+                      broker_password=None, broker_token=None, pact_dir=None,
+                      version='2.0.0'):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -101,6 +102,9 @@ class Consumer(object):
         :param broker_password: Password to use when connecting to the pact
             broker if authentication is required. Defaults to None.
         :type broker_password: str
+        :param broker_token: Authentication token to use when connecting to
+            the pact broker. Defaults to None.
+        :type broker_token: str
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
         :type pact_dir: str
@@ -119,6 +123,7 @@ class Consumer(object):
             broker_base_url=broker_base_url,
             broker_username=broker_username,
             broker_password=broker_password,
+            broker_token=broker_token,
             consumer=self,
             provider=provider,
             host_name=host_name,

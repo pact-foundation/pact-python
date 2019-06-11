@@ -43,8 +43,8 @@ class Pact(object):
     def __init__(self, consumer, provider, host_name='localhost', port=1234,
                  log_dir=None, ssl=False, sslcert=None, sslkey=None,
                  cors=False, publish_to_broker=False, broker_base_url=None,
-                 broker_username=None, broker_password=None, pact_dir=None,
-                 version='2.0.0', file_write_mode='overwrite'):
+                 broker_username=None, broker_password=None, broker_token=None,
+                 pact_dir=None, version='2.0.0', file_write_mode='overwrite'):
         """
         Constructor for Pact.
 
@@ -84,6 +84,9 @@ class Pact(object):
         :param broker_password: Password to use when connecting to the pact
             broker if authentication is required. Defaults to None.
         :type broker_password: str
+        :param broker_token: Authentication token to use when connecting to
+            the pact broker. Defaults to None.
+        :type broker_token: str
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
         :type pact_dir: str
@@ -105,6 +108,7 @@ class Pact(object):
         self.broker_base_url = broker_base_url
         self.broker_username = broker_username
         self.broker_password = broker_password
+        self.broker_token = broker_token
         self.consumer = consumer
         self.cors = cors
         self.file_write_mode = file_write_mode
@@ -153,6 +157,8 @@ class Pact(object):
             command.append('--broker-username={}'.format(self.broker_username))
         if self.broker_username is not None:
             command.append('--broker-password={}'.format(self.broker_password))
+        if self.broker_token is not None:
+            command.append('--broker-token={}'.format(self.broker_token))
 
         command.extend(pact_files)
 

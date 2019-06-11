@@ -27,7 +27,7 @@ class ConsumerTestCase(TestCase):
             log_dir=None, publish_to_broker=False, ssl=False,
             sslcert=None, sslkey=None, cors=False,
             pact_dir=None, version='2.0.0',
-            broker_username=None, broker_password=None)
+            broker_username=None, broker_password=None, broker_token=None)
 
     def test_has_pact_with_customer_all_options(self):
         result = self.consumer.has_pact_with(
@@ -42,7 +42,7 @@ class ConsumerTestCase(TestCase):
             log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='ssl.pem',
             cors=True, pact_dir='/pacts', version='3.0.0',
             broker_base_url=None, publish_to_broker=False,
-            broker_username=None, broker_password=None)
+            broker_username=None, broker_password=None, broker_token=None)
 
     def test_has_pact_with_not_a_provider(self):
         with self.assertRaises(ValueError):

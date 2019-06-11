@@ -61,11 +61,12 @@ class PactTestCase(TestCase):
         target = Pact(
             self.consumer, self.provider, publish_to_broker=True,
             broker_base_url='http://localhost', broker_username='username',
-            broker_password='password')
+            broker_password='password', broker_token='token')
 
         self.assertEqual(target.broker_base_url, 'http://localhost')
         self.assertEqual(target.broker_username, 'username')
         self.assertEqual(target.broker_password, 'password')
+        self.assertEqual(target.broker_token, 'token')
         self.assertIs(target.publish_to_broker, True)
 
     def test_definition_sparse(self):
@@ -196,8 +197,7 @@ class PactPublishTestCase(PactTestCase):
             pact.publish()
 
     def test_default_publish(self):
-        pact = Pact(Consumer('consumer'),
-                    Provider('provider'),
+        pact = Pact(self.consumer, self.provider,
                     publish_to_broker=True,
                     broker_base_url="http://localhost")
 
@@ -209,9 +209,8 @@ class PactPublishTestCase(PactTestCase):
             '--broker-base-url=http://localhost',
             'TestConsumer-TestProvider.json'])
 
-    def test_authenticated_publish(self):
-        pact = Pact(Consumer('consumer'),
-                    Provider('provider'),
+    def test_basic_authenticated_publish(self):
+        pact = Pact(self.consumer, self.provider,
                     publish_to_broker=True,
                     broker_base_url='http://localhost',
                     broker_username='username',
@@ -227,9 +226,24 @@ class PactPublishTestCase(PactTestCase):
             '--broker-password=password',
             'TestConsumer-TestProvider.json'])
 
+    def test_token_authenticated_publish(self):
+        pact = Pact(self.consumer, self.provider,
+                    publish_to_broker=True,
+                    broker_base_url='http://localhost',
+                    broker_token='token')
+
+        pact.publish()
+
+        self.mock_Popen.assert_called_once_with([
+            BROKER_CLIENT_PATH, 'publish',
+            '--consumer-app-version=0.0.0',
+            '--broker-base-url=http://localhost',
+            '--broker-token=token',
+            'TestConsumer-TestProvider.json'])
+
     def test_git_tagged_publish(self):
-        pact = Pact(Consumer('consumer', tag_with_git_branch=True),
-                    Provider('provider'),
+        pact = Pact(Consumer('TestConsumer', tag_with_git_branch=True),
+                    self.provider,
                     publish_to_broker=True,
                     broker_base_url='http://localhost')
 
@@ -243,8 +257,8 @@ class PactPublishTestCase(PactTestCase):
             '--tag-with-git-branch'])
 
     def test_manual_tagged_publish(self):
-        pact = Pact(Consumer('consumer', tags=['tag1', 'tag2']),
-                    Provider('provider'),
+        pact = Pact(Consumer('TestConsumer', tags=['tag1', 'tag2']),
+                    self.provider,
                     publish_to_broker=True,
                     broker_base_url='http://localhost')
 
@@ -259,8 +273,8 @@ class PactPublishTestCase(PactTestCase):
             '-t', 'tag2'])
 
     def test_versioned_publish(self):
-        pact = Pact(Consumer('consumer', version="1.0.0"),
-                    Provider('provider'),
+        pact = Pact(Consumer('TestConsumer', version="1.0.0"),
+                    self.provider,
                     publish_to_broker=True,
                     broker_base_url='http://localhost')
 
@@ -274,7 +288,7 @@ class PactPublishTestCase(PactTestCase):
 
     def test_publish_after_stop_service(self):
         self.mock_platform.return_value = 'Linux'
-        pact = Pact(Consumer('consumer'), Provider('provider'),
+        pact = Pact(self.consumer, self.provider,
                     publish_to_broker=True, broker_base_url="http://localhost")
         mock_publish = patch.object(pact, 'publish', autospec=True).start()
         pact._process = Mock(spec=Popen, pid=999, returncode=0)
