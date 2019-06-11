@@ -163,8 +163,9 @@ class Pact(object):
             for tag in self.consumer.tags:
                 command.extend(['-t', tag])
 
-        publish_result = Popen(command).wait()
-        if publish_result != 0:
+        publish_process = Popen(command)
+        publish_process.wait()
+        if publish_process.returncode != 0:
             raise RuntimeError(
                     "There was an error while publishing to the"
                     + " pact broker at {}."
