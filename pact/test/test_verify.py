@@ -69,7 +69,7 @@ class mainTestCase(TestCase):
     def test_provider_base_url_is_required(self):
         result = self.runner.invoke(verify.main, [])
         self.assertEqual(result.exit_code, 2)
-        self.assertIn(b'--provider-base-url', result.output_bytes)
+        self.assertIn(b'--provider-base-url', result.stdout_bytes)
         self.assertFalse(self.mock_Popen.called)
 
     def test_pact_urls_are_required(self):
@@ -77,14 +77,14 @@ class mainTestCase(TestCase):
             verify.main, ['--provider-base-url=http://localhost'])
 
         self.assertEqual(result.exit_code, 1)
-        self.assertIn(b'at least one', result.output_bytes)
+        self.assertIn(b'at least one', result.stdout_bytes)
         self.assertFalse(self.mock_Popen.called)
 
     def test_local_pact_urls_must_exist(self):
         self.mock_isfile.return_value = False
         result = self.runner.invoke(verify.main, self.default_opts)
         self.assertEqual(result.exit_code, 1)
-        self.assertIn(b'./pacts/consumer-provider.json', result.output_bytes)
+        self.assertIn(b'./pacts/consumer-provider.json', result.stdout_bytes)
         self.assertFalse(self.mock_Popen.called)
 
     def test_failed_verification(self):
@@ -150,7 +150,7 @@ class mainTestCase(TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertIn(
             b'Multiple --pact-urls arguments are deprecated.',
-            result.output_bytes)
+            result.stdout_bytes)
         self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
@@ -164,9 +164,10 @@ class mainTestCase(TestCase):
             '--provider-base-url=http://localhost',
             '--publish-verification-results'
         ])
+        print(dir(result))
         self.assertEqual(result.exit_code, 1)
         self.assertIn(
-            b'Provider application version is required', result.output_bytes)
+            b'Provider application version is required', result.stdout_bytes)
         self.assertFalse(self.mock_Popen.return_value.communicate.called)
 
 
