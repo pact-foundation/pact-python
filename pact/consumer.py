@@ -15,7 +15,8 @@ class Consumer(object):
     >>> consumer.has_pact_with(Provider('my-backend-serivce'))
     """
 
-    def __init__(self, name, service_cls=Pact):
+    def __init__(self, name, service_cls=Pact, tags=None,
+                 tag_with_git_branch=False, version='0.0.0'):
         """
         Constructor for the Consumer class.
 
@@ -27,13 +28,27 @@ class Consumer(object):
             for your mock service and want to use the same value on all of
             your contracts.
         :type service_cls: pact.Pact
+        :param tags: A list of strings to use as tags to use when publishing
+            to a pact broker. Defaults to None.
+        :type tags: list
+        :param tag_with_git_branch: A flag to determine whether to
+            automatically tag a pact with the current git branch name.
+            Defaults to False.
+        :type tag_with_git_branch: bool
+        :param version: The version of this Consumer. This will be used when
+            publishing pacts to a pact broker. Defaults to '0.0.0'
         """
         self.name = name
         self.service_cls = service_cls
+        self.tags = tags
+        self.tag_with_git_branch = tag_with_git_branch
+        self.version = version
 
     def has_pact_with(self, provider, host_name='localhost', port=1234,
                       log_dir=None, ssl=False, sslcert=None, sslkey=None,
-                      cors=False, pact_dir=None, version='2.0.0'):
+                      cors=False, publish_to_broker=False,
+                      broker_base_url=None, broker_username=None,
+                      broker_password=None, pact_dir=None, version='2.0.0'):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -74,6 +89,18 @@ class Consumer(object):
         :param cors: Allow CORS OPTION requests to be accepted,
             defaults to False.
         :type cors: bool
+        :param publish_to_broker: Flag to control automatic publishing of
+            pacts to a pact broker. Defaults to False.
+        :type publish_to_broker: bool
+        :param broker_base_url: URL of the pact broker that pacts will be
+            published to. Defaults to None.
+        :type broker_base_url: str
+        :param broker_username: Username to use when connecting to the pact
+            broker if authentication is required. Defaults to None.
+        :type broker_username: str
+        :param broker_password: Password to use when connecting to the pact
+            broker if authentication is required. Defaults to None.
+        :type broker_password: str
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
         :type pact_dir: str
@@ -89,6 +116,9 @@ class Consumer(object):
                 'provider must be an instance of the Provider class.')
 
         return self.service_cls(
+            broker_base_url=broker_base_url,
+            broker_username=broker_username,
+            broker_password=broker_password,
             consumer=self,
             provider=provider,
             host_name=host_name,
@@ -99,4 +129,5 @@ class Consumer(object):
             sslkey=sslkey,
             cors=cors,
             pact_dir=pact_dir,
+            publish_to_broker=publish_to_broker,
             version=version)
