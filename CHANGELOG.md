@@ -1,3 +1,19 @@
+### 0.19.0
+  * fed5fba - Start testing in Python 3.7 (Matthew Balvanz, Sat Sep 28 15:18:17 2019 -0500)
+  * 19aa689 - Adjust tests to support click 2.0.0 to 7.0.0 (Matthew Balvanz, Sat Sep 28 15:04:53 2019 -0500)
+  * 9d4d6f3 - Merge pull request #94 from yangineer/optional_given (Matthew Balvanz, Sat Sep 28 14:52:49 2019 -0500)
+  * b286b30 - Merge branch 'master' into optional_given (Matthew Balvanz, Sat Sep 28 14:50:02 2019 -0500)
+  * 68e792a - Merge pull request #93 from francoiscampbell/pass_file_write_mode (Matthew Balvanz, Sat Sep 28 14:18:59 2019 -0500)
+  * 8927df6 -  Updated the tests for Click v7 (Yang Wang, Sat Oct 20 00:34:37 2018 -0400)
+  * 125a1de - Changed given to be optional (Yang Wang, Sat Oct 20 00:27:07 2018 -0400)
+  * 68527e0 - max out click at 6.7 because 7.0 fails tests (Francois Campbell, Thu Oct 4 10:57:13 2018 -0400)
+  * 2452f42 - update tests (Francois Campbell, Thu Oct 4 10:56:42 2018 -0400)
+  * 1116601 - Add param docs (Francois Campbell, Thu Oct 4 10:04:50 2018 -0400)
+  * 48a7591 - Pass file_write_mode from Consumer to Pact (Francois Campbell, Thu Oct 4 10:00:37 2018 -0400)
+  * 6d39609 - Merge pull request #91 from szekar1/small_updates_to_docs (Matthew Balvanz, Fri Aug 24 13:49:05 2018 -0500)
+  * a5c8146 - Update README.md (bvccaneer, Fri Aug 24 19:23:26 2018 +0200)
+  * 4d40485 - adding documentation around #52 and fixing dead link for Matching docs (szekar1, Fri Aug 24 19:19:10 2018 +0200)
+
 ### 0.18.0
   * 4e8bb85 - Upgrade pact-ruby-standalone (Matthew Balvanz, Tue Aug 21 08:56:53 2018 -0500)
   * 8a44feb - chore(docs): update contact information (Matt Fellows, Thu Aug 2 17:18:43 2018 +1000)
