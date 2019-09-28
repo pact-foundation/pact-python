@@ -38,6 +38,8 @@ class Pact(object):
 
     HEADERS = {'X-Pact-Mock-Service': 'true'}
 
+    MANDATORY_FIELDS = {'response', 'description', 'request'}
+
     def __init__(self, consumer, provider, host_name='localhost', port=1234,
                  log_dir=None, ssl=False, sslcert=None, sslkey=None,
                  cors=False, pact_dir=None, version='2.0.0',
@@ -114,7 +116,8 @@ class Pact(object):
         :type provider_state: basestring
         :rtype: Pact
         """
-        self._interactions.insert(0, {'provider_state': provider_state})
+        self._insert_interaction_if_complete()
+        self._interactions[0]['provider_state'] = provider_state
         return self
 
     def setup(self):
@@ -190,6 +193,7 @@ class Pact(object):
         :type scenario: basestring
         :rtype: Pact
         """
+        self._insert_interaction_if_complete()
         self._interactions[0]['description'] = scenario
         return self
 
@@ -231,6 +235,7 @@ class Pact(object):
         :type query: dict, basestring, or None
         :rtype: Pact
         """
+        self._insert_interaction_if_complete()
         self._interactions[0]['request'] = Request(
             method, path, body=body, headers=headers, query=query).json()
         return self
@@ -248,10 +253,26 @@ class Pact(object):
         :type body: Matcher, dict, list, basestring, or None
         :rtype: Pact
         """
+        self._insert_interaction_if_complete()
         self._interactions[0]['response'] = Response(status,
                                                      headers=headers,
                                                      body=body).json()
         return self
+
+    def _insert_interaction_if_complete(self):
+        """
+        Insert a new interaction if current interaction is complete.
+
+        An interaction is complete if it has all the mandatory fields.
+        If there are no interactions, a new interaction will be added.
+
+        :rtype: None
+        """
+        if not self._interactions:
+            self._interactions.append({})
+        elif all(field in self._interactions[0]
+                 for field in self.MANDATORY_FIELDS):
+            self._interactions.insert(0, {})
 
     def _wait_for_server_start(self):
         """
