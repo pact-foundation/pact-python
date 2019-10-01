@@ -138,7 +138,7 @@ setup_args = dict(
     packages=['pact'],
     package_data={'pact': ['bin/*']},
     package_dir={'pact': 'pact'},
-    license=read('LICENSE'))
+    license='MIT License')
 
 
 if __name__ == '__main__':
