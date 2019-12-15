@@ -64,7 +64,7 @@ def install_ruby_app(bin_path):
     uri = ('https://github.com/pact-foundation/pact-ruby-standalone/releases'
            '/download/v{version}/pact-{version}-{suffix}')
 
-    if 'darwin' in target_platform:
+    if 'darwin' in target_platform or 'macos' in target_platform:
         suffix = 'osx.tar.gz'
     elif 'linux' in target_platform and IS_64:
         suffix = 'linux-x86_64.tar.gz'
