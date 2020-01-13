@@ -72,13 +72,25 @@ class mainTestCase(TestCase):
         self.assertIn('--provider-base-url', result.output)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_pact_urls_are_required(self):
+    def test_pact_urls_or_broker_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
 
         self.assertEqual(result.exit_code, 1)
         self.assertIn('at least one', result.output)
         self.assertFalse(self.mock_Popen.called)
+
+    def test_broker_url_required(self):
+        result = self.runner.invoke(
+            verify.main, ['--provider-base-url=http://localhost'])
+        self.assertEqual(result.exit_code, 0)
+        
+    
+    def test_pact_urls_required(self):
+        result = self.runner.invoke(
+            verify.main, ['--provider-base-url=http://localhost'])
+            
+        self.assertEqual(result.exit_code, 0)
 
     def test_local_pact_urls_must_exist(self):
         self.mock_isfile.return_value = False
@@ -119,6 +131,8 @@ class mainTestCase(TestCase):
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
             '--pact-broker-token=token',
+            '--pact-broker-base-url=http://localhost',
+            '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
             '--timeout=60',
@@ -138,6 +152,8 @@ class mainTestCase(TestCase):
             '--broker-username=user',
             '--broker-password=pass',
             '--broker-token=token',
+            '--pact-broker-base-url=http://localhost',
+            '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version', '1.2.3',
             '--verbose')

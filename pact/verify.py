@@ -47,6 +47,10 @@ else:
     'username', '--pact-broker-username',
     help='Username for Pact Broker basic authentication.')
 @click.option(
+    'broker_base_url', '--pact-broker-base-url',
+    default='',
+    help='Base URl for the Pact Broker instance to publish pacts to.')
+@click.option(
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
     help='Password for Pact Broker basic authentication. Can also be specified'
@@ -56,6 +60,10 @@ else:
     envvar='PACT_BROKER_TOKEN',
     help='Bearer token for Pact Broker authentication. Can also be specified'
          ' via the environment variable PACT_BROKER_TOKEN')
+@click.option(
+    'provider', '--provider',
+    default='',
+    help='Retrieve the latest pacts for this provider')
 @click.option(
     'header', '--custom-provider-header',
     envvar='CUSTOM_PROVIDER_HEADER',
@@ -83,9 +91,9 @@ else:
     '--verbose/--no-verbose',
     default=False,
     help='Toggle verbose logging, defaults to False.')
-def main(pacts, base_url, pact_url, pact_urls, states_url,
-         states_setup_url, username, password, token, header, timeout,
-         provider_app_version, publish_verification_results, verbose):
+def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url, 
+         username, broker_base_url, password, token, provider, header, 
+         timeout, provider_app_version, publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
 
@@ -96,6 +104,8 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
     error = click.style('Error:', fg='red')
     warning = click.style('Warning:', fg='yellow')
     all_pact_urls = list(pacts) + list(pact_url)
+    all_broker_urls = list(broker_base_url) + list(provider)
+
     for urls in pact_urls:  # Remove in major version 1.0.0
         all_pact_urls.extend(p for p in urls.split(',') if p)
 
@@ -105,11 +115,12 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
             + ' Multiple --pact-urls arguments are deprecated. '
               'Please provide a comma separated list of pacts to --pact-urls, '
               'or multiple --pact-url arguments.')
-
-    if not all_pact_urls:
+    
+    if not all_pact_urls and not all_broker_urls:
         click.echo(
             error
-            + ' You must supply at least one pact file or directory to verify')
+            + ' You must supply at least one pact file or directory to verify OR '
+              'a Pact Broker and Provider.')
         raise click.Abort()
 
     all_pact_urls = expand_directories(all_pact_urls)
@@ -125,10 +136,12 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
         '--provider-base-url': base_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
+        '--pact-broker-base-url': broker_base_url,
+        '--provider': provider,
         '--broker-password': password,
         '--broker-token': token,
         '--custom-provider-header': header,
-    }
+    }    
     command = [VERIFIER_PATH]
     command.extend(all_pact_urls)
     command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
