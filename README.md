@@ -308,6 +308,11 @@ The username to use when contacting the Pact Broker.
 The password to use when contacting the Pact Broker. You can also specify this value
 as the environment variable `PACT_BROKER_PASSWORD`.
 
+###### --pact-broker-token
+
+The bearer token to use when contacting the Pact Broker. You can also specify this value
+as the environment variable `PACT_BROKER_TOKEN`.
+
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
 to pass successfully. If you are fetching a user profile, that user needs to exist,
