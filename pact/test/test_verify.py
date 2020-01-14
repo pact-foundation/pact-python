@@ -118,6 +118,7 @@ class mainTestCase(TestCase):
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
+            '--pact-broker-token=token',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
             '--timeout=60',
@@ -136,6 +137,7 @@ class mainTestCase(TestCase):
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--broker-username=user',
             '--broker-password=pass',
+            '--broker-token=token',
             '--publish-verification-results',
             '--provider-app-version', '1.2.3',
             '--verbose')
