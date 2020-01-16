@@ -1,3 +1,15 @@
+### 0.20.0
+  * 978d9f3 - fix typo (Jingjing Duan, Wed May 24 15:48:43 2017 -0700)
+  * 4ede7d5 - Merge pull request #117 from dlmiddlecote/feature/expose-more-options (Matt Fellows, Fri Jan 17 10:00:56 2020 +1100)
+  * 73ae8d2 - Update docs (Daniel Middlecote, Tue Jan 14 22:11:40 2020 +0000)
+  * 2bffe5e - Simple test case (Daniel Middlecote, Tue Jan 14 22:11:25 2020 +0000)
+  * 3ba51b5 - Add --broker-token support (Daniel Middlecote, Tue Jan 14 22:04:39 2020 +0000)
+  * d3a8ba6 - Update pact-ruby-standalone (Daniel Middlecote, Tue Jan 14 21:45:01 2020 +0000)
+  * 0cbb9d4 - Merge pull request #115 from ejrb/patch-1 (Matthew Balvanz, Sat Dec 14 20:49:56 2019 -0600)
+  * 0c85502 - match platforms like 'macOS-*' to osx suffix (ejrb, Mon Dec 9 11:13:19 2019 +0000)
+  * 9a0eaa7 - Merge pull request #109 from pact-foundation/dependabot/pip/flask-1.0 (Matthew Balvanz, Mon Sep 30 21:35:20 2019 -0500)
+  * 6f70a28 - Bump flask from 0.11.1 to 1.0 (dependabot[bot], Sat Sep 28 19:20:11 2019 +0000)
+
 ### 0.19.0
   * fed5fba - Start testing in Python 3.7 (Matthew Balvanz, Sat Sep 28 15:18:17 2019 -0500)
   * 19aa689 - Adjust tests to support click 2.0.0 to 7.0.0 (Matthew Balvanz, Sat Sep 28 15:04:53 2019 -0500)
