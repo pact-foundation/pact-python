@@ -10,6 +10,12 @@ def mock_service_exe():
     else:
         return 'pact-mock-service'
 
+def message_exe():
+    """Get the appropriate executable name for this platform."""
+    if os.name == 'nt':
+        return 'pact-message.bat'
+    else:
+        return 'pact-message'
 
 def provider_verifier_exe():
     """Get the appropriate provider executable name for this platform."""
@@ -24,3 +30,6 @@ MOCK_SERVICE_PATH = normpath(join(
 
 VERIFIER_PATH = normpath(join(
     dirname(__file__), 'bin', 'pact', 'bin', provider_verifier_exe()))
+
+MESSAGE_PATH = normpath(join(
+    dirname(__file__), 'bin', 'pact', 'bin', message_exe()))

@@ -1,6 +1,6 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
-
+import json
 import os
 import platform
 from subprocess import Popen
@@ -11,7 +11,9 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 
 from .constants import MOCK_SERVICE_PATH
+from .constants import MESSAGE_PATH
 from .matchers import from_term
+from .message import Message
 
 
 class Pact(object):
@@ -102,7 +104,9 @@ class Pact(object):
         self.sslkey = sslkey
         self.version = version
         self._interactions = []
+        self._message_interactions = []
         self._process = None
+        self._message_process = None
 
     def given(self, provider_state):
         """
@@ -127,10 +131,14 @@ class Pact(object):
                 self.uri + '/interactions', headers=self.HEADERS)
 
             assert resp.status_code == 200, resp.text
+
+            print("********** uri: {}".format(self.uri))
             resp = requests.put(
                 self.uri + '/interactions',
                 headers=self.HEADERS,
                 json={"interactions": self._interactions})
+
+            print("****** interactions: {}".format(self._interactions))
 
             assert resp.status_code == 200, resp.text
         except AssertionError:
@@ -197,6 +205,22 @@ class Pact(object):
         self._interactions[0]['description'] = scenario
         return self
 
+    def verify_message(self, handler):
+
+        for x in self._message_interactions:
+            command = [
+                MESSAGE_PATH,
+                'update',
+                json.dumps(x._messages[0]),
+                '--pact-dir', self.pact_dir,
+                '--pact-specification-version={}'.format(self.version),
+                '--consumer', self.consumer.name + "_message",
+                '--provider', self.provider.name + "_message"]
+
+            print("********* command: {}".format(command))
+
+            self._message_process = Popen(command)
+
     def verify(self):
         """
         Have the mock service verify all interactions occurred.
@@ -214,6 +238,14 @@ class Pact(object):
         resp = requests.post(
             self.uri + '/pact', headers=self.HEADERS)
         assert resp.status_code == 200, resp.text
+
+    def add_message(self):
+
+        message = Message()
+
+        self._message_interactions.append(message)
+
+        return message
 
     def with_request(self, method, path, body=None, headers=None, query=None):
         """
@@ -297,6 +329,9 @@ class Pact(object):
 
         Sets up the mock service to expect the client requests.
         """
+
+        print("******** __enter__")
+
         self.setup()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -308,6 +343,8 @@ class Pact(object):
         """
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             return
+
+        print("******** __exit___")
 
         self.verify()
 
