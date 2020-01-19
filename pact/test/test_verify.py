@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from unittest import TestCase
 
 from click.testing import CliRunner
@@ -15,6 +16,8 @@ else:
 
 
 class mainTestCase(TestCase):
+    """ use traceback.print_exception(*result.exc_info) to debug """
+
     @classmethod
     def setUpClass(cls):
         # In Python 3 Click makes a call to locale to determine how the
@@ -73,6 +76,7 @@ class mainTestCase(TestCase):
         self.assertIn('--provider-base-url', result.output)
         self.assertFalse(self.mock_Popen.called)
 
+
     def test_pact_urls_or_broker_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
@@ -81,11 +85,21 @@ class mainTestCase(TestCase):
         self.assertIn('at least one', result.output)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_broker_url_required(self):        
-        self.mock_Popen.return_value.returncode = 0
+    def test_broker_url_and_provider_required(self):                
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost', 
                           '--pact-broker-base-url=http://broker'])
+        
+        traceback.print_exception(*result.exc_info)
+        self.assertFalse(self.mock_Popen.called)
+        self.assertEqual(result.exit_code, 1)
+
+    def test_broker_url_and_provider_required1(self):
+        self.mock_Popen.return_value.returncode = 0
+        result = self.runner.invoke(
+            verify.main, ['--provider-base-url=http://localhost', 
+                          '--pact-broker-base-url=http://broker',
+                          '--provider=provider_app'])
         
         self.assertTrue(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 0)
@@ -110,12 +124,16 @@ class mainTestCase(TestCase):
     def test_failed_verification(self):
         self.mock_Popen.return_value.returncode = 3
         result = self.runner.invoke(verify.main, self.default_opts)
+
         self.assertEqual(result.exit_code, 3)
         self.assertProcess(*self.default_call)
 
     def test_successful_verification(self):
         self.mock_Popen.return_value.returncode = 0
+    
         result = self.runner.invoke(verify.main, self.default_opts)
+        # traceback.print_exception(*result.exc_info)        
+
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call)
 
