@@ -68,6 +68,7 @@ class mainTestCase(TestCase):
 
     def test_provider_base_url_is_required(self):
         result = self.runner.invoke(verify.main, [])
+
         self.assertEqual(result.exit_code, 2)
         self.assertIn('--provider-base-url', result.output)
         self.assertFalse(self.mock_Popen.called)
@@ -80,16 +81,23 @@ class mainTestCase(TestCase):
         self.assertIn('at least one', result.output)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_broker_url_required(self):
+    def test_broker_url_required(self):        
+        self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(
-            verify.main, ['--provider-base-url=http://localhost'])
+            verify.main, ['--provider-base-url=http://localhost', 
+                          '--pact-broker-base-url=http://broker'])
+        
+        self.assertTrue(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 0)
         
     
     def test_pact_urls_required(self):
+        self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(
-            verify.main, ['--provider-base-url=http://localhost'])
+            verify.main, ['--provider-base-url=http://localhost',
+                          '--pact-url=./pacts/consumer-provider.json'])
             
+        self.assertTrue(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 0)
 
     def test_local_pact_urls_must_exist(self):

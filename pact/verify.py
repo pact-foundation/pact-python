@@ -91,8 +91,8 @@ else:
     '--verbose/--no-verbose',
     default=False,
     help='Toggle verbose logging, defaults to False.')
-def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url, 
-         username, broker_base_url, password, token, provider, header, 
+def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
+         username, broker_base_url, password, token, provider, header,
          timeout, provider_app_version, publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
@@ -115,12 +115,13 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
             + ' Multiple --pact-urls arguments are deprecated. '
               'Please provide a comma separated list of pacts to --pact-urls, '
               'or multiple --pact-url arguments.')
-    
+
     if not all_pact_urls and not all_broker_urls:
+        print('error caught')
         click.echo(
             error
-            + ' You must supply at least one pact file or directory to verify OR '
-              'a Pact Broker and Provider.')
+            + ' You must supply at least one pact file or directory '
+              'to verify OR a Pact Broker and Provider.')
         raise click.Abort()
 
     all_pact_urls = expand_directories(all_pact_urls)
@@ -141,7 +142,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         '--broker-password': password,
         '--broker-token': token,
         '--custom-provider-header': header,
-    }    
+    }
     command = [VERIFIER_PATH]
     command.extend(all_pact_urls)
     command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
@@ -168,7 +169,8 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
 
     sanitize_logs(p, verbose)
     p.wait()
-    sys.exit(p.returncode)
+    sys.exit(p.returncode)    
+
 
 
 def expand_directories(paths):
