@@ -144,7 +144,7 @@ class mainTestCase(TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call + ['--broker-password=pwd'])
 
-    def test_all_options(self):
+    def test_all_url_options(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, [
             './pacts/consumer-provider5.json',
@@ -180,6 +180,38 @@ class mainTestCase(TestCase):
             '--broker-token=token',
             '--pact-broker-base-url=http://localhost',
             '--provider=provider',
+            '--publish-verification-results',
+            '--provider-app-version', '1.2.3',
+            '--verbose')
+
+    def test_all_broker_options(self):
+        self.mock_Popen.return_value.returncode = 0
+        result = self.runner.invoke(verify.main, [
+            '--pact-broker-base-url=http://localhost/broker',
+            '--consumer-version-tag=$LATEST',
+            '--provider-base-url=http://localhost',
+            '--provider=provider_app',
+            '--provider-states-setup-url=http://localhost/provider-states/set',
+            '--pact-broker-username=user',
+            '--pact-broker-password=pass',
+            '--pact-broker-token=token',            
+            '--publish-verification-results',
+            '--provider-app-version=1.2.3',
+            '--timeout=60',
+            '--verbose'
+        ])
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.mock_Popen.return_value.wait.assert_called_once_with()
+        self.assertEqual(self.mock_Popen.call_count, 1)
+        self.assertProcess(            
+            '--pact-broker-base-url=http://localhost/broker',
+            '--consumer-version-tag=$LATEST',
+            '--provider=provider_app',
+            '--provider-base-url=http://localhost',
+            '--provider-states-setup-url=http://localhost/provider-states/set',
+            '--broker-username=user',
+            '--broker-password=pass',
+            '--broker-token=token',
             '--publish-verification-results',
             '--provider-app-version', '1.2.3',
             '--verbose')

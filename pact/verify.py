@@ -51,6 +51,11 @@ else:
     default='',
     help='Base URl for the Pact Broker instance to publish pacts to.')
 @click.option(
+    'consumer_version_tag', '--consumer-version-tag',
+    default='',
+    help='Retrieve the latest pacts with this consumer version tag. '
+         'Used in conjunction with --provider.')
+@click.option(
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
     help='Password for Pact Broker basic authentication. Can also be specified'
@@ -94,8 +99,9 @@ else:
 
 
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
-         username, broker_base_url, password, token, provider, header,
-         timeout, provider_app_version, publish_verification_results, verbose):
+         username, broker_base_url, consumer_version_tag, password, token, 
+         provider, header, timeout, provider_app_version, 
+         publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
 
@@ -140,6 +146,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         '--broker-username': username,
         '--pact-broker-base-url': broker_base_url,
         '--provider': provider,
+        '--consumer-version-tag': consumer_version_tag,
         '--broker-password': password,
         '--broker-token': token,
         '--custom-provider-header': header,
