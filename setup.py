@@ -13,7 +13,7 @@ from setuptools.command.install import install
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.54.4'
+PACT_STANDALONE_VERSION = '1.74.0'
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -64,7 +64,7 @@ def install_ruby_app(bin_path):
     uri = ('https://github.com/pact-foundation/pact-ruby-standalone/releases'
            '/download/v{version}/pact-{version}-{suffix}')
 
-    if 'darwin' in target_platform:
+    if 'darwin' in target_platform or 'macos' in target_platform:
         suffix = 'osx.tar.gz'
     elif 'linux' in target_platform and IS_64:
         suffix = 'linux-x86_64.tar.gz'
@@ -126,6 +126,7 @@ setup_args = dict(
     description=('Tools for creating and verifying consumer driven contracts'
                  ' using the Pact framework.'),
     long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     author='Matthew Balvanz',
     author_email='matthew.balvanz@workiva.com',
     url='https://github.com/pact-foundation/pact-python',
@@ -137,7 +138,7 @@ setup_args = dict(
     packages=['pact'],
     package_data={'pact': ['bin/*']},
     package_dir={'pact': 'pact'},
-    license=read('LICENSE'))
+    license='MIT License')
 
 
 if __name__ == '__main__':

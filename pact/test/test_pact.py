@@ -92,6 +92,27 @@ class PactTestCase(TestCase):
         self.assertEqual(target._interactions[0]['response'],
                          {'status': 200, 'body': 'success'})
 
+    def test_definition_without_given(self):
+        target = Pact(self.consumer, self.provider)
+        (target
+            .upon_receiving('a specific request to the server')
+            .with_request('GET', '/path')
+            .will_respond_with(200, body='success'))
+
+        self.assertEqual(len(target._interactions), 1)
+
+        self.assertIsNone(
+            target._interactions[0].get('provider_state'))
+
+        self.assertEqual(
+            target._interactions[0]['description'],
+            'a specific request to the server')
+
+        self.assertEqual(target._interactions[0]['request'],
+                         {'path': '/path', 'method': 'GET'})
+        self.assertEqual(target._interactions[0]['response'],
+                         {'status': 200, 'body': 'success'})
+
     def test_definition_all_options(self):
         target = Pact(self.consumer, self.provider)
         (target
@@ -144,6 +165,40 @@ class PactTestCase(TestCase):
         self.assertEqual(
             target._interactions[0]['provider_state'],
             'I am creating another new pact using the Pact class')
+
+        self.assertEqual(
+            target._interactions[1]['description'],
+            'a specific request to the server')
+        self.assertEqual(
+            target._interactions[0]['description'],
+            'a different request to the server')
+
+        self.assertEqual(target._interactions[1]['request'],
+                         {'path': '/foo', 'method': 'GET'})
+        self.assertEqual(target._interactions[0]['request'],
+                         {'path': '/bar', 'method': 'GET'})
+
+        self.assertEqual(target._interactions[1]['response'],
+                         {'status': 200, 'body': 'success'})
+        self.assertEqual(target._interactions[0]['response'],
+                         {'status': 200, 'body': 'success'})
+
+    def test_definition_multiple_interactions_without_given(self):
+        target = Pact(self.consumer, self.provider)
+        (target
+         .upon_receiving('a specific request to the server')
+         .with_request('GET', '/foo')
+         .will_respond_with(200, body='success')
+         .upon_receiving('a different request to the server')
+         .with_request('GET', '/bar')
+         .will_respond_with(200, body='success'))
+
+        self.assertEqual(len(target._interactions), 2)
+
+        self.assertIsNone(
+            target._interactions[1].get('provider_state'))
+        self.assertIsNone(
+            target._interactions[0].get('provider_state'))
 
         self.assertEqual(
             target._interactions[1]['description'],

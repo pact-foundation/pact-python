@@ -49,7 +49,7 @@ class Consumer(object):
                       cors=False, publish_to_broker=False,
                       broker_base_url=None, broker_username=None,
                       broker_password=None, broker_token=None, pact_dir=None,
-                      version='2.0.0'):
+                      version='2.0.0', file_write_mode='overwrite'):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -111,6 +111,13 @@ class Consumer(object):
         :param version: The Pact Specification version to use, defaults to
             '2.0.0'.
         :type version: str
+        :param file_write_mode: How the mock service should apply multiple
+            calls to .verify(). Pass 'overwrite' to overwrite the generated
+            JSON file on every call to .verify() or pass 'merge' to merge all
+            interactions into the same JSON file. When using 'merge', make
+            sure to delete any existing JSON file before calling .verify()
+            for the first time. Defaults to 'overwrite'.
+        :type version: str
         :return: A Pact object which you can use to define the specific
             interactions your code will have with the provider.
         :rtype: pact.Pact
@@ -135,4 +142,5 @@ class Consumer(object):
             cors=cors,
             pact_dir=pact_dir,
             publish_to_broker=publish_to_broker,
-            version=version)
+            version=version,
+            file_write_mode=file_write_mode)
