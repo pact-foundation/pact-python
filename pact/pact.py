@@ -158,7 +158,7 @@ class Pact(object):
 
         if self.broker_username is not None:
             command.append('--broker-username={}'.format(self.broker_username))
-        if self.broker_username is not None:
+        if self.broker_password is not None:
             command.append('--broker-password={}'.format(self.broker_password))
         if self.broker_token is not None:
             command.append('--broker-token={}'.format(self.broker_token))
