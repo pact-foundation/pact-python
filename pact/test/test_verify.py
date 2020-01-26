@@ -88,7 +88,7 @@ class mainTestCase(TestCase):
     def test_broker_url_and_provider_required(self):                
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost', 
-                          '--pact-broker-base-url=http://broker'])
+                          '--pact-broker-url=http://broker'])
         
         traceback.print_exception(*result.exc_info)
         self.assertFalse(self.mock_Popen.called)
@@ -98,7 +98,7 @@ class mainTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost', 
-                          '--pact-broker-base-url=http://broker',
+                          '--pact-broker-url=http://broker',
                           '--provider=provider_app'])
         
         self.assertTrue(self.mock_Popen.called)
@@ -157,7 +157,7 @@ class mainTestCase(TestCase):
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
             '--pact-broker-token=token',
-            '--pact-broker-base-url=http://localhost',
+            '--pact-broker-url=http://localhost',
             '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
@@ -178,7 +178,7 @@ class mainTestCase(TestCase):
             '--broker-username=user',
             '--broker-password=pass',
             '--broker-token=token',
-            '--pact-broker-base-url=http://localhost',
+            '--pact-broker-url=http://localhost',
             '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version', '1.2.3',
@@ -187,8 +187,8 @@ class mainTestCase(TestCase):
     def test_all_broker_options(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, [
-            '--pact-broker-base-url=http://localhost/broker',
-            '--consumer-version-tag=$LATEST',
+            '--pact-broker-url=http://localhost/broker',
+            '--consumer-version-tag=prod',
             '--provider-base-url=http://localhost',
             '--provider=provider_app',
             '--provider-states-setup-url=http://localhost/provider-states/set',
@@ -204,8 +204,8 @@ class mainTestCase(TestCase):
         self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(            
-            '--pact-broker-base-url=http://localhost/broker',
-            '--consumer-version-tag=$LATEST',
+            '--pact-broker-url=http://localhost/broker',
+            '--consumer-version-tag=prod',
             '--provider=provider_app',
             '--provider-base-url=http://localhost',
             '--provider-states-setup-url=http://localhost/provider-states/set',
