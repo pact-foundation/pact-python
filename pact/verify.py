@@ -47,7 +47,7 @@ else:
     'username', '--pact-broker-username',
     help='Username for Pact Broker basic authentication.')
 @click.option(
-    'broker_base_url', '--pact-broker-base-url',
+    'broker_base_url', '--pact-broker-url',
     default='',
     help='Base URl for the Pact Broker instance to publish pacts to.')
 @click.option(
@@ -144,7 +144,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         '--provider-base-url': base_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
-        '--pact-broker-base-url': broker_base_url,
+        '--pact-broker-url': broker_base_url,
         '--provider': provider,
         '--consumer-version-tag': consumer_version_tag,
         '--broker-password': password,
