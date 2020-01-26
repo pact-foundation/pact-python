@@ -76,7 +76,6 @@ class mainTestCase(TestCase):
         self.assertIn('--provider-base-url', result.output)
         self.assertFalse(self.mock_Popen.called)
 
-
     def test_pact_urls_or_broker_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
@@ -85,11 +84,11 @@ class mainTestCase(TestCase):
         self.assertIn('at least one', result.output)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_broker_url_and_provider_required(self):                
+    def test_broker_url_and_provider_required(self):
         result = self.runner.invoke(
-            verify.main, ['--provider-base-url=http://localhost', 
+            verify.main, ['--provider-base-url=http://localhost',
                           '--pact-broker-url=http://broker'])
-        
+
         traceback.print_exception(*result.exc_info)
         self.assertFalse(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 1)
@@ -97,20 +96,19 @@ class mainTestCase(TestCase):
     def test_broker_url_and_provider_required1(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(
-            verify.main, ['--provider-base-url=http://localhost', 
+            verify.main, ['--provider-base-url=http://localhost',
                           '--pact-broker-url=http://broker',
                           '--provider=provider_app'])
-        
+
         self.assertTrue(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 0)
-        
-    
+
     def test_pact_urls_required(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost',
                           '--pact-url=./pacts/consumer-provider.json'])
-            
+
         self.assertTrue(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 0)
 
@@ -130,9 +128,7 @@ class mainTestCase(TestCase):
 
     def test_successful_verification(self):
         self.mock_Popen.return_value.returncode = 0
-    
         result = self.runner.invoke(verify.main, self.default_opts)
-        # traceback.print_exception(*result.exc_info)        
 
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call)
@@ -194,7 +190,7 @@ class mainTestCase(TestCase):
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
-            '--pact-broker-token=token',            
+            '--pact-broker-token=token',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
             '--timeout=60',
@@ -203,7 +199,7 @@ class mainTestCase(TestCase):
         self.assertEqual(result.exit_code, 0, result.output)
         self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
-        self.assertProcess(            
+        self.assertProcess(
             '--pact-broker-url=http://localhost/broker',
             '--consumer-version-tag=prod',
             '--provider=provider_app',

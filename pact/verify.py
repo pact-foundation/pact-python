@@ -96,20 +96,16 @@ else:
     '--verbose/--no-verbose',
     default=False,
     help='Toggle verbose logging, defaults to False.')
-
-
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
-         username, broker_base_url, consumer_version_tag, password, token, 
-         provider, header, timeout, provider_app_version, 
+         username, broker_base_url, consumer_version_tag, password, token,
+         provider, header, timeout, provider_app_version,
          publish_verification_results, verbose):
-    """
+    """ 
     Verify one or more contracts against a provider service.
 
     Minimal example:
-
         pact-verifier --provider-base-url=http://localhost:8080 ./pacts
-    """  # NOQA
-    
+    """  # NOQA 
     error = click.style('Error:', fg='red')
     warning = click.style('Warning:', fg='yellow')
     all_pact_urls = list(pacts) + list(pact_url)
@@ -129,7 +125,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
             error
             + ' You must supply at least one pact file or directory '
             'to verify OR a Pact Broker and Provider.')
-        raise click.Abort()    
+        raise click.Abort()
 
     all_pact_urls = expand_directories(all_pact_urls)
     missing_files = [path for path in all_pact_urls if not path_exists(path)]
@@ -177,8 +173,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
 
     sanitize_logs(p, verbose)
     p.wait()
-    sys.exit(p.returncode)    
-
+    sys.exit(p.returncode)
 
 
 def expand_directories(paths):
