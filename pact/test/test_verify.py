@@ -1,6 +1,5 @@
 import os
 import sys
-import traceback
 from unittest import TestCase
 
 from click.testing import CliRunner
@@ -89,7 +88,6 @@ class mainTestCase(TestCase):
             verify.main, ['--provider-base-url=http://localhost',
                           '--pact-broker-url=http://broker'])
 
-        traceback.print_exception(*result.exc_info)
         self.assertFalse(self.mock_Popen.called)
         self.assertEqual(result.exit_code, 1)
 
