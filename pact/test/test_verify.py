@@ -166,6 +166,7 @@ class mainTestCase(TestCase):
             '--provider-base-url=http://localhost',
             '--publish-verification-results'
         ])
+        print(dir(result))
         self.assertEqual(result.exit_code, 1)
         self.assertIn(
             'Provider application version is required', result.output)
