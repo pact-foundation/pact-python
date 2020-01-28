@@ -78,16 +78,22 @@ class Pact(object):
             pacts to a pact broker. Defaults to False.
         :type publish_to_broker: bool
         :param broker_base_url: URL of the pact broker that pacts will be
-            published to. Defaults to None.
+            published to. Can also be supplied through the PACT_BROKER_BASE_URL
+            environment variable. Defaults to None.
         :type broker_base_url: str
         :param broker_username: Username to use when connecting to the pact
-            broker if authentication is required. Defaults to None.
+            broker if authentication is required. Can also be supplied through
+            the PACT_BROKER_USERNAME environment variable. Defaults to None.
         :type broker_username: str
         :param broker_password: Password to use when connecting to the pact
-            broker if authentication is required. Defaults to None.
+            broker if authentication is required. Strongly recommend supplying
+            this value through the PACT_BROKER_PASSWORD environment variable
+            instead. Defaults to None.
         :type broker_password: str
         :param broker_token: Authentication token to use when connecting to
-            the pact broker. Defaults to None.
+            the pact broker. Strongly recommend supplying this value through
+            the PACT_BROKER_TOKEN environment variable instead.
+            Defaults to None.
         :type broker_token: str
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
