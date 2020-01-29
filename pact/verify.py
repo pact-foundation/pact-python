@@ -175,8 +175,10 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     p.wait()
     sys.exit(p.returncode)
 
+
 def broker_not_provided(broker_base_url, provider):
-    return (broker_base_url == '' or provider == '') == True
+    return (broker_base_url == '' or provider == '')
+
 
 def expand_directories(paths):
     """
