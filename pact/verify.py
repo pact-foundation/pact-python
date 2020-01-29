@@ -120,7 +120,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
               'Please provide a comma separated list of pacts to --pact-urls, '
               'or multiple --pact-url arguments.')
 
-    if not all_pact_urls and (broker_base_url is '' or provider is ''):
+    if not all_pact_urls and broker_not_provided(broker_base_url, provider):
         click.echo(
             error
             + ' You must supply at least one pact file or directory '
@@ -175,6 +175,8 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     p.wait()
     sys.exit(p.returncode)
 
+def broker_not_provided(broker_base_url, provider):
+    return (broker_base_url == '' or provider == '') == True
 
 def expand_directories(paths):
     """

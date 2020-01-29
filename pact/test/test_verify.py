@@ -75,6 +75,7 @@ class mainTestCase(TestCase):
         self.assertIn('--provider-base-url', result.output)
         self.assertFalse(self.mock_Popen.called)
 
+
     def test_pact_urls_or_broker_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
