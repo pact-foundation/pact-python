@@ -177,6 +177,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
 
 
 def broker_not_provided(broker_base_url, provider):
+    """Check if broker not provided."""
     return (broker_base_url == '' or provider == '')
 
 
