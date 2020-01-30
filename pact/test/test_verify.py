@@ -151,7 +151,7 @@ class mainTestCase(TestCase):
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
             '--pact-broker-token=token',
-            '--pact-broker-url=http://localhost',
+            '--pact-broker-url=http://localhost/docker',
             '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
@@ -172,7 +172,7 @@ class mainTestCase(TestCase):
             '--broker-username=user',
             '--broker-password=pass',
             '--broker-token=token',
-            '--pact-broker-url=http://localhost',
+            '--pact-broker-base-url=http://localhost/docker',
             '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version', '1.2.3',
@@ -198,7 +198,7 @@ class mainTestCase(TestCase):
         self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
-            '--pact-broker-url=http://localhost/broker',
+            '--pact-broker-base-url=http://localhost/broker',
             '--consumer-version-tag=prod',
             '--provider=provider_app',
             '--provider-base-url=http://localhost',
