@@ -78,16 +78,22 @@ class Pact(object):
             pacts to a pact broker. Defaults to False.
         :type publish_to_broker: bool
         :param broker_base_url: URL of the pact broker that pacts will be
-            published to. Defaults to None.
+            published to. Can also be supplied through the PACT_BROKER_BASE_URL
+            environment variable. Defaults to None.
         :type broker_base_url: str
         :param broker_username: Username to use when connecting to the pact
-            broker if authentication is required. Defaults to None.
+            broker if authentication is required. Can also be supplied through
+            the PACT_BROKER_USERNAME environment variable. Defaults to None.
         :type broker_username: str
         :param broker_password: Password to use when connecting to the pact
-            broker if authentication is required. Defaults to None.
+            broker if authentication is required. Strongly recommend supplying
+            this value through the PACT_BROKER_PASSWORD environment variable
+            instead. Defaults to None.
         :type broker_password: str
         :param broker_token: Authentication token to use when connecting to
-            the pact broker. Defaults to None.
+            the pact broker. Strongly recommend supplying this value through
+            the PACT_BROKER_TOKEN environment variable instead.
+            Defaults to None.
         :type broker_token: str
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
@@ -145,20 +151,24 @@ class Pact(object):
 
     def publish(self):
         """Publish the generated pact files to the specified pact broker."""
-        if self.broker_base_url is None:
-            raise RuntimeError("No pact broker URL specified.")
+        if self.broker_base_url is None \
+                and "PACT_BROKER_BASE_URL" not in os.environ:
+            raise RuntimeError("No pact broker URL specified. " +
+                               "Did you expect the PACT_BROKER_BASE_URL " +
+                               "environment variable to be set?")
 
         pact_files = fnmatch.filter(os.listdir(self.pact_dir),
                                     self.consumer.name + '*.json')
         command = [
             BROKER_CLIENT_PATH,
             'publish',
-            '--consumer-app-version={}'.format(self.consumer.version),
-            '--broker-base-url={}'.format(self.broker_base_url)]
+            '--consumer-app-version={}'.format(self.consumer.version)]
 
+        if self.broker_base_url is not None:
+            command.append('--broker-base-url={}'.format(self.broker_base_url))
         if self.broker_username is not None:
             command.append('--broker-username={}'.format(self.broker_username))
-        if self.broker_username is not None:
+        if self.broker_password is not None:
             command.append('--broker-password={}'.format(self.broker_password))
         if self.broker_token is not None:
             command.append('--broker-token={}'.format(self.broker_token))
@@ -175,10 +185,11 @@ class Pact(object):
         publish_process = Popen(command)
         publish_process.wait()
         if publish_process.returncode != 0:
+            url = self.broker_base_url or os.environ["PACT_BROKER_BASE_URL"]
             raise RuntimeError(
-                    "There was an error while publishing to the"
-                    + " pact broker at {}."
-                    .format(self.broker_base_url))
+                "There was an error while publishing to the " +
+                "pact broker at {}."
+                .format(url))
 
     def setup(self):
         """Configure the Mock Service to ready it for a test."""

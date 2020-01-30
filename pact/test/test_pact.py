@@ -251,6 +251,13 @@ class PactPublishTestCase(PactTestCase):
         with self.assertRaises(RuntimeError):
             pact.publish()
 
+    def text_publish_with_broker_url_environment_variable(self):
+        pact = Pact(self.consumer, self.provider, publish_to_broker=True)
+        os.environ["PACT_BROKER_BASE_URL"] = "http://localhost"
+
+        pact.publish()
+        del os.environ["PACT_BROKER_BASE_URL"]
+
     def test_default_publish(self):
         pact = Pact(self.consumer, self.provider,
                     publish_to_broker=True,
