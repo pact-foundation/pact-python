@@ -359,19 +359,6 @@ Unit: `make test`
 
 End to end: `make e2e`
 
-To manually test against a provider you could use some of the tools in pact-broker-client (a ruby gem). E.g. run pact-stub-service:
-```
-pact-stub-service ./e2e/pacts/consumer-provider.json
-```
-
-To run pact broker locally there is a docker compose file in the pact-broker-docker project. You can add pacts via the api. 
-
-And then to publish to a broker:
-```
-pact-broker publish PACT_DIRS_OR_FILES ... -a, --consumer-app-version=CONSUMER_APP_VERSION -b --broker-base-url=BROKER_BASE_URL
-```
-
-
 ## Contact
 
 Join us in slack: [![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
