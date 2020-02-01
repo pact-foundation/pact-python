@@ -183,6 +183,9 @@ class mainTestCase(TestCase):
         result = self.runner.invoke(verify.main, [
             '--pact-broker-url=http://localhost/broker',
             '--consumer-version-tag=prod',
+            '--consumer-version-tag=dev',
+            '--provider-version-tag=dev',
+            '--provider-version-tag=qa',
             '--provider-base-url=http://localhost',
             '--provider=provider_app',
             '--provider-states-setup-url=http://localhost/provider-states/set',
@@ -194,12 +197,16 @@ class mainTestCase(TestCase):
             '--timeout=60',
             '--verbose'
         ])
+        print(result.output)
         self.assertEqual(result.exit_code, 0, result.output)
         self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
             '--pact-broker-base-url=http://localhost/broker',
             '--consumer-version-tag=prod',
+            '--consumer-version-tag=dev',
+            '--provider-version-tag=dev',
+            '--provider-version-tag=qa',
             '--provider=provider_app',
             '--provider-base-url=http://localhost',
             '--provider-states-setup-url=http://localhost/provider-states/set',

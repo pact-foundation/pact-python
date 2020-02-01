@@ -53,8 +53,15 @@ else:
 @click.option(
     'consumer_version_tag', '--consumer-version-tag',
     default='',
+    multiple=True,
     help='Retrieve the latest pacts with this consumer version tag. '
          'Used in conjunction with --provider.')
+@click.option(
+    'provider_version_tag', '--provider-version-tag',
+    default='',
+    multiple=True,
+    help='Tag to apply to the provider application version. '
+         'May be specified multiple times.')
 @click.option(
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
@@ -97,8 +104,8 @@ else:
     default=False,
     help='Toggle verbose logging, defaults to False.')
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
-         username, broker_base_url, consumer_version_tag, password, token,
-         provider, header, timeout, provider_app_version,
+         username, broker_base_url, consumer_version_tag, provider_version_tag,
+         password, token, provider, header, timeout, provider_app_version,
          publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
@@ -136,20 +143,26 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
             + '\n'.join(missing_files))
         raise click.Abort()
 
+    print(consumer_version_tag)
     options = {
         '--provider-base-url': base_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
         '--pact-broker-base-url': broker_base_url,
         '--provider': provider,
-        '--consumer-version-tag': consumer_version_tag,
         '--broker-password': password,
         '--broker-token': token,
         '--custom-provider-header': header,
     }
+
     command = [VERIFIER_PATH]
     command.extend(all_pact_urls)
     command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
+
+    for tag in consumer_version_tag:
+        command.extend(['--consumer-version-tag={}'.format(tag)])
+    for tag in provider_version_tag:
+        command.extend(['--provider-version-tag={}'.format(tag)])
 
     if publish_verification_results:
         if not provider_app_version:
