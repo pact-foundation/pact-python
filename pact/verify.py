@@ -143,7 +143,6 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
             + '\n'.join(missing_files))
         raise click.Abort()
 
-    print(consumer_version_tag)
     options = {
         '--provider-base-url': base_url,
         '--provider-states-setup-url': states_setup_url,
