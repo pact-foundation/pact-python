@@ -203,10 +203,10 @@ class mainTestCase(TestCase):
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
             '--pact-broker-base-url=http://localhost/broker',
-            '--consumer-version-tag=prod',
-            '--consumer-version-tag=dev',
-            '--provider-version-tag=dev',
-            '--provider-version-tag=qa',
+            '--consumer-version-tag prod',
+            '--consumer-version-tag dev',
+            '--provider-version-tag dev',
+            '--provider-version-tag qa',
             '--provider=provider_app',
             '--provider-base-url=http://localhost',
             '--provider-states-setup-url=http://localhost/provider-states/set',
