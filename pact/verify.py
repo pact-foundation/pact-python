@@ -159,9 +159,9 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
     for tag in consumer_version_tag:
-        command.extend(['--consumer-version-tag={}'.format(tag)])
+        command.extend(['--consumer-version-tag', tag])
     for tag in provider_version_tag:
-        command.extend(['--provider-version-tag={}'.format(tag)])
+        command.extend(['--provider-version-tag', tag])
 
     if publish_verification_results:
         if not provider_app_version:
@@ -180,6 +180,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
 
     env = os.environ.copy()
     env['PACT_INTERACTION_RERUN_COMMAND'] = rerun_command()
+    print(command)
     p = subprocess.Popen(command, bufsize=1, env=env, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, universal_newlines=True)
 
