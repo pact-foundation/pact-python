@@ -62,8 +62,9 @@ class mainTestCase(TestCase):
         call = self.mock_Popen.mock_calls[0]
         actual = call[1][0]
         self.assertEqual(actual[0], VERIFIER_PATH)
-        self.assertEqual(len(set(actual)), len(expected) + 1)
+        self.assertEqual(len(actual), len(expected) + 1)
         self.assertEqual(set(actual[1:]), set(expected))
+        self.assertEqual(set(expected), set(actual[1:]))
         self.assertEqual(
             call[2]['env']['PACT_INTERACTION_RERUN_COMMAND'],
             self.mock_rerun_command.return_value)
@@ -195,18 +196,18 @@ class mainTestCase(TestCase):
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
             '--timeout=60',
+            '--publish-verification-results',
             '--verbose'
         ])
-        print(result.output)
         self.assertEqual(result.exit_code, 0, result.output)
         self.mock_Popen.return_value.wait.assert_called_once_with()
         self.assertEqual(self.mock_Popen.call_count, 1)
         self.assertProcess(
             '--pact-broker-base-url=http://localhost/broker',
-            '--consumer-version-tag prod',
-            '--consumer-version-tag dev',
-            '--provider-version-tag dev',
-            '--provider-version-tag qa',
+            '--consumer-version-tag', 'prod',
+            '--consumer-version-tag', 'dev',
+            '--provider-version-tag', 'dev',
+            '--provider-version-tag', 'qa',
             '--provider=provider_app',
             '--provider-base-url=http://localhost',
             '--provider-states-setup-url=http://localhost/provider-states/set',
@@ -241,7 +242,6 @@ class mainTestCase(TestCase):
             '--provider-base-url=http://localhost',
             '--publish-verification-results'
         ])
-        print(dir(result))
         self.assertEqual(result.exit_code, 1)
         self.assertIn(
             'Provider application version is required', result.output)

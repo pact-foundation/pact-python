@@ -180,7 +180,6 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
 
     env = os.environ.copy()
     env['PACT_INTERACTION_RERUN_COMMAND'] = rerun_command()
-    print(command)
     p = subprocess.Popen(command, bufsize=1, env=env, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, universal_newlines=True)
 
