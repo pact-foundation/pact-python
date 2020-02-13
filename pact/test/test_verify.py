@@ -15,6 +15,8 @@ else:
 
 
 class mainTestCase(TestCase):
+    """ use traceback.print_exception(*result.exc_info) to debug """
+
     @classmethod
     def setUpClass(cls):
         # In Python 3 Click makes a call to locale to determine how the
@@ -60,25 +62,54 @@ class mainTestCase(TestCase):
         call = self.mock_Popen.mock_calls[0]
         actual = call[1][0]
         self.assertEqual(actual[0], VERIFIER_PATH)
-        self.assertEqual(len(set(actual)), len(expected) + 1)
+        self.assertEqual(len(actual), len(expected) + 1)
         self.assertEqual(set(actual[1:]), set(expected))
+        self.assertEqual(set(expected), set(actual[1:]))
         self.assertEqual(
             call[2]['env']['PACT_INTERACTION_RERUN_COMMAND'],
             self.mock_rerun_command.return_value)
 
     def test_provider_base_url_is_required(self):
         result = self.runner.invoke(verify.main, [])
+
         self.assertEqual(result.exit_code, 2)
         self.assertIn('--provider-base-url', result.output)
         self.assertFalse(self.mock_Popen.called)
 
-    def test_pact_urls_are_required(self):
+    def test_pact_urls_or_broker_are_required(self):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
 
         self.assertEqual(result.exit_code, 1)
         self.assertIn('at least one', result.output)
         self.assertFalse(self.mock_Popen.called)
+
+    def test_broker_url_and_provider_required(self):
+        result = self.runner.invoke(
+            verify.main, ['--provider-base-url=http://localhost',
+                          '--pact-broker-url=http://broker'])
+
+        self.assertFalse(self.mock_Popen.called)
+        self.assertEqual(result.exit_code, 1)
+
+    def test_broker_url_and_provider_required1(self):
+        self.mock_Popen.return_value.returncode = 0
+        result = self.runner.invoke(
+            verify.main, ['--provider-base-url=http://localhost',
+                          '--pact-broker-url=http://broker',
+                          '--provider=provider_app'])
+
+        self.assertTrue(self.mock_Popen.called)
+        self.assertEqual(result.exit_code, 0)
+
+    def test_pact_urls_required(self):
+        self.mock_Popen.return_value.returncode = 0
+        result = self.runner.invoke(
+            verify.main, ['--provider-base-url=http://localhost',
+                          '--pact-url=./pacts/consumer-provider.json'])
+
+        self.assertTrue(self.mock_Popen.called)
+        self.assertEqual(result.exit_code, 0)
 
     def test_local_pact_urls_must_exist(self):
         self.mock_isfile.return_value = False
@@ -90,12 +121,14 @@ class mainTestCase(TestCase):
     def test_failed_verification(self):
         self.mock_Popen.return_value.returncode = 3
         result = self.runner.invoke(verify.main, self.default_opts)
+
         self.assertEqual(result.exit_code, 3)
         self.assertProcess(*self.default_call)
 
     def test_successful_verification(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, self.default_opts)
+
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call)
 
@@ -106,7 +139,7 @@ class mainTestCase(TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertProcess(*self.default_call + ['--broker-password=pwd'])
 
-    def test_all_options(self):
+    def test_all_url_options(self):
         self.mock_Popen.return_value.returncode = 0
         result = self.runner.invoke(verify.main, [
             './pacts/consumer-provider5.json',
@@ -119,6 +152,8 @@ class mainTestCase(TestCase):
             '--pact-broker-username=user',
             '--pact-broker-password=pass',
             '--pact-broker-token=token',
+            '--pact-broker-url=http://localhost/docker',
+            '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
             '--timeout=60',
@@ -133,6 +168,47 @@ class mainTestCase(TestCase):
             './pacts/consumer-provider4.json',
             './pacts/consumer-provider.json',
             './pacts/consumer-provider2.json',
+            '--provider-base-url=http://localhost',
+            '--provider-states-setup-url=http://localhost/provider-states/set',
+            '--broker-username=user',
+            '--broker-password=pass',
+            '--broker-token=token',
+            '--pact-broker-base-url=http://localhost/docker',
+            '--provider=provider',
+            '--publish-verification-results',
+            '--provider-app-version', '1.2.3',
+            '--verbose')
+
+    def test_all_broker_options(self):
+        self.mock_Popen.return_value.returncode = 0
+        result = self.runner.invoke(verify.main, [
+            '--pact-broker-url=http://localhost/broker',
+            '--consumer-version-tag=prod',
+            '--consumer-version-tag=dev',
+            '--provider-version-tag=dev',
+            '--provider-version-tag=qa',
+            '--provider-base-url=http://localhost',
+            '--provider=provider_app',
+            '--provider-states-setup-url=http://localhost/provider-states/set',
+            '--pact-broker-username=user',
+            '--pact-broker-password=pass',
+            '--pact-broker-token=token',
+            '--publish-verification-results',
+            '--provider-app-version=1.2.3',
+            '--timeout=60',
+            '--publish-verification-results',
+            '--verbose'
+        ])
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.mock_Popen.return_value.wait.assert_called_once_with()
+        self.assertEqual(self.mock_Popen.call_count, 1)
+        self.assertProcess(
+            '--pact-broker-base-url=http://localhost/broker',
+            '--consumer-version-tag', 'prod',
+            '--consumer-version-tag', 'dev',
+            '--provider-version-tag', 'dev',
+            '--provider-version-tag', 'qa',
+            '--provider=provider_app',
             '--provider-base-url=http://localhost',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--broker-username=user',
@@ -166,7 +242,6 @@ class mainTestCase(TestCase):
             '--provider-base-url=http://localhost',
             '--publish-verification-results'
         ])
-        print(dir(result))
         self.assertEqual(result.exit_code, 1)
         self.assertIn(
             'Provider application version is required', result.output)

@@ -47,6 +47,22 @@ else:
     'username', '--pact-broker-username',
     help='Username for Pact Broker basic authentication.')
 @click.option(
+    'broker_base_url', '--pact-broker-url',
+    default='',
+    help='Base URl for the Pact Broker instance to publish pacts to.')
+@click.option(
+    'consumer_version_tag', '--consumer-version-tag',
+    default='',
+    multiple=True,
+    help='Retrieve the latest pacts with this consumer version tag. '
+         'Used in conjunction with --provider.')
+@click.option(
+    'provider_version_tag', '--provider-version-tag',
+    default='',
+    multiple=True,
+    help='Tag to apply to the provider application version. '
+         'May be specified multiple times.')
+@click.option(
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
     help='Password for Pact Broker basic authentication. Can also be specified'
@@ -56,6 +72,10 @@ else:
     envvar='PACT_BROKER_TOKEN',
     help='Bearer token for Pact Broker authentication. Can also be specified'
          ' via the environment variable PACT_BROKER_TOKEN')
+@click.option(
+    'provider', '--provider',
+    default='',
+    help='Retrieve the latest pacts for this provider')
 @click.option(
     'header', '--custom-provider-header',
     envvar='CUSTOM_PROVIDER_HEADER',
@@ -83,19 +103,20 @@ else:
     '--verbose/--no-verbose',
     default=False,
     help='Toggle verbose logging, defaults to False.')
-def main(pacts, base_url, pact_url, pact_urls, states_url,
-         states_setup_url, username, password, token, header, timeout,
-         provider_app_version, publish_verification_results, verbose):
+def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
+         username, broker_base_url, consumer_version_tag, provider_version_tag,
+         password, token, provider, header, timeout, provider_app_version,
+         publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
 
     Minimal example:
-
         pact-verifier --provider-base-url=http://localhost:8080 ./pacts
     """  # NOQA
     error = click.style('Error:', fg='red')
     warning = click.style('Warning:', fg='yellow')
     all_pact_urls = list(pacts) + list(pact_url)
+
     for urls in pact_urls:  # Remove in major version 1.0.0
         all_pact_urls.extend(p for p in urls.split(',') if p)
 
@@ -106,10 +127,11 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
               'Please provide a comma separated list of pacts to --pact-urls, '
               'or multiple --pact-url arguments.')
 
-    if not all_pact_urls:
+    if not all_pact_urls and broker_not_provided(broker_base_url, provider):
         click.echo(
             error
-            + ' You must supply at least one pact file or directory to verify')
+            + ' You must supply at least one pact file or directory '
+            'to verify OR a Pact Broker and Provider.')
         raise click.Abort()
 
     all_pact_urls = expand_directories(all_pact_urls)
@@ -125,13 +147,21 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
         '--provider-base-url': base_url,
         '--provider-states-setup-url': states_setup_url,
         '--broker-username': username,
+        '--pact-broker-base-url': broker_base_url,
+        '--provider': provider,
         '--broker-password': password,
         '--broker-token': token,
         '--custom-provider-header': header,
     }
+
     command = [VERIFIER_PATH]
     command.extend(all_pact_urls)
     command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
+
+    for tag in consumer_version_tag:
+        command.extend(['--consumer-version-tag', tag])
+    for tag in provider_version_tag:
+        command.extend(['--provider-version-tag', tag])
 
     if publish_verification_results:
         if not provider_app_version:
@@ -156,6 +186,11 @@ def main(pacts, base_url, pact_url, pact_urls, states_url,
     sanitize_logs(p, verbose)
     p.wait()
     sys.exit(p.returncode)
+
+
+def broker_not_provided(broker_base_url, provider):
+    """Check if broker not provided."""
+    return (broker_base_url == '' or provider == '')
 
 
 def expand_directories(paths):

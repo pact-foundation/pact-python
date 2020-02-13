@@ -94,3 +94,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# VCode stuff
+.vscode/*
+*.code-workspace
+
+
+.noseids
