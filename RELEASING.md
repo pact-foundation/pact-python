@@ -20,7 +20,7 @@
 
 6. Tag
 
-    `$ git tag -a vX.Y.Z -m "Releasing version X.Y.Z" && git push origin --tags`
+    `$ git tag -a vX.Y.Z -m "Releasing version X.Y.Z" && git push origin master --tags`
 
 7. Wait until travis has run and the new tag is available at https://github.com/pact-foundation/pact-python/releases/tag/vX.Y.Z
 
