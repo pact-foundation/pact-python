@@ -1,3 +1,11 @@
+### 0.21.0
+* 6352dda - feat: update to pact-ruby-standalone-1.79.0 (#127) (Beth Skurrie, Tue Feb 18 10:25:59 2020 +1100)
+* 758d6ea - Converting to kwargs (Elliott Murray, Sat Feb 1 16:24:49 2020 +1100)
+* 1388b8f - feat: support using environment variables to set pact broker configuration (mikahjc, Wed Jan 29 17:52:33 2020 -0700)
+* ec7ff99 - Make verify tests compatible with Click v7.x (mikahjc, Tue Jun 11 16:37:13 2019 -0600)
+* 5dcb56c - Add broker_token parameter for authentication (mikahjc, Tue Jun 11 16:16:46 2019 -0600)
+* 1bdfb42 - Integrate the Ruby pact broker client to allow for automatic publishing of pacts (mikahjc, Tue Jun 11 11:13:18 2019 -0600)
+
 ### 0.20.0
   * 978d9f3 - fix typo (Jingjing Duan, Wed May 24 15:48:43 2017 -0700)
   * 4ede7d5 - Merge pull request #117 from dlmiddlecote/feature/expose-more-options (Matt Fellows, Fri Jan 17 10:00:56 2020 +1100)
@@ -44,7 +52,7 @@
 ### 0.16.0
   * 30af240 - Merge pull request #78 from pact-foundation/standalone-1-29-2 (Matthew Balvanz☃, Fri Mar 2 22:05:12 2018 -0600)
   * d428951 - Update to pact-ruby-standalone 1.29.2 (Matthew Balvanz, Fri Mar 2 21:59:08 2018 -0600)
- 
+
 ### 0.15.0
   * eb925c3 - Merge pull request #77 from pact-foundation/standalone-1-9-1 (Matthew Balvanz☃, Fri Mar 2 21:22:35 2018 -0600)
   * 2a2dcd1 - Upgrade to pact-ruby-standalone 1.9.1 (Matthew Balvanz, Fri Mar 2 21:18:25 2018 -0600)
