@@ -1,0 +1,28 @@
+# Introduction
+This is for contributors who want to make changes and test for all different versions of python currently supported. If you don't want to set up and install all the different python versions locally (and there are some difficulties with that) you can just run them in docker using containers.
+
+# Setup
+To build a container say for python 3.6 change to the root directory of the project and run
+
+```bash
+docker build -t pact:python36 -f docker/py36.Dockerfile .
+```
+
+And then to run you will need:
+
+```bash
+docker run  -it -v `pwd`:/home pact:python36
+```
+
+If you need to debug you can change the command to:
+
+```bash
+docker run  -it -v `pwd`:/home pact:python36 sh
+```
+
+This will open a container with a prompt. From the /home location in the container you can run
+```
+tox -e py36
+```
+
+In all the above if you need to run a different version change py36/python36 where appropriate.
