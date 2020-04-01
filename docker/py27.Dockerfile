@@ -17,3 +17,5 @@ RUN apk --no-cache add ca-certificates wget && \
 
 
 RUN ln -sf /usr/glibc-compat/bin/locale /usr/local/bin/locale
+
+CMD tox -e py27
