@@ -19,7 +19,12 @@ test your code more efficiently, check out the [Pact documentation].
 pip install pact-python
 ```
 
+## Getting started
+
+A guide follows but if you go to the [e2e examples](examples/e2e/README.md). This has a consumer, provider and pact-broker set of tests.
+
 ## Writing a Pact
+
 Creating a complete contract is a two step process:
 
 1. Create a test on the consumer side that declares the expectations it has of the provider
@@ -236,7 +241,7 @@ EachLike({
 > Note, you do not need to specify everything that will be returned from the Provider in a
 > JSON response, any extra data that is received will be ignored and the tests will still pass.
 
-> Note, to get the generated values from an object that can contain matchers like Term, Like, EachLike, etc. 
+> Note, to get the generated values from an object that can contain matchers like Term, Like, EachLike, etc.
 > for assertion in self.assertEqual(result, expected) you may need to use get_generated_values() helper function:
 
 ```python
