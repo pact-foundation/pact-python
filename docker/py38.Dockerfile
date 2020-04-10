@@ -4,7 +4,10 @@ WORKDIR /home
 
 COPY requirements_dev.txt .
 
-RUN apk add gcc py-pip python-dev libffi-dev openssl-dev gcc libc-dev make
+RUN apk update
+RUN apk upgrade
+
+RUN apk add gcc py-pip python-dev libffi-dev openssl-dev gcc libc-dev bash make
 
 RUN python -m pip install psutil
 RUN pip install -r requirements_dev.txt
