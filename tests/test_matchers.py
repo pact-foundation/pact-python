@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from ..matchers import EachLike, Like, Matcher, SomethingLike, \
+from pact.matchers import EachLike, Like, Matcher, SomethingLike, \
     Term, from_term, get_generated_values
 
 

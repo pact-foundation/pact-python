@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from .. import Provider
+from pact.provider import Provider
 
 
 class ProviderTestCase(TestCase):
