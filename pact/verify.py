@@ -77,8 +77,9 @@ else:
     default='',
     help='Retrieve the latest pacts for this provider')
 @click.option(
-    'header', '--custom-provider-header',
-    envvar='CUSTOM_PROVIDER_HEADER',
+    'headers', '--custom-provider-header',
+    #envvar='CUSTOM_PROVIDER_HEADER',
+    multiple=True,
     help='Header to add to provider state set up and '
          'pact verification requests. '
          'eg \'Authorization: Basic cGFjdDpwYWN0\'. '
@@ -105,7 +106,7 @@ else:
     help='Toggle verbose logging, defaults to False.')
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, provider_version_tag,
-         password, token, provider, header, timeout, provider_app_version,
+         password, token, provider, headers, timeout, provider_app_version,
          publish_verification_results, verbose):
     """
     Verify one or more contracts against a provider service.
@@ -150,8 +151,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         '--pact-broker-base-url': broker_base_url,
         '--provider': provider,
         '--broker-password': password,
-        '--broker-token': token,
-        '--custom-provider-header': header,
+        '--broker-token': token
     }
 
     command = [VERIFIER_PATH]
@@ -159,9 +159,11 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
     for tag in consumer_version_tag:
-        command.extend(['--consumer-version-tag', tag])
+        command.extend(["--consumer-version-tag={}".format(tag)])
     for tag in provider_version_tag:
-        command.extend(['--provider-version-tag', tag])
+        command.extend(["--provider-version-tag={}".format(tag)])
+    for header in headers:
+        command.extend(["--custom-provider-header={}".format(header)])
 
     if publish_verification_results:
         if not provider_app_version:
