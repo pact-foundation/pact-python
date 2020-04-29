@@ -78,7 +78,7 @@ else:
     help='Retrieve the latest pacts for this provider')
 @click.option(
     'headers', '--custom-provider-header',
-    #envvar='CUSTOM_PROVIDER_HEADER',
+    envvar='CUSTOM_PROVIDER_HEADER',
     multiple=True,
     help='Header to add to provider state set up and '
          'pact verification requests. '
@@ -166,16 +166,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         command.extend(["--custom-provider-header={}".format(header)])
 
     if publish_verification_results:
-        if not provider_app_version:
-            click.echo(
-                error
-                + 'Provider application version is required '
-                + 'to publish verification results to broker'
-            )
-            raise click.Abort()
-        command.extend(["--provider-app-version",
-                        provider_app_version,
-                        "--publish-verification-results"])
+        publish_results(error, provider_app_version, command)
 
     if verbose:
         command.extend(['--verbose'])
@@ -188,6 +179,20 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     sanitize_logs(p, verbose)
     p.wait()
     sys.exit(p.returncode)
+
+
+def publish_results(error, provider_app_version, command):
+    """Publish results to broker."""
+    if not provider_app_version:
+        click.echo(
+            error
+            + 'Provider application version is required '
+            + 'to publish verification results to broker'
+        )
+        raise click.Abort()
+    command.extend(["--provider-app-version",
+                   provider_app_version,
+                   "--publish-verification-results"])
 
 
 def broker_not_provided(broker_base_url, provider):

@@ -63,7 +63,7 @@ class mainTestCase(TestCase):
 
         actual = call[1][0]
         self.assertEqual(actual[0], VERIFIER_PATH)
-        #self.assertEqual(len(actual), len(expected) + 1)
+        self.assertEqual(len(actual), len(expected) + 1)
         self.assertEqual(set(actual[1:]), set(expected))
         self.assertEqual(set(expected), set(actual[1:]))
         self.assertEqual(
