@@ -1,0 +1,60 @@
+{
+  "consumer": {
+    "name": "UserServiceClient"
+  },
+  "provider": {
+    "name": "UserService"
+  },
+  "interactions": [
+    {
+      "description": "a request for UserA",
+      "providerState": "UserA exists and is not an administrator",
+      "request": {
+        "method": "get",
+        "path": "/users/UserA"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": {
+          "name": "UserA",
+          "id": "00000000-0000-4000-a000-000000000000",
+          "created_on": "2016-12-15T20:16:01",
+          "admin": false
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          },
+          "$.body.id": {
+            "match": "regex",
+            "regex": "^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\\Z"
+          },
+          "$.body.created_on": {
+            "match": "regex",
+            "regex": "\\d+-\\d+-\\d+T\\d+:\\d+:\\d+"
+          }
+        }
+      }
+    },
+    {
+      "description": "a request for UserA",
+      "providerState": "UserA does not exist",
+      "request": {
+        "method": "get",
+        "path": "/users/UserA"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}
