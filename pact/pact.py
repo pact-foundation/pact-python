@@ -149,6 +149,10 @@ class Pact(object):
         self._interactions[0]['provider_state'] = provider_state
         return self
 
+    @staticmethod
+    def _normalize_consumer_name(name):
+        return name.lower().replace(' ', '_')
+
     def publish(self):
         """Publish the generated pact files to the specified pact broker."""
         if self.broker_base_url is None \
@@ -157,8 +161,10 @@ class Pact(object):
                                "Did you expect the PACT_BROKER_BASE_URL " +
                                "environment variable to be set?")
 
-        pact_files = fnmatch.filter(os.listdir(self.pact_dir),
-                                    self.consumer.name + '*.json')
+        pact_files = fnmatch.filter(
+            os.listdir(self.pact_dir),
+            self._normalize_consumer_name(self.consumer.name) + '*.json'
+        )
         command = [
             BROKER_CLIENT_PATH,
             'publish',
