@@ -5,8 +5,8 @@ from unittest import TestCase
 from click.testing import CliRunner
 from mock import patch, Mock, call
 
-from .. import verify
-from ..constants import VERIFIER_PATH
+from pact import verify as verify
+from pact.constants import VERIFIER_PATH
 
 if sys.version_info.major == 2:
     from subprocess32 import PIPE, Popen

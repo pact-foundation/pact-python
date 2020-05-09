@@ -2,8 +2,9 @@ from unittest import TestCase
 
 from mock import Mock
 
-from .. import Consumer, Provider
-from ..pact import Pact
+from pact.consumer import Consumer
+from pact.provider import Provider
+from pact.pact import Pact
 
 
 class ConsumerTestCase(TestCase):

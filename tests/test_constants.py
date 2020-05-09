@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from .. import constants
+from pact import constants as constants
 
 
 class broker_client_exeTestCase(TestCase):
