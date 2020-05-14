@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from pact.matchers import EachLike, Like, Matcher, SomethingLike, \
-    Term, from_term, get_generated_values
+    Term, Format, from_term, get_generated_values
 
 
 class MatcherTestCase(TestCase):
@@ -238,3 +238,25 @@ class GetGeneratedValuesTestCase(TestCase):
     def test_unknown_type(self):
         with self.assertRaises(ValueError):
             get_generated_values(set())
+
+class FormatTestCase(TestCase):
+
+    def test_identifier(self):
+        id = Format().identifier.generate()
+        self.assertEqual(id, {'json_class': 'Pact::SomethingLike', 'contents': 1})
+    
+    def test_ip_address(self):
+        ip_address = Format().ip_address.generate()
+        self.assertEqual(
+            ip_address,
+            {'json_class': 'Pact::Term',
+                 'json_class': 'Pact::Term',
+                 'data': {
+                     'matcher': {
+                         'json_class': 'Regexp',
+                         's': Format().Regexes.ip_address.value,
+                         'o': 0
+                     },
+                     'generate': '127.0.0.1'
+                 }
+             })
