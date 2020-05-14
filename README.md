@@ -249,6 +249,43 @@ from pact.matchers import get_generated_values
 self.assertEqual(result, get_generated_values(expected))
 ```
 
+### Match common formats
+Often times, you find yourself having to re-write regular expressions for common formats.
+
+```python
+from pact.matchers import Format
+Format().integer  # Matches if the value is an integer
+Format().ip_address  # Matches if the value is a ip address
+```
+
+We've created a number of them for you to save you the time:
+
+| matcher          | description                                                                                     |
+|-----------------|-------------------------------------------------------------------------------------------------|
+| `identifier`  | Match an ID (e.g. 42)                                                                           |
+| `integer`     | Match all numbers that are integers (both ints and longs)                                       |
+| `decimal`     | Match all real numbers (floating point and decimal)                                             |
+| `hexadecimal`    | Match all hexadecimal encoded strings                                                           |
+| `date`        | Match string containing basic ISO8601 dates (e.g. 2016-01-01)                                   |
+| `timestamp`   | Match a string containing an RFC3339 formatted timestapm (e.g. Mon, 31 Oct 2016 15:21:41 -0400) |
+| `time`        | Match string containing times in ISO date format (e.g. T22:44:30.652Z)                          |
+| `ip_address` | Match string containing IP4 formatted address                                                   |
+| `ipv6_address` | Match string containing IP6 formatted address                                                   |
+| `uuid`        | Match strings containing UUIDs                                                                  |
+
+These can be used to replace other matchers
+
+```python
+from pact import Like, Term
+Like({
+    'id': Format().integer, # integer
+    'lastUpdated': Format().timestamp, # timestamp
+    'location': { # dictionary
+        'host': Format().ip_address # ip address
+    }
+})
+```
+
 For more information see [Matching](https://docs.pact.io/getting_started/matching)
 
 ## Verifying Pacts Against a Service

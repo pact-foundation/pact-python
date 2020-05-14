@@ -248,8 +248,34 @@ class FormatTestCase(TestCase):
         cls.formatter = Format()
 
     def test_identifier(self):
-        id = self.formatter.identifier.generate()
-        self.assertEqual(id, {"json_class": "Pact::SomethingLike", "contents": 1})
+        identifier = self.formatter.identifier.generate()
+        self.assertEqual(
+            identifier,
+            {
+                "json_class": "Pact::SomethingLike",
+                "contents": 1
+            }
+        )
+
+    def test_integer(self):
+        integer = self.formatter.integer.generate()
+        self.assertEqual(
+            integer,
+            {
+                "json_class": "Pact::SomethingLike",
+                "contents": 1
+            }
+        )
+
+    def test_decimal(self):
+        decimal = self.formatter.integer.generate()
+        self.assertEqual(
+            decimal,
+            {
+                "json_class": "Pact::SomethingLike",
+                "contents": 1.0
+            }
+        )
 
     def test_ip_address(self):
         ip_address = self.formatter.ip_address.generate()
@@ -354,7 +380,8 @@ class FormatTestCase(TestCase):
                         "s": self.formatter.Regexes.date.value,
                         "o": 0,
                     },
-                    "generate": datetime.datetime(2000, 2, 1, 12, 30, 0, 0).date(),
+                    "generate": datetime.datetime(
+                        2000, 2, 1, 12, 30, 0, 0).date(),
                 },
             },
         )
@@ -372,7 +399,8 @@ class FormatTestCase(TestCase):
                         "s": self.formatter.Regexes.time_regex.value,
                         "o": 0,
                     },
-                    "generate": datetime.datetime(2000, 2, 1, 12, 30, 0, 0).time(),
+                    "generate": datetime.datetime(
+                        2000, 2, 1, 12, 30, 0, 0).time(),
                 },
             },
         )

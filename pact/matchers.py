@@ -257,7 +257,9 @@ class Format:
         """
         Create a new Formatter
         """
-        self.identifier = self.identifier()
+        self.identifier = self.integer_or_identifier()
+        self.integer = self.integer_or_identifier()
+        self.decimal = self.decimal()
         self.ip_address = self.ip_address()
         self.hexadecimal = self.hexadecimal()
         self.ipv6_address = self.ipv6_address()
@@ -266,7 +268,7 @@ class Format:
         self.date = self.date()
         self.time = self.time()
 
-    def identifier(self):
+    def integer_or_identifier(self):
         """
         Matches any integer
 
@@ -274,6 +276,15 @@ class Format:
         :rtype: Like
         """
         return Like(1)
+
+    def decimal(self):
+        """
+        Matches any decimal
+
+        :return: a Like object with a decimal
+        :rtype: Like
+        """
+        return Like(1.0)
 
     def ip_address(self):
         """
