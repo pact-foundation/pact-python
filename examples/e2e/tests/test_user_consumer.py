@@ -100,6 +100,7 @@ def test_get_user_non_admin(pact, consumer):
 
     # pact.verify()
 
+
 def test_get_non_existing_user(pact, consumer):
     (pact
      .given('UserA does not exist')

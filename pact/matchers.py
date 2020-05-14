@@ -254,9 +254,7 @@ class Format:
     """
 
     def __init__(self):
-        """
-        Create a new Formatter
-        """
+        """Create a new Formatter."""
         self.identifier = self.integer_or_identifier()
         self.integer = self.integer_or_identifier()
         self.decimal = self.decimal()
@@ -270,54 +268,54 @@ class Format:
 
     def integer_or_identifier(self):
         """
-        Matches any integer
+        Match any integer.
 
-        :return: a Like object with an integer
+        :return: a Like object with an integer.
         :rtype: Like
         """
         return Like(1)
 
     def decimal(self):
         """
-        Matches any decimal
+        Match any decimal.
 
-        :return: a Like object with a decimal
+        :return: a Like object with a decimal.
         :rtype: Like
         """
         return Like(1.0)
 
     def ip_address(self):
         """
-        Matches any ip address
+        Match any ip address.
 
-        :return: a Term object with an ip address regex
+        :return: a Term object with an ip address regex.
         :rtype: Term
         """
         return Term(self.Regexes.ip_address.value, '127.0.0.1')
 
     def hexadecimal(self):
         """
-        Matches any hexadecimal
+        Match any hexadecimal.
 
-        :return: a Term object with a hexdecimal regex
+        :return: a Term object with a hexdecimal regex.
         :rtype: Term
         """
         return Term(self.Regexes.hexadecimal.value, '3F')
 
     def ipv6_address(self):
         """
-        Matches any ipv6 address
+        Match any ipv6 address.
 
-        :return: a Term object with an ipv6 address regex
+        :return: a Term object with an ipv6 address regex.
         :rtype: Term
         """
         return Term(self.Regexes.ipv6_address.value, '::ffff:192.0.2.128')
 
     def uuid(self):
         """
-        Matches any uuid
+        Match any uuid.
 
-        :return: a Term object with a uuid regex
+        :return: a Term object with a uuid regex.
         :rtype: Term
         """
         return Term(
@@ -326,9 +324,9 @@ class Format:
 
     def timestamp(self):
         """
-        Matches any timestamp
+        Match any timestamp.
 
-        :return: a Term object with a timestamp regex
+        :return: a Term object with a timestamp regex.
         :rtype: Term
         """
         return Term(
@@ -339,9 +337,9 @@ class Format:
 
     def date(self):
         """
-        Matches any date
+        Match any date.
 
-        :return: a Term object with a date regex
+        :return: a Term object with a date regex.
         :rtype: Term
         """
         return Term(
@@ -352,9 +350,9 @@ class Format:
 
     def time(self):
         """
-        Matches any time
+        Match any time.
 
-        :return: a Term object with a time regex
+        :return: a Term object with a time regex.
         :rtype: Term
         """
         return Term(
@@ -364,6 +362,8 @@ class Format:
         )
 
     class Regexes(Enum):
+        """Regex Enum for common formats."""
+
         ip_address = r'(\d{1,3}\.)+\d{1,3}'
         hexadecimal = r'[0-9a-fA-F]+'
         ipv6_address = r'(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\Z)|' \
