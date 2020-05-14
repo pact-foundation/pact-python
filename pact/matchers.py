@@ -229,11 +229,33 @@ def get_generated_values(input):
     else:
         raise ValueError('Unknown type: %s' % type(input))
 
+
 class Format:
+    """
+    Class of regular expressions for common formats.
+
+    Example:
+
+    >>> from pact import Consumer, Provider
+    >>> from pact.matchers import Format
+    >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
+    >>> (pact.given('the current user is logged in as `tester`')
+    ...  .upon_receiving('a request for the user profile')
+    ...  .with_request('get', '/profile')
+    ...  .will_respond_with(200, body={
+    ...    'id': Format().identifier,
+    ...    'lastUpdated': Format().time
+    ...  }))
+
+    Would expect `id` to be any valid int and `lastUpdated` to be a valid time.
+    When the consumer runs this contract, the value of that will be returned
+    is the second value passed to Term in the given function, for the time
+    example it would be datetime.datetime(2000, 2, 1, 12, 30, 0, 0).time()
+    """
 
     def __init__(self):
         """
-
+        Create a new Formatter
         """
         self.identifier = self.identifier()
         self.ip_address = self.ip_address()
@@ -245,35 +267,124 @@ class Format:
         self.time = self.time()
 
     def identifier(self):
+        """
+        Matches any integer
+
+        :return: a Like object with an integer
+        :rtype: Like
+        """
         return Like(1)
 
     def ip_address(self):
+        """
+        Matches any ip address
+
+        :return: a Term object with an ip address regex
+        :rtype: Term
+        """
         return Term(self.Regexes.ip_address.value, '127.0.0.1')
 
     def hexadecimal(self):
+        """
+        Matches any hexadecimal
+
+        :return: a Term object with a hexdecimal regex
+        :rtype: Term
+        """
         return Term(self.Regexes.hexadecimal.value, '3F')
-    
+
     def ipv6_address(self):
+        """
+        Matches any ipv6 address
+
+        :return: a Term object with an ipv6 address regex
+        :rtype: Term
+        """
         return Term(self.Regexes.ipv6_address.value, '::ffff:192.0.2.128')
-    
+
     def uuid(self):
-        return Term(self.Regexes.uuid.value, 'fc763eba-0905-41c5-a27f-3934ab26786c')
+        """
+        Matches any uuid
+
+        :return: a Term object with a uuid regex
+        :rtype: Term
+        """
+        return Term(
+            self.Regexes.uuid.value, 'fc763eba-0905-41c5-a27f-3934ab26786c'
+        )
 
     def timestamp(self):
-        return Term(self.Regexes.timestamp.value, datetime.datetime(2000, 2, 1, 12, 30, 0, 0))
+        """
+        Matches any timestamp
+
+        :return: a Term object with a timestamp regex
+        :rtype: Term
+        """
+        return Term(
+            self.Regexes.timestamp.value, datetime.datetime(
+                2000, 2, 1, 12, 30, 0, 0
+            )
+        )
 
     def date(self):
-        return Term(self.Regexes.date.value, datetime.datetime(2000, 2, 1, 12, 30, 0, 0).date())
+        """
+        Matches any date
+
+        :return: a Term object with a date regex
+        :rtype: Term
+        """
+        return Term(
+            self.Regexes.date.value, datetime.datetime(
+                2000, 2, 1, 12, 30, 0, 0
+            ).date()
+        )
 
     def time(self):
-        return Term(self.Regexes.time_regex.value, datetime.datetime(2000, 2, 1, 12, 30, 0, 0).time())
+        """
+        Matches any time
 
+        :return: a Term object with a time regex
+        :rtype: Term
+        """
+        return Term(
+            self.Regexes.time_regex.value, datetime.datetime(
+                2000, 2, 1, 12, 30, 0, 0
+            ).time()
+        )
 
     class Regexes(Enum):
-        ip_address   = r'(\d{1,3}\.)+\d{1,3}'
-        hexadecimal  = r'[0-9a-fA-F]+'
-        ipv6_address = r'(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\Z)|(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\Z)|(\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\Z)|(\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}\Z)|(\A([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}\Z)|(\A([0-9a-f]{1,4}:){1,6}(:[0-9a-f]{1,4}){1,1}\Z)|(\A(([0-9a-f]{1,4}:){1,7}|:):\Z)|(\A:(:[0-9a-f]{1,4}){1,7}\Z)|(\A((([0-9a-f]{1,4}:){6})(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3})\Z)|(\A(([0-9a-f]{1,4}:){5}[0-9a-f]{1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3})\Z)|(\A([0-9a-f]{1,4}:){5}:[0-9a-f]{1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,3}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,2}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,1}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A(([0-9a-f]{1,4}:){1,5}|:):(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A:(:[0-9a-f]{1,4}){1,5}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)'
-        uuid         = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-        timestamp    = r'^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$'
-        date         = r'^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))?)'
-        time_regex   = r'^(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?$'
+        ip_address = r'(\d{1,3}\.)+\d{1,3}'
+        hexadecimal = r'[0-9a-fA-F]+'
+        ipv6_address = r'(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\Z)|' \
+            r'(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\Z)|(\A([0-9a-f]' \
+            r'{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\Z)|(\A([0-9a-f]{1,4}:)' \
+            r'{1,4}(:[0-9a-f]{1,4}){1,3}\Z)|(\A([0-9a-f]{1,4}:){1,5}(:[0-' \
+            r'9a-f]{1,4}){1,2}\Z)|(\A([0-9a-f]{1,4}:){1,6}(:[0-9a-f]{1,4})' \
+            r'{1,1}\Z)|(\A(([0-9a-f]{1,4}:){1,7}|:):\Z)|(\A:(:[0-9a-f]{1,4})' \
+            r'{1,7}\Z)|(\A((([0-9a-f]{1,4}:){6})(25[0-5]|2[0-4]\d|[0-1]' \
+            r'?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3})\Z)|(\A(([0-9a-f]' \
+            r'{1,4}:){5}[0-9a-f]{1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25' \
+            r'[0-5]|2[0-4]\d|[0-1]?\d?\d)){3})\Z)|(\A([0-9a-f]{1,4}:){5}:[' \
+            r'0-9a-f]{1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4' \
+            r']\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]' \
+            r'{1,4}){1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]' \
+            r'\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}' \
+            r'){1,3}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0' \
+            r'-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,' \
+            r'2}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]' \
+            r'?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,1}:' \
+            r'(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?' \
+            r'\d)){3}\Z)|(\A(([0-9a-f]{1,4}:){1,5}|:):(25[0-5]|2[0-4]\d|[0' \
+            r'-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A:(:[' \
+            r'0-9a-f]{1,4}){1,5}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]' \
+            r'|2[0-4]\d|[0-1]?\d?\d)){3}\Z)'
+        uuid = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+        timestamp = r'^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3(' \
+            r'[12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-' \
+            r'9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2' \
+            r'[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d' \
+            r'([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$'
+        date = r'^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|' \
+            r'0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|' \
+            r'[12]\d{2}|3([0-5]\d|6[1-6])))?)'
+        time_regex = r'^(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?$'
