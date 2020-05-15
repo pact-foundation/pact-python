@@ -20,11 +20,13 @@ def setup_no_user_a():
 def setup_user_a_nonadmin():
     id = '00000000-0000-4000-a000-000000000000'
     some_date = '2016-12-15T20:16:01'
+    ip_address = '198.0.0.1'
 
     fakedb['UserA'] = {
                         'name': "UserA",
                         'id': id,
                         'created_on': some_date,
+                        'ip_address': ip_address,
                         'admin': False
                       }
 

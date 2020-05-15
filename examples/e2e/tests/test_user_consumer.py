@@ -7,13 +7,13 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 import pytest
-from pact import Consumer, Like, Provider, Term
+from pact import Consumer, Like, Provider, Term, Format
 
 from ..src.consumer import UserConsumer
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
+print(Format().__dict__)
 
 PACT_UPLOAD_URL = (
     "http://127.0.0.1/pacts/provider/UserService/consumer"
@@ -76,14 +76,12 @@ def push_to_broker(version):
 def test_get_user_non_admin(pact, consumer):
     expected = {
         'name': 'UserA',
-        'id': Term(
-            r'^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z',  # noqa: E501
-            '00000000-0000-4000-a000-000000000000'
-        ),
+        'id': Format().uuid,
         'created_on': Term(
             r'\d+-\d+-\d+T\d+:\d+:\d+',
             '2016-12-15T20:16:01'
         ),
+        'ip_address': Format().ip_address,
         'admin': False
     }
 
