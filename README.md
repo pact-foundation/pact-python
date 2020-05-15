@@ -253,7 +253,7 @@ self.assertEqual(result, get_generated_values(expected))
 Often times, you find yourself having to re-write regular expressions for common formats.
 
 ```python
-from pact.matchers import Format
+from pact import Format
 Format().integer  # Matches if the value is an integer
 Format().ip_address  # Matches if the value is a ip address
 ```
@@ -276,7 +276,7 @@ We've created a number of them for you to save you the time:
 These can be used to replace other matchers
 
 ```python
-from pact import Like, Term
+from pact import Like, Format
 Like({
     'id': Format().integer, # integer
     'lastUpdated': Format().timestamp, # timestamp

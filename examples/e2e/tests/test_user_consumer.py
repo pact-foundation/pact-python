@@ -7,14 +7,13 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 import pytest
-from pact import Consumer, Like, Provider, Term
-from pact.matchers import Format
+from pact import Consumer, Like, Provider, Term, Format
 
 from ..src.consumer import UserConsumer
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
+print(Format().__dict__)
 
 PACT_UPLOAD_URL = (
     "http://127.0.0.1/pacts/provider/UserService/consumer"
