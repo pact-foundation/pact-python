@@ -115,10 +115,6 @@ dependencies = [
     'six>=1.9.0',
 ]
 
-if sys.version_info.major == 2:
-    dependencies.append('subprocess32')
-    dependencies.append('enum34')
-
 if __name__ == '__main__':
     setup(
         cmdclass={

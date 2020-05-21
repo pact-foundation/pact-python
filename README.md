@@ -12,6 +12,8 @@ Currently supports version 2 of the [Pact specification].
 For more information about what Pact is, and how it can help you
 test your code more efficiently, check out the [Pact documentation].
 
+Note: As of Version 1.0 deprecates support for python 2.7 to allow us to incorporate python 3.x features more readily. If you want to still use Python 2.7 use the 0.x.y versions. Only bug fixes will now be added to that release.
+
 # How to use pact-python
 
 ## Installation
