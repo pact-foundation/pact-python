@@ -19,7 +19,7 @@ script:
   - flake8
   - pydocstyle pact
   - tox
-  - if [[ $TRAVIS_PYTHON_VERSION == "3.4" ]]; then make package && pip install ./dist/pact-python-*.tar.gz && make e2e; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "3.5" ]]; then make package && pip install ./dist/pact-python-*.tar.gz && make e2e; fi
 
 before_deploy:
   - export RELEASE_PACKAGE=$(ls dist/pact-python-*.tar.gz)
