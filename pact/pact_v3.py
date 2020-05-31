@@ -1,5 +1,6 @@
 import os
 from pact_python_v3 import init, PactNative
+from pact.matchers_v3 import V3Matcher
 
 class PactV3(object):
     """
@@ -25,8 +26,12 @@ class PactV3(object):
         self.pact.upon_receiving(description)
         return self
 
-    def with_request(self, method='GET', path='/', query = None, headers = None):
-        self.pact.with_request(method, path, query, headers)
+    def with_request(self, method='GET', path='/', query = None, headers = None, body = None):
+        self.pact.with_request(method, path, query, headers, self.__process_body(body))
+        return self
+
+    def will_respond_with(self, status=200, headers = None, body = None):
+        self.pact.will_respond_with(status, headers, self.__process_body(body))
         return self
 
     def __enter__(self):
@@ -36,3 +41,14 @@ class PactV3(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         print("--> EXIT")
+
+    def __process_body(self, body, count = 0):
+        print("--> ", type(body), count)
+        if isinstance(body, dict):
+            return { key: self.__process_body(value, count = count + 1) for key, value in body.items() }
+        elif isinstance(body, list):
+            return [ self.__process_body(value, count = count + 1) for value in body ]
+        elif isinstance(body, V3Matcher):
+            return self.__process_body(body.generate(), count = count + 1)
+        else:
+            return body

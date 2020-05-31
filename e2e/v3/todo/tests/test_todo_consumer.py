@@ -1,62 +1,37 @@
 import pytest
 from ..src.todo_consumer import TodoConsumer
 from pact import PactV3
+from pact.matchers_v3 import EachLike, Integer, Like, DateTime, AtLeastOneLike
 
 def test_get_projects_as_json():
     pact = PactV3('TodoApp', 'TodoServiceV3')
 
     (pact.given('i have a list of projects')
         .upon_receiving('a request for projects')
-        .with_request(method="GET", path="/projects", query = { 'from': "today" }, headers = { 'Accept': "application/json" }))
-    
-    #             .willRespondWith({
-    #               status: 200,
-    #               headers: { "Content-Type": "application/json" },
-    #               body: eachLike({
-    #                 id: integer(1),
-    #                 name: string("Project 1"),
-    #                 due: timestamp(
-    #                   "yyyy-MM-dd'T'HH:mm:ss.SSSX",
-    #                   "2016-02-11T09:46:56.023Z"
-    #                 ),
-    #                 tasks: atLeastOneLike(
-    #                   {
-    #                     id: integer(),
-    #                     name: string("Do the laundry"),
-    #                     done: boolean(true),
-    #                   },
-    #                   4
-    #                 ),
-    #               }),
-    #             })
-    #         })
+        .with_request(method="GET", path="/projects", query = { 'from': "today" }, headers = { 'Accept': "application/json" })
+        .will_respond_with(
+            status = 200,
+            headers = { "Content-Type": "application/json" },
+            body = EachLike({
+                'id': Integer(1),
+                'name': Like("Project 1"),
+                'due': DateTime("yyyy-MM-dd'T'HH:mm:ss.SSSX", "2016-02-11T09:46:56.023Z"),
+                'tasks': AtLeastOneLike({
+                    'id': Integer(),
+                    'name': Like("Do the laundry"),
+                    'done': Like(True)
+                }, examples=4)
+                })))
 
     with pact as mock_server:
         print("Mock server is running at " + mock_server.get_url())
         todo = TodoConsumer(mock_server.get_url())
         projects = todo.get_projects()
-
-
-#         it("generates a list of TODOs for the main screen", () => {
-#           let result = provider.executeTest(mockserver => {
-#             console.log("In Test Function", mockserver)
-#             return TodoApp.setUrl(mockserver.url)
-#               .getProjects()
-#               .then(projects => {
-#                 expect(projects)
-#                   .to.be.an("array")
-#                   .with.length(1)
-#                 expect(projects[0].id).to.be.equal(1)
-#                 expect(projects[0].tasks)
-#                   .to.be.an("array")
-#                   .with.length(4)
-#               })
-#           })
-#           console.log("result from runTest", result)
-#           return result
-#         })
-#       })
-#     })
+        print(projects)
+        assert len(projects) == 1
+        assert projects[0]['id'] == 1
+        assert len(projects[0]['tasks']) == 4
+        assert projects[0]['tasks'][0]['id'] != 101
 
 #     describe("with XML requests", () => {
 #       before(() => {

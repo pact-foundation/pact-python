@@ -4,6 +4,8 @@ use env_logger::{Builder, Target};
 use std::str::FromStr;
 use pact_matching::models::*;
 use pact_matching::models::provider_states::ProviderState;
+use pact_matching::models::matchingrules::MatchingRules;
+use pact_matching::models::generators::Generators;
 use std::cell::RefCell;
 use maplit::*;
 use serde_json::{Value, json};
@@ -12,6 +14,8 @@ use uuid::Uuid;
 use lazy_static::*;
 use pact_mock_server::server_manager::ServerManager;
 use std::sync::Mutex;
+use pact_mock_server_ffi::bodies::{process_object, process_array};
+use pact_matching::time_utils::generate_string;
 
 lazy_static! {
   static ref MANAGER: Mutex<ServerManager> = Mutex::new(ServerManager::new());
@@ -20,6 +24,7 @@ lazy_static! {
 py_module_initializer!(pact_python_v3, |py, m| {
   m.add(py, "__doc__", "Pact Python V3 support (provided by Pact-Rust FFI)")?;
   m.add(py, "init", py_fn!(py, init_lib(*args, **kwargs)))?;
+  m.add(py, "generate_datetime_string", py_fn!(py, generate_datetime_string(format: &str)))?;
   m.add_class::<PactNative>(py)?;
   Ok(())
 });
@@ -61,7 +66,7 @@ py_class!(class PactNative |py| {
     })
   }
 
-  def with_request(&self, method: &str, path: &PyObject, query: &PyObject, headers: &PyObject) -> PyResult<PyObject> {
+  def with_request(&self, method: &str, path, query, headers, body) -> PyResult<PyObject> {
     self.with_current_interaction(py, &|interaction| {
       interaction.request.method = method.to_string();
       
@@ -109,10 +114,64 @@ py_class!(class PactNative |py| {
         return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: Headers must be supplied as a Dict, got '{}'", headers.get_type(py).name(py))));
       }
 
-      dbg!(interaction);
-      
       Ok(py.None())
     })
+  }
+
+  def will_respond_with(&self, status, headers, body) -> PyResult<PyObject> {
+    self.with_current_interaction(py, &|interaction| {
+      interaction.response.status = status.extract(py)?;
+      
+      if let Ok(headers) = headers.cast_as::<PyDict>(py) {
+        let mut header_map = hashmap!{};
+        for (k, v) in headers.items(py) {
+          let k = k.cast_as::<PyString>(py)?.to_string_lossy(py).to_string();
+          let v = if let Ok(v) = v.cast_as::<PyString>(py) {
+            vec![ v.to_string_lossy(py).to_string() ]
+          } else {
+            // TODO: deal with a matcher or a list
+            vec![]
+          };
+          header_map.insert(k, v);
+        }
+        if !header_map.is_empty() {
+          interaction.response.headers = Some(header_map);
+        }
+      } else if headers.get_type(py).name(py) != "NoneType" {
+        return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: Headers must be supplied as a Dict, got '{}'", headers.get_type(py).name(py))));
+      }
+
+      if let Ok(body) = body.cast_as::<PyDict>(py) {
+        let body = self.process_body_as_dict(py, body, interaction.response.content_type_enum(), &mut interaction.response.matching_rules, &mut interaction.response.generators)?;
+        debug!("Response body = {}", body.0.str_value());
+        interaction.response.body = body.0;
+        if let Some(content_type) = body.1 {
+          interaction.response.add_header("Content-Type", vec![&content_type]);
+        }
+      } else if let Ok(body) = body.cast_as::<PyList>(py) {
+        let body = self.process_body_as_array(py, body, interaction.response.content_type_enum(), &mut interaction.response.matching_rules, &mut interaction.response.generators)?;
+        debug!("Response body = {}", body.0.str_value());
+        interaction.response.body = body.0;
+        if let Some(content_type) = body.1 {
+          interaction.response.add_header("Content-Type", vec![&content_type]);
+        }
+      } else if let Ok(body) = body.cast_as::<PyString>(py) {
+        interaction.response.body = OptionalBody::Present(body.to_string_lossy(py).as_bytes().to_vec());
+      } else if body.get_type(py).name(py) != "NoneType" {
+        return Err(PyErr::new::<exc::TypeError, _>(py, format!("will_respond_with: '{}' is not an appropriate type for a body", body.get_type(py).name(py))));
+      }
+
+      debug!("Response = {}", interaction.response);
+      debug!("Response matching rules = {:?}", interaction.response.matching_rules);
+      debug!("Response generators = {:?}", interaction.response.generators);
+
+      Ok(py.None())
+    })?;
+
+    let mut interaction = self.interaction(py).borrow_mut();
+    *interaction = None;
+
+    Ok(py.None())
   }
 
   def start_mock_server(&self) -> PyResult<MockServerHandle> {
@@ -130,15 +189,45 @@ py_class!(class PactNative |py| {
 impl PactNative {
   fn with_current_interaction(&self, py: Python, callback: &dyn Fn(&mut Interaction) -> PyResult<PyObject>) -> PyResult<PyObject> {
     let mut pact = self.pact(py).borrow_mut();
-    let mut iteraction = self.interaction(py).borrow_mut();
-    match *iteraction {
+    let mut index = self.interaction(py).borrow_mut();
+    match *index {
       Some(index) => callback(&mut pact.interactions[index]),
       None => {
         let mut interaction = Interaction::default();
         let result = callback(&mut interaction);
         pact.interactions.push(interaction);
-        *iteraction = Some(0);
+        *index = Some(pact.interactions.len() - 1);
         result
+      }
+    }
+  }
+
+  fn process_body_as_dict(&self, py: Python, body: &PyDict, content_type: DetectedContentType, matching_rules: &mut MatchingRules, generators: &mut Generators) -> PyResult<(OptionalBody, Option<String>)> {
+    let mut category = matching_rules.add_category("body");
+    match content_type {
+      DetectedContentType::Json => {
+        let body = pyobj_to_json(py, &body.as_object())?;
+        Ok((OptionalBody::from(process_object(body.as_object().unwrap(), &mut category, generators, "$", false).to_string()), None))
+      },
+      // DetectedContentType::Xml => Ok(OptionalBody::Present(process_xml(body, category, generators)?)),
+      _ => {
+        let body = pyobj_to_json(py, &body.as_object())?;
+        Ok((OptionalBody::from(process_object(body.as_object().unwrap(), &mut category, generators, "$", false).to_string()), Some("application/json".to_string())))
+      }
+    }
+  }
+
+  fn process_body_as_array(&self, py: Python, body: &PyList, content_type: DetectedContentType, matching_rules: &mut MatchingRules, generators: &mut Generators) -> PyResult<(OptionalBody, Option<String>)> {
+    let mut category = matching_rules.add_category("body");
+    match content_type {
+      DetectedContentType::Json => {
+        let body = pyobj_to_json(py, &body.as_object())?;
+        Ok((OptionalBody::from(process_array(body.as_array().unwrap(), &mut category, generators, "$", false).to_string()), None))
+      },
+      // DetectedContentType::Xml => Ok(OptionalBody::Present(process_xml(body, category, generators)?)),
+      _ => {
+        let body = pyobj_to_json(py, &body.as_object())?;
+        Ok((OptionalBody::from(process_array(body.as_array().unwrap(), &mut category, generators, "$", false).to_string()), Some("application/json".to_string())))
       }
     }
   }
@@ -172,6 +261,10 @@ fn init_lib(py: Python, _: &PyTuple, kwargs: Option<&PyDict>) -> PyResult<PyObje
   debug!("Initialising Pact native library version {}", env!("CARGO_PKG_VERSION"));
 
   Ok(py.None())
+}
+
+fn generate_datetime_string(py: Python, format: &str) -> PyResult<PyString> {
+  generate_string(&format.to_string()).map(|val| val.to_py_object(py)).map_err(|err| PyErr::new::<exc::TypeError, _>(py, err))
 }
 
 fn pyobj_to_json(py: Python, val: &PyObject) -> PyResult<Value> {
