@@ -1,2 +1,4 @@
 Flask==1.1.1
 json2xml==3.3.2
+pytest==5.4.2
+pact-python==1.1.0b0

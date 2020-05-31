@@ -4,6 +4,7 @@ from .matchers import EachLike, Like, SomethingLike, Term, Format
 from .pact import Pact
 from .provider import Provider
 from .__version__ import __version__  # noqa: F401
+from .pact_v3 import PactV3
 
 __all__ = ('Consumer', 'EachLike', 'Like', 'Pact', 'Provider', 'SomethingLike',
-           'Term', 'Format')
+           'Term', 'Format', 'PactV3')

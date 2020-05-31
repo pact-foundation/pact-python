@@ -113,6 +113,7 @@ dependencies = [
     'psutil>=2.0.0',
     'requests>=2.5.0',
     'six>=1.9.0',
+    'pact-python-v3>=0.0.0'
 ]
 
 if __name__ == '__main__':
