@@ -2,6 +2,7 @@ import os
 import os.path
 from pact_python_v3 import init, PactNative
 from pact.matchers_v3 import V3Matcher
+from pact.__version__ import __version__ 
 
 class PactV3(object):
     """
@@ -17,7 +18,7 @@ class PactV3(object):
         self.log_level = log_level
         self.pact_dir = pact_dir or os.path.join(os.getcwd(), 'pacts')
         init(log_level = log_level)
-        self.pact = PactNative(consumer_name, provider_name)
+        self.pact = PactNative(consumer_name, provider_name, __version__)
         
     def given(self, provider_state, params={}):
         self.pact.given(provider_state, params)

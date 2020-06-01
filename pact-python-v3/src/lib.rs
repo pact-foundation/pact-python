@@ -34,10 +34,13 @@ py_class!(class PactNative |py| {
   data pact: RefCell<Pact>;
   data interaction: RefCell<Option<usize>>;
   
-  def __new__(_cls, consumer_name: &str, provider_name: &str) -> PyResult<PactNative> {
+  def __new__(_cls, consumer_name: &str, provider_name: &str, version: &str) -> PyResult<PactNative> {
+    let mut metadata = Pact::default_metadata();
+    metadata.insert("pactPython".to_string(), btreemap!{ "version".to_string() => version.to_string() });
     PactNative::create_instance(py, RefCell::new(Pact {
       consumer: Consumer { name: consumer_name.to_string() },
       provider: Provider { name: provider_name.to_string() },
+      metadata: metadata,
       .. Pact::default()
     }), RefCell::new(None))
   }
