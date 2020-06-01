@@ -2,6 +2,7 @@ use cpython::*;
 use log::*;
 use env_logger::{Builder, Target};
 use std::str::FromStr;
+use std::collections::HashMap;
 use pact_matching::models::*;
 use pact_matching::models::provider_states::ProviderState;
 use pact_matching::models::matchingrules::MatchingRules;
@@ -112,6 +113,26 @@ py_class!(class PactNative |py| {
         }
       } else if headers.get_type(py).name(py) != "NoneType" {
         return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: Headers must be supplied as a Dict, got '{}'", headers.get_type(py).name(py))));
+      }
+
+      if let Ok(body) = body.cast_as::<PyDict>(py) {
+        let body = self.process_body_as_dict(py, body, interaction.request.content_type_enum(), &mut interaction.request.matching_rules, &mut interaction.request.generators)?;
+        debug!("request body = {}", body.0.str_value());
+        interaction.request.body = body.0;
+        if let Some(content_type) = body.1 {
+          interaction.request.add_header("Content-Type", vec![&content_type]);
+        }
+      } else if let Ok(body) = body.cast_as::<PyList>(py) {
+        let body = self.process_body_as_array(py, body, interaction.request.content_type_enum(), &mut interaction.request.matching_rules, &mut interaction.request.generators)?;
+        debug!("request body = {}", body.0.str_value());
+        interaction.request.body = body.0;
+        if let Some(content_type) = body.1 {
+          interaction.request.add_header("Content-Type", vec![&content_type]);
+        }
+      } else if let Ok(body) = body.cast_as::<PyString>(py) {
+        interaction.request.body = OptionalBody::Present(body.to_string_lossy(py).as_bytes().to_vec());
+      } else if body.get_type(py).name(py) != "NoneType" {
+        return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: '{}' is not an appropriate type for a body", body.get_type(py).name(py))));
       }
 
       Ok(py.None())
@@ -244,6 +265,43 @@ py_class!(class MockServerHandle |py| {
   def get_port(&self) -> PyResult<PyLong> {
     Ok(self.port(py).to_py_object(py))
   }
+
+  def get_id(&self) -> PyResult<PyString> {
+    Ok(self.id(py).as_str().to_py_object(py))
+  }
+
+  def get_test_result(&self) -> PyResult<PyObject> {
+    match MANAGER.lock().unwrap().find_mock_server_by_id(&self.id(py), &|mock_server| mock_server.mismatches()) {
+      Some(mismatches) => if mismatches.is_empty() {
+        Ok(py.None())
+      } else {
+        Ok(mismatches.iter().map(|val| json_to_pyobj(py, &val.to_json())).collect::<Vec<PyObject>>().to_py_object(py).into_object())
+      },
+      None => Err(PyErr::new::<exc::TypeError, _>(py, format!("Could not get the result from the mock server: there is no mock server with id {}", self.id(py))))
+    }
+  }
+
+  def write_pact_file(&self, pact_dir: &PyObject) -> PyResult<PyObject> {
+    let dir = if let Ok(pact_dir) = pact_dir.cast_as::<PyString>(py) {
+      let pact_dir = pact_dir.to_string_lossy(py).to_string();
+      if pact_dir.is_empty() {
+        None
+      } else {
+        Some(pact_dir)
+      }
+    } else {
+      None
+    };
+
+    match MANAGER.lock().unwrap().find_mock_server_by_id(&self.id(py), &|mock_server| mock_server.write_pact(&dir)) {
+      Some(result) => result.map(|_| py.None()).map_err(|err| PyErr::new::<exc::TypeError, _>(py, format!("Failed to write pact to file - {}", err))),
+      None => Err(PyErr::new::<exc::TypeError, _>(py, format!("Could not get the mock server to write the pact file: there is no mock server with id {}", self.id(py))))
+    }
+  }
+            
+  def shutdown(&self) -> PyResult<PyBool> {
+    Ok(MANAGER.lock().unwrap().shutdown_mock_server_by_id(self.id(py).to_string()).to_py_object(py))
+  }
 });
 
 fn init_lib(py: Python, _: &PyTuple, kwargs: Option<&PyDict>) -> PyResult<PyObject> {
@@ -311,5 +369,22 @@ fn pyobj_to_json(py: Python, val: &PyObject) -> PyResult<Value> {
     Ok(Value::Object(map))
   } else {
     Err(PyErr::new::<exc::TypeError, _>(py, format!("Could not convert Python object to a JSON form - {}", val.get_type(py).name(py))))
+  }
+}
+
+fn json_to_pyobj(py: Python, val: &Value) -> PyObject {
+  match val {
+    Value::Null => py.None(),
+    Value::Bool(b) => b.to_py_object(py).into_object(),
+    Value::Number(n) => if let Some(n) = n.as_u64() {
+      n.to_py_object(py).into_object()
+    } else if let Some(n) = n.as_i64() {
+      n.to_py_object(py).into_object()
+    } else {
+      n.as_f64().unwrap_or(0.0).to_py_object(py).into_object()
+    },
+    Value::String(s) => s.as_str().to_py_object(py).into_object(),
+    Value::Array(array) => array.iter().map(|item| json_to_pyobj(py, item)).collect::<Vec<PyObject>>().to_py_object(py).into_object(),
+    Value::Object(map) => map.iter().map(|(key, value)| (key.clone(), json_to_pyobj(py, value))).collect::<HashMap<String, PyObject>>().to_py_object(py).into_object()
   }
 }

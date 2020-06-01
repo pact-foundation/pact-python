@@ -10,7 +10,6 @@ def test_get_projects_as_json():
         .upon_receiving('a request for projects')
         .with_request(method="GET", path="/projects", query = { 'from': "today" }, headers = { 'Accept': "application/json" })
         .will_respond_with(
-            status = 200,
             headers = { "Content-Type": "application/json" },
             body = EachLike({
                 'id': Integer(1),

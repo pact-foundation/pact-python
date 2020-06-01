@@ -1,4 +1,5 @@
 import os
+import os.path
 from pact_python_v3 import init, PactNative
 from pact.matchers_v3 import V3Matcher
 
@@ -14,7 +15,7 @@ class PactV3(object):
         self.consumer_name = consumer_name
         self.provider_name = provider_name
         self.log_level = log_level
-        self.pact_dir = pact_dir or os.getcwd() + 'pacts'
+        self.pact_dir = pact_dir or os.path.join(os.getcwd(), 'pacts')
         init(log_level = log_level)
         self.pact = PactNative(consumer_name, provider_name)
         
@@ -35,20 +36,35 @@ class PactV3(object):
         return self
 
     def __enter__(self):
-        print("--> ENTER")
         self.mock_server = self.pact.start_mock_server()
         return self.mock_server
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("--> EXIT")
+        test_result = self.mock_server.get_test_result()
+        print("--> EXIT", exc_type, test_result)
+        if exc_type is not None or test_result is not None:
+            error = "Test failed for the following reasons:"
+            if exc_type is not None:
+                error += "\n\n\tTest code failed with an error: " + getattr(exc_val, 'message', repr(exc_val))
+            if test_result is not None:
+                error += "\n\n\tMock server failed with the following mismatches: "
+                i = 1
+                for mismatches in test_result:
+                    error += "\n\t  {}) {} {}".format(i, mismatches["method"], mismatches["path"])
+                    for mismatch in mismatches["mismatches"]:
+                        error += "\n\t      {} - {}".format(mismatch["type"], mismatch["mismatch"])
+                    i += 1
+            raise RuntimeError(error)
+        else:
+            self.mock_server.write_pact_file(self.pact_dir)
+            self.mock_server.shutdown()
 
-    def __process_body(self, body, count = 0):
-        print("--> ", type(body), count)
+    def __process_body(self, body):
         if isinstance(body, dict):
-            return { key: self.__process_body(value, count = count + 1) for key, value in body.items() }
+            return { key: self.__process_body(value) for key, value in body.items() }
         elif isinstance(body, list):
-            return [ self.__process_body(value, count = count + 1) for value in body ]
+            return [ self.__process_body(value) for value in body ]
         elif isinstance(body, V3Matcher):
-            return self.__process_body(body.generate(), count = count + 1)
+            return self.__process_body(body.generate())
         else:
             return body
