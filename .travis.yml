@@ -18,7 +18,7 @@ install: pip install -r requirements_dev.txt
 script:
   - flake8
   - pydocstyle pact
-  - tox
+  - tox -e test
   - if [[ $TRAVIS_PYTHON_VERSION == "3.5" ]]; then make package && pip install ./dist/pact-python-*.tar.gz && make e2e; fi
 
 before_deploy:

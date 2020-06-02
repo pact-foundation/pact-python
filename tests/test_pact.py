@@ -620,6 +620,7 @@ class PactVerifyTestCase(PactTestCase):
             json=None)
 
     def test_success(self):
+        self.assertTrue(False)
         self.mock_requests.side_effect = iter([Mock(status_code=200)] * 2)
         self.target.verify()
 
