@@ -375,7 +375,8 @@ class PactSetupTestCase(PactTestCase):
          .will_respond_with(200, body='success'))
 
         self.delete_call = call('delete', 'http://localhost:1234/interactions',
-                                headers={'X-Pact-Mock-Service': 'true'}, verify=False)
+                                headers={'X-Pact-Mock-Service': 'true'},
+                                verify=False)
 
         self.put_interactions_call = call(
             'put', 'http://localhost:1234/interactions',
