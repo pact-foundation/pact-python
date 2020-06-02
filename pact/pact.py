@@ -363,7 +363,7 @@ class Pact(object):
         """
         s = requests.Session()
         retries = Retry(total=9, backoff_factor=0.1)
-        http_mount = 'https://' if self._ssl else 'http://'
+        http_mount = 'https://' if self.ssl else 'http://'
         s.mount(http_mount, HTTPAdapter(max_retries=retries))
 
         resp = s.get(self.uri, headers=self.HEADERS, verify=False)

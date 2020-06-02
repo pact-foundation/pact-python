@@ -375,12 +375,13 @@ class PactSetupTestCase(PactTestCase):
          .will_respond_with(200, body='success'))
 
         self.delete_call = call('delete', 'http://localhost:1234/interactions',
-                                headers={'X-Pact-Mock-Service': 'true'})
+                                headers={'X-Pact-Mock-Service': 'true'}, verify=False)
 
         self.put_interactions_call = call(
             'put', 'http://localhost:1234/interactions',
             data=None,
             headers={'X-Pact-Mock-Service': 'true'},
+            verify=False,
             json={'interactions': [{
                 'response': {'status': 200, 'body': 'success'},
                 'request': {'path': '/path', 'method': 'GET'},
@@ -570,7 +571,9 @@ class PactWaitForServerStartTestCase(TestCase):
         session.mount.assert_called_once_with(
             'http://', self.mock_HTTPAdapter.return_value)
         session.get.assert_called_once_with(
-            'http://localhost:1234', headers={'X-Pact-Mock-Service': 'true'})
+            'http://localhost:1234',
+            headers={'X-Pact-Mock-Service': 'true'},
+            verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
         self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1)
@@ -588,7 +591,9 @@ class PactWaitForServerStartTestCase(TestCase):
         session.mount.assert_called_once_with(
             'http://', self.mock_HTTPAdapter.return_value)
         session.get.assert_called_once_with(
-            'http://localhost:1234', headers={'X-Pact-Mock-Service': 'true'})
+            'http://localhost:1234',
+            headers={'X-Pact-Mock-Service': 'true'},
+            verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
         self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1)
@@ -611,16 +616,17 @@ class PactVerifyTestCase(PactTestCase):
             'get', 'http://localhost:1234/interactions/verification',
             allow_redirects=True,
             headers={'X-Pact-Mock-Service': 'true'},
+            verify=False,
             params=None)
 
         self.post_publish_pacts_call = call(
             'post', 'http://localhost:1234/pact',
             data=None,
             headers={'X-Pact-Mock-Service': 'true'},
+            verify=False,
             json=None)
 
     def test_success(self):
-        self.assertTrue(False)
         self.mock_requests.side_effect = iter([Mock(status_code=200)] * 2)
         self.target.verify()
 
