@@ -15,13 +15,11 @@ sudo: false
 
 install:
   - pip install -r requirements_dev.txt
-  - pip install codecov
 
 script:
   - flake8
   - pydocstyle pact
   - tox -e test
-  - codecov
   - if [[ $TRAVIS_PYTHON_VERSION == "3.5" ]]; then make package && pip install ./dist/pact-python-*.tar.gz && make e2e; fi
 
 before_deploy:
