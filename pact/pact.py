@@ -201,12 +201,13 @@ class Pact(object):
         """Configure the Mock Service to ready it for a test."""
         try:
             resp = requests.delete(
-                self.uri + '/interactions', headers=self.HEADERS)
+                self.uri + '/interactions', headers=self.HEADERS, verify=False)
 
             assert resp.status_code == 200, resp.text
             resp = requests.put(
                 self.uri + '/interactions',
                 headers=self.HEADERS,
+                verify=False,
                 json={"interactions": self._interactions})
 
             assert resp.status_code == 200, resp.text
@@ -288,10 +289,10 @@ class Pact(object):
         self._interactions = []
         resp = requests.get(
             self.uri + '/interactions/verification',
-            headers=self.HEADERS)
+            headers=self.HEADERS, verify=False)
         assert resp.status_code == 200, resp.text
         resp = requests.post(
-            self.uri + '/pact', headers=self.HEADERS)
+            self.uri + '/pact', headers=self.HEADERS, verify=False)
         assert resp.status_code == 200, resp.text
 
     def with_request(self, method, path, body=None, headers=None, query=None):
@@ -362,8 +363,10 @@ class Pact(object):
         """
         s = requests.Session()
         retries = Retry(total=9, backoff_factor=0.1)
-        s.mount('http://', HTTPAdapter(max_retries=retries))
-        resp = s.get(self.uri, headers=self.HEADERS)
+        http_mount = 'https://' if self._ssl else 'http://'
+        s.mount(http_mount, HTTPAdapter(max_retries=retries))
+
+        resp = s.get(self.uri, headers=self.HEADERS, verify=False)
         if resp.status_code != 200:
             self._process.terminate()
             self._process.communicate()
