@@ -1,15 +1,9 @@
 """Methods to verify previously created pacts."""
-import os
-import platform
 import sys
-from os import listdir
-from os.path import isfile, isdir, join
+
+from pact.verify_wrapper import path_exists, expand_directories, VerifyWrapper
 
 import click
-
-from .constants import VERIFIER_PATH
-
-import subprocess
 
 
 @click.command()
@@ -90,8 +84,7 @@ import subprocess
 @click.option(
     'provider_app_version', '-a', '--provider-app-version',
     help='The provider application version, '
-         'required for publishing verification results'
-    )
+         'required for publishing verification results')
 @click.option(
     'publish_verification_results', '-r', '--publish-verification-results',
     default=False,
@@ -132,17 +125,18 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         click.echo(
             warning
             + ' Multiple --pact-urls arguments are deprecated. '
-              'Please provide a comma separated list of pacts to --pact-urls, '
-              'or multiple --pact-url arguments.')
+            + 'Please provide a comma separated list of pacts to --pact-urls, '
+            + 'or multiple --pact-url arguments.')
 
     if not all_pact_urls and broker_not_provided(broker_base_url, provider):
         click.echo(
             error
             + ' You must supply at least one pact file or directory '
-            'to verify OR a Pact Broker and Provider.')
+            + 'to verify OR a Pact Broker and Provider.')
         raise click.Abort()
 
     all_pact_urls = expand_directories(all_pact_urls)
+
     missing_files = [path for path in all_pact_urls if not path_exists(path)]
     if missing_files:
         click.echo(
@@ -151,46 +145,37 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
             + '\n'.join(missing_files))
         raise click.Abort()
 
+    if publish_verification_results:
+        publish_results(error, provider_app_version)
+
     options = {
-        '--provider-base-url': base_url,
-        '--provider-states-setup-url': states_setup_url,
-        '--broker-username': username,
-        '--pact-broker-base-url': broker_base_url,
-        '--provider': provider,
-        '--broker-password': password,
-        '--broker-token': token,
-        '--log-dir': log_dir,
-        '--log-level': log_level
+        'broker_password': password,
+        'broker_username': username,
+        'broker_token': token,
+        'broker_url': broker_base_url,
+        'log_dir': log_dir,
+        'log_level': log_level,
+        'provider_app_version': provider_app_version,
+        'custom_provider_header': list(headers),
+        'timeout': timeout,
+        'verbose': verbose,
+        'consumer_tags': list(consumer_version_tag),
+        'provider_tags': list(provider_version_tag),
+        'provider_states_setup_url': states_setup_url
     }
 
-    command = [VERIFIER_PATH]
-    command.extend(all_pact_urls)
-    command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
+    options = dict(filter(lambda item: item[1] is not None, options.items()))
+    options = dict(filter(lambda item: item[1] != '', options.items()))
+    options = dict(filter(lambda item: is_empty_list(item), options.items()))
 
-    for tag in consumer_version_tag:
-        command.extend(["--consumer-version-tag={}".format(tag)])
-    for tag in provider_version_tag:
-        command.extend(["--provider-version-tag={}".format(tag)])
-    for header in headers:
-        command.extend(["--custom-provider-header={}".format(header)])
-
-    if publish_verification_results:
-        publish_results(error, provider_app_version, command)
-
-    if verbose:
-        command.extend(['--verbose'])
-
-    env = os.environ.copy()
-    env['PACT_INTERACTION_RERUN_COMMAND'] = rerun_command()
-    p = subprocess.Popen(command, bufsize=1, env=env, stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT, universal_newlines=True)
-
-    sanitize_logs(p, verbose)
-    p.wait()
-    sys.exit(p.returncode)
+    success, logs = VerifyWrapper().call_verify(*all_pact_urls,
+                                                provider=provider,
+                                                provider_base_url=base_url,
+                                                **options)
+    sys.exit(success)
 
 
-def publish_results(error, provider_app_version, command):
+def publish_results(error, provider_app_version):
     """Publish results to broker."""
     if not provider_app_version:
         click.echo(
@@ -199,9 +184,6 @@ def publish_results(error, provider_app_version, command):
             + 'to publish verification results to broker'
         )
         raise click.Abort()
-    command.extend(["--provider-app-version",
-                   provider_app_version,
-                   "--publish-verification-results"])
 
 
 def broker_not_provided(broker_base_url, provider):
@@ -209,86 +191,9 @@ def broker_not_provided(broker_base_url, provider):
     return (broker_base_url == '' or provider == '')
 
 
-def expand_directories(paths):
-    """
-    Iterate over paths and expand any that are directories into file paths.
-
-    :param paths: A list of file paths to expand.
-    :type paths: list
-    :return: A list of file paths with any directory paths replaced with the
-        JSON files in those directories.
-    :rtype: list
-    """
-    paths_ = []
-    for path in paths:
-        if path.startswith('http://') or path.startswith('https://'):
-            paths_.append(path)
-        elif isdir(path):
-            paths_.extend(
-                [join(path, p) for p in listdir(path) if p.endswith('.json')])
-        else:
-            paths_.append(path)
-
-    # Ruby pact verifier expects forward slashes regardless of OS
-    return [p.replace('\\', '/') for p in paths_]
-
-
-def path_exists(path):
-    """
-    Determine if a particular path exists.
-
-    Can be provided a URL or local path. URLs always result in a True. Local
-    paths are True only if a file exists at that location.
-
-    :param path: The path to check.
-    :type path: str
-    :return: True if the path exists and is a file, otherwise False.
-    :rtype: bool
-    """
-    if path.startswith('http://') or path.startswith('https://'):
-        return True
-
-    return isfile(path)
-
-
-def rerun_command():
-    """
-    Create a rerun command template for failed interactions.
-
-    :rtype: str
-    """
-    is_windows = 'windows' in platform.platform().lower()
-    if is_windows:
-        return (
-            'cmd.exe /v /c "'
-            'set PACT_DESCRIPTION=<PACT_DESCRIPTION>'
-            '& set PACT_PROVIDER_STATE=<PACT_PROVIDER_STATE>'
-            '& {command}'
-            ' & set PACT_DESCRIPTION='
-            ' & set PACT_PROVIDER_STATE="'.format(command=' '.join(sys.argv)))
-    else:
-        return ("PACT_DESCRIPTION='<PACT_DESCRIPTION>'"
-                " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
-                " {command}".format(command=' '.join(sys.argv)))
-
-
-def sanitize_logs(process, verbose):
-    """
-    Print the logs from a process while removing Ruby stack traces.
-
-    :param process: The Ruby pact verifier process.
-    :type process: subprocess.Popen
-    :param verbose: Flag to toggle more verbose logging.
-    :type verbose: bool
-    :rtype: None
-    """
-    for line in process.stdout:
-        if (not verbose and line.lstrip().startswith('#')
-            and ('vendor/ruby' in line
-                 or 'pact-provider-verifier.rb' in line)):
-            continue
-        else:
-            sys.stdout.write(line)
+def is_empty_list(item):
+    """Util for is empty lists."""
+    return (not isinstance(item[1], list)) or (len(item[1]) != 0)
 
 
 if __name__ == '__main__':

@@ -18,7 +18,7 @@ class Consumer(object):
     def __init__(self, name, service_cls=Pact, tags=None,
                  tag_with_git_branch=False, version='0.0.0'):
         """
-        Constructor for the Consumer class.
+        Create the Consumer class.
 
         :param name: The name of this Consumer. This will be shown in the Pact
             when it is published.

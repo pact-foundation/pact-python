@@ -727,7 +727,7 @@ class RequestTestCase(TestCase):
             'body': []})
 
     def test_matcher_in_path_gets_converted(self):
-        target = Request('GET', Term('\/.+', '/test-path'))
+        target = Request('GET', Term('\/.+', '/test-path'))  # noqa: W605
         result = target.json()
         self.assertTrue(isinstance(result['path'], dict))
 

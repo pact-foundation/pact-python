@@ -48,7 +48,7 @@ class Pact(object):
                  broker_username=None, broker_password=None, broker_token=None,
                  pact_dir=None, version='2.0.0', file_write_mode='overwrite'):
         """
-        Constructor for Pact.
+        Create a Pact instance.
 
         :param consumer: The consumer for this contract.
         :type consumer: pact.Consumer
@@ -157,9 +157,9 @@ class Pact(object):
         """Publish the generated pact files to the specified pact broker."""
         if self.broker_base_url is None \
                 and "PACT_BROKER_BASE_URL" not in os.environ:
-            raise RuntimeError("No pact broker URL specified. " +
-                               "Did you expect the PACT_BROKER_BASE_URL " +
-                               "environment variable to be set?")
+            raise RuntimeError("No pact broker URL specified. "
+                               + "Did you expect the PACT_BROKER_BASE_URL "
+                               + "environment variable to be set?")
 
         pact_files = fnmatch.filter(
             os.listdir(self.pact_dir),
@@ -193,8 +193,8 @@ class Pact(object):
         if publish_process.returncode != 0:
             url = self.broker_base_url or os.environ["PACT_BROKER_BASE_URL"]
             raise RuntimeError(
-                "There was an error while publishing to the " +
-                "pact broker at {}."
+                "There was an error while publishing to the "
+                + "pact broker at {}."
                 .format(url))
 
     def setup(self):
@@ -375,7 +375,7 @@ class Pact(object):
 
     def __enter__(self):
         """
-        Handler for entering a Python context.
+        Enter a Python context.
 
         Sets up the mock service to expect the client requests.
         """
@@ -383,7 +383,7 @@ class Pact(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-        Handler for exiting a Python context.
+        Exit a Python context.
 
         Calls the mock service to verify that all interactions occurred as
         expected, and has it write out the contracts to disk.
