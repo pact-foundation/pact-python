@@ -14,7 +14,7 @@ packaging==20.3
 pluggy==0.13.1
 psutil==5.7.0
 py==1.8.1
-pyparsing==2.4.6f
+pyparsing==2.4.6
 pytest==5.4.1
 requests==2.23.0
 six==1.14.0
