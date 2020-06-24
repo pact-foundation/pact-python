@@ -9,10 +9,7 @@ import click
 
 from .constants import VERIFIER_PATH
 
-if sys.version_info.major == 2:
-    import subprocess32 as subprocess
-else:
-    import subprocess
+import subprocess
 
 
 @click.command()
@@ -104,10 +101,20 @@ else:
     '--verbose/--no-verbose',
     default=False,
     help='Toggle verbose logging, defaults to False.')
+@click.option(
+    '--verbose/--no-verbose',
+    default=False,
+    help='Toggle verbose logging, defaults to False.')
+@click.option(
+    'log_dir', '--log-dir',
+    help='The directory for the pact.log file.')
+@click.option(
+    'log_level', '--log-level',
+    help='The logging level.')
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, provider_version_tag,
          password, token, provider, headers, timeout, provider_app_version,
-         publish_verification_results, verbose):
+         publish_verification_results, verbose, log_dir, log_level):
     """
     Verify one or more contracts against a provider service.
 
@@ -151,7 +158,9 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         '--pact-broker-base-url': broker_base_url,
         '--provider': provider,
         '--broker-password': password,
-        '--broker-token': token
+        '--broker-token': token,
+        '--log-dir': log_dir,
+        '--log-level': log_level
     }
 
     command = [VERIFIER_PATH]
