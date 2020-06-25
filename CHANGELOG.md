@@ -2,6 +2,7 @@
 
 
 
+
 ### 0.22.0
   * d112a4a - Merge pull request #134 from elliottmurray/multiple-custom-provider-header (Elliott Murray, Mon May 11 16:32:49 2020 +0100)
   * 58f8e6b - Fix some style issues (Elliott Murray, Wed Apr 29 12:35:00 2020 +0100)
