@@ -10,10 +10,12 @@ else
 fi
 
 TAG_NAME="v$VERSION"
+LAST_TAG=`git describe --abbrev=0`
 
 echo "Releasing $TAG_NAME"
 
-echo -e "`git log --pretty=format:'  * %h - %s (%an, %ad)' $TAG_NAME..HEAD`\n$(cat CHANGELOG.md)" > CHANGELOG.md
+echo -e "`git log --pretty=format:'  * %h - %s (%an, %ad)' $LAST_TAG..HEAD`\n$(cat CHANGELOG.md)" > CHANGELOG.md
+echo -e "### $VERSION\n$(cat CHANGELOG.md)" > CHANGELOG.md
 
 echo "Appended Changelog to $VERSION"
 

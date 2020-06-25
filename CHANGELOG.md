@@ -1,6 +1,43 @@
+### 1.1.0
+  * 1079417 - test (Elliott Murray, Thu Jun 25 10:02:14 2020 +0100)
+  * 7fe1ef4 - Releasing version 1.1.0 (Elliott Murray, Thu Jun 25 09:41:42 2020 +0100)
+  * fafc3d5 - Merge pull request #147 from pact-foundation/feat/add_logging_params (Elliott Murray, Thu Jun 25 09:24:34 2020 +0100)
+  * 8ce7d44 - Added logging params (Elliott Murray, Wed Jun 24 11:58:25 2020 +0100)
+  * b6450b8 - Merge pull request #146 from pact-foundation/chore/upgrade-to-pact-ruby-standalone-1-86-0 (Elliott Murray, Wed Jun 24 10:59:29 2020 +0100)
+  * bf43d8a - feat: update standalone to 1.86.0 (Beth Skurrie, Wed Jun 24 09:31:18 2020 +1000)
+  * 529dfb7 - Merge pull request #145 from jstoebel/patch-1 (Elliott Murray, Thu Jun 11 12:00:51 2020 +0100)
+  * 9359d34 - Remove typo from examples/e2e requirements.txt (Jacob Stoebel, Thu Jun 11 06:47:02 2020 -0400)
+  * aee95ed - Merge pull request #144 from pact-foundation/chore_cleanup (Elliott Murray, Wed Jun 10 21:38:12 2020 +0100)
+  * 9c71ea0 - chore: removed some files and moved a few things around (Elliott Murray, Wed Jun 10 21:33:37 2020 +0100)
 
+  ### v1.0.1
+  * 8c78ff7 - Releasing version 1.0.1 (Elliott Murray, Wed Jun 3 11:01:39 2020 +0100)
+  * 63f0e3e - Merge pull request #142 from elliottmurray/ssl_verify (Elliott Murray, Wed Jun 3 09:50:10 2020 +0100)
+  * cd43bd0 - Removed coverage (Elliott Murray, Tue Jun 2 21:41:52 2020 +0100)
+  * 30e6f86 - Fixed flake (Elliott Murray, Tue Jun 2 21:32:01 2020 +0100)
+  * 1a11320 - Fix unit tests (Elliott Murray, Tue Jun 2 21:29:56 2020 +0100)
+  * 353d054 - travis code coverage (Elliott Murray, Tue Jun 2 21:14:37 2020 +0100)
+  * c08babd - Fixing unit tests command in tox and travis (Elliott Murray, Tue Jun 2 18:30:10 2020 +0100)
+  * 157676c - Allowed https communication to mock. Didnt fix tests (Elliott Murray, Tue Jun 2 17:47:08 2020 +0100)
+  * 60c9f5a - Fix deploy to pypi2 (Elliott Murray, Fri May 22 13:50:41 2020 +0100)
+  * e2c7e4e - Fix deploy to pypi (Elliott Murray, Fri May 22 13:41:27 2020 +0100)
 
-
+  ### v1.0.0
+  * 2c6e4eb - Releasing version 1.0.0 (Elliott Murray, Fri May 22 13:30:49 2020 +0100)
+  * c68ccb7 - Merge pull request #140 from elliottmurray/python2_deprecate (Elliott Murray, Fri May 22 13:29:38 2020 +0100)
+  * 8bc6d48 - Release script to make life a bit easier (Elliott Murray, Thu May 21 12:32:27 2020 +0100)
+  * a845f71 - Removed 2.x support (Elliott Murray, Thu May 21 12:19:16 2020 +0100)
+  * 562e047 - Merge pull request #138 from pyasi/pyasi_add_matcher_regexes (Elliott Murray, Fri May 15 14:10:28 2020 +0100)
+  * db39d87 - remove virtualenv (Peter Yasi, Fri May 15 09:02:01 2020 -0400)
+  * cccd30a - Add Format to the standard pact package (Peter Yasi, Fri May 15 08:55:57 2020 -0400)
+  * b78ac6d - Merge branch 'master' into pyasi_add_matcher_regexes (Peter Yasi, Fri May 15 08:13:30 2020 -0400)
+  * 35dfa0d - add enum34 a a dep for py27-install (Peter Yasi, Thu May 14 20:52:09 2020 -0400)
+  * 1fcc6c1 - Pydocstyle fixes, will still need fix for no enum in 2.7 (Peter Yasi, Thu May 14 19:49:23 2020 -0400)
+  * fe068e5 - Add examples to e2e tests (Peter Yasi, Thu May 14 19:07:31 2020 -0400)
+  * 5aaa82f - README documentation (Peter Yasi, Thu May 14 18:46:42 2020 -0400)
+  * 0d588f7 - pydocs and formatting (Peter Yasi, Thu May 14 18:19:32 2020 -0400)
+  * a21118c - Use raw strings to avoid deprecated escape sequence (Peter Yasi, Thu May 14 08:54:01 2020 -0400)
+  * 715d10f - Initial implementation with example unit tests (Peter Yasi, Thu May 14 00:00:30 2020 -0400)
 
 
 ### 0.22.0
