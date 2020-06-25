@@ -159,6 +159,8 @@ class mainTestCase(TestCase):
             '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version=1.2.3',
+            '--log-dir=tmp/logs/pact.test.log',
+            '--log-level=INFO',
             '--timeout=60',
             '--verbose'
         ])
@@ -182,6 +184,8 @@ class mainTestCase(TestCase):
             '--provider=provider',
             '--publish-verification-results',
             '--provider-app-version', '1.2.3',
+            '--log-dir=tmp/logs/pact.test.log',
+            '--log-level=INFO',
             '--verbose')
 
     def test_all_broker_options(self):
