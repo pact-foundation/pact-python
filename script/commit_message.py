@@ -18,7 +18,8 @@ def main():
     commits = subprocess.check_output(cmd, shell=True)
     commits = commits.decode("utf-8").split('\n')
     for commit in commits:
-        pattern = r'(build|ci|docs|feat|fix|perf|refactor|style|test|chore|revert)(\([\w\-]+\))?:\s.*'  # noqa
+
+        pattern = r'((build|ci|docs|feat|fix|perf|refactor|style|test|chore|revert)(\([\w\-]+\))?:\s.*)|((Merge)(\([\w\-]+\))?\s.*)'  # noqa
         m = re.match(pattern, commit)
         if m is None:
             print("\nError with git message '{}' style".format(commit))
