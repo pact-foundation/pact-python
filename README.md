@@ -411,7 +411,7 @@ Join us in slack: [![slack](https://slack.pact.io/badge.svg)](https://slack.pact
 or
 
 - Twitter: [@pact_up](https://twitter.com/pact_up)
-- Stack Overflow: stackoverflow.com/questions/tagged/pact
+- Stack Overflow: [stackoverflow.com/questions/tagged/pact](https://stackoverflow.com/questions/tagged/pact)
 
 [bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
