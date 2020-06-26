@@ -25,3 +25,19 @@ We also appreciate it if you take the time to update and write tests for any cha
 you submit.
 
 [e2e]: https://github.com/pact-foundation/pact-python/tree/master/e2e
+
+## Commit messages
+Pact Python is adopting the Conventional Changelog commit message conventions. Please ensure you follow the guidelines, we don't want to be that person, but the commit messages are very important to the automation of our release process.
+
+Take a look at the git history (git log) to get the gist of it.
+
+If you'd like to get some CLI assistance there is a node npm package. Example usage is:
+
+```
+npm install commitizen -g
+npm i -g cz-conventional-changelog
+```
+
+git cz to commit and commitizen will guide you.
+
+There is a pypi package that does similar [commitizen]: https://pypi.org/project/commitizen/. This would make a great feature to add! There is a check on the travis build that your commits follow this convention. On creating a PR any commits that don't will instantly fail the build and you will have to rename them.
