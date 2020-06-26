@@ -13,6 +13,9 @@ rvm: "2.2"
 
 sudo: false
 
+before_install:
+  - script/commit_message.py
+
 install:
   - pip install -r requirements_dev.txt
 
