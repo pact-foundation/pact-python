@@ -1,6 +1,6 @@
 # pact-python
 
-[![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
+[![slack](http://slack.pact.io/badge.svg)](https://slack.pact.io)
 [![Build Status](https://travis-ci.org/pact-foundation/pact-python.svg?branch=master)](https://travis-ci.org/pact-foundation/pact-python)
 [![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
 
@@ -22,8 +22,8 @@ pip install pact-python
 ```
 
 ## Getting started
-
-A guide follows but if you go to the [e2e examples](examples/e2e/README.md). This has a consumer, provider and pact-broker set of tests.
+<!-- Absolute link for rendering page in docs.pact.io -->
+A guide follows but if you go to the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e). This has a consumer, provider and pact-broker set of tests.
 
 ## Writing a Pact
 
@@ -376,7 +376,8 @@ on the provider application or a separate one. Some strategies for managing stat
 For more information about provider states, refer to the [Pact documentation] on [Provider States].
 
 # Development
-Please read [CONTRIBUTING.md](CONTRIBUTING.md)
+<!-- Absolute link for rendering page in docs.pact.io -->
+Please read [CONTRIBUTING.md](https://github.com/pact-foundation/pact-python/blob/master/CONTRIBUTING.md)
 
 To setup a development environment:
 
@@ -405,21 +406,21 @@ End to end: `make e2e`
 
 ## Contact
 
-Join us in slack: [![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
+Join us in slack: [![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
 
 or
 
-- Twitter: [@pact_up]
+- Twitter: [@pact_up](https://twitter.com/pact_up)
 - Stack Overflow: stackoverflow.com/questions/tagged/pact
 
 [bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
-[Pact]: https://www.gitbook.com/book/pact-foundation/pact/details
-[Pact Broker]: https://docs.pact.io/documentation/sharings_pacts.html
+[Pact]: https://docs.pact.io
+[Pact Broker]: https://docs.pact.io/pact_broker
 [Pact documentation]: https://docs.pact.io/
-[Pact Mock Service]: https://github.com/bethesque/pact-mock_service
+[Pact Mock Service]: https://github.com/pact-foundation/pact-mock_service
 [Pact specification]: https://github.com/pact-foundation/pact-specification
-[Provider States]: https://docs.pact.io/documentation/provider_states.html
+[Provider States]: https://docs.pact.io/getting_started/provider_states
 [pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
 [pyenv]: https://github.com/pyenv/pyenv
 [rvm]: https://rvm.io/
