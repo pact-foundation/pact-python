@@ -18,7 +18,7 @@ def main():
     tag = subprocess.check_output(cmd_tag,
                                   shell=True).decode("utf-8").split('\n')[0]
 
-    cmd = "git log --pretty=format:'%s' {}..master".format(tag)
+    cmd = "git log --pretty=format:'%s' {}..HEAD".format(tag)
     commits = subprocess.check_output(cmd, shell=True)
     commits = commits.decode("utf-8").split('\n')
     for commit in commits:
