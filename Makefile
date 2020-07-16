@@ -31,6 +31,7 @@ deps:
 define E2E
 	cd examples/e2e
   pip install -r requirements.txt
+  pip install -e ../../
   pytest tests/test_user_consumer.py
   ./verify_pact.sh
 endef

@@ -3,13 +3,12 @@ Flask==1.0
 configparser==3.5.0
 codecov==2.0.5
 coverage==4.3.4
-flake8==3.2.1
-mccabe==0.5.2
+flake8==3.8.3
 mock==2.0.0
 nose==1.3.7
-pycodestyle==2.2.0
-pydocstyle==1.1.1
-pyflakes==1.3.0
+psutil==5.7.0
+pycodestyle==2.6.0
+pydocstyle==4.0.1
 tox==3.14.0
 tox-travis==0.8
 wheel==0.24.0

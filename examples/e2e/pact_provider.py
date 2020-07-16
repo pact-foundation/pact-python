@@ -23,12 +23,12 @@ def setup_user_a_nonadmin():
     ip_address = '198.0.0.1'
 
     fakedb['UserA'] = {
-                        'name': "UserA",
-                        'id': id,
-                        'created_on': some_date,
-                        'ip_address': ip_address,
-                        'admin': False
-                      }
+        'name': "UserA",
+        'id': id,
+        'created_on': some_date,
+        'ip_address': ip_address,
+        'admin': False
+    }
 
 
 if __name__ == '__main__':

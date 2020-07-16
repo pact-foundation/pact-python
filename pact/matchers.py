@@ -22,7 +22,6 @@ class EachLike(Matcher):
     Expect the data to be a list of similar objects.
 
     Example:
-
     >>> from pact import Consumer, Provider
     >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
     >>> (pact.given('there are three comments')
@@ -34,10 +33,10 @@ class EachLike(Matcher):
     ...         'text': SomethingLike('Hello!')},
     ...        minimum=2)
     ...  }))
-
     Would expect the response to be a JSON object, with a comments list. In
     that list should be at least 2 items, and each item should be a `dict`
     with the keys `name` and `text`,
+
     """
 
     def __init__(self, matcher, minimum=1):
@@ -74,7 +73,6 @@ class Like(Matcher):
     Expect the type of the value to be the same as matcher.
 
     Example:
-
     >>> from pact import Consumer, Provider
     >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
     >>> (pact
@@ -89,6 +87,7 @@ class Like(Matcher):
     `number`, which would contain an integer. When the consumer runs this
     contract, the value `1111222233334444` will be returned by the mock
     service, instead of a randomly generated value.
+
     """
 
     def __init__(self, matcher):
@@ -132,7 +131,6 @@ class Term(Matcher):
     Expect the response to match a specified regular expression.
 
     Example:
-
     >>> from pact import Consumer, Provider
     >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
     >>> (pact.given('the current user is logged in as `tester`')
@@ -147,6 +145,7 @@ class Term(Matcher):
     `name`, which will contain the value `tester`, and `theme` which must be
     one of the values: light, dark, or legacy. When the consumer runs this
     contract, the value `dark` will be returned by the mock service.
+
     """
 
     def __init__(self, matcher, generate):
@@ -235,7 +234,6 @@ class Format:
     Class of regular expressions for common formats.
 
     Example:
-
     >>> from pact import Consumer, Provider
     >>> from pact.matchers import Format
     >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
@@ -251,6 +249,7 @@ class Format:
     When the consumer runs this contract, the value of that will be returned
     is the second value passed to Term in the given function, for the time
     example it would be datetime.datetime(2000, 2, 1, 12, 30, 0, 0).time()
+
     """
 
     def __init__(self):
