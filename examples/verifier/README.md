@@ -1,6 +1,6 @@
 # Introduction
 
-This is a verifier example.
+This is an e2e example to show the provider verification working.
 
 ## Setup
 
@@ -8,15 +8,17 @@ Create your own virtualenv for this. Run
 
 ```bash
 pip install -r requirements.txt
+pip install ../../
 ```
+
+ pip install pipenv
+$ pipenv install
+pipenv shell
+pytest
 
 This should provide you with a relative path to pact install relatively (2 dirs up)
 
-Create the local broker (for demo purposes only) To do this separately clone this repo:
-* https://github.com/pact-foundation/pact-broker-docker
-
-Then from where this is install run in it's own terminal
-
+Create the local broker (for demo purposes only) Open a separate terminal in the examples/broker folder and run:
 ```bash
 docker-compose up
 ```
@@ -34,5 +36,5 @@ pytest
 Or you can run individual tests like:
 
 ```bash
-pytest tests/xxx.py::test_yyy
+pytest tests/test_user_consumer.py::test_get_non_existing_user
 ```

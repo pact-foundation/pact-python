@@ -20,9 +20,12 @@ import logging
 import os
 
 import pytest
-
+# from flask import Flask, abort, jsonify, request
+from multiprocessing import Process
 
 from pact import Verifier
+
+from pact_provider import app
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -38,32 +41,31 @@ PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
 
 PACT_MOCK_HOST = 'localhost'
-PACT_MOCK_PORT = 1234
+PACT_MOCK_PORT = 1235
+PACT_URL = "http://{}:{}".format(PACT_MOCK_HOST, PACT_MOCK_PORT)
 PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def provider():
-    # flask start
     print('start flask')
-    yield
-    print('end flask')
+    server = Process(target=app.run, kwargs={'port': PACT_MOCK_PORT})
+
+    try:
+        server.start()
+
+        yield
+    finally:
+        print('end flask')
+        server.terminate()
 
 
 def test_get_user_non_admin(provider):
-    print('verify our test')
-
-    # pact_broker_username = "pactbroker",
-    # pact_broker_password = "pactbroker"
-    # # publish_verification_result = True
-    # # providerVersion = "1.0.0"
-    # pactBrokerUrl = "http://localhost"
-
     verifier = Verifier(provider='UserService',
-                        provider_base_url='http://localhost:1234')
+                        provider_base_url=PACT_URL)
 
-    output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+    output, logs = verifier.verify_pacts('./userserviceclient-userservice.json',
+                                         verbose=False,
+                                         provider_states_setup_url="{}/_pact/provider_states".format(PACT_URL))
 
-    print(output)
-    print(logs)
     assert (output == 0)

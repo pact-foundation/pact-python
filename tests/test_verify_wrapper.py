@@ -174,7 +174,7 @@ class VerifyWrapperTestCase(TestCase):
 
     @patch('pact.verify_wrapper.path_exists', return_value=True)
     @patch('pact.verify_wrapper.sanitize_logs')
-    def test_no_publishing_missing_version(self, mock_sanitize_logs, mock_path_exists):
+    def test_publishing_with_version(self, mock_sanitize_logs, mock_path_exists):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
