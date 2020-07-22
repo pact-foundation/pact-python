@@ -288,6 +288,29 @@ Like({
 })
 ```
 
+## Publish to Broker
+The support in pact-python for publishing to broker is not fully supported currently. A sample method of how you might publish in python using requests follows:
+
+```python
+def push_to_broker(version):    
+    with open(os.path.join(PACT_DIR, PACT_FILE), 'rb') as pact_file:
+        pact_file_json = json.load(pact_file)
+
+    basic_auth = HTTPBasicAuth(PACT_BROKER_USERNAME, PACT_BROKER_PASSWORD)
+
+    log.info("Uploading pact file to pact broker...")
+
+    r = requests.put(
+        "{}/{}".format(PACT_UPLOAD_URL, version),
+        auth=basic_auth,
+        json=pact_file_json,
+        verify=False
+    )
+    if not r.ok:
+        log.error("Error uploading: %s", r.content)
+        r.raise_for_status()
+```
+
 For more information see [Matching](https://docs.pact.io/getting_started/matching)
 
 ## Verifying Pacts Against a Service
