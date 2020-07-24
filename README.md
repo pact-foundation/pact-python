@@ -293,7 +293,11 @@ For more information see [Matching](https://docs.pact.io/getting_started/matchin
 ## Verifying Pacts Against a Service
 
 In addition to writing Pacts for Python consumers, you can also verify those Pacts
-against a provider of any language. After installing pact-python a `pact-verifier`
+against a provider of any language. There are two ways to do this. 
+
+### CLI
+
+After installing pact-python a `pact-verifier`
 application should be available. To get details about its use you can call it with the
 help argument:
 
@@ -356,6 +360,18 @@ as the environment variable `PACT_BROKER_PASSWORD`.
 
 The bearer token to use when contacting the Pact Broker. You can also specify this value
 as the environment variable `PACT_BROKER_TOKEN`.
+
+### Python API
+You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice. 
+
+```python
+verifier = Verifier(provider='UserService',
+                    provider_base_url=PACT_URL)
+
+output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+
+```
+You can see more details in the e2e example. 
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
