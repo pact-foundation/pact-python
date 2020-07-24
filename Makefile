@@ -35,7 +35,7 @@ define E2E
 	cd examples/e2e
   pip install -r requirements.txt
   pip install -e ../../
-  pytest tests/test_user_consumer.py
+  pytest 
   ./verify_pact.sh
 endef
 export E2E
@@ -44,21 +44,8 @@ export E2E
 e2e:
 	bash -c "$$E2E"
 
-define verifier
-	echo "verifier make"
-	cd examples/verifier
-  pip install -r requirements.txt
-  pip install -e ../../
-  pytest
-endef
-export verifier
-
-.PHONY: verifier
-verifier:
-	bash -c "$$verifier"
-
 .PHONY: examples
-examples: verifier e2e
+examples: e2e
 	
 
 
