@@ -20,7 +20,7 @@ echo -e "### $VERSION\n$(cat CHANGELOG.md)" > CHANGELOG.md
 echo "Appended Changelog to $VERSION"
 
 git add CHANGELOG.md pact/__version__.py
-git commit -m "Releasing version $VERSION"
+git commit -m "chore: Releasing version $VERSION"
 
 git tag -a "$TAG_NAME" -m "Releasing version $VERSION" && git push origin master --tags
 
