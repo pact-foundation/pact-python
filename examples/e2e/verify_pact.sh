@@ -20,7 +20,7 @@ then
 
   pact-verifier --provider-base-url=http://localhost:5001 \
     --provider-states-setup-url=http://localhost:5001/_pact/provider_states \
-    tests/userserviceclient-userservice.json
+    ./userserviceclient-userservice.json
 else
 
   pact-verifier --provider-base-url=http://localhost:5001 \
