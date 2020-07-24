@@ -6,6 +6,8 @@ help:
 	@echo "  clean      to clear build and distribution directories"
 	@echo "  deps       to install the required files for development"
 	@echo "  e2e        to run the end to end tests"
+	@echo "  verifier   to run the verifier end to end tests"
+	@echo "  examples   to run the example end to end tests"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
@@ -29,18 +31,35 @@ deps:
 
 
 define E2E
+	echo "e2e make"
 	cd examples/e2e
   pip install -r requirements.txt
   pip install -e ../../
   pytest tests/test_user_consumer.py
   ./verify_pact.sh
 endef
-
-
 export E2E
+
 .PHONY: e2e
 e2e:
 	bash -c "$$E2E"
+
+define verifier
+	echo "verifier make"
+	cd examples/verifier
+  pip install -r requirements.txt
+  pip install -e ../../
+  pytest
+endef
+export verifier
+
+.PHONY: verifier
+verifier:
+	bash -c "$$verifier"
+
+.PHONY: examples
+examples: verifier e2e
+	
 
 
 .PHONY: package

@@ -101,3 +101,8 @@ ENV/
 
 
 .noseids
+
+
+# ignore local test pact files
+**/userserviceclient-userservice.json
+
