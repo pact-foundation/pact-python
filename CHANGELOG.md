@@ -1,3 +1,11 @@
+### 1.2.0
+  * 2b844c5 - Merge pull request #159 from pact-foundation/feat/fix_provider_classs (Elliott Murray, Fri Jul 24 09:47:46 2020 +0100)
+  * 9c565bb - feat: fixing up tests and examples and code for provider class (Elliott Murray, Mon Jul 20 15:57:49 2020 +0100)
+  * d4072ed - Merge pull request #156 from pact-foundation/feat/provider_verifier (Elliott Murray, Thu Jul 16 13:31:18 2020 +0100)
+  * 926a611 - feat: create beta verifier class and api (Elliott Murray, Wed Jun 10 21:31:47 2020 +0100)
+  * 4635a07 - chore: added semantic yml for git messages (Elliott Murray, Sun Jun 28 12:43:24 2020 +0100)
+  * ff9894a - Merge pull request #154 from elliottmurray/style/git_message (Elliott Murray, Sat Jun 27 13:31:16 2020 +0100)
+  * be6697f - fix: change to head from master (Elliott Murray, Sat Jun 27 13:08:08 2020 +0100)
 ### 1.1.0
   * 1079417 - test (Elliott Murray, Thu Jun 25 10:02:14 2020 +0100)
   * 7fe1ef4 - Releasing version 1.1.0 (Elliott Murray, Thu Jun 25 09:41:42 2020 +0100)
