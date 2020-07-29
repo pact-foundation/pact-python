@@ -574,6 +574,7 @@ class PactWaitForServerStartTestCase(TestCase):
         session.get.assert_called_once_with(
             'http://localhost:1234',
             headers={'X-Pact-Mock-Service': 'true'},
+            allow_redirects=False,
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
@@ -594,6 +595,7 @@ class PactWaitForServerStartTestCase(TestCase):
         session.get.assert_called_once_with(
             'http://localhost:1234',
             headers={'X-Pact-Mock-Service': 'true'},
+            allow_redirects=False,  # can cause problems in CI otherwise
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)

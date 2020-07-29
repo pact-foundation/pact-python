@@ -10,9 +10,13 @@ python:
   - "3.8"
 
 rvm: "2.2"
+os:
+  - linux
+sudo: required
 
-sudo: false
-
+before_install:
+  - sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
+  
 install:
   - pip install -r requirements_dev.txt
 

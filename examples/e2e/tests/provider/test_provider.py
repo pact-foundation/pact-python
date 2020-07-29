@@ -36,7 +36,7 @@ PACT_BROKER_USERNAME = "dXfltyFMgNOFZAxr8io9wJ37iUpY42M"
 PACT_BROKER_PASSWORD = "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1"
 
 PACT_MOCK_HOST = 'localhost'
-PACT_MOCK_PORT = 1235
+PACT_MOCK_PORT = 1235  # has to be different from consumer test as that is a session test and pytest gets a bit tricky
 PACT_URL = "http://{}:{}".format(PACT_MOCK_HOST, PACT_MOCK_PORT)
 PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 

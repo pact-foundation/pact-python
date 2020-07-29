@@ -362,11 +362,11 @@ class Pact(object):
         :raises RuntimeError: If there is a problem starting the mock service.
         """
         s = requests.Session()
-        retries = Retry(total=9, backoff_factor=0.1)
+        retries = Retry(total=9, backoff_factor=0.1, status_forcelist=[401])
         http_mount = 'https://' if self.ssl else 'http://'
         s.mount(http_mount, HTTPAdapter(max_retries=retries))
 
-        resp = s.get(self.uri, headers=self.HEADERS, verify=False)
+        resp = s.get(self.uri, headers=self.HEADERS, allow_redirects=False, verify=False)
         if resp.status_code != 200:
             self._process.terminate()
             self._process.communicate()

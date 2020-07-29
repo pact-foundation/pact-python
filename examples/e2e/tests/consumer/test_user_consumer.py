@@ -4,6 +4,7 @@ import logging
 
 import pytest
 from pact import Consumer, Like, Provider, Term, Format
+import requests
 
 from src.consumer import UserConsumer
 
@@ -31,6 +32,9 @@ def consumer():
 
 @pytest.fixture(scope='session')
 def pact(request):
+    print("getting pact broker")
+    r = requests.get(PACT_BROKER_URL, auth=('user', 'pass'))
+    print(r.status_code)
     version = request.config.getoption('--publish-pact')
     publish_to_broker = (not request.node.testsfailed and version)
     print("publish to broker {}".format(publish_to_broker))
