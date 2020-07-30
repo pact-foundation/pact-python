@@ -18,7 +18,7 @@ PACT_BROKER_USERNAME = "dXfltyFMgNOFZAxr8io9wJ37iUpY42M"
 PACT_BROKER_PASSWORD = "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1"
 PACT_BROKER_URL = "https://test.pact.dius.com.au/"
 
-PACT_MOCK_HOST = 'localhost'
+PACT_MOCK_HOST = '127.0.0.1'
 PACT_MOCK_PORT = 1234
 # PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACT_DIR = './'
