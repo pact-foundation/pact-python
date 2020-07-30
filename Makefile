@@ -35,7 +35,7 @@ define E2E
 	cd examples/e2e
   pip install -r requirements.txt
   pip install -e ../../
-  pytest --publish-pact ${TRAVIS_COMMIT} 
+  pytest --publish-pact ${TRAVIS_BUILD_NUMBER} 
   ./verify_pact.sh
 endef
 export E2E
