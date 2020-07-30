@@ -10,6 +10,7 @@ import psutil
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
+import time
 
 from .constants import BROKER_CLIENT_PATH
 from .constants import MOCK_SERVICE_PATH
@@ -361,6 +362,7 @@ class Pact(object):
         :rtype: None
         :raises RuntimeError: If there is a problem starting the mock service.
         """
+        time.sleep(5.0)
         s = requests.Session()
         retries = Retry(total=9, backoff_factor=0.1, status_forcelist=[401])
         http_mount = 'https://' if self.ssl else 'http://'

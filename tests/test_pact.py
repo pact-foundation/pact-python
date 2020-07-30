@@ -578,7 +578,7 @@ class PactWaitForServerStartTestCase(TestCase):
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
-        self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1)
+        self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1, status_forcelist=[401])
         self.assertFalse(pact._process.communicate.called)
         self.assertFalse(pact._process.terminate.called)
 
