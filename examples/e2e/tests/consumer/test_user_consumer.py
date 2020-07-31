@@ -69,7 +69,7 @@ def test_get_user_non_admin(pact, consumer):
      .with_request('get', '/users/UserA')
      .will_respond_with(200, body=Like(expected)))
 
-    # pact.setup()
+    pact.setup()
 
     with pact:
         user = consumer.get_user('UserA')
@@ -84,7 +84,9 @@ def test_get_non_existing_user(pact, consumer):
      .with_request('get', '/users/UserA')
      .will_respond_with(404))
 
+    pact.setup()
+
     with pact:
         user = consumer.get_user('UserA')
         assert user is None
-    # pact.verify()
+    pact.verify()

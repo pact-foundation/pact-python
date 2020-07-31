@@ -561,6 +561,7 @@ class PactWaitForServerStartTestCase(TestCase):
         self.mock_Retry = patch.object(pact, 'Retry', autospec=True).start()
         self.mock_Session = patch.object(
             pact.requests, 'Session', autospec=True).start()
+        self.retry_kwargs = {'total': 5, 'backoff_factor': 1, 'status_forcelist': [401, 500, 502, 503, 504]}
 
     def test_wait_for_server_start_success(self):
         self.mock_Session.return_value.get.return_value.status_code = 200
@@ -574,11 +575,10 @@ class PactWaitForServerStartTestCase(TestCase):
         session.get.assert_called_once_with(
             'http://localhost:1234',
             headers={'X-Pact-Mock-Service': 'true'},
-            allow_redirects=False,
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
-        self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1, status_forcelist=[401])
+        self.mock_Retry.assert_called_once_with(**self.retry_kwargs)
         self.assertFalse(pact._process.communicate.called)
         self.assertFalse(pact._process.terminate.called)
 
@@ -595,14 +595,13 @@ class PactWaitForServerStartTestCase(TestCase):
         session.get.assert_called_once_with(
             'http://localhost:1234',
             headers={'X-Pact-Mock-Service': 'true'},
-            allow_redirects=False,  # can cause problems in CI otherwise
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
-        self.mock_Retry.assert_called_once_with(total=9, backoff_factor=0.1, status_forcelist=[401])
+
+        self.mock_Retry.assert_called_once_with(**self.retry_kwargs)
         pact._process.communicate.assert_called_once_with()
         pact._process.terminate.assert_called_once_with()
-
 
 class PactVerifyTestCase(PactTestCase):
     def setUp(self):
