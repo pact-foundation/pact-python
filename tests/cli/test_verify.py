@@ -241,7 +241,7 @@ class mainTestCase(TestCase):
                                 broker_token='token',
                                 broker_url='http://localhost/docker',
                                 provider_app_version='1.2.3',
-                                custom_provider_header=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
+                                custom_provider_headers=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
                                 provider_states_setup_url='http://localhost/provider-states/set',
                                 log_dir='tmp/logs/pact.test.log',
                                 log_level='INFO',
