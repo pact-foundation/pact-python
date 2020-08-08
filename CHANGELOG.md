@@ -1,3 +1,9 @@
+### 1.2.1
+  * 69a4a9a - Merge pull request #163 from elliottmurray/fix/custom_header (Elliott Murray, Sat Aug 8 10:17:20 2020 +0100)
+  * 88b7d9f - fix: custom headers had a typo (Elliott Murray, Sat Aug 1 11:08:54 2020 +0100)
+  * f501f19 - Merge pull request #161 from pact-foundation/docs/verifier_docs_examples (Elliott Murray, Fri Jul 24 12:30:35 2020 +0100)
+  * 9875c71 - docs: merged 2 examples (Elliott Murray, Fri Jul 24 12:00:37 2020 +0100)
+  * 6f0d3ac - docs: Example code verifier (Elliott Murray, Fri Jul 24 11:31:17 2020 +0100)
 ### 1.2.0
   * 2b844c5 - Merge pull request #159 from pact-foundation/feat/fix_provider_classs (Elliott Murray, Fri Jul 24 09:47:46 2020 +0100)
   * 9c565bb - feat: fixing up tests and examples and code for provider class (Elliott Murray, Mon Jul 20 15:57:49 2020 +0100)
