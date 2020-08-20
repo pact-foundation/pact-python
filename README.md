@@ -1,6 +1,6 @@
 # pact-python
 
-[![slack](http://slack.pact.io/badge.svg)](https://slack.pact.io)
+[![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
 [![Build Status](https://travis-ci.org/pact-foundation/pact-python.svg?branch=master)](https://travis-ci.org/pact-foundation/pact-python)
 [![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
 
@@ -293,7 +293,7 @@ For more information see [Matching](https://docs.pact.io/getting_started/matchin
 ## Verifying Pacts Against a Service
 
 In addition to writing Pacts for Python consumers, you can also verify those Pacts
-against a provider of any language. There are two ways to do this. 
+against a provider of any language. There are two ways to do this.
 
 ### CLI
 
@@ -362,7 +362,7 @@ The bearer token to use when contacting the Pact Broker. You can also specify th
 as the environment variable `PACT_BROKER_TOKEN`.
 
 ### Python API
-You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice. 
+You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice.
 
 ```python
 verifier = Verifier(provider='UserService',
@@ -371,7 +371,7 @@ verifier = Verifier(provider='UserService',
 output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
 
 ```
-You can see more details in the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e/tests/provider/test_provider.py). 
+You can see more details in the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e/tests/provider/test_provider.py).
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
