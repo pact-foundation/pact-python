@@ -183,10 +183,12 @@ class mainTestCase(TestCase):
                                         timeout=30,
                                         verbose=False)
 
-    @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd'})
+    @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd',
+                             'PACT_BROKER_USERNAME': 'broker_user',
+                             'PACT_BROKER_BASE_URL': 'http://broker/'})
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
-    def test_password_from_env_var(self, mock_isfile, mock_wrapper):
+    def test_broker_creds_from_env_var(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
 
         result = self.runner.invoke(verify.main, self.simple_pact_opts)
@@ -197,6 +199,8 @@ class mainTestCase(TestCase):
                                 provider='provider',
                                 provider_base_url='http://localhost',
                                 broker_password='pwd',
+                                broker_username='broker_user',
+                                broker_url='http://broker/',
                                 timeout=30,
                                 verbose=False)
 

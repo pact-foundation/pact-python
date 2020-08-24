@@ -36,10 +36,12 @@ import click
     help='URL to send PUT requests to setup a given provider state.')
 @click.option(
     'username', '--pact-broker-username',
+    envvar='PACT_BROKER_USERNAME',
     help='Username for Pact Broker basic authentication.')
 @click.option(
     'broker_base_url', '--pact-broker-url',
     default='',
+    envvar='PACT_BROKER_BASE_URL',
     help='Base URl for the Pact Broker instance to publish pacts to.')
 @click.option(
     'consumer_version_tag', '--consumer-version-tag',
