@@ -1,3 +1,8 @@
+### 1.2.2
+  * 2c52053 - Merge pull request #167 from pact-foundation/feat/add_env_vars_verify (Elliott Murray, Mon Aug 24 16:08:04 2020 +0100)
+  * ce62588 - feat: added env vars for broker verify (Elliott Murray, Mon Aug 24 16:03:44 2020 +0100)
+  * 880fff2 - Merge pull request #165 from pact-foundation/docs/https_fix (Elliott Murray, Thu Aug 20 12:43:12 2020 +0100)
+  * 1a3605e - docs: https svg (Elliott Murray, Thu Aug 20 12:37:01 2020 +0100)
 ### 1.2.1
   * 69a4a9a - Merge pull request #163 from elliottmurray/fix/custom_header (Elliott Murray, Sat Aug 8 10:17:20 2020 +0100)
   * 88b7d9f - fix: custom headers had a typo (Elliott Murray, Sat Aug 1 11:08:54 2020 +0100)
