@@ -1,3 +1,10 @@
+### 1.2.3
+  * 8188d88 - chore: fix release script (Elliott Murray, Wed Aug 26 12:46:10 2020 +0100)
+  * e0e5106 - Merge pull request #169 from pact-foundation/chore/update_pr_scripts (Elliott Murray, Wed Aug 26 10:24:47 2020 +0100)
+  * 81fd653 - chore: release script updates version automaitcally now (Elliott Murray, Wed Aug 26 10:16:14 2020 +0100)
+  * 773d3f9 - chore: script now uses gh over hub (Elliott Murray, Wed Aug 26 10:03:06 2020 +0100)
+  * 468e4ad - Merge pull request #168 from pact-foundation/chore/upgrade-to-pact-ruby-standalone-1-88-3 (Elliott Murray, Wed Aug 26 09:49:33 2020 +0100)
+  * ce944fe - feat: update standalone to 1.88.3 (Elliott Murray, Wed Aug 26 09:08:27 2020 +0100)
 ### 1.2.2
   * 2c52053 - Merge pull request #167 from pact-foundation/feat/add_env_vars_verify (Elliott Murray, Mon Aug 24 16:08:04 2020 +0100)
   * ce62588 - feat: added env vars for broker verify (Elliott Murray, Mon Aug 24 16:03:44 2020 +0100)
