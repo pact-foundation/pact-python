@@ -38,13 +38,13 @@ import click
     'username', '--pact-broker-username',
     envvar='PACT_BROKER_USERNAME',
     help='Username for Pact Broker basic authentication. Can also be specified'
-         ' via the environment variable PACT_BROKER_USERNAME')
+         ' via the environment variable PACT_BROKER_USERNAME.')
 @click.option(
     'broker_base_url', '--pact-broker-url',
     default='',
     envvar='PACT_BROKER_BASE_URL',
     help='Base URl for the Pact Broker instance to publish pacts to. Can also be specified'
-         ' via the environment variable PACT_BROKER_BASE_URL')
+         ' via the environment variable PACT_BROKER_BASE_URL.')
 @click.option(
     'consumer_version_tag', '--consumer-version-tag',
     default='',
@@ -67,16 +67,16 @@ import click
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
     help='Password for Pact Broker basic authentication. Can also be specified'
-         ' via the environment variable PACT_BROKER_PASSWORD')
+         ' via the environment variable PACT_BROKER_PASSWORD.')
 @click.option(
     'token', '--pact-broker-token',
     envvar='PACT_BROKER_TOKEN',
     help='Bearer token for Pact Broker authentication. Can also be specified'
-         ' via the environment variable PACT_BROKER_TOKEN')
+         ' via the environment variable PACT_BROKER_TOKEN.')
 @click.option(
     'provider', '--provider',
     default='',
-    help='Retrieve the latest pacts for this provider')
+    help='Retrieve the latest pacts for this provider.')
 @click.option(
     'headers', '--custom-provider-header',
     envvar='CUSTOM_PROVIDER_HEADER',
@@ -93,12 +93,12 @@ import click
     type=int)
 @click.option(
     'provider_app_version', '-a', '--provider-app-version',
-    help='The provider application version, '
-         'required for publishing verification results')
+    help='The provider application version. '
+         'Required for publishing verification results.')
 @click.option(
     'publish_verification_results', '-r', '--publish-verification-results',
     default=False,
-    help='Publish verification results to the broker',
+    help='Publish verification results to the broker.',
     is_flag=True)
 @click.option(
     '--verbose/--no-verbose',
