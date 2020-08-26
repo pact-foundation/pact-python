@@ -13,7 +13,7 @@ TAG_NAME="v$VERSION"
 LAST_TAG=`git describe --abbrev=0`
 
 
-cat pact/__version__.py | sed "s/__version__ = .*/__version__  = '${VERSION}'/" > tmp-version
+cat pact/__version__.py | sed "s/__version__ = .*/__version__ = '${VERSION}'/" > tmp-version
 mv tmp-version pact/__version__.py
 
 echo "Releasing $TAG_NAME"
