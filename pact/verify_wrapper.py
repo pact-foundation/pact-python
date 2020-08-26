@@ -175,6 +175,8 @@ class VerifyWrapper(object):
             command.extend(['{}={}'.format('--custom-provider-header', header)])
         for tag in kwargs.get('consumer_tags', []):
             command.extend(["--consumer-version-tag={}".format(tag)])
+        for tag in kwargs.get('consumer_selectors', []):
+            command.extend(["--consumer-version-selector={}".format(tag)])
         for tag in kwargs.get('provider_tags', []):
             command.extend(["--provider-version-tag={}".format(tag)])
 
