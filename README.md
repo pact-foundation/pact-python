@@ -347,9 +347,15 @@ requests.
 
 The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', state: 'a thing exists'}`.
 
+###### --pact-broker-url
+
+Base URl for the Pact Broker instance to publish pacts to. Can also be specified via the environment variable
+`PACT_BROKER_BASE_URL`.
+
 ###### --pact-broker-username
 
-The username to use when contacting the Pact Broker.
+The username to use when contacting the Pact Broker. Can also be specified via the environment variable
+`PACT_BROKER_USERNAME`.
 
 ###### --pact-broker-password
 
@@ -360,6 +366,37 @@ as the environment variable `PACT_BROKER_PASSWORD`.
 
 The bearer token to use when contacting the Pact Broker. You can also specify this value
 as the environment variable `PACT_BROKER_TOKEN`.
+
+###### --consumer-version-tag
+
+Retrieve the latest pacts with this consumer version tag. Used in conjunction with `--provider`.
+May be specified multiple times.
+
+###### --consumer-version-selector
+
+You can also retrieve pacts with consumer version selector, a more flexible approach in specifying which pacts you need.
+May be specified multiple times. Read more about selectors [here](https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/).
+
+###### --provider-version-tag
+
+Tag to apply to the provider application version. May be specified multiple times.
+
+###### --custom-provider-header
+
+Header to add to provider state set up and pact verification requests e.g.`Authorization: Basic cGFjdDpwYWN0`
+May be specified multiple times.
+
+###### -t, --timeout
+
+The duration in seconds we should wait to confirm that the verification process was successful. Defaults to 30.
+
+###### -a, --provider-app-version
+
+The provider application version. Required for publishing verification results.
+
+###### -r, --publish-verification-results
+
+Publish verification results to the broker.
 
 ### Python API
 You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice.

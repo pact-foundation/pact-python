@@ -2,7 +2,7 @@
 
 1. Increment the version according to semantic versioning rules in `pact/__version__.py`
 
-2. To upgrade the the versions of `pact-mock_service` and `pact-provider-verifier`, change the
+2. To upgrade the versions of `pact-mock_service` and `pact-provider-verifier`, change the
    `PACT_STANDALONE_VERSION` in `setup.py` to match the latest version available from the
    [pact-ruby-standalone](https://github.com/pact-foundation/pact-ruby-standalone/releases) repository.
 

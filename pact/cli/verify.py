@@ -37,18 +37,26 @@ import click
 @click.option(
     'username', '--pact-broker-username',
     envvar='PACT_BROKER_USERNAME',
-    help='Username for Pact Broker basic authentication.')
+    help='Username for Pact Broker basic authentication. Can also be specified'
+         ' via the environment variable PACT_BROKER_USERNAME.')
 @click.option(
     'broker_base_url', '--pact-broker-url',
     default='',
     envvar='PACT_BROKER_BASE_URL',
-    help='Base URl for the Pact Broker instance to publish pacts to.')
+    help='Base URl for the Pact Broker instance to publish pacts to. Can also be specified'
+         ' via the environment variable PACT_BROKER_BASE_URL.')
 @click.option(
     'consumer_version_tag', '--consumer-version-tag',
     default='',
     multiple=True,
     help='Retrieve the latest pacts with this consumer version tag. '
-         'Used in conjunction with --provider.')
+         'Used in conjunction with --provider. May be specified multiple times.')
+@click.option(
+    'consumer_version_selector', '--consumer-version-selector',
+    default='',
+    multiple=True,
+    help='Retrieve the latest pacts with this consumer version selector. '
+         'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
     'provider_version_tag', '--provider-version-tag',
     default='',
@@ -59,16 +67,16 @@ import click
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
     help='Password for Pact Broker basic authentication. Can also be specified'
-         ' via the environment variable PACT_BROKER_PASSWORD')
+         ' via the environment variable PACT_BROKER_PASSWORD.')
 @click.option(
     'token', '--pact-broker-token',
     envvar='PACT_BROKER_TOKEN',
     help='Bearer token for Pact Broker authentication. Can also be specified'
-         ' via the environment variable PACT_BROKER_TOKEN')
+         ' via the environment variable PACT_BROKER_TOKEN.')
 @click.option(
     'provider', '--provider',
     default='',
-    help='Retrieve the latest pacts for this provider')
+    help='Retrieve the latest pacts for this provider.')
 @click.option(
     'headers', '--custom-provider-header',
     envvar='CUSTOM_PROVIDER_HEADER',
@@ -80,17 +88,17 @@ import click
 @click.option(
     'timeout', '-t', '--timeout',
     default=30,
-    help='The duration in seconds we should wait to confirm verification'
+    help='The duration in seconds we should wait to confirm that the verification'
          ' process was successful. Defaults to 30.',
     type=int)
 @click.option(
     'provider_app_version', '-a', '--provider-app-version',
-    help='The provider application version, '
-         'required for publishing verification results')
+    help='The provider application version. '
+         'Required for publishing verification results.')
 @click.option(
     'publish_verification_results', '-r', '--publish-verification-results',
     default=False,
-    help='Publish verification results to the broker',
+    help='Publish verification results to the broker.',
     is_flag=True)
 @click.option(
     '--verbose/--no-verbose',
@@ -107,9 +115,9 @@ import click
     'log_level', '--log-level',
     help='The logging level.')
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
-         username, broker_base_url, consumer_version_tag, provider_version_tag,
-         password, token, provider, headers, timeout, provider_app_version,
-         publish_verification_results, verbose, log_dir, log_level):
+         username, broker_base_url, consumer_version_tag, consumer_version_selector,
+         provider_version_tag, password, token, provider, headers, timeout,
+         provider_app_version, publish_verification_results, verbose, log_dir, log_level):
     """
     Verify one or more contracts against a provider service.
 
@@ -162,6 +170,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         'timeout': timeout,
         'verbose': verbose,
         'consumer_tags': list(consumer_version_tag),
+        'consumer_selectors': list(consumer_version_selector),
         'provider_tags': list(provider_version_tag),
         'provider_states_setup_url': states_setup_url
     }
