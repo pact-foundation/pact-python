@@ -1,3 +1,8 @@
+### 1.2.4
+  * a594e22 - Merge pull request #170 from alecgerona/feat/consumer-version-selector (Elliott Murray, Thu Aug 27 15:21:45 2020 +0100)
+  * 05c5e41 - docs(cli): improve cli help grammar (Alexandre Gerona, Thu Aug 27 06:28:56 2020 +0800)
+  * 49d5f7c - docs: update README.md with relevant option documentation (Alexandre Gerona, Thu Aug 27 06:22:37 2020 +0800)
+  * 5a99528 - feat(cli): add consumer-version-selector option (Alexandre Gerona, Thu Aug 27 06:22:07 2020 +0800)
 ### 1.2.3
   * 8188d88 - chore: fix release script (Elliott Murray, Wed Aug 26 12:46:10 2020 +0100)
   * e0e5106 - Merge pull request #169 from pact-foundation/chore/update_pr_scripts (Elliott Murray, Wed Aug 26 10:24:47 2020 +0100)
