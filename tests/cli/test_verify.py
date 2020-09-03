@@ -110,7 +110,8 @@ class mainTestCase(TestCase):
                                 provider='provider',
                                 provider_base_url='http://localhost',
                                 timeout=30,
-                                verbose=True)
+                                verbose=True,
+                                enable_pending=False)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
@@ -137,7 +138,9 @@ class mainTestCase(TestCase):
                                         provider='provider',
                                         provider_base_url='http://localhost',
                                         timeout=30,
-                                        verbose=False)
+                                        verbose=False,
+                                        enable_pending=False,
+                                        )
         self.assertEqual(result.exit_code, 0)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -157,7 +160,8 @@ class mainTestCase(TestCase):
                                         provider='provider',
                                         provider_base_url='http://localhost',
                                         timeout=30,
-                                        verbose=False)
+                                        verbose=False,
+                                        enable_pending=False)
         self.assertEqual(result.exit_code, 0)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -181,7 +185,8 @@ class mainTestCase(TestCase):
                                         provider='provider',
                                         provider_base_url='http://localhost',
                                         timeout=30,
-                                        verbose=False)
+                                        verbose=False,
+                                        enable_pending=False)
 
     @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd',
                              'PACT_BROKER_USERNAME': 'broker_user',
@@ -202,7 +207,8 @@ class mainTestCase(TestCase):
                                 broker_username='broker_user',
                                 broker_url='http://broker/',
                                 timeout=30,
-                                verbose=False)
+                                verbose=False,
+                                enable_pending=False)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
@@ -228,7 +234,8 @@ class mainTestCase(TestCase):
             '--log-dir=tmp/logs/pact.test.log',
             '--log-level=INFO',
             '--timeout=60',
-            '--verbose'
+            '--verbose',
+            '--enable-pending',
         ])
         self.assertEqual(result.exit_code, 0, result.output)
 
@@ -250,7 +257,8 @@ class mainTestCase(TestCase):
                                 log_dir='tmp/logs/pact.test.log',
                                 log_level='INFO',
                                 timeout=60,
-                                verbose=True)
+                                verbose=True,
+                                enable_pending=True)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     def test_all_broker_options(self, mock_wrapper):
@@ -273,7 +281,8 @@ class mainTestCase(TestCase):
             '--provider-app-version=1.2.3',
             '--timeout=60',
             '--publish-verification-results',
-            '--verbose'
+            '--verbose',
+            '--enable-pending'
         ])
 
         self.assertEqual(result.exit_code, 0, result.output)
@@ -293,7 +302,8 @@ class mainTestCase(TestCase):
                                 # custom_provider_header=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
                                 provider_states_setup_url='http://localhost/provider-states/set',
                                 timeout=60,
-                                verbose=True)
+                                verbose=True,
+                                enable_pending=True)
 
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_publishing_missing_version(self, mock_isfile):
