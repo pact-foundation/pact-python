@@ -105,10 +105,6 @@ import click
     default=False,
     help='Toggle verbose logging, defaults to False.')
 @click.option(
-    '--verbose/--no-verbose',
-    default=False,
-    help='Toggle verbose logging, defaults to False.')
-@click.option(
     'log_dir', '--log-dir',
     help='The directory for the pact.log file.')
 @click.option(
