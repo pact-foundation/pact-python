@@ -97,6 +97,7 @@ class Verifier(object):
         states_setup_url = kwargs.get('provider_states_setup_url', None)
         verbose = kwargs.get('verbose', False)
         publish_version = kwargs.get('publish_version', None)
+        enable_pending = kwargs.get('enable_pending', None)
 
         options = {
             'log_dir': log_dir,
@@ -109,7 +110,8 @@ class Verifier(object):
             'provider_tags': list(provider_tags),
             'provider_states_setup_url': states_setup_url,
             'verbose': verbose,
-            'publish_version': publish_version
+            'publish_version': publish_version,
+            'enable_pending': enable_pending,
         }
         return self.filter_empty_options(**options)
 

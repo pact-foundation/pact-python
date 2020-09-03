@@ -73,6 +73,17 @@ class VerifierPactsTestCase(TestCase):
 
         mock_expand_dir.assert_called_once()
 
+    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    def test_passes_enable_pending_flag_value(self, mock_wrapper):
+        for value in (True, False):
+            with self.subTest(value=value):
+                with patch('pact.verifier.path_exists'):
+                    self.verifier.verify_pacts('any.json', enable_pending=value)
+                self.assertTrue(
+                    ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
+                    mock_wrapper.call_args.kwargs,
+                )
+
 
 class VerifierBrokerTestCase(TestCase):
 
@@ -130,3 +141,14 @@ class VerifierBrokerTestCase(TestCase):
                            log_level='INFO',
                            verbose=False,
                            publish_version='1.0.0')
+
+    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    def test_passes_enable_pending_flag_value(self, mock_wrapper):
+        for value in (True, False):
+            with self.subTest(value=value):
+                with patch('pact.verifier.path_exists'):
+                    self.verifier.verify_with_broker(enable_pending=value)
+                self.assertTrue(
+                    ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
+                    mock_wrapper.call_args.kwargs,
+                )
