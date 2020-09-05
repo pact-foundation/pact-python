@@ -30,7 +30,7 @@ class Verifier(object):
             # do something
             raise Exception()
 
-    def verify_pacts(self, *pacts, **kwargs):
+    def verify_pacts(self, *pacts, enable_pending=False, **kwargs):
         """Verify our pacts from the provider.
 
         Returns:
@@ -53,17 +53,19 @@ class Verifier(object):
         success, logs = VerifyWrapper().call_verify(*pacts,
                                                     provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
+                                                    enable_pending=enable_pending,
                                                     **options)
 
         return success, logs
 
-    def verify_with_broker(self, **kwargs):
+    def verify_with_broker(self, enable_pending=False, **kwargs):
         """Use Broker to verify.
 
         Args:
             broker_username ([String]): broker username
             broker_password ([String]): broker password
             broker_url ([String]): url of broker
+            enable_pending ([Boolean])
 
         """
         broker_username = kwargs.get('broker_username', None)
@@ -81,6 +83,7 @@ class Verifier(object):
 
         success, logs = VerifyWrapper().call_verify(provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
+                                                    enable_pending=enable_pending,
                                                     **options)
         return success, logs
 
@@ -97,7 +100,6 @@ class Verifier(object):
         states_setup_url = kwargs.get('provider_states_setup_url', None)
         verbose = kwargs.get('verbose', False)
         publish_version = kwargs.get('publish_version', None)
-        enable_pending = kwargs.get('enable_pending', None)
 
         options = {
             'log_dir': log_dir,
@@ -111,7 +113,6 @@ class Verifier(object):
             'provider_states_setup_url': states_setup_url,
             'verbose': verbose,
             'publish_version': publish_version,
-            'enable_pending': enable_pending,
         }
         return self.filter_empty_options(**options)
 
