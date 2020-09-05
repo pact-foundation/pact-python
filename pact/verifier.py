@@ -94,7 +94,6 @@ class Verifier(object):
         provider_app_version = kwargs.get('provider_app_version', None)
         headers = kwargs.get('headers', [])
         timeout = kwargs.get('timeout', None)
-        verbose = kwargs.get('verbose', None)
         consumer_tags = kwargs.get('consumer_tags', [])
         provider_tags = kwargs.get('provider_tags', [])
         states_setup_url = kwargs.get('provider_states_setup_url', None)
@@ -107,7 +106,6 @@ class Verifier(object):
             'provider_app_version': provider_app_version,
             'custom_provider_header': list(headers),
             'timeout': timeout,
-            'verbose': verbose,
             'consumer_tags': list(consumer_tags),
             'provider_tags': list(provider_tags),
             'provider_states_setup_url': states_setup_url,
