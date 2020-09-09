@@ -111,11 +111,12 @@ import click
     'log_level', '--log-level',
     help='The logging level.')
 @click.option(
-    'enable_pending', '--enable-pending',
+    'enable_pending',
+    '--enable-pending/--no-enable-pending',
     default=False,
     help='Allow pacts which are in pending state to be verified without causing the '
-         'overall task to fail. For more information, see https://pact.io/pending',
-    is_flag=True)
+    'overall task to fail. For more information, see https://pact.io/pending',
+)
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,

@@ -345,3 +345,16 @@ class mainTestCase(TestCase):
 
         mock_expand_dirs.assert_called_once()
         mock_path_exists.assert_called_once_with('foo')
+
+    @patch(
+        'pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None)
+    )
+    def test_supports_no_enable_pending_flag(self, call_mock):
+        with patch('pact.cli.verify.path_exists'):
+            result = self.runner.invoke(
+                verify.main, self.simple_pact_opts + ['--no-enable-pending']
+            )
+        self.assertEqual(0, result.exit_code, result.output)
+        self.assertTrue(
+            ('enable_pending', False) in call_mock.call_args.kwargs.items()
+        )
