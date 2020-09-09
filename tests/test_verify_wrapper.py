@@ -221,6 +221,21 @@ class VerifyWrapperTestCase(TestCase):
             '--no-enable-pending' in self.mock_Popen.call_args.args[0]
         )
 
+    def test_doesnt_append_enable_pending_flag_by_default(self):
+        self.mock_Popen.return_value.returncode = 0
+        VerifyWrapper().call_verify(
+            'path/to/pact1',
+            'path/to/pact2',
+            provider_base_url='http://localhost',
+            provider='provider',
+        )
+        self.assertTrue(
+            '--no-enable-pending' not in self.mock_Popen.call_args.args[0]
+        )
+        self.assertTrue(
+            '--enable-pending' not in self.mock_Popen.call_args.args[0]
+        )
+
 
 class path_existsTestCase(TestCase):
     def test_path_exists(self):

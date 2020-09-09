@@ -171,10 +171,7 @@ class VerifyWrapper(object):
 
         if(kwargs.get('verbose', False) is True):
             command.extend(['--verbose'])
-        if enable_pending:
-            command.append('--enable-pending')
-        else:
-            command.append('--no-enable-pending')
+        command.extend(self._convert_enable_pending_flag(enable_pending))
 
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:
@@ -195,6 +192,13 @@ class VerifyWrapper(object):
         logs = capture_logs(result, verbose)
 
         return result.returncode, logs
+
+    def _convert_enable_pending_flag(self, value):
+        if value:
+            return ['--enable-pending']
+        elif value is False:
+            return ['--no-enable-pending']
+        return []
 
     def publish_results(self, provider_app_version, command):
         """Publish results to broker."""
