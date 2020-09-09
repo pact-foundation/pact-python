@@ -113,7 +113,7 @@ import click
 @click.option(
     'enable_pending',
     '--enable-pending/--no-enable-pending',
-    default=False,
+    default=None,
     help='Allow pacts which are in pending state to be verified without causing the '
     'overall task to fail. For more information, see https://pact.io/pending',
 )
