@@ -121,7 +121,7 @@ class PactException(Exception):
         super().__init__(*args, **kwargs)
         self.message = args[0]
 
-class VerifyWrapper(object):
+class VerifyWrapper:
     """A Pact Verifier Wrapper."""
 
     def _broker_present(self, **kwargs):
