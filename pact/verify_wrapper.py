@@ -173,6 +173,8 @@ class VerifyWrapper(object):
             command.extend(['--verbose'])
         if enable_pending:
             command.append('--enable-pending')
+        else:
+            command.append('--no-enable-pending')
 
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:

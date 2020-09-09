@@ -208,6 +208,19 @@ class VerifyWrapperTestCase(TestCase):
         mock_expand_dirs.assert_called_with(['path/to/pact1',
                                              'path/to/pact2'])
 
+    def test_appends_no_enable_pending_flag_for_false(self):
+        self.mock_Popen.return_value.returncode = 0
+        VerifyWrapper().call_verify(
+            'path/to/pact1',
+            'path/to/pact2',
+            provider_base_url='http://localhost',
+            provider='provider',
+            enable_pending=False,
+        )
+        self.assertTrue(
+            '--no-enable-pending' in self.mock_Popen.call_args.args[0]
+        )
+
 
 class path_existsTestCase(TestCase):
     def test_path_exists(self):
