@@ -30,7 +30,7 @@ class Verifier(object):
             # do something
             raise Exception()
 
-    def verify_pacts(self, *pacts, **kwargs):
+    def verify_pacts(self, *pacts, enable_pending=False, **kwargs):
         """Verify our pacts from the provider.
 
         Returns:
@@ -53,17 +53,19 @@ class Verifier(object):
         success, logs = VerifyWrapper().call_verify(*pacts,
                                                     provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
+                                                    enable_pending=enable_pending,
                                                     **options)
 
         return success, logs
 
-    def verify_with_broker(self, **kwargs):
+    def verify_with_broker(self, enable_pending=False, **kwargs):
         """Use Broker to verify.
 
         Args:
             broker_username ([String]): broker username
             broker_password ([String]): broker password
             broker_url ([String]): url of broker
+            enable_pending ([Boolean])
 
         """
         broker_username = kwargs.get('broker_username', None)
@@ -81,6 +83,7 @@ class Verifier(object):
 
         success, logs = VerifyWrapper().call_verify(provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
+                                                    enable_pending=enable_pending,
                                                     **options)
         return success, logs
 
@@ -91,7 +94,6 @@ class Verifier(object):
         provider_app_version = kwargs.get('provider_app_version', None)
         headers = kwargs.get('headers', [])
         timeout = kwargs.get('timeout', None)
-        verbose = kwargs.get('verbose', None)
         consumer_tags = kwargs.get('consumer_tags', [])
         provider_tags = kwargs.get('provider_tags', [])
         states_setup_url = kwargs.get('provider_states_setup_url', None)
@@ -104,12 +106,11 @@ class Verifier(object):
             'provider_app_version': provider_app_version,
             'custom_provider_header': list(headers),
             'timeout': timeout,
-            'verbose': verbose,
             'consumer_tags': list(consumer_tags),
             'provider_tags': list(provider_tags),
             'provider_states_setup_url': states_setup_url,
             'verbose': verbose,
-            'publish_version': publish_version
+            'publish_version': publish_version,
         }
         return self.filter_empty_options(**options)
 

@@ -133,7 +133,9 @@ class VerifyWrapper(object):
 
         return True
 
-    def call_verify(self, *pacts, provider_base_url, provider, **kwargs):
+    def call_verify(
+            self, *pacts, provider_base_url, provider, enable_pending=False, **kwargs
+    ):
         """Call verify method."""
         verbose = kwargs.get('verbose', False)
 
@@ -169,6 +171,8 @@ class VerifyWrapper(object):
 
         if(kwargs.get('verbose', False) is True):
             command.extend(['--verbose'])
+        if enable_pending:
+            command.append('--enable-pending')
 
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:

@@ -36,7 +36,8 @@ class VerifierPactsTestCase(TestCase):
                            provider='test_provider',
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
-                           verbose=False)
+                           verbose=False,
+                           enable_pending=False)
 
     def test_validate_on_publish_results(self):
         self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
@@ -54,7 +55,8 @@ class VerifierPactsTestCase(TestCase):
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
                            verbose=False,
-                           publish_version='1.0.0')
+                           publish_version='1.0.0',
+                           enable_pending=False)
 
     @patch('pact.verifier.path_exists', return_value=False)
     def test_raises_error_on_missing_pact_files(self, mock_path_exists):
@@ -72,6 +74,17 @@ class VerifierPactsTestCase(TestCase):
                                                'path/to/pact2')
 
         mock_expand_dir.assert_called_once()
+
+    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    def test_passes_enable_pending_flag_value(self, mock_wrapper):
+        for value in (True, False):
+            with self.subTest(value=value):
+                with patch('pact.verifier.path_exists'):
+                    self.verifier.verify_pacts('any.json', enable_pending=value)
+                self.assertTrue(
+                    ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
+                    mock_wrapper.call_args.kwargs,
+                )
 
 
 class VerifierBrokerTestCase(TestCase):
@@ -111,7 +124,8 @@ class VerifierBrokerTestCase(TestCase):
                            broker_token='token',
                            broker_url=self.broker_url,
                            log_level='INFO',
-                           verbose=False)
+                           verbose=False,
+                           enable_pending=False)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.verifier.path_exists', return_value=True)
@@ -129,4 +143,16 @@ class VerifierBrokerTestCase(TestCase):
                            broker_url=self.broker_url,
                            log_level='INFO',
                            verbose=False,
-                           publish_version='1.0.0')
+                           publish_version='1.0.0',
+                           enable_pending=False)
+
+    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    def test_passes_enable_pending_flag_value(self, mock_wrapper):
+        for value in (True, False):
+            with self.subTest(value=value):
+                with patch('pact.verifier.path_exists'):
+                    self.verifier.verify_with_broker(enable_pending=value)
+                self.assertTrue(
+                    ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
+                    mock_wrapper.call_args.kwargs,
+                )
