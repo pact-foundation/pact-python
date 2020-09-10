@@ -80,6 +80,18 @@ class VerifyWrapperTestCase(TestCase):
 
         self.assertTrue('Pact urls or Pact broker required' in context.exception.message)
 
+    def test_broker_without_authentication_can_be_used(self):
+        self.mock_Popen.return_value.returncode = 0
+        wrapper = VerifyWrapper()
+        wrapper.call_verify(
+            provider='provider', provider_base_url='http://localhost', broker_url='http://broker.example.com'
+        )
+        self.assertProcess(*[
+            '--provider-base-url=http://localhost',
+            '--provider=provider',
+            '--pact-broker-base-url=http://broker.example.com',
+        ])
+
     def test_pact_urls_provided(self):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()

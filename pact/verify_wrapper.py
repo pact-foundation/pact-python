@@ -125,12 +125,8 @@ class VerifyWrapper(object):
     """A Pact Verifier Wrapper."""
 
     def _broker_present(self, **kwargs):
-        if (kwargs.get('broker_username') is None
-            or kwargs.get('broker_password') is None
-                or kwargs.get('broker_url') is None):
-
+        if kwargs.get('broker_url') is None:
             return False
-
         return True
 
     def call_verify(
