@@ -1,3 +1,13 @@
+### 1.2.5
+  * 46372c7 - Merge pull request #171 from m-aciek/enable-pending (Elliott Murray, Wed Sep 9 10:03:02 2020 +0100)
+  * e840587 - fix(verifier): remove superfluous verbose mentions (Maciej Olko, Sat Sep 5 21:33:52 2020 +0200)
+  * c64bec1 - refactor(verifier): add enable_pending to signature of verify methods (Maciej Olko, Sat Sep 5 21:32:33 2020 +0200)
+  * e6c9ed0 - feat(verifier): support --enable-pending flag in CLI (Maciej Olko, Thu Sep 3 15:33:40 2020 +0200)
+  * 2b57446 - feat(verifier): pass enable_pending flag in Verifier's methods (Maciej Olko, Thu Sep 3 17:03:08 2020 +0200)
+  * d51c88d - test: bump mock to 3.0.5 (m-aciek, Thu Sep 3 23:42:00 2020 +0200)
+  * 39de1f3 - feat(verifier): add enable_pending argument handling in verify wrapper (Maciej Olko, Thu Sep 3 15:33:07 2020 +0200)
+  * fc6c365 - fix(verifier): remove superfluous option from verify CLI command (Maciej Olko, Thu Sep 3 13:30:57 2020 +0200)
+  * fbbd5fa - ci(pre-commit): add commitizen to pre-commit configuration (Maciej Olko, Thu Sep 3 17:19:45 2020 +0200)
 ### 1.2.4
   * a594e22 - Merge pull request #170 from alecgerona/feat/consumer-version-selector (Elliott Murray, Thu Aug 27 15:21:45 2020 +0100)
   * 05c5e41 - docs(cli): improve cli help grammar (Alexandre Gerona, Thu Aug 27 06:28:56 2020 +0800)
