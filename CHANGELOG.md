@@ -1,3 +1,6 @@
+### 1.2.6
+  * 1192bd6 - Merge pull request #173 from copalco/master (Elliott Murray, Thu Sep 10 15:30:07 2020 +0100)
+  * 5db7100 - feat(verifier): allow to use unauthenticated brokers (Piotr Kopalko, Thu Sep 10 14:12:12 2020 +0200)
 ### 1.2.5
   * 46372c7 - Merge pull request #171 from m-aciek/enable-pending (Elliott Murray, Wed Sep 9 10:03:02 2020 +0100)
   * e840587 - fix(verifier): remove superfluous verbose mentions (Maciej Olko, Sat Sep 5 21:33:52 2020 +0200)
