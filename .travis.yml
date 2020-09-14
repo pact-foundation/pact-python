@@ -11,8 +11,6 @@ python:
 
 rvm: "2.2"
 
-sudo: false
-
 install:
   - pip install -r requirements_dev.txt
 

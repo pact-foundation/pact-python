@@ -20,7 +20,7 @@ then
 
   pact-verifier --provider-base-url=http://localhost:5001 \
     --provider-states-setup-url=http://localhost:5001/_pact/provider_states \
-    ./userserviceclient-userservice.json
+    ./pythonclient-pythonservice.json
 else
 
   pact-verifier --provider-base-url=http://localhost:5001 \
