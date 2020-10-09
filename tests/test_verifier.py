@@ -28,12 +28,14 @@ class VerifierPactsTestCase(TestCase):
         mock_wrapper.return_value = (True, 'some logs')
 
         output, _ = self.verifier.verify_pacts('path/to/pact1',
-                                               'path/to/pact2')
+                                               'path/to/pact2',
+                                               headers=['header1', 'header2'])
 
         assertVerifyCalled(mock_wrapper,
                            'path/to/pact1',
                            'path/to/pact2',
                            provider='test_provider',
+                           custom_provider_headers=['header1', 'header2'],
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
                            verbose=False,

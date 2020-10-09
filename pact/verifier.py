@@ -104,7 +104,7 @@ class Verifier(object):
             'log_dir': log_dir,
             'log_level': log_level,
             'provider_app_version': provider_app_version,
-            'custom_provider_header': list(headers),
+            'custom_provider_headers': list(headers),
             'timeout': timeout,
             'consumer_tags': list(consumer_tags),
             'provider_tags': list(provider_tags),
