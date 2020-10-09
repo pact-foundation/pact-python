@@ -1,3 +1,8 @@
+### 1.2.7
+  * 90b71d2 - Merge pull request #178 from pact-foundation/fix/custom_header_typo (Elliott Murray, Fri Oct 9 12:47:37 2020 +0100)
+  * b07ef69 - fix(verifier): headers not propogated properly (Elliott Murray, Fri Oct 9 12:24:25 2020 +0100)
+  * 0e9b71c - Merge pull request #177 from pact-foundation/docs/remove_handcrafted_broker (Elliott Murray, Fri Oct 9 12:01:24 2020 +0100)
+  * 2db7008 - docs(examples): removed manaul publish to broker (Elliott Murray, Fri Oct 9 11:54:30 2020 +0100)
 ### 1.2.6
   * 1192bd6 - Merge pull request #173 from copalco/master (Elliott Murray, Thu Sep 10 15:30:07 2020 +0100)
   * 5db7100 - feat(verifier): allow to use unauthenticated brokers (Piotr Kopalko, Thu Sep 10 14:12:12 2020 +0200)
