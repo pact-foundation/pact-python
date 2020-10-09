@@ -36,5 +36,17 @@ pytest
 Or you can run individual tests like:
 
 ```bash
-pytest tests/test_user_consumer.py::test_get_non_existing_user
+pytest tests/consumer/test_user_consumer.py::test_get_non_existing_user
 ```
+
+To get the consumer to publish a pact to broker you will need to run (2 is an arbitary version number):
+```bash
+pytest tests/consumer/test_user_consumer.py --publish-pact 2
+```
+
+And then you can run:
+```bash
+./verify_pact.sh 2
+```
+
+To verify the pact
