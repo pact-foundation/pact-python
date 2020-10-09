@@ -20,7 +20,6 @@ import logging
 import os
 
 import pytest
-# from flask import Flask, abort, jsonify, request
 from multiprocessing import Process
 
 from pact import Verifier
