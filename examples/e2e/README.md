@@ -9,12 +9,8 @@ Create your own virtualenv for this. Run
 ```bash
 pip install -r requirements.txt
 pip install ../../
-```
-
- pip install pipenv
-$ pipenv install
-pipenv shell
 pytest
+```
 
 This should provide you with a relative path to pact install relatively (2 dirs up)
 
