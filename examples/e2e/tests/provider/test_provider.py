@@ -1,29 +1,13 @@
-
-# VERSION=$1
-# if [ -x $VERSION ]; then
-#     echo "ERROR: You must specify a provider version"
-#     exit
-# fi
-
-# pipenv run pact-verifier --provider-base-url=http://localhost:5001 \
-#   --pact-url="http://127.0.0.1/pacts/provider/UserService/consumer/UserServiceClient/latest" \
-#   --provider-states-setup-url=http://localhost:5001/_pact/provider_states \
-#   --provider-app-version $VERSION \
-#   --pact-broker-username pactbroker \
-#   --pact-broker-password pactbroker \
-#   --publish-verification-results
-
-
 """pact test for user service client"""
 
 import logging
 import os
+import atexit
 
 import pytest
 from multiprocessing import Process
 
 from pact import Verifier
-
 from pact_provider import app
 
 log = logging.getLogger(__name__)
@@ -49,15 +33,16 @@ PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 def provider():
     print('start flask')
     server = Process(target=app.run, kwargs={'port': PACT_MOCK_PORT})
+    server.start()
+    atexit.register(stop_flask, server)
 
-    try:
-        server.start()
+    yield
 
-        yield
-    finally:
-        print('end flask')
-        server.terminate()
+    stop_flask(server_process=server)
 
+def stop_flask(server_process: Process):
+    print('stop flask called')
+    server_process.terminate()
 
 def test_get_user_non_admin(provider):
     verifier = Verifier(provider='UserService',
