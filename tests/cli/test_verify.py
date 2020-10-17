@@ -262,7 +262,8 @@ class mainTestCase(TestCase):
                                 log_level='INFO',
                                 timeout=60,
                                 verbose=True,
-                                enable_pending=True)
+                                enable_pending=True,
+                                include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     def test_all_broker_options(self, mock_wrapper):

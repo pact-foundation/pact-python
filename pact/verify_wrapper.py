@@ -172,7 +172,7 @@ class VerifyWrapper(object):
             command.append('--enable-pending')
 
         if include_wip_pacts_since:
-            command.extend('--include-wip-pacts-since={}'.format(include_wip_pacts_since))
+            command.extend(['--include-wip-pacts-since={}'.format(include_wip_pacts_since)])
 
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:
