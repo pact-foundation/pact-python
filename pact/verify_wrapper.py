@@ -129,6 +129,10 @@ class VerifyWrapper(object):
             return False
         return True
 
+    def _validate_input(self, pacts, **kwargs):
+        if len(pacts) == 0 and not self._broker_present(**kwargs):
+            raise PactException('Pact urls or Pact broker required')
+
     def call_verify(
             self, *pacts, provider_base_url, provider, enable_pending=False,
             include_wip_pacts_since=None, **kwargs
@@ -136,8 +140,7 @@ class VerifyWrapper(object):
         """Call verify method."""
         verbose = kwargs.get('verbose', False)
 
-        if(len(pacts) == 0 and not self._broker_present(**kwargs)):
-            raise PactException('Pact urls or Pact broker required')
+        self._validate_input(pacts, **kwargs)
 
         provider_app_version = kwargs.get('provider_app_version')
         options = {
