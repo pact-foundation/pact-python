@@ -130,7 +130,7 @@ class VerifyWrapper(object):
         return True
 
     def call_verify(
-            self, *pacts, provider_base_url, provider, enable_pending=False, 
+            self, *pacts, provider_base_url, provider, enable_pending=False,
             include_wip_pacts_since=None, **kwargs
     ):
         """Call verify method."""
@@ -170,7 +170,7 @@ class VerifyWrapper(object):
             command.extend(['--verbose'])
         if enable_pending:
             command.append('--enable-pending')
-        
+
         if include_wip_pacts_since:
             command.extend('--include-wip-pacts-since={}'.format(include_wip_pacts_since))
 
