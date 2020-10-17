@@ -30,7 +30,7 @@ class Verifier(object):
             # do something
             raise Exception()
 
-    def verify_pacts(self, *pacts, enable_pending=False, **kwargs):
+    def verify_pacts(self, *pacts, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Verify our pacts from the provider.
 
         Returns:
@@ -54,11 +54,12 @@ class Verifier(object):
                                                     provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
                                                     enable_pending=enable_pending,
+                                                    include_wip_pacts_since=include_wip_pacts_since,
                                                     **options)
 
         return success, logs
 
-    def verify_with_broker(self, enable_pending=False, **kwargs):
+    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
 
         Args:
@@ -66,6 +67,7 @@ class Verifier(object):
             broker_password ([String]): broker password
             broker_url ([String]): url of broker
             enable_pending ([Boolean])
+            include_wip_pacts_since ([String])
 
         """
         broker_username = kwargs.get('broker_username', None)
@@ -84,6 +86,7 @@ class Verifier(object):
         success, logs = VerifyWrapper().call_verify(provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
                                                     enable_pending=enable_pending,
+                                                    include_wip_pacts_since=include_wip_pacts_since,
                                                     **options)
         return success, logs
 

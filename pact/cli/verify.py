@@ -116,11 +116,16 @@ import click
     help='Allow pacts which are in pending state to be verified without causing the '
          'overall task to fail. For more information, see https://pact.io/pending',
     is_flag=True)
+@click.option(
+    'include_wip_pacts_since', '--include-wip-pacts-since',
+    default=None,
+    help='Automatically include the pending pacts in the verification step. '
+         'For more information, see https://docs.pact.io/pact_broker/advanced_topics/wip_pacts/',)
 def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,
          provider_app_version, publish_verification_results, verbose, log_dir,
-         log_level, enable_pending):
+         log_level, enable_pending, include_wip_pacts_since):
     """
     Verify one or more contracts against a provider service.
 
@@ -186,6 +191,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
                                                 provider=provider,
                                                 provider_base_url=base_url,
                                                 enable_pending=enable_pending,
+                                                include_wip_pacts_since=include_wip_pacts_since
                                                 **options)
     sys.exit(success)
 
