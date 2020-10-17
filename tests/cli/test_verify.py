@@ -111,7 +111,8 @@ class mainTestCase(TestCase):
                                 provider_base_url='http://localhost',
                                 timeout=30,
                                 verbose=True,
-                                enable_pending=False)
+                                enable_pending=False,
+                                include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
@@ -140,7 +141,7 @@ class mainTestCase(TestCase):
                                         timeout=30,
                                         verbose=False,
                                         enable_pending=False,
-                                        )
+                                        include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -161,7 +162,8 @@ class mainTestCase(TestCase):
                                         provider_base_url='http://localhost',
                                         timeout=30,
                                         verbose=False,
-                                        enable_pending=False)
+                                        enable_pending=False,
+                                        include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -186,7 +188,8 @@ class mainTestCase(TestCase):
                                         provider_base_url='http://localhost',
                                         timeout=30,
                                         verbose=False,
-                                        enable_pending=False)
+                                        enable_pending=False,
+                                        include_wip_pacts_since=None)
 
     @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd',
                              'PACT_BROKER_USERNAME': 'broker_user',
@@ -208,7 +211,8 @@ class mainTestCase(TestCase):
                                 broker_url='http://broker/',
                                 timeout=30,
                                 verbose=False,
-                                enable_pending=False)
+                                enable_pending=False,
+                                include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
@@ -258,7 +262,8 @@ class mainTestCase(TestCase):
                                 log_level='INFO',
                                 timeout=60,
                                 verbose=True,
-                                enable_pending=True)
+                                enable_pending=True,
+                                include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     def test_all_broker_options(self, mock_wrapper):
@@ -282,7 +287,8 @@ class mainTestCase(TestCase):
             '--timeout=60',
             '--publish-verification-results',
             '--verbose',
-            '--enable-pending'
+            '--enable-pending',
+            '--include-wip-pacts-since=2018-01-01',
         ])
 
         self.assertEqual(result.exit_code, 0, result.output)
@@ -303,7 +309,8 @@ class mainTestCase(TestCase):
                                 provider_states_setup_url='http://localhost/provider-states/set',
                                 timeout=60,
                                 verbose=True,
-                                enable_pending=True)
+                                enable_pending=True,
+                                include_wip_pacts_since='2018-01-01')
 
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_publishing_missing_version(self, mock_isfile):

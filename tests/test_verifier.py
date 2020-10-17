@@ -39,7 +39,8 @@ class VerifierPactsTestCase(TestCase):
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False)
+                           enable_pending=False,
+                           include_wip_pacts_since=None)
 
     def test_validate_on_publish_results(self):
         self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
@@ -58,7 +59,8 @@ class VerifierPactsTestCase(TestCase):
                            log_level='INFO',
                            verbose=False,
                            publish_version='1.0.0',
-                           enable_pending=False)
+                           enable_pending=False,
+                           include_wip_pacts_since=None)
 
     @patch('pact.verifier.path_exists', return_value=False)
     def test_raises_error_on_missing_pact_files(self, mock_path_exists):
@@ -88,6 +90,14 @@ class VerifierPactsTestCase(TestCase):
                     mock_wrapper.call_args.kwargs,
                 )
 
+    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    @patch('pact.verifier.path_exists', return_value=True)
+    def test_passes_include_wip_pacts_since_value(self, mock_path_exists, mock_wrapper):
+        self.verifier.verify_pacts('any.json', include_wip_pacts_since='2018-01-01')
+        self.assertTrue(
+            ('include_wip_pacts_since', '2018-01-01') in mock_wrapper.call_args.kwargs.items(),
+            mock_wrapper.call_args.kwargs,
+        )
 
 class VerifierBrokerTestCase(TestCase):
 
@@ -127,7 +137,8 @@ class VerifierBrokerTestCase(TestCase):
                            broker_url=self.broker_url,
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False)
+                           enable_pending=False,
+                           include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.verifier.path_exists', return_value=True)
@@ -146,7 +157,8 @@ class VerifierBrokerTestCase(TestCase):
                            log_level='INFO',
                            verbose=False,
                            publish_version='1.0.0',
-                           enable_pending=False)
+                           enable_pending=False,
+                           include_wip_pacts_since=None)
 
     @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
     def test_passes_enable_pending_flag_value(self, mock_wrapper):
@@ -158,3 +170,12 @@ class VerifierBrokerTestCase(TestCase):
                     ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
                     mock_wrapper.call_args.kwargs,
                 )
+
+    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    @patch('pact.verifier.path_exists', return_value=True)
+    def test_passes_include_wip_pacts_since_value(self, mock_path_exists, mock_wrapper):
+        self.verifier.verify_with_broker(include_wip_pacts_since='2018-01-01')
+        self.assertTrue(
+            ('include_wip_pacts_since', '2018-01-01') in mock_wrapper.call_args.kwargs.items(),
+            mock_wrapper.call_args.kwargs,
+        )

@@ -121,7 +121,8 @@ class VerifyWrapperTestCase(TestCase):
                                              log_level='INFO',
                                              timeout=60,
                                              verbose=True,
-                                             enable_pending=True)
+                                             enable_pending=True,
+                                             include_wip_pacts_since='2018-01-01')
 
         self.assertEqual(result, 0)
         self.mock_Popen.return_value.wait.assert_called_once_with()
@@ -140,6 +141,7 @@ class VerifyWrapperTestCase(TestCase):
             '--log-level=INFO',
             '--verbose',
             '--enable-pending',
+            '--include-wip-pacts-since=2018-01-01',
         )
 
     def test_uses_broker_if_no_pacts_and_provider_required(self):
