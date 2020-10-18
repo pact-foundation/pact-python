@@ -1,3 +1,13 @@
+### 1.2.8
+  * 4c68fd4 - Merge pull request #182 from thatguysimon/feat/enable-wip-pacts (Elliott Murray, Sat Oct 17 16:00:50 2020 +0100)
+  * 9ea14d3 - refactor: Extract input validation in call_verify out into a dedicated method (Simon Nizov, Sat Oct 17 17:27:49 2020 +0300)
+  * 5a5969d - fix: Fix command building bug (Simon Nizov, Sat Oct 17 15:40:55 2020 +0300)
+  * b8c0006 - style: Fix linting (Simon Nizov, Sat Oct 17 15:18:29 2020 +0300)
+  * fc3d7ae - feat(verifier): Support include-wip-pacts-since in CLI (Simon Nizov, Sat Oct 17 15:03:38 2020 +0300)
+  * a0eca4c - Merge pull request #180 from elliottmurray/docs/example_flaskr (Elliott Murray, Fri Oct 16 11:13:11 2020 +0100)
+  * a8a07d4 - docs(examples): changed provider example to use atexit (Elliott Murray, Fri Oct 16 10:54:25 2020 +0100)
+  * 186f4f4 - Merge pull request #179 from pact-foundation/docs/example_readme (Elliott Murray, Thu Oct 15 10:13:13 2020 +0100)
+  * 2f66618 - docs(examples): tweak to readme (Elliott Murray, Thu Oct 15 10:08:52 2020 +0100)
 ### 1.2.7
   * 90b71d2 - Merge pull request #178 from pact-foundation/fix/custom_header_typo (Elliott Murray, Fri Oct 9 12:47:37 2020 +0100)
   * b07ef69 - fix(verifier): headers not propogated properly (Elliott Murray, Fri Oct 9 12:24:25 2020 +0100)
