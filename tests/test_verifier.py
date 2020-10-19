@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from unittest import TestCase
 import unittest
 from mock import patch
@@ -52,8 +54,9 @@ class VerifierPactsTestCase(TestCase):
             'path/to/pact2',
             headers=['header1', 'header2'],
             consumer_version_selectors=[
-                {"tag": "main", "latest": True},
-                {"tag": "test", "latest": False},
+                # Using OrderedDict for the sake of testing
+                OrderedDict([("tag", "main"), ("latest", True)]),
+                OrderedDict([("tag", "test"), ("latest", False)]),
             ]
         )
 
@@ -175,8 +178,9 @@ class VerifierBrokerTestCase(TestCase):
 
         output, _ = self.verifier.verify_with_broker(
             consumer_version_selectors=[
-                {"tag": "main", "latest": True},
-                {"tag": "test", "latest": False},
+                # Using OrderedDict for the sake of testing
+                OrderedDict([("tag", "main"), ("latest", True)]),
+                OrderedDict([("tag", "test"), ("latest", False)]),
             ],
             **self.default_opts
         )
