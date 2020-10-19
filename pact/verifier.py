@@ -1,4 +1,6 @@
 """Classes and methods to verify Contracts."""
+import json
+
 from pact.verify_wrapper import VerifyWrapper, path_exists, expand_directories
 
 class Verifier(object):
@@ -103,6 +105,9 @@ class Verifier(object):
         verbose = kwargs.get('verbose', False)
         publish_version = kwargs.get('publish_version', None)
 
+        raw_consumer_selectors = kwargs.get('consumer_version_selectors', [])
+        consumer_selectors = self._build_consumer_selectors(raw_consumer_selectors)
+
         options = {
             'log_dir': log_dir,
             'log_level': log_level,
@@ -114,8 +119,16 @@ class Verifier(object):
             'provider_states_setup_url': states_setup_url,
             'verbose': verbose,
             'publish_version': publish_version,
+            'consumer_selectors': consumer_selectors
         }
         return self.filter_empty_options(**options)
+
+    def _build_consumer_selectors(self, consumer_selectors):
+        """
+        Turns each dict in the consumer_selectors list into a string with a
+        json object, as expected by VerifyWrapper.
+        """
+        return [json.dumps(selector) for selector in consumer_selectors]
 
     def filter_empty_options(self, **kwargs):
         """Filter out empty options."""

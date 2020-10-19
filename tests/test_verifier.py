@@ -42,6 +42,34 @@ class VerifierPactsTestCase(TestCase):
                            enable_pending=False,
                            include_wip_pacts_since=None)
 
+    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch('pact.verifier.path_exists', return_value=True)
+    def test_verifier_with_provider_and_files_passes_consumer_selctors(self, mock_path_exists, mock_wrapper):
+        mock_wrapper.return_value = (True, 'some logs')
+
+        output, _ = self.verifier.verify_pacts(
+            'path/to/pact1',
+            'path/to/pact2',
+            headers=['header1', 'header2'],
+            consumer_version_selectors=[
+                {"tag": "main", "latest": True},
+                {"tag": "test", "latest": False},
+            ]
+        )
+
+        assertVerifyCalled(mock_wrapper,
+                           'path/to/pact1',
+                           'path/to/pact2',
+                           provider='test_provider',
+                           custom_provider_headers=['header1', 'header2'],
+                           provider_base_url='http://localhost:8888',
+                           log_level='INFO',
+                           verbose=False,
+                           enable_pending=False,
+                           include_wip_pacts_since=None,
+                           consumer_selectors=['{"tag": "main", "latest": true}',
+                                               '{"tag": "test", "latest": false}'])
+
     def test_validate_on_publish_results(self):
         self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
 
@@ -139,6 +167,34 @@ class VerifierBrokerTestCase(TestCase):
                            verbose=False,
                            enable_pending=False,
                            include_wip_pacts_since=None)
+
+    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    def test_verifier_with_broker_passes_consumer_selctors(self, mock_wrapper):
+
+        mock_wrapper.return_value = (True, 'some value')
+
+        output, _ = self.verifier.verify_with_broker(
+            **self.default_opts,
+            consumer_version_selectors=[
+                {"tag": "main", "latest": True},
+                {"tag": "test", "latest": False},
+            ]
+        )
+
+        self.assertTrue(output)
+        assertVerifyCalled(mock_wrapper,
+                           provider='test_provider',
+                           provider_base_url='http://localhost:8888',
+                           broker_password=self.broker_password,
+                           broker_username=self.broker_username,
+                           broker_token='token',
+                           broker_url=self.broker_url,
+                           log_level='INFO',
+                           verbose=False,
+                           enable_pending=False,
+                           include_wip_pacts_since=None,
+                           consumer_selectors=['{"tag": "main", "latest": true}',
+                                               '{"tag": "test", "latest": false}'])
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.verifier.path_exists', return_value=True)
