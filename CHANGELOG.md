@@ -1,3 +1,9 @@
+### 1.2.9
+  * 4430681 - Merge pull request #183 from thatguysimon/feat/verifier-class-consumer-version-selectors (Elliott Murray, Mon Oct 19 15:35:47 2020 +0100)
+  * 683a931 - fix: Fix flaky tests using OrderedDict (Simon Nizov, Mon Oct 19 17:21:21 2020 +0300)
+  * 33be267 - style: Fix one more linting issue (Simon Nizov, Mon Oct 19 11:22:05 2020 +0300)
+  * e7c87ce - style: Fix linting issues (Simon Nizov, Mon Oct 19 11:16:59 2020 +0300)
+  * ee2eda0 - feat(verifier): Allow setting consumer_version_selectors on Verifier (Simon Nizov, Mon Oct 19 11:01:18 2020 +0300)
 ### 1.2.8
   * 4c68fd4 - Merge pull request #182 from thatguysimon/feat/enable-wip-pacts (Elliott Murray, Sat Oct 17 16:00:50 2020 +0100)
   * 9ea14d3 - refactor: Extract input validation in call_verify out into a dedicated method (Simon Nizov, Sat Oct 17 17:27:49 2020 +0300)
