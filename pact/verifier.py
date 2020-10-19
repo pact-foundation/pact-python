@@ -125,7 +125,9 @@ class Verifier(object):
 
     def _build_consumer_selectors(self, consumer_selectors):
         """
-        Turns each dict in the consumer_selectors list into a string with a
+        Build the consumer_selectors list.
+
+        Turn each dict in the consumer_selectors list into a string with a
         json object, as expected by VerifyWrapper.
         """
         return [json.dumps(selector) for selector in consumer_selectors]

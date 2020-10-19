@@ -174,11 +174,11 @@ class VerifierBrokerTestCase(TestCase):
         mock_wrapper.return_value = (True, 'some value')
 
         output, _ = self.verifier.verify_with_broker(
-            **self.default_opts,
             consumer_version_selectors=[
                 {"tag": "main", "latest": True},
                 {"tag": "test", "latest": False},
-            ]
+            ],
+            **self.default_opts,
         )
 
         self.assertTrue(output)
