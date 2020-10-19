@@ -178,7 +178,7 @@ class VerifierBrokerTestCase(TestCase):
                 {"tag": "main", "latest": True},
                 {"tag": "test", "latest": False},
             ],
-            **self.default_opts,
+            **self.default_opts
         )
 
         self.assertTrue(output)
