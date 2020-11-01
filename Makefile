@@ -35,7 +35,7 @@ define E2E
 	cd examples/e2e
   pip install -r requirements.txt
   pip install -e ../../
-  pytest 
+  ./run_pytest.sh 
   ./verify_pact.sh
 endef
 export E2E
