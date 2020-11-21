@@ -297,7 +297,7 @@ class Pact(object):
 
     def with_request(self, method, path, body=None, headers=None, query=None):
         """
-        Define the request the request that the client is expected to perform.
+        Define the request that the client is expected to perform.
 
         :param method: The HTTP method.
         :type method: str
