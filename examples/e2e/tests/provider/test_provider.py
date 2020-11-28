@@ -2,13 +2,8 @@
 
 import logging
 import os
-import atexit
-
-import pytest
-from multiprocessing import Process
 
 from pact import Verifier
-from pact_provider import app
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -29,22 +24,7 @@ PACT_URL = "http://{}:{}".format(PACT_MOCK_HOST, PACT_MOCK_PORT)
 PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-@pytest.fixture(scope='session')
-def provider():
-    print('start flask')
-    server = Process(target=app.run, kwargs={'port': PACT_MOCK_PORT})
-    server.start()
-    atexit.register(stop_flask, server)
-
-    yield
-
-    stop_flask(server_process=server)
-
-def stop_flask(server_process: Process):
-    print('stop flask called')
-    server_process.terminate()
-
-def test_get_user_non_admin(provider):
+def test_get_user_non_admin():
     verifier = Verifier(provider='UserService',
                         provider_base_url=PACT_URL)
 

@@ -9,6 +9,7 @@ verify_ssl = true
 pytest = "==5.4.1"
 requests = "==2.23.0"
 Flask = "==1.1.1"
+pact-python = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
