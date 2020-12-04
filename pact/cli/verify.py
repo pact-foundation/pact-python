@@ -33,7 +33,7 @@ import click
          ' the given provider API.')  # Remove in major version 1.0.0
 @click.option(
     'states_setup_url', '--provider-states-setup-url',
-    help='URL to send PUT requests to setup a given provider state.')
+    help='URL to send POST requests to setup a given provider state.')
 @click.option(
     'username', '--pact-broker-username',
     envvar='PACT_BROKER_USERNAME',
