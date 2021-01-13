@@ -3,16 +3,16 @@ from .pact import Pact
 from .provider import Provider
 
 
-class MessageConsumer2(object):
+class MessageConsumer(object):
     """
     A Pact message consumer.
 
     Use this class to describe the service making requests to the provider and
     then use `has_pact_with` to create a contract with a specific service:
 
-    >>> from pact import Consumer, Provider
-    >>> consumer = Consumer('my-web-front-end')
-    >>> consumer.has_pact_with(Provider('my-backend-serivce'))
+    >>> from pact import MessageConsumer, Provider
+    >>> message_consumer = MessageConsumer('my-web-front-end')
+    >>> message_consumer.has_pact_with(Provider('my-backend-serivce'))
     """
 
     def __init__(self, name, service_cls=Pact, tags=None,
