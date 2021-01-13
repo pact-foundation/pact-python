@@ -6,8 +6,11 @@ import os
 from subprocess import Popen
 from .constants import MESSAGE_PATH
 
+import logging
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
-class MessagePact(object):
+class MessagePact():
     """
     Represents a contract between a consumer and provider.
 
@@ -30,9 +33,8 @@ class MessagePact(object):
     does match the defined interaction, it will respond with the text `Hello!`.
     """
 
-    HEADERS = {'X-Pact-Mock-Service': 'true'}
-
-    MANDATORY_FIELDS = {'provider_state', 'description', 'metadata', 'content'}
+    # MANDATORY_FIELDS = {'providerStates', 'description', 'metaData', 'contents'}
+    MANDATORY_FIELDS = {'description', 'contents'}
 
     def __init__(self, consumer, provider, log_dir=None,
                  publish_to_broker=False, broker_base_url=None, broker_username=None,
@@ -110,17 +112,17 @@ class MessagePact(object):
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        self._messages[0]['provider_state'] = provider_state
+        self._messages[0]['providerStates'] = provider_state
         return self
 
     def with_metadata(self, metadata):
         self._insert_message_if_complete()
-        self._messages[0]['metadata'] = metadata
+        self._messages[0]['metaData'] = metadata
         return self
 
     def with_content(self, content):
         self._insert_message_if_complete()
-        self._messages[0]['content'] = content
+        self._messages[0]['contents'] = content
         return self
 
     def expects_to_receive(self, description):
@@ -132,59 +134,29 @@ class MessagePact(object):
     def _normalize_consumer_name(name):
         return name.lower().replace(' ', '_')
 
-    # def publish(self): # TODO: add pact file generation
-    #     """Publish the generated pact files to the specified pact broker."""
-    #     if self.broker_base_url is None \
-    #             and "PACT_BROKER_BASE_URL" not in os.environ:
-    #         raise RuntimeError("No pact broker URL specified. "
-    #                            + "Did you expect the PACT_BROKER_BASE_URL "
-    #                            + "environment variable to be set?")
-
-    #     pact_files = fnmatch.filter(
-    #         os.listdir(self.pact_dir),
-    #         self._normalize_consumer_name(self.consumer.name) + '*.json'
-    #     )
-    #     command = [
-    #         BROKER_CLIENT_PATH,
-    #         'publish',
-    #         '--consumer-app-version={}'.format(self.consumer.version)]
-
-    #     if self.broker_base_url is not None:
-    #         command.append('--broker-base-url={}'.format(self.broker_base_url))
-    #     if self.broker_username is not None:
-    #         command.append('--broker-username={}'.format(self.broker_username))
-    #     if self.broker_password is not None:
-    #         command.append('--broker-password={}'.format(self.broker_password))
-    #     if self.broker_token is not None:
-    #         command.append('--broker-token={}'.format(self.broker_token))
-
-    #     command.extend(pact_files)
-
-    #     if self.consumer.tag_with_git_branch:
-    #         command.append('--tag-with-git-branch')
-
-    #     if self.consumer.tags is not None:
-    #         for tag in self.consumer.tags:
-    #             command.extend(['-t', tag])
-
-    #     publish_process = Popen(command)
-    #     publish_process.wait()
-    #     if publish_process.returncode != 0:
-    #         url = self.broker_base_url or os.environ["PACT_BROKER_BASE_URL"]
-    #         raise RuntimeError(
-    #             "There was an error while publishing to the "
-    #             + "pact broker at {}."
-    #             .format(url))
 
     def write_to_pact_file(self):
+<<<<<<< HEAD
+=======
+        # for x in self._message_interactions:
+        # temporarily assumed we only have a single message
+        fake_data_set = {"contents": "whatever", "description": "description"}
+
+>>>>>>> feat: add pact-message integration
         command = [
             MESSAGE_PATH,
             'update',
-            json.dumps(self._messages[0]),
+            json.dumps(fake_data_set),
             '--pact-dir', self.pact_dir,
             '--pact-specification-version={}'.format(self.version),
             '--consumer', self.consumer.name + "_message",
             '--provider', self.provider.name + "_message"]
+
+        log.info(f"write_to_pact_file '{fake_data_set}'.")
+        log.info(f"self '{self}'.")
+        log.info(f"command '{command}'")
+
+        print("********* command: {}".format(command))
 
         self._message_process = Popen(command)
 
@@ -198,8 +170,17 @@ class MessagePact(object):
         if not self._messages:
             self._messages.append({})
         elif all(field in self._messages[0]
-                 for field in self.MANDATORY_FIELDS):
+                for field in self.MANDATORY_FIELDS):
             self._messages.insert(0, {})
+
+    def __enter__(self):
+        """
+        Enter a Python context.
+
+        Sets up the mock service to expect the client requests.
+        """
+        print("Enter context")
+        # log.info("__enter__ context")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
