@@ -15,8 +15,14 @@ class MessageConsumer(object):
     >>> message_consumer.has_pact_with(Provider('my-backend-serivce'))
     """
 
-    def __init__(self, name, service_cls=MessagePact, tags=None,
-                 tag_with_git_branch=False, version='0.0.0'):
+    def __init__(
+        self,
+        name,
+        service_cls=MessagePact,
+        tags=None,
+        tag_with_git_branch=False,
+        version="0.0.0",
+    ):
         """
         Create the Message Consumer class.
 
@@ -44,10 +50,19 @@ class MessageConsumer(object):
         self.tag_with_git_branch = tag_with_git_branch
         self.version = version
 
-    def has_pact_with(self, provider, log_dir=None,
-                      publish_to_broker=False, broker_base_url=None,
-                      broker_username=None, broker_password=None, broker_token=None,
-                      pact_dir=None, version='3.0.0', file_write_mode='merge'):
+    def has_pact_with(
+        self,
+        provider,
+        log_dir=None,
+        publish_to_broker=False,
+        broker_base_url=None,
+        broker_username=None,
+        broker_password=None,
+        broker_token=None,
+        pact_dir=None,
+        version="3.0.0",
+        file_write_mode="merge",
+    ):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -104,8 +119,7 @@ class MessageConsumer(object):
         :rtype: pact.Pact
         """
         if not isinstance(provider, (Provider,)):
-            raise ValueError(
-                'provider must be an instance of the Provider class.')
+            raise ValueError("provider must be an instance of the Provider class.")
 
         return self.service_cls(
             broker_base_url=broker_base_url,
@@ -118,4 +132,5 @@ class MessageConsumer(object):
             pact_dir=pact_dir,
             publish_to_broker=publish_to_broker,
             version=version,
-            file_write_mode=file_write_mode)
+            file_write_mode=file_write_mode,
+        )
