@@ -16,7 +16,7 @@ from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
 
 
-class Pact(object):
+class MessagePact():
     """
     Represents a contract between a consumer and provider.
 
@@ -38,15 +38,14 @@ class Pact(object):
     does match the defined interaction, it will respond with the text `Hello!`.
     """
 
-    HEADERS = {'X-Pact-Mock-Service': 'true'}
+    HEADERS = {'X-Pact-Mock-Service': 'true'} ##
 
-    MANDATORY_FIELDS = {'response', 'description', 'request'}
+    MANDATORY_FIELDS = {'provider_state', 'description', 'metadata', 'content'}
 
-    def __init__(self, consumer, provider, host_name='localhost', port=1234,
-                 log_dir=None, ssl=False, sslcert=None, sslkey=None,
-                 cors=False, publish_to_broker=False, broker_base_url=None,
-                 broker_username=None, broker_password=None, broker_token=None,
-                 pact_dir=None, version='2.0.0', file_write_mode='overwrite'):
+    def __init__(self, consumer, provider, log_dir=None,
+                    publish_to_broker=False, broker_base_url=None,
+                    broker_username=None, broker_password=None, broker_token=None,
+                    pact_dir=None, version='3.0.0', file_write_mode='overwrite'):
         """
         Create a Pact instance.
 
@@ -54,26 +53,9 @@ class Pact(object):
         :type consumer: pact.Consumer
         :param provider: The provider for this contract.
         :type provider: pact.Provider
-        :param host_name: The host name where the mock service is running.
-        :type host_name: str
-        :param port: The port number where the mock service is running.
-        :type port: int
         :param log_dir: The directory where logs should be written. Defaults to
             the current directory.
         :type log_dir: str
-        :param ssl: Flag to control the use of a self-signed SSL cert to run
-            the server over HTTPS , defaults to False.
-        :type ssl: bool
-        :param sslcert: Path to a custom self-signed SSL cert file, 'ssl'
-            option must be set to True to use this option. Defaults to None.
-        :type sslcert: str
-        :param sslkey: Path to a custom key and self-signed SSL cert key file,
-            'ssl' option must be set to True to use this option.
-            Defaults to None.
-        :type sslkey: str
-        :param cors: Allow CORS OPTION requests to be accepted,
-            defaults to False.
-        :type cors: bool
         :param publish_to_broker: Flag to control automatic publishing of
             pacts to a pact broker. Defaults to False.
         :type publish_to_broker: bool
@@ -99,7 +81,7 @@ class Pact(object):
             written. Defaults to the current directory.
         :type pact_dir: str
         :param version: The Pact Specification version to use, defaults to
-            '2.0.0'.
+            '3.0.0'.
         :type version: str
         :param file_write_mode: `overwrite` or `merge`. Use `merge` when
             running multiple mock service instances in parallel for the same
@@ -109,29 +91,20 @@ class Pact(object):
             `overwrite`.
         :type file_write_mode: str
         """
-        scheme = 'https' if ssl else 'http'
-        self.uri = '{scheme}://{host_name}:{port}'.format(
-            host_name=host_name, port=port, scheme=scheme)
 
         self.broker_base_url = broker_base_url
         self.broker_username = broker_username
         self.broker_password = broker_password
         self.broker_token = broker_token
         self.consumer = consumer
-        self.cors = cors
         self.file_write_mode = file_write_mode
-        self.host_name = host_name
         self.log_dir = log_dir or os.getcwd()
         self.pact_dir = pact_dir or os.getcwd()
-        self.port = port
         self.provider = provider
         self.publish_to_broker = publish_to_broker
-        self.ssl = ssl
-        self.sslcert = sslcert
-        self.sslkey = sslkey
         self.version = version
-        self._interactions = []
         self._process = None
+        self._messages = []
 
     def given(self, provider_state):
         """
@@ -145,9 +118,27 @@ class Pact(object):
         :type provider_state: basestring
         :rtype: Pact
         """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['provider_state'] = provider_state
+        self._insert_message_if_complete()
+        self._messages[0]['provider_state'] = provider_state
         return self
+
+    def with_metadata(self, metadata):
+        self._insert_message_if_complete()
+        self._messages[0]['metadata'] = metadata
+        return self
+
+    def with_content(self, content):
+        self._insert_message_if_complete()
+        self._messages[0]['content'] = content
+        return self
+
+
+
+    def expects_to_receive(self, description):
+        self._insert_message_if_complete()
+        self._messages[0]['description'] = description
+        return self 
+
 
     @staticmethod
     def _normalize_consumer_name(name):
@@ -197,22 +188,23 @@ class Pact(object):
                 + "pact broker at {}."
                 .format(url))
 
-    def setup(self):
-        """Configure the Mock Service to ready it for a test."""
-        try:
-            resp = requests.delete(
-                self.uri + '/interactions', headers=self.HEADERS, verify=False)
+    # def setup(self):
+    #     pass
+        # """Configure the Mock Service to ready it for a test."""
+        # try:
+        #     resp = requests.delete(
+        #         self.uri + '/interactions', headers=self.HEADERS, verify=False)
 
-            assert resp.status_code == 200, resp.text
-            resp = requests.put(
-                self.uri + '/interactions',
-                headers=self.HEADERS,
-                verify=False,
-                json={"interactions": self._interactions})
+        #     assert resp.status_code == 200, resp.text
+        #     resp = requests.put(
+        #         self.uri + '/interactions',
+        #         headers=self.HEADERS,
+        #         verify=False,
+        #         json={"interactions": self._interactions})
 
-            assert resp.status_code == 200, resp.text
-        except AssertionError:
-            raise
+        #     assert resp.status_code == 200, resp.text
+        # except AssertionError:
+        #     raise
 
     def start_service(self):
         """
@@ -286,100 +278,54 @@ class Pact(object):
 
         :raises AssertionError: When not all interactions are found.
         """
-        self._interactions = []
-        resp = requests.get(
-            self.uri + '/interactions/verification',
-            headers=self.HEADERS, verify=False)
-        assert resp.status_code == 200, resp.text
-        resp = requests.post(
-            self.uri + '/pact', headers=self.HEADERS, verify=False)
-        assert resp.status_code == 200, resp.text
+        pass
+        # self._interactions = []
+        # resp = requests.get(
+        #     self.uri + '/interactions/verification',
+        #     headers=self.HEADERS, verify=False)
+        # assert resp.status_code == 200, resp.text
+        # resp = requests.post(
+        #     self.uri + '/pact', headers=self.HEADERS, verify=False)
+        # assert resp.status_code == 200, resp.text
 
-    def with_request(self, method, path, body=None, headers=None, query=None):
+
+    def write_to_pact_file(self):
+
+        for x in self._message_interactions:
+            command = [
+                MESSAGE_PATH,
+                'update',
+                json.dumps(x._messages[0]),
+                '--pact-dir', self.pact_dir,
+                '--pact-specification-version={}'.format(self.version),
+                '--consumer', self.consumer.name + "_message",
+                '--provider', self.provider.name + "_message"]
+
+            print("********* command: {}".format(command))
+
+            self._message_process = Popen(command)
+
+    def _insert_message_if_complete(self):
         """
-        Define the request that the client is expected to perform.
-
-        :param method: The HTTP method.
-        :type method: str
-        :param path: The path portion of the URI the client will access.
-        :type path: str, Matcher
-        :param body: The request body, can be a string or an object that will
-            serialize to JSON, like list or dict, defaults to None.
-        :type body: list, dict or None
-        :param headers: The headers the client is expected to include on with
-            this request. Defaults to None.
-        :type headers: dict or None
-        :param query: The query options the client is expected to send. Can be
-            a dict of keys and values, or a URL encoded string.
-            Defaults to None.
-        :type query: dict, basestring, or None
-        :rtype: Pact
-        """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['request'] = Request(
-            method, path, body=body, headers=headers, query=query).json()
-        return self
-
-    def will_respond_with(self, status, headers=None, body=None):
-        """
-        Define the response the server is expected to create.
-
-        :param status: The HTTP status code.
-        :type status: int
-        :param headers: All required headers. Defaults to None.
-        :type headers: dict or None
-        :param body: The response body, or a collection of Matcher objects to
-            allow for pattern matching. Defaults to None.
-        :type body: Matcher, dict, list, basestring, or None
-        :rtype: Pact
-        """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['response'] = Response(status,
-                                                     headers=headers,
-                                                     body=body).json()
-        return self
-
-    def _insert_interaction_if_complete(self):
-        """
-        Insert a new interaction if current interaction is complete.
-
+        Insert a new message if current message is complete.
         An interaction is complete if it has all the mandatory fields.
-        If there are no interactions, a new interaction will be added.
-
+        If there are no message, a new message will be added.
         :rtype: None
         """
-        if not self._interactions:
-            self._interactions.append({})
-        elif all(field in self._interactions[0]
+        if not self._messages:
+            self._messages.append({})
+        elif all(field in self._messages[0]
                  for field in self.MANDATORY_FIELDS):
-            self._interactions.insert(0, {})
+            self._messages.insert(0, {})
 
-    def _wait_for_server_start(self):
-        """
-        Wait for the mock service to be ready for requests.
 
-        :rtype: None
-        :raises RuntimeError: If there is a problem starting the mock service.
-        """
-        s = requests.Session()
-        retries = Retry(total=9, backoff_factor=0.1)
-        http_mount = 'https://' if self.ssl else 'http://'
-        s.mount(http_mount, HTTPAdapter(max_retries=retries))
+    # def __enter__(self):
+    #     """
+    #     Enter a Python context.
 
-        resp = s.get(self.uri, headers=self.HEADERS, verify=False)
-        if resp.status_code != 200:
-            self._process.terminate()
-            self._process.communicate()
-            raise RuntimeError(
-                'There was a problem starting the mock service: %s', resp.text)
-
-    def __enter__(self):
-        """
-        Enter a Python context.
-
-        Sets up the mock service to expect the client requests.
-        """
-        self.setup()
+    #     Sets up the mock service to expect the client requests.
+    #     """
+    #     self.setup()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
@@ -391,7 +337,7 @@ class Pact(object):
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             return
 
-        self.verify()
+        self.write_to_pact_file()
 
 
 class FromTerms(object):
