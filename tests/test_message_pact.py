@@ -1,76 +1,95 @@
-"""pact test for user message consumer"""
-
-import logging
 import os
-import atexit
+from subprocess import Popen
+from unittest import TestCase
 
-import pytest
-from pact import Consumer, Like, Provider, Term, Format
+from mock import patch, call, Mock
+from psutil import Process
 
+from pact.consumer import Consumer, Provider
+from pact.matchers import Term
+from pact.constants import MOCK_SERVICE_PATH, BROKER_CLIENT_PATH
+from pact.message_pact import MessagePact
+from pact import pact as pact
 
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-print(Format().__dict__)
+class MessagePactTestCase(TestCase):
+    def setUp(self):
+        self.consumer = Consumer('TestConsumer')
+        self.provider = Provider('TestProvider')
 
-PACT_BROKER_URL = "http://localhost"
-PACT_FILE = "userserviceclient-userservice.json"
-PACT_BROKER_USERNAME = "pactbroker"
-PACT_BROKER_PASSWORD = "pactbroker"
+    def test_init_defaults(self):
+        target = MessagePact(self.consumer, self.provider)
+        self.assertIs(target.broker_base_url, None)
+        self.assertIs(target.broker_username, None)
+        self.assertIs(target.broker_password, None)
+        self.assertIs(target.consumer, self.consumer)
+        self.assertEqual(target.log_dir, os.getcwd())
+        self.assertEqual(target.pact_dir, os.getcwd())
+        self.assertIs(target.provider, self.provider)
+        self.assertIs(target.publish_to_broker, False)
+        self.assertEqual(target.version, '2.0.0')
+        self.assertEqual(len(target._messages), [])
 
-PACT_MOCK_HOST = 'localhost'
-PACT_MOCK_PORT = 1234
-PACT_DIR = os.path.dirname(os.path.realpath(__file__))
+    def test_init_custom_mock_service(self):
+        target = MessagePact(
+            self.consumer, self.provider, host_name='192.168.1.1', port=8000,
+            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='/ssl.pem',
+            cors=True, pact_dir='/pacts', version='3.0.0',
+            file_write_mode='merge')
 
-@pytest.fixture
-def consumer():
-    return UserConsumer(
-        'http://{host}:{port}'
-        .format(host=PACT_MOCK_HOST, port=PACT_MOCK_PORT)
-    )
+        self.assertIs(target.consumer, self.consumer)
+        self.assertIs(target.cors, True)
+        self.assertEqual(target.host_name, '192.168.1.1')
+        self.assertEqual(target.log_dir, '/logs')
+        self.assertEqual(target.pact_dir, '/pacts')
+        self.assertEqual(target.port, 8000)
+        self.assertIs(target.provider, self.provider)
+        self.assertIs(target.ssl, True)
+        self.assertEqual(target.sslcert, '/ssl.cert')
+        self.assertEqual(target.sslkey, '/ssl.pem')
+        self.assertEqual(target.uri, 'https://192.168.1.1:8000')
+        self.assertEqual(target.version, '3.0.0')
+        self.assertEqual(target.file_write_mode, 'merge')
+        self.assertEqual(len(target._interactions), 0)
 
-@pytest.fixture(scope='session')
-def pact(request):
-    version = request.config.getoption('--publish-pact')
-    publish = True if version else False
+    def test_init_publish_to_broker(self):
+        target = Pact(
+            self.consumer, self.provider, publish_to_broker=True,
+            broker_base_url='http://localhost', broker_username='username',
+            broker_password='password', broker_token='token')
 
-    pact = Consumer('UserServiceClient', version=version).has_pact_with(
-        Provider('UserService'), host_name=PACT_MOCK_HOST, port=PACT_MOCK_PORT,
-        pact_dir=PACT_DIR, publish_to_broker=publish, broker_base_url=PACT_BROKER_URL,
-        broker_username=PACT_BROKER_USERNAME, broker_password=PACT_BROKER_PASSWORD)
+        self.assertEqual(target.broker_base_url, 'http://localhost')
+        self.assertEqual(target.broker_username, 'username')
+        self.assertEqual(target.broker_password, 'password')
+        self.assertEqual(target.broker_token, 'token')
+        self.assertIs(target.publish_to_broker, True)
 
-    print('start service')
-    pact.start_service()
-    atexit.register(pact.stop_service)
+    def test_definition_sparse(self):
+        target = Pact(self.consumer, self.provider)
+        (target
+         .given('I am creating a new pact using the Pact class')
+         .upon_receiving('a specific request to the server')
+         .with_request('GET', '/path')
+         .will_respond_with(200, body='success'))
 
-    yield pact
-    print('stop service')
-    pact.stop_service()
+        self.assertEqual(len(target._interactions), 1)
 
-def test_pact_with_hash_message(pact, consumer):
-    expected = {
-        'name': 'UserA',
-        'id': Format().uuid,
-        'created_on': Term(
-            r'\d+-\d+-\d+T\d+:\d+:\d+',
-            '2016-12-15T20:16:01'
-        ),
-        'ip_address': Format().ip_address,
-        'admin': False
-    }
+        self.assertEqual(
+            target._interactions[0]['provider_state'],
+            'I am creating a new pact using the Pact class')
 
-    (pact
-     .given('UserA exists and is not an administrator')
-     .upon_receiving('a request for UserA')
-     .with_request('get', '/users/UserA')
-     .will_respond_with(200, body=Like(expected)))
+        self.assertEqual(
+            target._interactions[0]['description'],
+            'a specific request to the server')
 
-    with pact:
-        user = consumer.get_user('UserA')
-        assert user.name == 'UserA'
+        self.assertEqual(target._interactions[0]['request'],
+                         {'path': '/path', 'method': 'GET'})
+        self.assertEqual(target._interactions[0]['response'],
+                         {'status': 200, 'body': 'success'})
+
 
 
 # class MessageConsumer():
-#     MANDATORY_FIELDS = {'provider_state', 'metadata', 'content'}
+#     MANDATORY_FIELDS = {'provider_state', 'description', 'metadata', 'content'}
 
 #     def __init__(self):
 #         self._messages = []
@@ -79,7 +98,7 @@ def test_pact_with_hash_message(pact, consumer):
 #         """
 #         Insert a new message if current message is complete.
 #         An interaction is complete if it has all the mandatory fields.
-#         If there are no interactions, a new interaction will be added.
+#         If there are no message, a new message will be added.
 #         :rtype: None
 #         """
 #         if not self._messages:
@@ -103,15 +122,16 @@ def test_pact_with_hash_message(pact, consumer):
 #         self._messages[0]['content'] = content
 #         return self
 
-#     def get_messages(self):
-#         print(self._messages)
-#         return self._messages
+
 
 #     def expects_to_receive(self, description):
 #         self._insert_message_if_complete()
 #         self._messages[0]['description'] = description
 #         return self 
 
+#     def get_messages(self):
+#         print(self._messages)
+#         return self._messages
 
 # from unittest import TestCase
 
