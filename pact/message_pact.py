@@ -136,19 +136,10 @@ class MessagePact():
 
 
     def write_to_pact_file(self):
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> feat: add pact-message integration
         # for x in self._message_interactions:
         # temporarily assumed we only have a single message
         fake_data_set = {"contents": "whatever", "description": "description"}
 
-<<<<<<< HEAD
->>>>>>> feat: add pact-message integration
-=======
->>>>>>> feat: add pact-message integration
         command = [
             MESSAGE_PATH,
             'update',
