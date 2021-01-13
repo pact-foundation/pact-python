@@ -1,17 +1,10 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
 
-import fnmatch
 import json
 import os
-import platform
 from subprocess import Popen
-
-import psutil
-
-
-from .constants import BROKER_CLIENT_PATH, MESSAGE_PATH
-from .matchers import from_term
+from .constants import MESSAGE_PATH
 
 class MessagePact():
     """
@@ -41,12 +34,11 @@ class MessagePact():
     MANDATORY_FIELDS = {'provider_state', 'description', 'metadata', 'content'}
 
     def __init__(self, consumer, provider, log_dir=None,
-                    publish_to_broker=False, broker_base_url=None,
-                    broker_username=None, broker_password=None, broker_token=None,
-                    pact_dir=None, version='3.0.0', file_write_mode='merge'):
+                 publish_to_broker=False, broker_base_url=None, broker_username=None,
+                 broker_password=None, broker_token=None, pact_dir=None, version='3.0.0',
+                 file_write_mode='merge'):
         """
         Create a Pact instance.
-
         :param consumer: The consumer for this contract.
         :type consumer: pact.Consumer
         :param provider: The provider for this contract.
@@ -89,7 +81,6 @@ class MessagePact():
             `overwrite`.
         :type file_write_mode: str
         """
-
         self.broker_base_url = broker_base_url
         self.broker_username = broker_username
         self.broker_password = broker_password
@@ -102,7 +93,7 @@ class MessagePact():
         self.publish_to_broker = publish_to_broker
         self.version = version
         self._process = None
-        self._messages = [] # single message only
+        self._messages = []
         self._message_process = None
 
     def given(self, provider_state):
@@ -134,7 +125,7 @@ class MessagePact():
     def expects_to_receive(self, description):
         self._insert_message_if_complete()
         self._messages[0]['description'] = description
-        return self 
+        return self
 
     @staticmethod
     def _normalize_consumer_name(name):
@@ -199,11 +190,6 @@ class MessagePact():
 
         self._message_process = Popen(command)
 
-    # def add_message(self):
-    #     message = Message()
-    #     self._message_interactions.append(message)
-    #     return message
-
     def _insert_message_if_complete(self):
         """
         Insert a new message if current message is complete.
@@ -228,5 +214,3 @@ class MessagePact():
             return
 
         self.write_to_pact_file()
-
-

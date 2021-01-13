@@ -1,19 +1,12 @@
 import os
-from subprocess import Popen
 from unittest import TestCase
 
-from mock import patch, call, Mock
-from psutil import Process
-
-from pact.consumer import Consumer, Provider
-from pact.matchers import Term
-from pact.constants import MOCK_SERVICE_PATH, BROKER_CLIENT_PATH
+from pact.message_consumer import MessageConsumer, Provider
 from pact.message_pact import MessagePact
-from pact import pact as pact
 
 class MessagePactTestCase(TestCase):
     def setUp(self):
-        self.consumer = Consumer('TestConsumer')
+        self.consumer = MessageConsumer('TestConsumer')
         self.provider = Provider('TestProvider')
 
     def test_init_defaults(self):
@@ -56,7 +49,8 @@ class MessagePactTestCase(TestCase):
 
     def test_definition_sparse(self):
         target = MessagePact(self.consumer, self.provider)
-        (target
+        (
+            target
             .given('there is an alligator named John')
             .expects_to_receive('an alligator message')
             .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
@@ -82,28 +76,28 @@ class MessagePactTestCase(TestCase):
             {'contentType': 'application/json', 'source': 'legacy_api'})
 
     def test_definition_without_given(self):
-            target = MessagePact(self.consumer, self.provider)
-            (target
-                .expects_to_receive('an alligator message')
-                .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
-                .with_metadata({'contentType': 'application/json', 'source': 'legacy_api'})
-            )
+        target = MessagePact(self.consumer, self.provider)
+        (
+            target
+            .expects_to_receive('an crocodile message')
+            .with_content({'name': 'Mary'})
+            .with_metadata({'source': 'legacy_api'})
+        )
 
-            self.assertEqual(len(target._messages), 1)
+        self.assertEqual(len(target._messages), 1)
 
-            self.assertIsNone(target._messages[0].get('provider_state'))
+        self.assertIsNone(target._messages[0].get('provider_state'))
 
-            self.assertEqual(
-                target._messages[0]['description'],
-                'an alligator message')
+        self.assertEqual(
+            target._messages[0]['description'],
+            'an crocodile message')
 
-            self.assertEqual(
-                target._messages[0]['content'],
-                {'name': 'John', 'document_name': 'sample_document.doc'})
+        self.assertEqual(
+            target._messages[0]['content'],
+            {'name': 'Mary'})
 
-            self.assertEqual(
-                target._messages[0]['metadata'],
-                {'contentType': 'application/json', 'source': 'legacy_api'})
+        self.assertEqual(
+            target._messages[0]['metadata'],
+            {'source': 'legacy_api'})
 
     # multiple interactions / messages not currently supported
-

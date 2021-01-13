@@ -4,50 +4,44 @@ from mock import Mock
 
 from pact.message_consumer import MessageConsumer
 from pact.provider import Provider
-from pact.pact import Pact
+from pact.message_pact import MessagePact
 
 
 class MessageConsumerTestCase(TestCase):
     def setUp(self):
-        self.mock_service = Mock(Pact)
+        self.mock_service = Mock(MessagePact)
         self.provider = Mock(Provider)
-        self.consumer = MessageConsumer('TestMessageConsumer', service_cls=self.mock_service)
+        self.message_consumer = MessageConsumer('TestMessageConsumer', service_cls=self.mock_service)
 
     def test_init(self):
         result = MessageConsumer('TestMessageConsumer')
         self.assertIsInstance(result, MessageConsumer)
         self.assertEqual(result.name, 'TestMessageConsumer')
-        self.assertIs(result.service_cls, Pact)
+        self.assertIs(result.service_cls, MessagePact)
 
     def test_has_pact_with(self):
-        result = self.consumer.has_pact_with(self.provider)
+        result = self.message_consumer.has_pact_with(self.provider)
         self.assertIs(result, self.mock_service.return_value)
         self.mock_service.assert_called_once_with(
-            consumer=self.consumer, provider=self.provider,
-            host_name='localhost', port=1234,
-            log_dir=None, ssl=False, sslcert=None, sslkey=None,
-            cors=False, pact_dir=None, version='2.0.0',
+            consumer=self.message_consumer, provider=self.provider, log_dir=None,
+            pact_dir=None, version='3.0.0',
             broker_base_url=None, publish_to_broker=False,
             broker_username=None, broker_password=None,
-            broker_token=None, file_write_mode='overwrite')
+            broker_token=None, file_write_mode='merge')
 
     def test_has_pact_with_customer_all_options(self):
-        result = self.consumer.has_pact_with(
-            self.provider, host_name='example.com', port=1111,
-            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='ssl.pem',
-            cors=True, pact_dir='/pacts', version='3.0.0',
+        result = self.message_consumer.has_pact_with(
+            self.provider, log_dir='/logs', pact_dir='/pacts', version='3.0.0',
             file_write_mode='merge')
 
         self.assertIs(result, self.mock_service.return_value)
         self.mock_service.assert_called_once_with(
-            consumer=self.consumer, provider=self.provider,
-            host_name='example.com', port=1111,
-            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='ssl.pem',
-            cors=True, pact_dir='/pacts', version='3.0.0',
+            consumer=self.message_consumer, provider=self.provider,
+            log_dir='/logs', pact_dir='/pacts', version='3.0.0',
             broker_base_url=None, publish_to_broker=False,
             broker_username=None, broker_password=None, broker_token=None,
             file_write_mode='merge')
 
     def test_has_pact_with_not_a_provider(self):
         with self.assertRaises(ValueError):
-            self.consumer.has_pact_with(None)
+            self.message_consumer.has_pact_with(None)
