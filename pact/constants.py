@@ -38,7 +38,6 @@ def provider_verifier_exe():
 BROKER_CLIENT_PATH = normpath(join(
     dirname(__file__), 'bin', 'pact', 'bin', broker_client_exe()))
 
-
 MESSAGE_PATH = normpath(join(
     dirname(__file__), 'bin', 'pact', 'bin', message_exe()))
 

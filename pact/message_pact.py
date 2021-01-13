@@ -6,7 +6,8 @@ import os
 from subprocess import Popen
 from .constants import MESSAGE_PATH
 
-class MessagePact():
+
+class MessagePact(object):
     """
     Represents a contract between a consumer and provider.
 
@@ -176,9 +177,6 @@ class MessagePact():
     #             .format(url))
 
     def write_to_pact_file(self):
-
-        # for x in self._message_interactions:
-        # temporarily assumed we only have a single message
         command = [
             MESSAGE_PATH,
             'update',

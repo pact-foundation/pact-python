@@ -4,6 +4,7 @@ from unittest import TestCase
 from pact.message_consumer import MessageConsumer, Provider
 from pact.message_pact import MessagePact
 
+
 class MessagePactTestCase(TestCase):
     def setUp(self):
         self.consumer = MessageConsumer('TestConsumer')
