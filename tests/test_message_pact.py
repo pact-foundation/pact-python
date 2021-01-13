@@ -26,33 +26,24 @@ class MessagePactTestCase(TestCase):
         self.assertEqual(target.pact_dir, os.getcwd())
         self.assertIs(target.provider, self.provider)
         self.assertIs(target.publish_to_broker, False)
-        self.assertEqual(target.version, '2.0.0')
-        self.assertEqual(len(target._messages), [])
+        self.assertEqual(target.version, '3.0.0')
+        self.assertEqual(len(target._messages), 0)
 
     def test_init_custom_mock_service(self):
         target = MessagePact(
-            self.consumer, self.provider, host_name='192.168.1.1', port=8000,
-            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='/ssl.pem',
-            cors=True, pact_dir='/pacts', version='3.0.0',
-            file_write_mode='merge')
+            self.consumer, self.provider, log_dir='/logs', pact_dir='/pacts',
+            version='3.0.0', file_write_mode='merge')
 
         self.assertIs(target.consumer, self.consumer)
-        self.assertIs(target.cors, True)
-        self.assertEqual(target.host_name, '192.168.1.1')
         self.assertEqual(target.log_dir, '/logs')
         self.assertEqual(target.pact_dir, '/pacts')
-        self.assertEqual(target.port, 8000)
         self.assertIs(target.provider, self.provider)
-        self.assertIs(target.ssl, True)
-        self.assertEqual(target.sslcert, '/ssl.cert')
-        self.assertEqual(target.sslkey, '/ssl.pem')
-        self.assertEqual(target.uri, 'https://192.168.1.1:8000')
         self.assertEqual(target.version, '3.0.0')
         self.assertEqual(target.file_write_mode, 'merge')
-        self.assertEqual(len(target._interactions), 0)
+        self.assertEqual(len(target._messages), 0)
 
     def test_init_publish_to_broker(self):
-        target = Pact(
+        target = MessagePact(
             self.consumer, self.provider, publish_to_broker=True,
             broker_base_url='http://localhost', broker_username='username',
             broker_password='password', broker_token='token')
@@ -64,127 +55,55 @@ class MessagePactTestCase(TestCase):
         self.assertIs(target.publish_to_broker, True)
 
     def test_definition_sparse(self):
-        target = Pact(self.consumer, self.provider)
+        target = MessagePact(self.consumer, self.provider)
         (target
-         .given('I am creating a new pact using the Pact class')
-         .upon_receiving('a specific request to the server')
-         .with_request('GET', '/path')
-         .will_respond_with(200, body='success'))
+            .given('there is an alligator named John')
+            .expects_to_receive('an alligator message')
+            .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
+            .with_metadata({'contentType': 'application/json', 'source': 'legacy_api'})
+        )
 
-        self.assertEqual(len(target._interactions), 1)
-
-        self.assertEqual(
-            target._interactions[0]['provider_state'],
-            'I am creating a new pact using the Pact class')
+        self.assertEqual(len(target._messages), 1)
 
         self.assertEqual(
-            target._interactions[0]['description'],
-            'a specific request to the server')
+            target._messages[0]['provider_state'],
+            'there is an alligator named John')
 
-        self.assertEqual(target._interactions[0]['request'],
-                         {'path': '/path', 'method': 'GET'})
-        self.assertEqual(target._interactions[0]['response'],
-                         {'status': 200, 'body': 'success'})
+        self.assertEqual(
+            target._messages[0]['description'],
+            'an alligator message')
 
+        self.assertEqual(
+            target._messages[0]['content'],
+            {'name': 'John', 'document_name': 'sample_document.doc'})
 
+        self.assertEqual(
+            target._messages[0]['metadata'],
+            {'contentType': 'application/json', 'source': 'legacy_api'})
 
-# class MessageConsumer():
-#     MANDATORY_FIELDS = {'provider_state', 'description', 'metadata', 'content'}
+    def test_definition_without_given(self):
+            target = MessagePact(self.consumer, self.provider)
+            (target
+                .expects_to_receive('an alligator message')
+                .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
+                .with_metadata({'contentType': 'application/json', 'source': 'legacy_api'})
+            )
 
-#     def __init__(self):
-#         self._messages = []
+            self.assertEqual(len(target._messages), 1)
 
-#     def _insert_message_if_complete(self):
-#         """
-#         Insert a new message if current message is complete.
-#         An interaction is complete if it has all the mandatory fields.
-#         If there are no message, a new message will be added.
-#         :rtype: None
-#         """
-#         if not self._messages:
-#             self._messages.append({})
-#         elif all(field in self._messages[0]
-#                  for field in self.MANDATORY_FIELDS):
-#             self._messages.insert(0, {})
+            self.assertIsNone(target._messages[0].get('provider_state'))
 
-#     def given(self, provider_state):
-#         self._insert_message_if_complete()
-#         self._messages[0]['provider_state'] = provider_state
-#         return self
+            self.assertEqual(
+                target._messages[0]['description'],
+                'an alligator message')
 
-#     def with_metadata(self, metadata):
-#         self._insert_message_if_complete()
-#         self._messages[0]['metadata'] = metadata
-#         return self
+            self.assertEqual(
+                target._messages[0]['content'],
+                {'name': 'John', 'document_name': 'sample_document.doc'})
 
-#     def with_content(self, content):
-#         self._insert_message_if_complete()
-#         self._messages[0]['content'] = content
-#         return self
+            self.assertEqual(
+                target._messages[0]['metadata'],
+                {'contentType': 'application/json', 'source': 'legacy_api'})
 
+    # multiple interactions / messages not currently supported
 
-
-#     def expects_to_receive(self, description):
-#         self._insert_message_if_complete()
-#         self._messages[0]['description'] = description
-#         return self 
-
-#     def get_messages(self):
-#         print(self._messages)
-#         return self._messages
-
-# from unittest import TestCase
-
-# class MessageHandler():
-#     def __init__(self, messages):
-#         self._messages = messages
-
-#     def generate_contract_file(self):
-#         return self._messages
-
-#     def output_stream(self):
-#         return "Hello " + self._messages[0]['content']['name']
-
-
-# class MessageConsumerTestCase(TestCase):
-#     def test_pact_with_hash_message(self):
-#         # setup expectation
-#         consumer = MessageConsumer()
-#         consumer \
-#             .given('there is an alligator named John') \
-#             .expects_to_receive('an alligator message') \
-#             .with_content({'name': 'John', 'document_name': 'sample_document.doc'}) \
-#             .with_metadata({'contentType': 'application/json', 'source': 'legacy_api'})
-                        
-#         message_handler = MessageHandler(consumer.get_messages())
-
-
-#         # expected
-#         self.assertEqual(
-#             message_handler.output_stream(),
-#             "Hello John")
-
-
-# class MessageProvider(MessageEntityBase):
-#     def is_expected_to_send(self, description):
-#         self._insert_message_if_complete()
-#         self._messages[0]['description'] = description
-#         return self
-#
-#
-# class MessageProviderTestCase(TestCase):
-#     def test_pact_with_hash_message(self):
-#         provider = MessageProvider()
-#         provider \
-#             .given('there is an alligator named John') \
-#             .is_expected_to_send('an alligator message') \
-#             .with_content({"name": "John"}) \
-#             .with_metadata({'contentType': 'application/json'})
-#
-#         message_handler = MessageHandler(provider.get_messages())
-#
-#         # output stream generated to send
-#
-#         self.assertEqual(
-#             message_handler.output_stream(),
-#             "Hello John")
