@@ -1,5 +1,5 @@
 """Classes and methods to describe contract Consumers."""
-from .pact import Pact
+from .message_pact import MessagePact
 from .provider import Provider
 
 
@@ -15,7 +15,7 @@ class MessageConsumer(object):
     >>> message_consumer.has_pact_with(Provider('my-backend-serivce'))
     """
 
-    def __init__(self, name, service_cls=Pact, tags=None,
+    def __init__(self, name, service_cls=MessagePact, tags=None,
                  tag_with_git_branch=False, version='0.0.0'):
         """
         Create the Message Consumer class.
@@ -44,12 +44,10 @@ class MessageConsumer(object):
         self.tag_with_git_branch = tag_with_git_branch
         self.version = version
 
-    def has_pact_with(self, provider, host_name='localhost', port=1234,
-                      log_dir=None, ssl=False, sslcert=None, sslkey=None,
-                      cors=False, publish_to_broker=False,
-                      broker_base_url=None, broker_username=None,
-                      broker_password=None, broker_token=None, pact_dir=None,
-                      version='2.0.0', file_write_mode='overwrite'):
+    def has_pact_with(self, provider, log_dir=None,
+                      publish_to_broker=False, broker_base_url=None,
+                      broker_username=None, broker_password=None, broker_token=None,
+                      pact_dir=None, version='3.0.0', file_write_mode='merge'):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -70,26 +68,9 @@ class MessageConsumer(object):
             your code under test to contact the mock service. It defaults to:
             `localhost`.
         :type host_name: str
-        :param port: The TCP port to use when contacting the Pact mock service.
-            This will need to tbe the same port used by your code under test
-            to contact the mock service. It defaults to: 1234
-        :type port: int
         :param log_dir: The directory where logs should be written. Defaults to
             the current directory.
         :type log_dir: str
-        :param ssl: Flag to control the use of a self-signed SSL cert to run
-            the server over HTTPS , defaults to False.
-        :type ssl: bool
-        :param sslcert: Path to a custom self-signed SSL cert file, 'ssl'
-            option must be set to True to use this option. Defaults to None.
-        :type sslcert: str
-        :param sslkey: Path to a custom key and self-signed SSL cert key file,
-            'ssl' option must be set to True to use this option.
-            Defaults to None.
-        :type sslkey: str
-        :param cors: Allow CORS OPTION requests to be accepted,
-            defaults to False.
-        :type cors: bool
         :param publish_to_broker: Flag to control automatic publishing of
             pacts to a pact broker. Defaults to False.
         :type publish_to_broker: bool
@@ -109,14 +90,14 @@ class MessageConsumer(object):
             written. Defaults to the current directory.
         :type pact_dir: str
         :param version: The Pact Specification version to use, defaults to
-            '2.0.0'.
+            '3.0.0'.
         :type version: str
         :param file_write_mode: How the mock service should apply multiple
             calls to .verify(). Pass 'overwrite' to overwrite the generated
             JSON file on every call to .verify() or pass 'merge' to merge all
             interactions into the same JSON file. When using 'merge', make
             sure to delete any existing JSON file before calling .verify()
-            for the first time. Defaults to 'overwrite'.
+            for the first time. Defaults to 'merge'.
         :type version: str
         :return: A Pact object which you can use to define the specific
             interactions your code will have with the provider.
@@ -133,13 +114,7 @@ class MessageConsumer(object):
             broker_token=broker_token,
             consumer=self,
             provider=provider,
-            host_name=host_name,
-            port=port,
             log_dir=log_dir,
-            ssl=ssl,
-            sslcert=sslcert,
-            sslkey=sslkey,
-            cors=cors,
             pact_dir=pact_dir,
             publish_to_broker=publish_to_broker,
             version=version,
