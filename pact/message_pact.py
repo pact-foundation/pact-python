@@ -33,8 +33,7 @@ class MessagePact():
     does match the defined interaction, it will respond with the text `Hello!`.
     """
 
-    # MANDATORY_FIELDS = {'providerStates', 'description', 'metaData', 'contents'}
-    MANDATORY_FIELDS = {'providerStates', 'description', 'contents'}
+    MANDATORY_FIELDS = {'providerStates', 'description', 'contents', 'metaData'}
 
     def __init__(self, consumer, provider, log_dir=None,
                  publish_to_broker=False, broker_base_url=None, broker_username=None,
@@ -112,7 +111,10 @@ class MessagePact():
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        self._messages[0]['providerStates'] = provider_state
+        '--pact-specification-version={}'.format(self.version),
+
+        state = [{"name": "{}".format(provider_state)}]
+        self._messages[0]['providerStates'] = state
         return self
 
     def with_metadata(self, metadata):
@@ -136,25 +138,26 @@ class MessagePact():
 
 
     def write_to_pact_file(self):
-        # for x in self._message_interactions:
-        # temporarily assumed we only have a single message
-        fake_data_set = {"providerStates":[{"name": "Test provider"}], "contents": "whatever", "description": "description"}
+        # The message should have following structure
+        # {
+        #     "providerStates":[{"name": "Test provider"}], 
+        #     "contents": "whatever",
+        #     "description": "description", 
+        #     "metaData": {
+        #         "Content-Type": "application/json"
+        #     }
+        # }
 
         command = [
             MESSAGE_PATH,
             'update',
-            json.dumps(fake_data_set),
+            json.dumps(self._messages[0]),
             '--pact-dir', self.pact_dir,
             '--pact-specification-version={}'.format(self.version),
             '--consumer', self.consumer.name + "_message",
             '--provider', self.provider.name + "_message"]
 
-        log.info(f"write_to_pact_file '{fake_data_set}'.")
-        log.info(f"self '{self}'.")
         log.info(f"command '{command}'")
-
-        print("********* command: {}".format(command))
-
         self._message_process = Popen(command)
 
     def _insert_message_if_complete(self):
@@ -176,8 +179,7 @@ class MessagePact():
 
         Sets up the mock service to expect the client requests.
         """
-        print("Enter context")
-        # log.info("__enter__ context")
+        log.info("__enter__ context")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """

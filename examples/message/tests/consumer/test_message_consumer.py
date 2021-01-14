@@ -17,10 +17,9 @@ PACT_BROKER_URL = "http://localhost"
 PACT_FILE = "userserviceclient-userservice.json"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
-
 PACT_MOCK_HOST = 'localhost'
 PACT_MOCK_PORT = 1234
-PACT_DIR = os.path.dirname(os.path.realpath(__file__))
+PACT_DIR = 'pacts'
 
 
 @pytest.fixture(scope='session')
@@ -36,12 +35,18 @@ def pact(request):
     yield pact
 
 
-def test_get_user_non_admin(pact):
+def test_generate_pact_file(pact):
     (pact
-     .given('Provider state attribute')
+     .given('A document create in Document Service')
      .expects_to_receive('Provider state attribute')
-     .with_content("abc 123")
-     .with_metadata('hello'))
+     .with_content({
+         "documentName": "sample.docx",
+         "creator": "TP",
+         "documentType": "microsoft-word"
+     })
+     .with_metadata({
+         "Content-Type": "application/json"
+     }))
 
     with pact:
         log.info("In Python context")
