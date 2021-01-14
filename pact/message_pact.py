@@ -111,7 +111,6 @@ class MessagePact():
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        '--pact-specification-version={}'.format(self.version),
 
         state = [{"name": "{}".format(provider_state)}]
         self._messages[0]['providerStates'] = state
@@ -157,7 +156,6 @@ class MessagePact():
             '--consumer', self.consumer.name + "_message",
             '--provider', self.provider.name + "_message"]
 
-        log.info(f"command '{command}'")
         self._message_process = Popen(command)
 
     def _insert_message_if_complete(self):
