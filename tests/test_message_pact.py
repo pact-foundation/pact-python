@@ -1,8 +1,8 @@
 import os
 from subprocess import Popen
-from unittest import TestCase
 
 from mock import patch, call, Mock
+from unittest import TestCase
 
 from pact.message_consumer import MessageConsumer, Provider
 from pact.message_pact import MessagePact
@@ -106,18 +106,21 @@ class MessagePactTestCase(TestCase):
             {'source': 'legacy_api'})
 
 
-class PactGeneratePactFileTestCase(TestCase):
+class PactGeneratePactFileTestCase(MessagePactTestCase):
     def setUp(self):
-        # super(PactGeneratePactFileTestCase, self).setUp()
-        pass
-
-    def test_call_pact_message_to_generate_pact_file(self):
+        super(PactGeneratePactFileTestCase, self).setUp()
         self.addCleanup(patch.stopall)
         self.mock_Popen = patch.object(pact, 'Popen', autospec=True).start()
         self.mock_Popen.return_value.returncode = 0
 
-        self.consumer = MessageConsumer('TestConsumer')
-        self.provider = Provider('TestProvider')
+
+    def test_call_pact_message_to_generate_pact_file(self):
+        # self.addCleanup(patch.stopall)
+        # self.mock_Popen = patch.object(pact, 'Popen', autospec=True).start()
+        # self.mock_Popen.return_value.returncode = 0
+        # mock_Popen.return_value = 0
+        # consumer = MessageConsumer('TestConsumer')
+        # provider = Provider('TestProvider')
 
         target = MessagePact(
             self.consumer, self.provider, log_dir='/logs', pact_dir='/pacts',
