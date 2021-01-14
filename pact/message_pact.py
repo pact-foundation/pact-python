@@ -30,7 +30,7 @@ class MessagePact():
 
     MANDATORY_FIELDS = {'providerStates', 'description', 'contents', 'metaData'}
 
-    def __init__(self, consumer, provider, log_dir=None,
+    def __init__(self, consumer, provider,
                  publish_to_broker=False, broker_base_url=None, broker_username=None,
                  broker_password=None, broker_token=None, pact_dir=None, version='3.0.0',
                  file_write_mode='merge'):
@@ -40,9 +40,6 @@ class MessagePact():
         :type consumer: pact.Consumer
         :param provider: The provider for this contract.
         :type provider: pact.Provider
-        :param log_dir: The directory where logs should be written. Defaults to
-            the current directory. Defaults to None.
-        :type log_dir: str
         :param publish_to_broker: Flag to control automatic publishing of
             pacts to a pact broker. Defaults to False.
         :type publish_to_broker: bool
@@ -84,7 +81,6 @@ class MessagePact():
         self.broker_token = broker_token
         self.consumer = consumer
         self.file_write_mode = file_write_mode
-        self.log_dir = log_dir or os.getcwd()
         self.pact_dir = pact_dir or os.getcwd()
         self.provider = provider
         self.publish_to_broker = publish_to_broker
