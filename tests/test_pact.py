@@ -10,6 +10,7 @@ from pact.matchers import Term
 from pact.constants import MOCK_SERVICE_PATH, BROKER_CLIENT_PATH
 from pact.pact import Pact, FromTerms, Request, Response
 from pact import pact as pact
+from pact import message_pact as message_pact
 
 
 class PactTestCase(TestCase):
@@ -222,6 +223,10 @@ class PactTestCase(TestCase):
 
 class PactPublishTestCase(PactTestCase):
     def setUp(self):
+        pass
+
+
+    def test_publish_fails(self):
         super(PactPublishTestCase, self).setUp()
         self.addCleanup(patch.stopall)
         self.mock_Popen = patch.object(pact, 'Popen', autospec=True).start()
@@ -232,8 +237,6 @@ class PactPublishTestCase(PactTestCase):
         self.mock_platform = patch.object(
             pact.platform, 'platform', autospec=True).start()
 
-    def test_publish_fails(self):
-        self.mock_Popen.return_value.returncode = 1
         pact = Pact(self.consumer, self.provider,
                     publish_to_broker=True,
                     broker_base_url="http://localhost")
