@@ -137,16 +137,12 @@ class PactGeneratePactFileTestCase(TestCase):
 
         self.mock_Popen.assert_called_once_with([
             MESSAGE_PATH, 'update',
-            {
-                'providerStates': [{'name': 'There is an alligator named John'}],
-                'description': 'an alligator message',
-                'contents': {'name': 'John', "document_name": "sample_document.doc"},
-                'metaData': {'contentType': 'application/json', 'source': 'legacy_api'}
-            },
+            '{"providerStates": [{"name": "There is an alligator named John"}], '
+            + '"description": "an alligator message", '
+            + '"contents": {"name": "John", "document_name": "sample_document.doc"}, '
+            + '"metaData": {"contentType": "application/json", "source": "legacy_api"}}',
             '--pact-dir', '/pacts',
             '--pact-specification-version=3.0.0',
-            '--consumer-app-version=3.0.0',
-            '--pact-dir', '/pacts',
             '--consumer', 'TestConsumer_message',
             '--provider', 'TestProvider_message',
         ])

@@ -12,25 +12,20 @@ logging.basicConfig(level=logging.INFO)
 
 class MessagePact():
     """
-    Represents a contract between a consumer and provider.
+    Represents a contract between a consumer and provider using messages.
 
     Provides Python context handlers to configure the Pact mock service to
     perform tests on a Python consumer. For example:
 
     >>> from pact import Consumer, Provider
-    >>> pact = Consumer('MyMessageConsumer').has_pact_with(Provider('provider'))
+    >>> pact = MessageConsumer('MyMessageConsumer').has_pact_with(Provider('provider'))
     >>> (pact
-    ... .given('Given')
-    ... .expects_to_receive('Expects to Recieve')
+    ... .given({"name": "Test provider"}])
+    ... .expects_to_receive('Test description')
     ... .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
-    ... .with_metadata({'contentType': 'application/json', 'source': 'legacy_api'}))
+    ... .with_metadata({'contentType': 'application/json'}))
     >>> with pact:
-    ...   requests.get(pact.uri + '/echo?text=Hello!')
-
-    The GET request is made to the mock service, which will verify that it
-    was a GET to /echo with a query string with a key named `text` and its
-    value is `Hello!`. If the request does not match an error is raised, if it
-    does match the defined interaction, it will respond with the text `Hello!`.
+    ... log.info("In Python context")
     """
 
     MANDATORY_FIELDS = {'providerStates', 'description', 'contents', 'metaData'}
@@ -40,13 +35,13 @@ class MessagePact():
                  broker_password=None, broker_token=None, pact_dir=None, version='3.0.0',
                  file_write_mode='merge'):
         """
-        Create a Pact instance.
-        :param consumer: The consumer for this contract.
+        Create a Pact instance using messages.
+        :param consumer: A consumer for this contract that uses messages.
         :type consumer: pact.Consumer
         :param provider: The provider for this contract.
         :type provider: pact.Provider
         :param log_dir: The directory where logs should be written. Defaults to
-            the current directory.
+            the current directory. Defaults to None.
         :type log_dir: str
         :param publish_to_broker: Flag to control automatic publishing of
             pacts to a pact broker. Defaults to False.
@@ -80,7 +75,7 @@ class MessagePact():
             consumer/provider pair. Ensure the pact file is deleted before
             running tests when using this option so that interactions deleted
             from the code are not maintained in the file. Defaults to
-            `overwrite`.
+            `merge`.
         :type file_write_mode: str
         """
         self.broker_base_url = broker_base_url
@@ -98,7 +93,7 @@ class MessagePact():
         self._messages = []
         self._message_process = None
 
-    def given(self, provider_state):
+    def given(self, provider_states):
         """
         Define the provider state for this pact.
 
@@ -112,7 +107,7 @@ class MessagePact():
         """
         self._insert_message_if_complete()
 
-        state = [{"name": "{}".format(provider_state)}]
+        state = [{"name": "{}".format(provider_states)}]
         self._messages[0]['providerStates'] = state
         return self
 
@@ -121,9 +116,9 @@ class MessagePact():
         self._messages[0]['metaData'] = metadata
         return self
 
-    def with_content(self, content):
+    def with_content(self, contents):
         self._insert_message_if_complete()
-        self._messages[0]['contents'] = content
+        self._messages[0]['contents'] = contents
         return self
 
     def expects_to_receive(self, description):
