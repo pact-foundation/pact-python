@@ -53,7 +53,6 @@ class MessageConsumer(object):
     def has_pact_with(
         self,
         provider,
-        log_dir=None,
         publish_to_broker=False,
         broker_base_url=None,
         broker_username=None,
@@ -83,9 +82,6 @@ class MessageConsumer(object):
             your code under test to contact the mock service. It defaults to:
             `localhost`.
         :type host_name: str
-        :param log_dir: The directory where logs should be written. Defaults to
-            the current directory.
-        :type log_dir: str
         :param publish_to_broker: Flag to control automatic publishing of
             pacts to a pact broker. Defaults to False.
         :type publish_to_broker: bool
@@ -128,7 +124,6 @@ class MessageConsumer(object):
             broker_token=broker_token,
             consumer=self,
             provider=provider,
-            log_dir=log_dir,
             pact_dir=pact_dir,
             publish_to_broker=publish_to_broker,
             version=version,
