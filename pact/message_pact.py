@@ -34,7 +34,7 @@ class MessagePact():
     """
 
     # MANDATORY_FIELDS = {'providerStates', 'description', 'metaData', 'contents'}
-    MANDATORY_FIELDS = {'description', 'contents'}
+    MANDATORY_FIELDS = {'providerStates', 'description', 'contents'}
 
     def __init__(self, consumer, provider, log_dir=None,
                  publish_to_broker=False, broker_base_url=None, broker_username=None,
@@ -138,7 +138,7 @@ class MessagePact():
     def write_to_pact_file(self):
         # for x in self._message_interactions:
         # temporarily assumed we only have a single message
-        fake_data_set = {"contents": "whatever", "description": "description"}
+        fake_data_set = {"providerStates":[{"name": "Test provider"}], "contents": "whatever", "description": "description"}
 
         command = [
             MESSAGE_PATH,
