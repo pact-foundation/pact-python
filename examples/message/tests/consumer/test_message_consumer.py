@@ -1,24 +1,19 @@
 """pact test for user service client"""
 
 import logging
-import os
-import atexit
 
 import pytest
-from pact import MessageConsumer, Like, Provider, Term, Format
+from pact import MessageConsumer, Provider
 
 from src.consumer import UserConsumer
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-print(Format().__dict__)
 
 PACT_BROKER_URL = "http://localhost"
 PACT_FILE = "userserviceclient-userservice.json"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
-PACT_MOCK_HOST = 'localhost'
-PACT_MOCK_PORT = 1234
 PACT_DIR = 'pacts'
 
 
@@ -40,13 +35,16 @@ def test_generate_pact_file(pact):
      .given('A document create in Document Service')
      .expects_to_receive('Provider state attribute')
      .with_content({
-         "documentName": "sample.docx",
-         "creator": "TP",
-         "documentType": "microsoft-word"
+         'id': '42',
+         'documentName': 'sample.docx',
+         'creator': 'TP',
+         'documentType': 'microsoft-word'
      })
      .with_metadata({
          "Content-Type": "application/json"
      }))
 
     with pact:
-        log.info("In Python context")
+        user = UserConsumer().get_id('42')
+        assert user.name == 'forty-two'
+        log.info("In Python context END")

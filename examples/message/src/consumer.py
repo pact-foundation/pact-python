@@ -1,19 +1,14 @@
-import requests
-
-
 class UserConsumer(object):
-    def __init__(self, base_uri):
-        self.base_uri = base_uri
 
-    def get_user(self, user_name):
-        """Fetch a user object by user_name from the server."""
-        uri = self.base_uri + '/users/' + user_name
-        response = requests.get(uri)
-        if response.status_code == 404:
-            return None
+    def __init__(self):
+        self.conversion = {
+            '42': 'forty-two',
+            '24': 'twenty-four',
+        }
 
-        name = response.json()['name']
-        return User(name)
+    def get_id(self, id):
+        """Compare that from the message block."""
+        return User(self.conversion[id])
 
 
 class User(object):
