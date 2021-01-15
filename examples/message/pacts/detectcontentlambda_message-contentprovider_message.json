@@ -1,0 +1,37 @@
+{
+  "consumer": {
+    "name": "DetectContentLambda_message"
+  },
+  "provider": {
+    "name": "ContentProvider_message"
+  },
+  "messages": [
+    {
+      "description": "Provider state attribute",
+      "providerStates": [
+        {
+          "name": "A document create in Document Service",
+          "params": null
+        }
+      ],
+      "contents": {
+        "id": "42",
+        "documentName": "sample.docx",
+        "creator": "TP",
+        "documentType": "microsoft-word"
+      },
+      "matchingRules": {
+        "body": {
+        }
+      },
+      "metaData": {
+        "Content-Type": "application/json"
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  }
+}

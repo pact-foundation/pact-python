@@ -5,7 +5,7 @@ import logging
 import pytest
 from pact import MessageConsumer, Provider
 
-from src.consumer import UserConsumer
+from src.message_handler import MessageHandler
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -41,10 +41,19 @@ def test_generate_pact_file(pact):
          'documentType': 'microsoft-word'
      })
      .with_metadata({
-         "Content-Type": "application/json"
+         'Content-Type': 'application/json'
      }))
 
     with pact:
-        user = UserConsumer().get_id('42')
-        assert user.name == 'forty-two'
-        log.info("In Python context END")
+        handler = MessageHandler(pact.send_message())
+        assert handler.get_provider_states() == 'A document create in Document Service'
+        assert handler.get_description() == 'Provider state attribute'
+        assert handler.get_contents() == ({
+            'id': '42',
+            'documentName': 'sample.docx',
+            'creator': 'TP',
+            'documentType': 'microsoft-word'
+        })
+        assert handler.get_metadata() == ({
+            'Content-Type': 'application/json'
+        })

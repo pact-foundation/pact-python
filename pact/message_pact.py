@@ -122,21 +122,26 @@ class MessagePact():
         self._messages[0]['description'] = description
         return self
 
+    def send_message(self):
+        return self._messages
+
     @staticmethod
     def _normalize_consumer_name(name):
         return name.lower().replace(' ', '_')
 
-
     def write_to_pact_file(self):
-        # The message should have following structure
-        # {
-        #     "providerStates":[{"name": "Test provider"}], 
-        #     "contents": "whatever",
-        #     "description": "description", 
-        #     "metaData": {
-        #         "Content-Type": "application/json"
-        #     }
-        # }
+        """
+        The message should have following structure
+
+        {
+            'providerStates':[{'name': 'Test provider'}],
+            'contents': 'whatever',
+            'description': 'description',
+            'metaData': {
+                'Content-Type': 'application/json'
+            }
+        }
+        """
 
         command = [
             MESSAGE_PATH,
