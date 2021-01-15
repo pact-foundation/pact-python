@@ -1,15 +1,21 @@
+class CustomError(Exception):
+    def __init__(self, *args):
+        if args:
+            self.topic = args[0]
+        else:
+            self.topic = None
+
+    def __str__(self):
+        if self.topic:
+            return 'Custom Error:, {0}'.format(self.topic)
 class MessageHandler(object):
-    def __init__(self, messages):
-        self.messages = messages
+    def __init__(self, message):
+        self.message = message
+        self.verify_content()
 
-    def get_provider_states(self):
-        return self.messages[0]['providerStates'][0]['name']
+    def check_message_exist(self):
+        return "Message exists" if bool(self.message) else "Message does NOT exist"
 
-    def get_metadata(self):
-        return self.messages[0]['metaData']
-
-    def get_contents(self):
-        return self.messages[0]['contents']
-
-    def get_description(self):
-        return self.messages[0]['description']
+    def verify_content(self):
+        if self.message[0]['metaData'].get('Content-Type') != 'application/json':
+            raise CustomError("Not correct Content-type")
