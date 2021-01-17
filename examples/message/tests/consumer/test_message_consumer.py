@@ -35,7 +35,6 @@ def test_generate_pact_file(pact):
      .given('A document create in Document Service')
      .expects_to_receive('Provider state attribute')
      .with_content({
-         'id': '42',
          'documentName': 'sample.doc',
          'creator': 'TP',
          'documentType': 'microsoft-word'
@@ -52,8 +51,6 @@ def test_generate_pact_file(pact):
 
             # optional
             print(handler.check_message_exist())
-            log.info("In Python context END")
-
         mock.assert_called_once()
 
 def test_throw_exception_handler(pact):
@@ -62,7 +59,7 @@ def test_throw_exception_handler(pact):
      .expects_to_receive('Description')
      .with_content({
          'id': '24',
-         'documentName': 'sample.docx',
+         'documentName': 'document.docx',
          'creator': 'WI',
          'documentType': 'microsoft-word'
      })
@@ -73,7 +70,9 @@ def test_throw_exception_handler(pact):
     with pytest.raises(CustomError):
         with patch.object(pact, 'write_to_pact_file') as mock:
             with pact:
-                # MessageHandler example needs 'Content-Type' == 'application/json'
+                # sample MessageHandler needs 'Content-Type' == 'application/json'
                 handler = MessageHandler(pact.send_message())
+
+                # optional
                 print(handler.check_message_exist())
             mock.assert_not_called()

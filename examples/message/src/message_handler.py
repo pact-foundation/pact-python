@@ -8,6 +8,7 @@ class CustomError(Exception):
     def __str__(self):
         if self.topic:
             return 'Custom Error:, {0}'.format(self.topic)
+
 class MessageHandler(object):
     def __init__(self, message):
         self.message = message
