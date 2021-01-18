@@ -18,5 +18,5 @@ class MessageHandler(object):
         return "Message exists" if bool(self.message) else "Message does NOT exist"
 
     def verify_content(self):
-        if self.message[0]['metaData'].get('Content-Type') != 'application/json':
-            raise CustomError("Not correct Content-type")
+        if self.message[0]['contents'].get('documentType') != 'microsoft-word':
+            raise CustomError("Not correct document type")

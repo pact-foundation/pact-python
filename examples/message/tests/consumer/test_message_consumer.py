@@ -45,7 +45,7 @@ def test_generate_pact_file(pact):
 
     with patch.object(pact, 'write_to_pact_file') as mock:
         with pact:
-            # sample MessageHandler needs 'Content-Type' == 'application/json'
+            # sample MessageHandler needs 'documentType' == 'microsoft-word'
             handler = MessageHandler(pact.send_message())
             print(pact.send_message())
 
@@ -58,10 +58,9 @@ def test_throw_exception_handler(pact):
      .given('A Document Service with xml metadata')
      .expects_to_receive('Description')
      .with_content({
-         'id': '24',
          'documentName': 'document.docx',
          'creator': 'WI',
-         'documentType': 'microsoft-word'
+         'documentType': 'microsoft-excel'
      })
      .with_metadata({
          'Content-Type': 'application/xml'
@@ -70,7 +69,7 @@ def test_throw_exception_handler(pact):
     with pytest.raises(CustomError):
         with patch.object(pact, 'write_to_pact_file') as mock:
             with pact:
-                # sample MessageHandler needs 'Content-Type' == 'application/json'
+                # sample MessageHandler needs 'documentType' == 'microsoft-word'
                 handler = MessageHandler(pact.send_message())
 
                 # optional
