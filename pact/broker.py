@@ -70,6 +70,4 @@ class Broker():
         if publish_process.returncode != 0:
             url = self._get_broker_base_url()
             raise RuntimeError(
-                "There was an error while publishing to the "
-                + "pact broker at {}."
-                .format(url))
+                f"There was an error while publishing to the pact broker at {url}.")

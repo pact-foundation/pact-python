@@ -21,9 +21,6 @@ class BrokerTestCase(TestCase):
             broker.fnmatch, 'filter', autospec=True).start()
         self.mock_fnmatch.return_value = ['TestConsumer-TestProvider.json']
 
-    def tearDown(self):
-        print("TearDown")
-
     def test_publish_without_broker_url(self):
         broker = Broker()
 

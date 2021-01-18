@@ -8,20 +8,14 @@ from subprocess import Popen
 from .broker import Broker
 from .constants import MESSAGE_PATH
 
-import logging
-
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
 
 class MessagePact(Broker):
     """
     Represents a contract between a consumer and provider using messages.
 
-    Provides Python context handlers to configure the Pact mock service to
-    perform tests on a Python consumer. For example:
+    Provides Python context handler to perform tests on a Python consumer. For example:
 
-    >>> from pact import Consumer, Provider
+    >>> from pact import MessageConsumer, Provider
     >>> pact = MessageConsumer('MyMessageConsumer').has_pact_with(Provider('provider'))
     >>> (pact
     ... .given({"name": "Test provider"}])
@@ -29,7 +23,7 @@ class MessagePact(Broker):
     ... .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
     ... .with_metadata({'contentType': 'application/json'}))
     >>> with pact:
-    ... log.info("In Python context")
+    ...   handler(event, context)
     """
 
     MANDATORY_FIELDS = {"providerStates", "description", "contents", "metaData"}
@@ -44,14 +38,14 @@ class MessagePact(Broker):
         broker_password=None,
         broker_token=None,
         pact_dir=None,
-        version="3.0.0",
+        version='3.0.0',
         file_write_mode="merge",
     ):
         """
         Create a Pact instance using messages.
         :param consumer: A consumer for this contract that uses messages.
-        :type consumer: pact.Consumer
-        :param provider: The provider for this contract.
+        :type consumer: pact.MessageConsumer
+        :param provider: The generic provider for this contract.
         :type provider: pact.Provider
         :param publish_to_broker: Flag to control automatic publishing of
             pacts to a pact broker. Defaults to False.
@@ -117,40 +111,33 @@ class MessagePact(Broker):
         self._insert_message_if_complete()
 
         state = [{"name": "{}".format(provider_states)}]
-        self._messages[0]["providerStates"] = state
+        self._messages[0]['providerStates'] = state
         return self
 
     def with_metadata(self, metadata):
         self._insert_message_if_complete()
-        self._messages[0]["metaData"] = metadata
+        self._messages[0]['metaData'] = metadata
         return self
 
     def with_content(self, contents):
         self._insert_message_if_complete()
-        self._messages[0]["contents"] = contents
+        self._messages[0]['contents'] = contents
         return self
 
     def expects_to_receive(self, description):
         self._insert_message_if_complete()
-        self._messages[0]["description"] = description
+        self._messages[0]['description'] = description
         return self
-
-    @staticmethod
-    def _normalize_consumer_name(name):
-        return name.lower().replace(" ", "_")
 
     def write_to_pact_file(self):
         command = [
             MESSAGE_PATH,
             "update",
             json.dumps(self._messages[0]),
-            "--pact-dir",
-            self.pact_dir,
-            "--pact-specification-version={}".format(self.version),
-            "--consumer",
-            self.consumer.name + "_message",
-            "--provider",
-            self.provider.name + "_message",
+            "--pact-dir", self.pact_dir,
+            f"--pact-specification-version={self.version}",
+            "--consumer", f"{self.consumer.name}_message",
+            "--provider", f"{self.provider.name}_message",
         ]
 
         self._message_process = Popen(command)
@@ -169,18 +156,15 @@ class MessagePact(Broker):
 
     def __enter__(self):
         """
-        Enter a Python context.
-
-        Sets up the mock service to expect the client requests.
+        Enter a Python context. This function is required for context manager to work.
         """
-        log.info("__enter__ context")
+        pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Exit a Python context.
 
-        Calls the mock service to verify the message occurred as
-        expected, and has it write out the contracts to disk.
+        Calls pact-message to write out the contracts to disk.
         """
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             return

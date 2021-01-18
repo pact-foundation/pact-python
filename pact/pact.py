@@ -162,10 +162,6 @@ class Pact(Broker):
         self._interactions[0]['provider_state'] = provider_state
         return self
 
-    @staticmethod
-    def _normalize_consumer_name(name):
-        return name.lower().replace(" ", "_")
-
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
         try:
