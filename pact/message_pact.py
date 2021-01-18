@@ -9,8 +9,10 @@ from .broker import Broker
 from .constants import MESSAGE_PATH
 
 import logging
+
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 class MessagePact(Broker):
     """
@@ -30,12 +32,21 @@ class MessagePact(Broker):
     ... log.info("In Python context")
     """
 
-    MANDATORY_FIELDS = {'providerStates', 'description', 'contents', 'metaData'}
+    MANDATORY_FIELDS = {"providerStates", "description", "contents", "metaData"}
 
-    def __init__(self, consumer, provider,
-                 publish_to_broker=False, broker_base_url=None, broker_username=None,
-                 broker_password=None, broker_token=None, pact_dir=None, version='3.0.0',
-                 file_write_mode='merge'):
+    def __init__(
+        self,
+        consumer,
+        provider,
+        publish_to_broker=False,
+        broker_base_url=None,
+        broker_username=None,
+        broker_password=None,
+        broker_token=None,
+        pact_dir=None,
+        version="3.0.0",
+        file_write_mode="merge",
+    ):
         """
         Create a Pact instance using messages.
         :param consumer: A consumer for this contract that uses messages.
@@ -78,10 +89,7 @@ class MessagePact(Broker):
         :type file_write_mode: str
         """
         super().__init__(
-            broker_base_url,
-            broker_username,
-            broker_password,
-            broker_token
+            broker_base_url, broker_username, broker_password, broker_token
         )
 
         self.consumer = consumer
@@ -109,22 +117,22 @@ class MessagePact(Broker):
         self._insert_message_if_complete()
 
         state = [{"name": "{}".format(provider_states)}]
-        self._messages[0]['providerStates'] = state
+        self._messages[0]["providerStates"] = state
         return self
 
     def with_metadata(self, metadata):
         self._insert_message_if_complete()
-        self._messages[0]['metaData'] = metadata
+        self._messages[0]["metaData"] = metadata
         return self
 
     def with_content(self, contents):
         self._insert_message_if_complete()
-        self._messages[0]['contents'] = contents
+        self._messages[0]["contents"] = contents
         return self
 
     def expects_to_receive(self, description):
         self._insert_message_if_complete()
-        self._messages[0]['description'] = description
+        self._messages[0]["description"] = description
         return self
 
     def send_message(self):
@@ -132,17 +140,21 @@ class MessagePact(Broker):
 
     @staticmethod
     def _normalize_consumer_name(name):
-        return name.lower().replace(' ', '_')
+        return name.lower().replace(" ", "_")
 
     def write_to_pact_file(self):
         command = [
             MESSAGE_PATH,
-            'update',
+            "update",
             json.dumps(self._messages[0]),
-            '--pact-dir', self.pact_dir,
-            '--pact-specification-version={}'.format(self.version),
-            '--consumer', self.consumer.name + "_message",
-            '--provider', self.provider.name + "_message"]
+            "--pact-dir",
+            self.pact_dir,
+            "--pact-specification-version={}".format(self.version),
+            "--consumer",
+            self.consumer.name + "_message",
+            "--provider",
+            self.provider.name + "_message",
+        ]
 
         self._message_process = Popen(command)
 
@@ -155,8 +167,7 @@ class MessagePact(Broker):
         """
         if not self._messages:
             self._messages.append({})
-        elif all(field in self._messages[0]
-                for field in self.MANDATORY_FIELDS):
+        elif all(field in self._messages[0] for field in self.MANDATORY_FIELDS):
             self._messages.insert(0, {})
 
     def __enter__(self):
@@ -179,7 +190,10 @@ class MessagePact(Broker):
 
         self.write_to_pact_file()
 
-        if (self.publish_to_broker):
-            self.publish(self.consumer.name, self.consumer.version,
-                        tag_with_git_branch=self.consumer.tag_with_git_branch,
-                        consumer_tags=self.consumer.tags)
+        if self.publish_to_broker:
+            self.publish(
+                self.consumer.name,
+                self.consumer.version,
+                tag_with_git_branch=self.consumer.tag_with_git_branch,
+                consumer_tags=self.consumer.tags,
+            )

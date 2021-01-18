@@ -7,7 +7,7 @@ from psutil import Process
 
 from pact.consumer import Consumer, Provider
 from pact.matchers import Term
-from pact.constants import MOCK_SERVICE_PATH, BROKER_CLIENT_PATH
+from pact.constants import MOCK_SERVICE_PATH
 from pact.pact import Pact, FromTerms, Request, Response
 from pact import pact as pact
 
