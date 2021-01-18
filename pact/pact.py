@@ -11,12 +11,13 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 
+from .broker import Broker
 from .constants import BROKER_CLIENT_PATH
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
 
 
-class Pact(object):
+class Pact(Broker):
     """
     Represents a contract between a consumer and provider.
 
@@ -109,14 +110,16 @@ class Pact(object):
             `overwrite`.
         :type file_write_mode: str
         """
+        super().__init__(
+            broker_base_url,
+            broker_username,
+            broker_password,
+            broker_token
+        )
+
         scheme = 'https' if ssl else 'http'
         self.uri = '{scheme}://{host_name}:{port}'.format(
             host_name=host_name, port=port, scheme=scheme)
-
-        self.broker_base_url = broker_base_url
-        self.broker_username = broker_username
-        self.broker_password = broker_password
-        self.broker_token = broker_token
         self.consumer = consumer
         self.cors = cors
         self.file_write_mode = file_write_mode
@@ -152,53 +155,6 @@ class Pact(object):
     @staticmethod
     def _normalize_consumer_name(name):
         return name.lower().replace(' ', '_')
-
-    def publish(self):
-        """Publish the generated pact files to the specified pact broker."""
-        if self.broker_base_url is None \
-                and "PACT_BROKER_BASE_URL" not in os.environ:
-            raise RuntimeError("No pact broker URL specified. "
-                               + "Did you expect the PACT_BROKER_BASE_URL "
-                               + "environment variable to be set?")
-
-        pact_files = map(
-            lambda filename: os.path.join(self.pact_dir, filename),
-            fnmatch.filter(
-                os.listdir(self.pact_dir),
-                self._normalize_consumer_name(self.consumer.name) + '*.json'
-            )
-        )
-        command = [
-            BROKER_CLIENT_PATH,
-            'publish',
-            '--consumer-app-version={}'.format(self.consumer.version)]
-
-        if self.broker_base_url is not None:
-            command.append('--broker-base-url={}'.format(self.broker_base_url))
-        if self.broker_username is not None:
-            command.append('--broker-username={}'.format(self.broker_username))
-        if self.broker_password is not None:
-            command.append('--broker-password={}'.format(self.broker_password))
-        if self.broker_token is not None:
-            command.append('--broker-token={}'.format(self.broker_token))
-
-        command.extend(pact_files)
-
-        if self.consumer.tag_with_git_branch:
-            command.append('--tag-with-git-branch')
-
-        if self.consumer.tags is not None:
-            for tag in self.consumer.tags:
-                command.extend(['-t', tag])
-
-        publish_process = Popen(command)
-        publish_process.wait()
-        if publish_process.returncode != 0:
-            url = self.broker_base_url or os.environ["PACT_BROKER_BASE_URL"]
-            raise RuntimeError(
-                "There was an error while publishing to the "
-                + "pact broker at {}."
-                .format(url))
 
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
@@ -266,7 +222,9 @@ class Pact(object):
                 raise RuntimeError(
                     'There was an error when stopping the Pact mock service.')
         if (self.publish_to_broker):
-            self.publish()
+            self.publish(self.consumer.name, self.version,
+                         tag_with_git_branch=self.consumer.tag_with_git_branch,
+                         consumer_tags=self.consumer.tags)
 
     def upon_receiving(self, scenario):
         """

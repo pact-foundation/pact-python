@@ -4,13 +4,15 @@ from __future__ import unicode_literals
 import json
 import os
 from subprocess import Popen
+
+from .broker import Broker
 from .constants import MESSAGE_PATH
 
 import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-class MessagePact():
+class MessagePact(Broker):
     """
     Represents a contract between a consumer and provider using messages.
 
@@ -75,10 +77,13 @@ class MessagePact():
             `merge`.
         :type file_write_mode: str
         """
-        self.broker_base_url = broker_base_url
-        self.broker_username = broker_username
-        self.broker_password = broker_password
-        self.broker_token = broker_token
+        super().__init__(
+            broker_base_url,
+            broker_username,
+            broker_password,
+            broker_token
+        )
+
         self.consumer = consumer
         self.file_write_mode = file_write_mode
         self.pact_dir = pact_dir or os.getcwd()
@@ -130,19 +135,6 @@ class MessagePact():
         return name.lower().replace(' ', '_')
 
     def write_to_pact_file(self):
-        """
-        The message should have following structure
-
-        {
-            'providerStates':[{'name': 'Test provider'}],
-            'contents': 'whatever',
-            'description': 'description',
-            'metaData': {
-                'Content-Type': 'application/json'
-            }
-        }
-        """
-
         command = [
             MESSAGE_PATH,
             'update',
@@ -186,3 +178,8 @@ class MessagePact():
             return
 
         self.write_to_pact_file()
+
+        if (self.publish_to_broker):
+            self.publish(self.consumer.name, self.consumer.version,
+                        tag_with_git_branch=self.consumer.tag_with_git_branch,
+                        consumer_tags=self.consumer.tags)

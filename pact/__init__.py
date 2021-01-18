@@ -9,5 +9,5 @@ from .verifier import Verifier
 
 from .__version__ import __version__  # noqa: F401
 
-__all__ = ('Consumer', 'EachLike', 'Like', 'MessageConsumer', 'MessagePact',
+__all__ = ('Broker', 'Consumer', 'EachLike', 'Like', 'MessageConsumer', 'MessagePact',
            'Pact', 'Provider', 'SomethingLike', 'Term', 'Format', 'Verifier')
