@@ -226,8 +226,7 @@ class Pact(Broker):
             p.wait()
             if psutil.pid_exists(self._process.pid):
                 raise RuntimeError(
-                    'There was an error when stopping the Pact mock service.'
-                )
+                    'There was an error when stopping the Pact mock service.')
 
         else:
             self._process.terminate()
@@ -342,7 +341,7 @@ class Pact(Broker):
         """
         s = requests.Session()
         retries = Retry(total=9, backoff_factor=0.1)
-        http_mount = "https://" if self.ssl else "http://"
+        http_mount = 'https://' if self.ssl else 'http://'
         s.mount(http_mount, HTTPAdapter(max_retries=retries))
 
         resp = s.get(self.uri, headers=self.HEADERS, verify=False)
@@ -350,7 +349,7 @@ class Pact(Broker):
             self._process.terminate()
             self._process.communicate()
             raise RuntimeError(
-                "There was a problem starting the mock service: %s", resp.text
+                'There was a problem starting the mock service: %s', resp.text
             )
 
     def __enter__(self):
@@ -408,16 +407,16 @@ class Request(FromTerms):
 
     def json(self):
         """Convert the Request to a JSON version for the mock service."""
-        request = {"method": self.method, "path": self.path}
+        request = {'method': self.method, 'path': self.path}
 
         if self.headers:
-            request["headers"] = self.headers
+            request['headers'] = self.headers
 
         if self.body is not None:
-            request["body"] = self.body
+            request['body'] = self.body
 
         if self.query:
-            request["query"] = self.query
+            request['query'] = self.query
 
         return request
 
