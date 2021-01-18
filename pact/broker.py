@@ -15,6 +15,27 @@ class Broker():
     """PactBroker helper functions."""
 
     def __init__(self, broker_base_url=None, broker_username=None, broker_password=None, broker_token=None):
+        """
+        Create a Broker instance.
+
+        :param broker_base_url: URL of the pact broker that pacts will be
+            published to. Can also be supplied through the PACT_BROKER_BASE_URL
+            environment variable. Defaults to None.
+        :type broker_base_url: str
+        :param broker_username: Username to use when connecting to the pact
+            broker if authentication is required. Can also be supplied through
+            the PACT_BROKER_USERNAME environment variable. Defaults to None.
+        :type broker_username: str
+        :param broker_password: Password to use when connecting to the pact
+            broker if authentication is required. Strongly recommend supplying
+            this value through the PACT_BROKER_PASSWORD environment variable
+            instead. Defaults to None.
+        :type broker_password: str
+        :param broker_token: Authentication token to use when connecting to
+            the pact broker. Strongly recommend supplying this value through
+            the PACT_BROKER_TOKEN environment variable instead.
+            Defaults to None.
+        """
         self.broker_base_url = broker_base_url
         self.broker_username = broker_username
         self.broker_password = broker_password

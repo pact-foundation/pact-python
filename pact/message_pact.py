@@ -43,6 +43,7 @@ class MessagePact(Broker):
     ):
         """
         Create a Pact instance using messages.
+
         :param consumer: A consumer for this contract that uses messages.
         :type consumer: pact.MessageConsumer
         :param provider: The generic provider for this contract.
@@ -115,21 +116,49 @@ class MessagePact(Broker):
         return self
 
     def with_metadata(self, metadata):
+        """
+        Define metadata attached to the message.
+
+        :param metadata: dictionary of metadata attached to the message.
+        :type metadata: dict or None
+        :rtype: Pact
+        """
         self._insert_message_if_complete()
         self._messages[0]['metaData'] = metadata
         return self
 
     def with_content(self, contents):
+        """
+        Define message content (event) that will be use in the message.
+
+        :param contents: dictionary of dictionary used in the message.
+        :type metadata: dict
+        :rtype: Pact
+        """
         self._insert_message_if_complete()
         self._messages[0]['contents'] = contents
         return self
 
     def expects_to_receive(self, description):
+        """
+        Define the name of this contract (Same as upon_receiving in http pact implementation).
+
+        :param scenario: A unique name for this contract.
+        :type scenario: basestring
+        :rtype: Pact
+        """
         self._insert_message_if_complete()
         self._messages[0]['description'] = description
         return self
 
     def write_to_pact_file(self):
+        """
+        Create a pact file based on provided attributes in DSL.
+
+        Return 0 if success, 1 otherwise.
+
+        :rtype: int
+        """
         command = [
             MESSAGE_PATH,
             "update",
@@ -145,6 +174,7 @@ class MessagePact(Broker):
     def _insert_message_if_complete(self):
         """
         Insert a new message if current message is complete.
+
         An interaction is complete if it has all the mandatory fields.
         If there are no message, a new message will be added.
         :rtype: None
@@ -155,9 +185,7 @@ class MessagePact(Broker):
             self._messages.insert(0, {})
 
     def __enter__(self):
-        """
-        Enter a Python context. This function is required for context manager to work.
-        """
+        """Enter a Python context. This function is required for context manager to work."""
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
