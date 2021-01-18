@@ -135,9 +135,6 @@ class MessagePact(Broker):
         self._messages[0]["description"] = description
         return self
 
-    def send_message(self):
-        return self._messages
-
     @staticmethod
     def _normalize_consumer_name(name):
         return name.lower().replace(" ", "_")

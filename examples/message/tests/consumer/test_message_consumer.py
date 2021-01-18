@@ -1,7 +1,8 @@
 """pact test for user service client"""
 
 import logging
-from mock import patch
+from unittest.mock import patch
+
 import pytest
 from pact import MessageConsumer, Provider
 
@@ -31,47 +32,45 @@ def pact(request):
 
 
 def test_generate_pact_file(pact):
+    expected_event = {
+        'documentName': 'document.doc',
+        'creator': 'TP',
+        'documentType': 'microsoft-word'
+    }
+
     (pact
      .given('A document create in Document Service')
      .expects_to_receive('Provider state attribute')
-     .with_content({
-         'documentName': 'sample.doc',
-         'creator': 'TP',
-         'documentType': 'microsoft-word'
-     })
+     .with_content(expected_event)
      .with_metadata({
          'Content-Type': 'application/json'
      }))
 
     with patch.object(pact, 'write_to_pact_file') as mock:
         with pact:
-            # sample MessageHandler needs 'documentType' == 'microsoft-word'
-            handler = MessageHandler(pact.send_message())
-            print(pact.send_message())
-
-            # optional
-            print(handler.check_message_exist())
+            # handler needs 'documentType' == 'microsoft-word'
+            MessageHandler(expected_event)
         mock.assert_called_once()
 
+
 def test_throw_exception_handler(pact):
+    wrong_event = {
+        'documentName': 'spreadsheet.xls',
+        'creator': 'WI',
+        'documentType': 'microsoft-excel'
+    }
+
     (pact
-     .given('A Document Service with xml metadata')
+     .given('Another document in Document Service')
      .expects_to_receive('Description')
-     .with_content({
-         'documentName': 'document.docx',
-         'creator': 'WI',
-         'documentType': 'microsoft-excel'
-     })
+     .with_content(wrong_event)
      .with_metadata({
-         'Content-Type': 'application/xml'
+         'Content-Type': 'application/json'
      }))
 
     with pytest.raises(CustomError):
         with patch.object(pact, 'write_to_pact_file') as mock:
             with pact:
-                # sample MessageHandler needs 'documentType' == 'microsoft-word'
-                handler = MessageHandler(pact.send_message())
-
-                # optional
-                print(handler.check_message_exist())
+                # handler needs 'documentType' == 'microsoft-word'
+                MessageHandler(wrong_event)
             mock.assert_not_called()

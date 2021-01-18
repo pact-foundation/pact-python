@@ -10,13 +10,10 @@ class CustomError(Exception):
             return 'Custom Error:, {0}'.format(self.topic)
 
 class MessageHandler(object):
-    def __init__(self, message):
-        self.message = message
-        self.verify_content()
+    def __init__(self, event):
+        self.pass_event(event)
 
-    def check_message_exist(self):
-        return "Message exists" if bool(self.message) else "Message does NOT exist"
-
-    def verify_content(self):
-        if self.message[0]['contents'].get('documentType') != 'microsoft-word':
+    @staticmethod
+    def pass_event(event):
+        if event.get('documentType') != 'microsoft-word':
             raise CustomError("Not correct document type")
