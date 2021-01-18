@@ -37,15 +37,15 @@ class Pact(Broker):
     does match the defined interaction, it will respond with the text `Hello!`.
     """
 
-    HEADERS = {"X-Pact-Mock-Service": "true"}
+    HEADERS = {'X-Pact-Mock-Service': 'true'}
 
-    MANDATORY_FIELDS = {"response", "description", "request"}
+    MANDATORY_FIELDS = {'response', 'description', 'request'}
 
     def __init__(
         self,
         consumer,
         provider,
-        host_name="localhost",
+        host_name='localhost',
         port=1234,
         log_dir=None,
         ssl=False,
@@ -58,8 +58,8 @@ class Pact(Broker):
         broker_password=None,
         broker_token=None,
         pact_dir=None,
-        version="2.0.0",
-        file_write_mode="overwrite",
+        version='2.0.0',
+        file_write_mode='overwrite',
     ):
         """
         Create a Pact instance.
@@ -127,10 +127,9 @@ class Pact(Broker):
             broker_base_url, broker_username, broker_password, broker_token
         )
 
-        scheme = "https" if ssl else "http"
-        self.uri = "{scheme}://{host_name}:{port}".format(
-            host_name=host_name, port=port, scheme=scheme
-        )
+        scheme = 'https' if ssl else 'http'
+        self.uri = '{scheme}://{host_name}:{port}'.format(
+            host_name=host_name, port=port, scheme=scheme)
         self.consumer = consumer
         self.cors = cors
         self.file_write_mode = file_write_mode
@@ -160,7 +159,7 @@ class Pact(Broker):
         :rtype: Pact
         """
         self._insert_interaction_if_complete()
-        self._interactions[0]["provider_state"] = provider_state
+        self._interactions[0]['provider_state'] = provider_state
         return self
 
     @staticmethod
@@ -170,13 +169,14 @@ class Pact(Broker):
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
         try:
+            interactions_uri = f"{self.uri}/interactions"
             resp = requests.delete(
-                self.uri + "/interactions", headers=self.HEADERS, verify=False
+                interactions_uri, headers=self.HEADERS, verify=False
             )
 
             assert resp.status_code == 200, resp.text
             resp = requests.put(
-                self.uri + "/interactions",
+                interactions_uri,
                 headers=self.HEADERS,
                 verify=False,
                 json={"interactions": self._interactions},
@@ -195,34 +195,29 @@ class Pact(Broker):
         command = [
             MOCK_SERVICE_PATH,
             "service",
-            "--host={}".format(self.host_name),
-            "--port={}".format(self.port),
-            "--log",
-            "{}/pact-mock-service.log".format(self.log_dir),
-            "--pact-dir",
-            self.pact_dir,
-            "--pact-file-write-mode",
-            self.file_write_mode,
-            "--pact-specification-version={}".format(self.version),
-            "--consumer",
-            self.consumer.name,
-            "--provider",
-            self.provider.name,
+            f"--host={self.host_name}",
+            f"--port={format(self.port)}",
+            "--log", f"{self.log_dir}/pact-mock-service.log",
+            "--pact-dir", self.pact_dir,
+            "--pact-file-write-mode", self.file_write_mode,
+            f"--pact-specification-version={self.version}",
+            "--consumer", self.consumer.name,
+            "--provider", self.provider.name,
         ]
 
         if self.ssl:
-            command.append("--ssl")
+            command.append('--ssl')
         if self.sslcert:
-            command.extend(["--sslcert", self.sslcert])
+            command.extend(['--sslcert', self.sslcert])
         if self.sslkey:
-            command.extend(["--sslkey", self.sslkey])
+            command.extend(['--sslkey', self.sslkey])
 
         self._process = Popen(command)
         self._wait_for_server_start()
 
     def stop_service(self):
         """Stop the external Mock Service."""
-        is_windows = "windows" in platform.platform().lower()
+        is_windows = 'windows' in platform.platform().lower()
         if is_windows:
             # Send the signal to ruby.exe, not the *.bat process
             p = psutil.Process(self._process.pid)
@@ -231,7 +226,7 @@ class Pact(Broker):
             p.wait()
             if psutil.pid_exists(self._process.pid):
                 raise RuntimeError(
-                    "There was an error when stopping the Pact mock service."
+                    'There was an error when stopping the Pact mock service.'
                 )
 
         else:
@@ -240,7 +235,7 @@ class Pact(Broker):
             self._process.communicate()
             if self._process.returncode != 0:
                 raise RuntimeError(
-                    "There was an error when stopping the Pact mock service."
+                    'There was an error when stopping the Pact mock service.'
                 )
         if self.publish_to_broker:
             self.publish(
@@ -259,7 +254,7 @@ class Pact(Broker):
         :rtype: Pact
         """
         self._insert_interaction_if_complete()
-        self._interactions[0]["description"] = scenario
+        self._interactions[0]['description'] = scenario
         return self
 
     def verify(self):
@@ -300,7 +295,7 @@ class Pact(Broker):
         :rtype: Pact
         """
         self._insert_interaction_if_complete()
-        self._interactions[0]["request"] = Request(
+        self._interactions[0]['request'] = Request(
             method, path, body=body, headers=headers, query=query
         ).json()
         return self
@@ -319,7 +314,7 @@ class Pact(Broker):
         :rtype: Pact
         """
         self._insert_interaction_if_complete()
-        self._interactions[0]["response"] = Response(
+        self._interactions[0]['response'] = Response(
             status, headers=headers, body=body
         ).json()
         return self
@@ -390,7 +385,7 @@ class FromTerms(object):
 class Request(FromTerms):
     """Represents an HTTP request and supports Matchers on its properties."""
 
-    def __init__(self, method, path, body=None, headers=None, query=""):
+    def __init__(self, method, path, body=None, headers=None, query=''):
         """
         Create a new instance of Request.
 
@@ -447,11 +442,11 @@ class Response(FromTerms):
 
     def json(self):
         """Convert the Response to a JSON version for the mock service."""
-        response = {"status": self.status}
+        response = {'status': self.status}
         if self.body is not None:
-            response["body"] = self.body
+            response['body'] = self.body
 
         if self.headers:
-            response["headers"] = self.headers
+            response['headers'] = self.headers
 
         return response

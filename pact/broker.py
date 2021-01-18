@@ -12,9 +12,7 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 class Broker():
-    """
-    PactBroker helper functions
-    """
+    """PactBroker helper functions."""
 
     def __init__(self, broker_base_url=None, broker_username=None, broker_password=None, broker_token=None):
         self.broker_base_url = broker_base_url
