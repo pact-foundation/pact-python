@@ -78,6 +78,28 @@ class MessagePactTestCase(TestCase):
             target._messages[0]['metaData'],
             {'contentType': 'application/json', 'source': 'legacy_api'})
 
+    def test_insert_new_message_once_required_attributes_provided(self):
+        target = MessagePact(self.consumer, self.provider)
+        (
+            target
+            .given('there is an alligator named John')
+            .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
+            .with_metadata({'contentType': 'application/json'})
+        )
+        self.assertEqual(len(target._messages), 1)
+
+        (
+            target.expects_to_receive('an alligator message')
+        )
+        self.assertEqual(len(target._messages), 1)
+        self.assertEqual(target._messages[0]['description'], 'an alligator message')
+
+        (
+            target.expects_to_receive('a new message description')
+        )
+        self.assertEqual(len(target._messages), 2)
+        self.assertEqual(target._messages[0]['description'], 'a new message description')
+
     def test_definition_without_given(self):
         target = MessagePact(self.consumer, self.provider)
         (
