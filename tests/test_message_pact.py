@@ -103,6 +103,42 @@ class MessagePactTestCase(TestCase):
             target._messages[0]['metaData'],
             {'source': 'legacy_api'})
 
+class MessagePactContextManagerTestCase(MessagePactTestCase):
+    def setUp(self):
+        super(MessagePactContextManagerTestCase, self).setUp()
+        self.addCleanup(patch.stopall)
+
+        self.write_to_pact_file = patch.object(
+            message_pact.MessagePact, 'write_to_pact_file', autospec=True).start()
+        self.write_to_pact_file.return_value.returncode = 0
+
+        self.mock_publish = patch.object(
+            message_pact.MessagePact, 'publish', autospec=True).start()
+        self.mock_publish.return_value.returncode = 0
+
+    def test_successful(self):
+        pact = MessagePact(
+            self.consumer, self.provider, publish_to_broker=True,
+            broker_base_url='http://localhost', broker_username='username', broker_password='password')
+
+        with pact:
+            pass
+
+        self.write_to_pact_file.assert_called_once()
+        self.mock_publish.assert_called_once()
+
+    def test_context_raises_error(self):
+        pact = MessagePact(
+            self.consumer, self.provider, publish_to_broker=True,
+            broker_base_url='http://localhost', broker_username='username', broker_password='password')
+
+        with self.assertRaises(RuntimeError):
+            with pact:
+                raise RuntimeError
+
+        self.write_to_pact_file.assert_not_called()
+        self.mock_publish.assert_not_called()
+
 
 class PactGeneratePactFileTestCase(TestCase):
     def setUp(self):
@@ -117,7 +153,7 @@ class PactGeneratePactFileTestCase(TestCase):
     def test_call_pact_message_to_generate_pact_file(self):
         target = MessagePact(
             self.consumer, self.provider, pact_dir='/pacts',
-            version='3.0.0', file_write_mode='merge')
+            version='3.0.0', file_write_mode='merge', publish_to_broker=True)
 
         (target
             .given('There is an alligator named John')

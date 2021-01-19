@@ -5,6 +5,7 @@ from unittest import TestCase
 from mock import patch, call, Mock
 from psutil import Process
 
+from pact.broker import Broker
 from pact.consumer import Consumer, Provider
 from pact.matchers import Term
 from pact.constants import MOCK_SERVICE_PATH
@@ -294,6 +295,8 @@ class PactStartShutdownServerTestCase(TestCase):
             pact.Pact, '_wait_for_server_start', autospec=True).start()
         self.mock_Pid_exists = patch.object(
             pact.psutil, 'pid_exists', autospec=True).start()
+        self.mock_publish = patch.object(
+            Broker, 'publish', autospec=True).start()
 
     def test_start_fails(self):
         self.mock_Popen.return_value.returncode = 1
@@ -352,6 +355,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--sslkey', '/ssl.key'])
 
     def test_stop_posix(self):
+        self.mock_publish.return_value.returncode = 0
         self.mock_platform.return_value = 'Linux'
         pact = Pact(Consumer('consumer'), Provider('provider'))
         pact._process = Mock(spec=Popen, pid=999, returncode=0)
@@ -359,6 +363,7 @@ class PactStartShutdownServerTestCase(TestCase):
 
         pact._process.terminate.assert_called_once_with()
         pact._process.communicate.assert_called_once_with()
+        self.mock_publish.assert_not_called()
         self.assertFalse(self.mock_Process.called)
 
     def test_stop_windows(self):
@@ -366,7 +371,7 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe = Mock(spec=Process)
         self.mock_Process.return_value.children.return_value = [ruby_exe]
         self.mock_Pid_exists.return_value = False
-        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact = Pact(Consumer('consumer'), Provider('provider'), publish_to_broker=True)
         pact._process = Mock(spec=Popen, pid=999)
         pact.stop_service()
 
@@ -378,6 +383,7 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe.terminate.assert_called_once_with()
         self.mock_Process.return_value.wait.assert_called_once_with()
         self.mock_Pid_exists.assert_called_once_with(999)
+        self.mock_publish.assert_called_once()
 
     def test_stop_fails_posix(self):
         self.mock_platform.return_value = 'Linux'
@@ -389,6 +395,7 @@ class PactStartShutdownServerTestCase(TestCase):
 
         pact._process.terminate.assert_called_once_with()
         pact._process.communicate.assert_called_once_with()
+        self.mock_publish.assert_not_called()
 
     def test_stop_fails_windows(self):
         self.mock_platform.return_value = 'Windows'
@@ -407,6 +414,7 @@ class PactStartShutdownServerTestCase(TestCase):
             recursive=True)
         self.mock_Process.return_value.wait.assert_called_once_with()
         self.mock_Pid_exists.assert_called_once_with(999)
+        self.mock_publish.assert_not_called()
 
 
 class PactWaitForServerStartTestCase(TestCase):
