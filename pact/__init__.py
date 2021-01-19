@@ -1,4 +1,5 @@
 """Python methods for interactive with a Pact Mock Service."""
+from .broker import Broker
 from .consumer import Consumer
 from .matchers import EachLike, Like, SomethingLike, Term, Format
 from .message_pact import MessagePact
