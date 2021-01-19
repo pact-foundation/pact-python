@@ -161,9 +161,12 @@ class Pact(object):
                                + "Did you expect the PACT_BROKER_BASE_URL "
                                + "environment variable to be set?")
 
-        pact_files = fnmatch.filter(
-            os.listdir(self.pact_dir),
-            self._normalize_consumer_name(self.consumer.name) + '*.json'
+        pact_files = map(
+            lambda filename: os.path.join(self.pact_dir, filename),
+            fnmatch.filter(
+                os.listdir(self.pact_dir),
+                self._normalize_consumer_name(self.consumer.name) + '*.json'
+            )
         )
         command = [
             BROKER_CLIENT_PATH,
