@@ -1,51 +1,68 @@
 """Classes and methods to describe contract Consumers."""
 from .message_pact import MessagePact
 from .verifier import Verifier
+from subprocess import Popen
 
 
 class MessageProvider(object):
     """
     A Pact message provider.
-    TODO: update 
+
+    provider = MessageProvider(
+        message_providers = {
+            "a document created successfully": handlerfn
+        },
+        provider='DocumentService',
+        pact_dir='pacts',
+        version='3.0.0'
+        
+    provider.verify()
+    )
     """
 
     def __init__(
         self,
-        event_generator,
-        name,
+        message_providers,
+        provider_name,
         consumer_name,
-        version="0.0.0",
-        tags=None,
-        tag_with_git_branch=False,
-        download_from_broker=False,
         pact_dir=None,
-        broker_base_url=None,
-        broker_username=None,
-        broker_password=None,
-        broker_token=None,
+        version="0.0.0"
     ):
         """
         Create the Message Provider class.
 
         """
-        self.name = name
+        self.message_providers = message_providers
+        self.provider_name = provider_name
         self.consumer_name = consumer_name
-        self.tags = tags
-        self.tag_with_git_branch = tag_with_git_branch
         self.version = version
         self.pact_dir = pact_dir
-        self.broker_base_url = broker_base_url
-        self.broker_username = broker_username
-        self.broker_password = broker_password
-        self.broker_token = broker_token
-        self.event_generator = event_generator
+
+
+    def _setup_verification_handler(self):
+        pass
+
+    def _setup_proxy(self): 
+        # Create a http server (Flask), mapping root path /* to handlers
+
+        command = 'pact_provider.py python -m flask run -p 1235 & &>/dev/null'
+        Popen([command], ..., shell=True)
+
+        self._setup_verification_handler()
+        pass
+
+    def _do_verification(self): 
+        # TODO Create a http server (Flask), mapping root path /* to handlers
+        pass
+
+    def _terminate_proxy(self): 
+        # TODO Create a http server (Flask), mapping root path /* to handlers
+        # server.stop();
+        pass
 
     def verify(self):
-        verifier = Verifier(provider=self.name, provider_base_url=self.broker_base_url)
+        self._setup_proxy(self)
 
-        # the local file should be {producer_name}-{consumer_name}.json
-        output, logs = verifier.verify_pacts(f"{self.name}_message-{self.consumer_name}_message.json",
-                                         verbose=False,
-                                         provider_states_setup_url="{}/_pact/provider_states".format(PACT_URL))
-        # Todo
-        # assertEqual(event_generator(), output) ?
+        self._do_verification(self)
+
+        self._terminate_proxy(self)
