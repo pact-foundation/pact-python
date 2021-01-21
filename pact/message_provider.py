@@ -1,8 +1,6 @@
-"""Classes and methods to describe contract Consumers."""
-from .message_pact import MessagePact
-from .verifier import Verifier
-from subprocess import Popen
-
+from subprocess import Popen, PIPE
+import time
+import os
 
 class MessageProvider(object):
     """
@@ -15,7 +13,6 @@ class MessageProvider(object):
         provider='DocumentService',
         pact_dir='pacts',
         version='3.0.0'
-        
     provider.verify()
     )
     """
@@ -38,31 +35,39 @@ class MessageProvider(object):
         self.version = version
         self.pact_dir = pact_dir
 
-
     def _setup_verification_handler(self):
+        """
+        handler
+        """
         pass
 
-    def _setup_proxy(self): 
+    def _setup_proxy(self):
         # Create a http server (Flask), mapping root path /* to handlers
-
-        command = 'pact_provider.py python -m flask run -p 1235 & &>/dev/null'
-        Popen([command], ..., shell=True)
-
+        print('====== Server START, active for ~10 seconds ======')
+        directory = os.path.dirname(os.path.realpath(__file__))
+        cmd = f'python {directory}/http_proxy.py >/dev/null &'
+        self.flask_server = Popen(cmd.split(), stdout=PIPE)
+        time.sleep(10)
         self._setup_verification_handler()
-        pass
 
-    def _do_verification(self): 
+    def _do_verification(self):
         # TODO Create a http server (Flask), mapping root path /* to handlers
         pass
 
-    def _terminate_proxy(self): 
+    def _terminate_proxy(self):
+
+        print('====== Server SHUTDOWN down in 5 seconds ======')
+        time.sleep(5)
+        self.flask_server.terminate()
         # TODO Create a http server (Flask), mapping root path /* to handlers
-        # server.stop();
-        pass
 
     def verify(self):
-        self._setup_proxy(self)
+        self._setup_proxy()
 
-        self._do_verification(self)
+        self._do_verification()
 
-        self._terminate_proxy(self)
+        self._terminate_proxy()
+
+
+mp = MessageProvider(message_providers='message_providers', provider_name='provider_name', consumer_name='consumer_name')
+mp.verify()

@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-app.config["DEBUG"] = True
+# app.config["DEBUG"] = True
 
 def handler():
     return {
@@ -10,8 +10,13 @@ def handler():
         'documentType': 'docx'
     }
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def home():
-    jsonify(handler())
+    res = jsonify(handler())
+    res.status_code = 200
+    print(res)
+    return res
 
-app.run()
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5001)
