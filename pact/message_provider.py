@@ -47,16 +47,9 @@ class MessageProvider(object):
         self.current_handler = self.message_providers.get('Document delete successfully')
 
         directory = os.path.dirname(os.path.realpath(__file__))
-        handler_str = json.dumps(self.current_handler())
-
+        handler_str = json.dumps(self.current_handler()).replace(" ", "").replace("\'", "\"")
         cmd = f'python {directory}/http_proxy.py {handler_str} >/dev/null &'
         self.flask_server = Popen(cmd.split(), stdout=PIPE)
-
-        # debug lines
-        print('\ncurrent_handler')
-        print(self.current_handler)
-        print('\ncurrent_handler call')
-        print(self.current_handler())
 
         time.sleep(10)
 
