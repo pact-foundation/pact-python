@@ -13,15 +13,14 @@ class MessageProvider(object):
         provider='DocumentService',
         pact_dir='pacts',
         version='3.0.0'
-    provider.verify()
     )
     """
 
     def __init__(
         self,
         message_providers,
-        provider_name,
-        consumer_name,
+        provider,
+        consumer,
         pact_dir=None,
         version="0.0.0"
     ):
@@ -30,8 +29,8 @@ class MessageProvider(object):
 
         """
         self.message_providers = message_providers
-        self.provider_name = provider_name
-        self.consumer_name = consumer_name
+        self.provider = provider
+        self.consumer = consumer
         self.version = version
         self.pact_dir = pact_dir
 
@@ -69,5 +68,5 @@ class MessageProvider(object):
         self._terminate_proxy()
 
 
-mp = MessageProvider(message_providers='message_providers', provider_name='provider_name', consumer_name='consumer_name')
+mp = MessageProvider(message_providers='message_providers', provider='provider_name', consumer='consumer_name')
 mp.verify()
