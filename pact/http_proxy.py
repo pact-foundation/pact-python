@@ -1,14 +1,9 @@
 from flask import Flask, jsonify
-
+from message_provider import handler
 app = Flask(__name__)
 
 # app.config["DEBUG"] = True
 
-def handler():
-    return {
-        'documentId': '12334',
-        'documentType': 'docx'
-    }
 
 @app.route('/')
 def home():
