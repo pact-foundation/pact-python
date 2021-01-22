@@ -68,5 +68,8 @@ class MessageProvider(object):
         self._terminate_proxy()
 
 
-mp = MessageProvider(message_providers='message_providers', provider='provider_name', consumer='consumer_name')
-mp.verify()
+def handler():
+    return {
+        'documentId': '1233456789',
+        'documentType': 'docx'
+    }
