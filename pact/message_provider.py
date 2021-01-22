@@ -1,7 +1,7 @@
 from subprocess import Popen, PIPE
 import time
 import os
-
+import json
 class MessageProvider(object):
     """
     A Pact message provider.
@@ -43,10 +43,24 @@ class MessageProvider(object):
     def _setup_proxy(self):
         # Create a http server (Flask), mapping root path /* to handlers
         print('====== Server START, active for ~10 seconds ======')
+
+        self.current_handler = self.message_providers.get('Document delete successfully')
+
         directory = os.path.dirname(os.path.realpath(__file__))
-        cmd = f'python {directory}/http_proxy.py >/dev/null &'
+        handler_str = json.dumps(self.current_handler())
+
+        cmd = f'python {directory}/http_proxy.py {handler_str} >/dev/null &'
         self.flask_server = Popen(cmd.split(), stdout=PIPE)
+
+        # debug lines
+        print('\ncurrent_handler')
+        print(self.current_handler)
+        print('\ncurrent_handler call')
+        print(self.current_handler())
+
         time.sleep(10)
+
+        # handler()
         self._setup_verification_handler()
 
     def _do_verification(self):
@@ -66,10 +80,3 @@ class MessageProvider(object):
         self._do_verification()
 
         self._terminate_proxy()
-
-
-def handler():
-    return {
-        'documentId': '1233456789',
-        'documentType': 'docx'
-    }

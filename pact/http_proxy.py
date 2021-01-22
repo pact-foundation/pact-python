@@ -1,13 +1,16 @@
 from flask import Flask, jsonify
-from message_provider import handler
+import sys
+import json
+
 app = Flask(__name__)
 
-# app.config["DEBUG"] = True
+print('Number of arguments:', len(sys.argv), 'arguments.')
+print('Argument List:', str(sys.argv))
 
 
 @app.route('/')
 def home():
-    res = jsonify(handler())
+    res = jsonify(sys.argv[1])
     res.status_code = 200
     print(res)
     return res
