@@ -245,7 +245,7 @@ class PactPublishTestCase(PactTestCase):
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=0.0.0',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json'])
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
 
     def test_publish_without_broker_url(self):
         pact = Pact(self.consumer, self.provider, publish_to_broker=True)
@@ -271,7 +271,7 @@ class PactPublishTestCase(PactTestCase):
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=0.0.0',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json'])
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
 
     def test_basic_authenticated_publish(self):
         pact = Pact(self.consumer, self.provider,
@@ -288,7 +288,7 @@ class PactPublishTestCase(PactTestCase):
             '--broker-base-url=http://localhost',
             '--broker-username=username',
             '--broker-password=password',
-            'TestConsumer-TestProvider.json'])
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
 
     def test_token_authenticated_publish(self):
         pact = Pact(self.consumer, self.provider,
@@ -303,7 +303,7 @@ class PactPublishTestCase(PactTestCase):
             '--consumer-app-version=0.0.0',
             '--broker-base-url=http://localhost',
             '--broker-token=token',
-            'TestConsumer-TestProvider.json'])
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
 
     def test_git_tagged_publish(self):
         pact = Pact(Consumer('TestConsumer', tag_with_git_branch=True),
@@ -317,7 +317,7 @@ class PactPublishTestCase(PactTestCase):
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=0.0.0',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json',
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json'),
             '--tag-with-git-branch'])
 
     def test_manual_tagged_publish(self):
@@ -332,7 +332,7 @@ class PactPublishTestCase(PactTestCase):
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=0.0.0',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json',
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json'),
             '-t', 'tag1',
             '-t', 'tag2'])
 
@@ -348,7 +348,7 @@ class PactPublishTestCase(PactTestCase):
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=1.0.0',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json'])
+            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
 
     def test_publish_after_stop_service(self):
         self.mock_platform.return_value = 'Linux'
