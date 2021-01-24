@@ -44,30 +44,21 @@ def cleanup_json(expected_json):
     if (isfile(f"pacts/{expected_json}")):
         remove(f"pacts/{expected_json}")
 
-
-def test_generate_pact_file(pact):
-    cleanup_json(expected_json)
-
-    expected_event = {
-        'documentName': 'document.doc',
-        'creator': 'TP',
-        'documentType': 'microsoft-word'
-    }
-
-    (pact
-     .given('A document create in Document Service')
-     .expects_to_receive('Provider state attribute')
-     .with_content(expected_event)
-     .with_metadata({
-         'Content-Type': 'application/json'
-     }))
-
-    with pact:
-        # handler needs 'documentType' == 'microsoft-word'
-        MessageHandler(expected_event)
-
-    time.sleep(1)
-    assert isfile(f"pacts/{expected_json}") == 1
+def progressive_delay(file, time_to_wait=10, second_interval=0.5, verbose=False):
+    """
+    progressive delay
+    defaults to wait up to 5 seconds with 0.5 second intervals
+    """
+    time_counter = 0
+    while not isfile(file):
+        time.sleep(second_interval)
+        time_counter += 1
+        if verbose:
+            print(f'Trying for {time_counter*second_interval} seconds')
+        if time_counter > time_to_wait:
+            if verbose:
+                print(f'Already waited {time_counter*second_interval} seconds')
+            break
 
 
 def test_throw_exception_handler(pact):
@@ -92,5 +83,30 @@ def test_throw_exception_handler(pact):
             # handler needs 'documentType' == 'microsoft-word'
             MessageHandler(wrong_event)
 
-    time.sleep(1)
+    progressive_delay(f"pacts/{expected_json}")
     assert isfile(f"pacts/{expected_json}") == 0
+
+
+def test_generate_pact_file(pact):
+    cleanup_json(expected_json)
+
+    expected_event = {
+        'documentName': 'document.doc',
+        'creator': 'TP',
+        'documentType': 'microsoft-word'
+    }
+
+    (pact
+     .given('A document create in Document Service')
+     .expects_to_receive('Description')
+     .with_content(expected_event)
+     .with_metadata({
+         'Content-Type': 'application/json'
+     }))
+
+    with pact:
+        # handler needs 'documentType' == 'microsoft-word'
+        MessageHandler(expected_event)
+
+    progressive_delay(f"pacts/{expected_json}")
+    assert isfile(f"pacts/{expected_json}") == 1
