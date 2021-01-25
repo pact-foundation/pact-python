@@ -40,13 +40,29 @@ define E2E
 endef
 export E2E
 
+
+define messaging
+	echo "messaging make"
+	cd examples/message
+  pip install -r requirements.txt
+  pip install -e ../../
+  pytest
+endef
+export messaging
+
+
 .PHONY: e2e
 e2e:
 	bash -c "$$E2E"
 
+
+.PHONY: messaging
+messaging:
+	bash -c "$$messaging"
+
+
 .PHONY: examples
-examples: e2e
-	
+examples: e2e messaging
 
 
 .PHONY: package

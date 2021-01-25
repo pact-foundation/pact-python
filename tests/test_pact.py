@@ -5,9 +5,10 @@ from unittest import TestCase
 from mock import patch, call, Mock
 from psutil import Process
 
+from pact.broker import Broker
 from pact.consumer import Consumer, Provider
 from pact.matchers import Term
-from pact.constants import MOCK_SERVICE_PATH, BROKER_CLIENT_PATH
+from pact.constants import MOCK_SERVICE_PATH
 from pact.pact import Pact, FromTerms, Request, Response
 from pact import pact as pact
 
@@ -219,149 +220,6 @@ class PactTestCase(TestCase):
         self.assertEqual(target._interactions[0]['response'],
                          {'status': 200, 'body': 'success'})
 
-
-class PactPublishTestCase(PactTestCase):
-    def setUp(self):
-        super(PactPublishTestCase, self).setUp()
-        self.addCleanup(patch.stopall)
-        self.mock_Popen = patch.object(pact, 'Popen', autospec=True).start()
-        self.mock_Popen.return_value.returncode = 0
-        self.mock_fnmatch = patch.object(
-            pact.fnmatch, 'filter', autospec=True).start()
-        self.mock_fnmatch.return_value = ['TestConsumer-TestProvider.json']
-        self.mock_platform = patch.object(
-            pact.platform, 'platform', autospec=True).start()
-
-    def test_publish_fails(self):
-        self.mock_Popen.return_value.returncode = 1
-        pact = Pact(self.consumer, self.provider,
-                    publish_to_broker=True,
-                    broker_base_url="http://localhost")
-
-        with self.assertRaises(RuntimeError):
-            pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=0.0.0',
-            '--broker-base-url=http://localhost',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
-
-    def test_publish_without_broker_url(self):
-        pact = Pact(self.consumer, self.provider, publish_to_broker=True)
-
-        with self.assertRaises(RuntimeError):
-            pact.publish()
-
-    def text_publish_with_broker_url_environment_variable(self):
-        pact = Pact(self.consumer, self.provider, publish_to_broker=True)
-        os.environ["PACT_BROKER_BASE_URL"] = "http://localhost"
-
-        pact.publish()
-        del os.environ["PACT_BROKER_BASE_URL"]
-
-    def test_default_publish(self):
-        pact = Pact(self.consumer, self.provider,
-                    publish_to_broker=True,
-                    broker_base_url="http://localhost")
-
-        pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=0.0.0',
-            '--broker-base-url=http://localhost',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
-
-    def test_basic_authenticated_publish(self):
-        pact = Pact(self.consumer, self.provider,
-                    publish_to_broker=True,
-                    broker_base_url='http://localhost',
-                    broker_username='username',
-                    broker_password='password')
-
-        pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=0.0.0',
-            '--broker-base-url=http://localhost',
-            '--broker-username=username',
-            '--broker-password=password',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
-
-    def test_token_authenticated_publish(self):
-        pact = Pact(self.consumer, self.provider,
-                    publish_to_broker=True,
-                    broker_base_url='http://localhost',
-                    broker_token='token')
-
-        pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=0.0.0',
-            '--broker-base-url=http://localhost',
-            '--broker-token=token',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
-
-    def test_git_tagged_publish(self):
-        pact = Pact(Consumer('TestConsumer', tag_with_git_branch=True),
-                    self.provider,
-                    publish_to_broker=True,
-                    broker_base_url='http://localhost')
-
-        pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=0.0.0',
-            '--broker-base-url=http://localhost',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json'),
-            '--tag-with-git-branch'])
-
-    def test_manual_tagged_publish(self):
-        pact = Pact(Consumer('TestConsumer', tags=['tag1', 'tag2']),
-                    self.provider,
-                    publish_to_broker=True,
-                    broker_base_url='http://localhost')
-
-        pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=0.0.0',
-            '--broker-base-url=http://localhost',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json'),
-            '-t', 'tag1',
-            '-t', 'tag2'])
-
-    def test_versioned_publish(self):
-        pact = Pact(Consumer('TestConsumer', version="1.0.0"),
-                    self.provider,
-                    publish_to_broker=True,
-                    broker_base_url='http://localhost')
-
-        pact.publish()
-
-        self.mock_Popen.assert_called_once_with([
-            BROKER_CLIENT_PATH, 'publish',
-            '--consumer-app-version=1.0.0',
-            '--broker-base-url=http://localhost',
-            os.path.join(pact.pact_dir, 'TestConsumer-TestProvider.json')])
-
-    def test_publish_after_stop_service(self):
-        self.mock_platform.return_value = 'Linux'
-        pact = Pact(self.consumer, self.provider,
-                    publish_to_broker=True, broker_base_url="http://localhost")
-        mock_publish = patch.object(pact, 'publish', autospec=True).start()
-        pact._process = Mock(spec=Popen, pid=999, returncode=0)
-
-        pact.stop_service()
-
-        mock_publish.assert_called_once_with()
-
-
 class PactSetupTestCase(PactTestCase):
     def setUp(self):
         super(PactSetupTestCase, self).setUp()
@@ -437,6 +295,8 @@ class PactStartShutdownServerTestCase(TestCase):
             pact.Pact, '_wait_for_server_start', autospec=True).start()
         self.mock_Pid_exists = patch.object(
             pact.psutil, 'pid_exists', autospec=True).start()
+        self.mock_publish = patch.object(
+            Broker, 'publish', autospec=True).start()
 
     def test_start_fails(self):
         self.mock_Popen.return_value.returncode = 1
@@ -495,6 +355,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--sslkey', '/ssl.key'])
 
     def test_stop_posix(self):
+        self.mock_publish.return_value.returncode = 0
         self.mock_platform.return_value = 'Linux'
         pact = Pact(Consumer('consumer'), Provider('provider'))
         pact._process = Mock(spec=Popen, pid=999, returncode=0)
@@ -502,6 +363,7 @@ class PactStartShutdownServerTestCase(TestCase):
 
         pact._process.terminate.assert_called_once_with()
         pact._process.communicate.assert_called_once_with()
+        self.mock_publish.assert_not_called()
         self.assertFalse(self.mock_Process.called)
 
     def test_stop_windows(self):
@@ -509,7 +371,7 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe = Mock(spec=Process)
         self.mock_Process.return_value.children.return_value = [ruby_exe]
         self.mock_Pid_exists.return_value = False
-        pact = Pact(Consumer('consumer'), Provider('provider'))
+        pact = Pact(Consumer('consumer'), Provider('provider'), publish_to_broker=True)
         pact._process = Mock(spec=Popen, pid=999)
         pact.stop_service()
 
@@ -521,6 +383,7 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe.terminate.assert_called_once_with()
         self.mock_Process.return_value.wait.assert_called_once_with()
         self.mock_Pid_exists.assert_called_once_with(999)
+        self.mock_publish.assert_called_once()
 
     def test_stop_fails_posix(self):
         self.mock_platform.return_value = 'Linux'
@@ -532,6 +395,7 @@ class PactStartShutdownServerTestCase(TestCase):
 
         pact._process.terminate.assert_called_once_with()
         pact._process.communicate.assert_called_once_with()
+        self.mock_publish.assert_not_called()
 
     def test_stop_fails_windows(self):
         self.mock_platform.return_value = 'Windows'
@@ -550,6 +414,7 @@ class PactStartShutdownServerTestCase(TestCase):
             recursive=True)
         self.mock_Process.return_value.wait.assert_called_once_with()
         self.mock_Pid_exists.assert_called_once_with(999)
+        self.mock_publish.assert_not_called()
 
 
 class PactWaitForServerStartTestCase(TestCase):

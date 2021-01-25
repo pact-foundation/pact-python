@@ -1,7 +1,6 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
 
-import fnmatch
 import os
 import platform
 from subprocess import Popen
@@ -11,12 +10,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 
-from .constants import BROKER_CLIENT_PATH
+from .broker import Broker
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
 
 
-class Pact(object):
+class Pact(Broker):
     """
     Represents a contract between a consumer and provider.
 
@@ -42,11 +41,26 @@ class Pact(object):
 
     MANDATORY_FIELDS = {'response', 'description', 'request'}
 
-    def __init__(self, consumer, provider, host_name='localhost', port=1234,
-                 log_dir=None, ssl=False, sslcert=None, sslkey=None,
-                 cors=False, publish_to_broker=False, broker_base_url=None,
-                 broker_username=None, broker_password=None, broker_token=None,
-                 pact_dir=None, version='2.0.0', file_write_mode='overwrite'):
+    def __init__(
+        self,
+        consumer,
+        provider,
+        host_name='localhost',
+        port=1234,
+        log_dir=None,
+        ssl=False,
+        sslcert=None,
+        sslkey=None,
+        cors=False,
+        publish_to_broker=False,
+        broker_base_url=None,
+        broker_username=None,
+        broker_password=None,
+        broker_token=None,
+        pact_dir=None,
+        version='2.0.0',
+        file_write_mode='overwrite',
+    ):
         """
         Create a Pact instance.
 
@@ -109,14 +123,13 @@ class Pact(object):
             `overwrite`.
         :type file_write_mode: str
         """
+        super().__init__(
+            broker_base_url, broker_username, broker_password, broker_token
+        )
+
         scheme = 'https' if ssl else 'http'
         self.uri = '{scheme}://{host_name}:{port}'.format(
             host_name=host_name, port=port, scheme=scheme)
-
-        self.broker_base_url = broker_base_url
-        self.broker_username = broker_username
-        self.broker_password = broker_password
-        self.broker_token = broker_token
         self.consumer = consumer
         self.cors = cors
         self.file_write_mode = file_write_mode
@@ -149,69 +162,21 @@ class Pact(object):
         self._interactions[0]['provider_state'] = provider_state
         return self
 
-    @staticmethod
-    def _normalize_consumer_name(name):
-        return name.lower().replace(' ', '_')
-
-    def publish(self):
-        """Publish the generated pact files to the specified pact broker."""
-        if self.broker_base_url is None \
-                and "PACT_BROKER_BASE_URL" not in os.environ:
-            raise RuntimeError("No pact broker URL specified. "
-                               + "Did you expect the PACT_BROKER_BASE_URL "
-                               + "environment variable to be set?")
-
-        pact_files = map(
-            lambda filename: os.path.join(self.pact_dir, filename),
-            fnmatch.filter(
-                os.listdir(self.pact_dir),
-                self._normalize_consumer_name(self.consumer.name) + '*.json'
-            )
-        )
-        command = [
-            BROKER_CLIENT_PATH,
-            'publish',
-            '--consumer-app-version={}'.format(self.consumer.version)]
-
-        if self.broker_base_url is not None:
-            command.append('--broker-base-url={}'.format(self.broker_base_url))
-        if self.broker_username is not None:
-            command.append('--broker-username={}'.format(self.broker_username))
-        if self.broker_password is not None:
-            command.append('--broker-password={}'.format(self.broker_password))
-        if self.broker_token is not None:
-            command.append('--broker-token={}'.format(self.broker_token))
-
-        command.extend(pact_files)
-
-        if self.consumer.tag_with_git_branch:
-            command.append('--tag-with-git-branch')
-
-        if self.consumer.tags is not None:
-            for tag in self.consumer.tags:
-                command.extend(['-t', tag])
-
-        publish_process = Popen(command)
-        publish_process.wait()
-        if publish_process.returncode != 0:
-            url = self.broker_base_url or os.environ["PACT_BROKER_BASE_URL"]
-            raise RuntimeError(
-                "There was an error while publishing to the "
-                + "pact broker at {}."
-                .format(url))
-
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
         try:
+            interactions_uri = f"{self.uri}/interactions"
             resp = requests.delete(
-                self.uri + '/interactions', headers=self.HEADERS, verify=False)
+                interactions_uri, headers=self.HEADERS, verify=False
+            )
 
             assert resp.status_code == 200, resp.text
             resp = requests.put(
-                self.uri + '/interactions',
+                interactions_uri,
                 headers=self.HEADERS,
                 verify=False,
-                json={"interactions": self._interactions})
+                json={"interactions": self._interactions},
+            )
 
             assert resp.status_code == 200, resp.text
         except AssertionError:
@@ -225,15 +190,16 @@ class Pact(object):
         """
         command = [
             MOCK_SERVICE_PATH,
-            'service',
-            '--host={}'.format(self.host_name),
-            '--port={}'.format(self.port),
-            '--log', '{}/pact-mock-service.log'.format(self.log_dir),
-            '--pact-dir', self.pact_dir,
-            '--pact-file-write-mode', self.file_write_mode,
-            '--pact-specification-version={}'.format(self.version),
-            '--consumer', self.consumer.name,
-            '--provider', self.provider.name]
+            "service",
+            f"--host={self.host_name}",
+            f"--port={format(self.port)}",
+            "--log", f"{self.log_dir}/pact-mock-service.log",
+            "--pact-dir", self.pact_dir,
+            "--pact-file-write-mode", self.file_write_mode,
+            f"--pact-specification-version={self.version}",
+            "--consumer", self.consumer.name,
+            "--provider", self.provider.name,
+        ]
 
         if self.ssl:
             command.append('--ssl')
@@ -264,9 +230,15 @@ class Pact(object):
             self._process.communicate()
             if self._process.returncode != 0:
                 raise RuntimeError(
-                    'There was an error when stopping the Pact mock service.')
-        if (self.publish_to_broker):
-            self.publish()
+                    'There was an error when stopping the Pact mock service.'
+                )
+        if self.publish_to_broker:
+            self.publish(
+                self.consumer.name,
+                self.version,
+                tag_with_git_branch=self.consumer.tag_with_git_branch,
+                consumer_tags=self.consumer.tags,
+            )
 
     def upon_receiving(self, scenario):
         """
@@ -291,11 +263,10 @@ class Pact(object):
         """
         self._interactions = []
         resp = requests.get(
-            self.uri + '/interactions/verification',
-            headers=self.HEADERS, verify=False)
+            self.uri + "/interactions/verification", headers=self.HEADERS, verify=False
+        )
         assert resp.status_code == 200, resp.text
-        resp = requests.post(
-            self.uri + '/pact', headers=self.HEADERS, verify=False)
+        resp = requests.post(self.uri + "/pact", headers=self.HEADERS, verify=False)
         assert resp.status_code == 200, resp.text
 
     def with_request(self, method, path, body=None, headers=None, query=None):
@@ -320,7 +291,8 @@ class Pact(object):
         """
         self._insert_interaction_if_complete()
         self._interactions[0]['request'] = Request(
-            method, path, body=body, headers=headers, query=query).json()
+            method, path, body=body, headers=headers, query=query
+        ).json()
         return self
 
     def will_respond_with(self, status, headers=None, body=None):
@@ -337,9 +309,9 @@ class Pact(object):
         :rtype: Pact
         """
         self._insert_interaction_if_complete()
-        self._interactions[0]['response'] = Response(status,
-                                                     headers=headers,
-                                                     body=body).json()
+        self._interactions[0]['response'] = Response(
+            status, headers=headers, body=body
+        ).json()
         return self
 
     def _insert_interaction_if_complete(self):
@@ -353,8 +325,7 @@ class Pact(object):
         """
         if not self._interactions:
             self._interactions.append({})
-        elif all(field in self._interactions[0]
-                 for field in self.MANDATORY_FIELDS):
+        elif all(field in self._interactions[0] for field in self.MANDATORY_FIELDS):
             self._interactions.insert(0, {})
 
     def _wait_for_server_start(self):
@@ -374,7 +345,8 @@ class Pact(object):
             self._process.terminate()
             self._process.communicate()
             raise RuntimeError(
-                'There was a problem starting the mock service: %s', resp.text)
+                'There was a problem starting the mock service: %s', resp.text
+            )
 
     def __enter__(self):
         """
