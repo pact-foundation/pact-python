@@ -101,6 +101,9 @@ Otherwise, no pact file is generated.
 
 ## Provider
 
+Note: The current example only tests the consumer side.
+In the future, provider tests will also be included.
+
 ```
 +-------------------+          +-----------+
 |(Message Provider) | message  | (Pact)    |
@@ -111,6 +114,9 @@ Otherwise, no pact file is generated.
 
 ## E2E Messaging
 
+Note: The current example only tests the consumer side.
+In the future, provider tests will also be included.
+
 ```
 +-------------------+          +-----------+          +-------------------+
 |(Message Provider) | message  | (Pact)    | message  |(Message Consumer) |
@@ -118,8 +124,6 @@ Otherwise, no pact file is generated.
 |Service            |          |           |          |check valid doc    |
 +-------------------+          +-----------+          +-------------------+
 ```
-
-Note: The current example only tests the consumer side. In the future, provider tests will also be included.
 
 # Setup
 

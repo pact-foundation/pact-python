@@ -1,4 +1,4 @@
-"""pact test for user service client"""
+"""pact test for a message consumer"""
 
 import logging
 import pytest
@@ -14,35 +14,36 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 PACT_BROKER_URL = "http://localhost"
-PACT_FILE = "userserviceclient-userservice.json"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
 PACT_DIR = 'pacts'
 
-consumer_name = 'DetectContentLambda'
-provider_name = 'ContentProvider'
-expected_json = (f"{consumer_name.lower().replace(' ', '_')}_message-"
-                 + f"{provider_name.lower().replace(' ', '_')}_message.json")
+CONSUMER_NAME = 'DetectContentLambda'
+PROVIDER_NAME = 'ContentProvider'
+PACT_FILE = (f"{CONSUMER_NAME.lower().replace(' ', '_')}_message-"
+             + f"{PROVIDER_NAME.lower().replace(' ', '_')}_message.json")
 
 @pytest.fixture(scope='session')
 def pact(request):
     version = request.config.getoption('--publish-pact')
     publish = True if version else False
 
-    pact = MessageConsumer(consumer_name, version=version).has_pact_with(
-        Provider(provider_name),
-        pact_dir=PACT_DIR, publish_to_broker=publish, broker_base_url=PACT_BROKER_URL,
+    pact = MessageConsumer(CONSUMER_NAME, version=version).has_pact_with(
+        Provider(PROVIDER_NAME),
+        publish_to_broker=publish, broker_base_url=PACT_BROKER_URL,
         broker_username=PACT_BROKER_USERNAME, broker_password=PACT_BROKER_PASSWORD)
 
+    # current pact does not consider the PACT_DIR argument, assumes none
     yield pact
 
 
-def cleanup_json(expected_json):
+def cleanup_json(file):
     """
     Remove existing json file before test if any
     """
-    if (isfile(f"pacts/{expected_json}")):
-        remove(f"pacts/{expected_json}")
+    if (isfile(f"{file}")):
+        remove(f"{file}")
+
 
 def progressive_delay(file, time_to_wait=10, second_interval=0.5, verbose=False):
     """
@@ -62,8 +63,7 @@ def progressive_delay(file, time_to_wait=10, second_interval=0.5, verbose=False)
 
 
 def test_throw_exception_handler(pact):
-    cleanup_json(expected_json)
-
+    cleanup_json(PACT_FILE)
     wrong_event = {
         'documentName': 'spreadsheet.xls',
         'creator': 'WI',
@@ -83,12 +83,12 @@ def test_throw_exception_handler(pact):
             # handler needs 'documentType' == 'microsoft-word'
             MessageHandler(wrong_event)
 
-    progressive_delay(f"pacts/{expected_json}")
-    assert isfile(f"pacts/{expected_json}") == 0
+    progressive_delay(f"{PACT_FILE}")
+    assert isfile(f"{PACT_FILE}") == 0
 
 
-def test_generate_pact_file(pact):
-    cleanup_json(expected_json)
+def test_generate_new_pact_file(pact):
+    cleanup_json(PACT_FILE)
 
     expected_event = {
         'documentName': 'document.doc',
@@ -108,5 +108,35 @@ def test_generate_pact_file(pact):
         # handler needs 'documentType' == 'microsoft-word'
         MessageHandler(expected_event)
 
-    progressive_delay(f"pacts/{expected_json}")
-    assert isfile(f"pacts/{expected_json}") == 1
+    progressive_delay(f"{PACT_FILE}")
+    assert isfile(f"{PACT_FILE}") == 1
+
+
+def test_publish_to_broker(pact):
+    """
+    This test does not clean-up previously generated pact.
+    Sample execution where 2 is an arbitrary version:
+
+    `pytest tests/consumer/test_message_consumer.py::test_publish_pact_to_broker`
+
+    `pytest tests/consumer/test_message_consumer.py::test_publish_pact_to_broker --publish-pact 2`
+    """
+    expected_event = {
+        'documentName': 'document.doc',
+        'creator': 'TP',
+        'documentType': 'microsoft-word'
+    }
+
+    (pact
+     .given('A document create in Document Service with broker')
+     .expects_to_receive('Description with broker')
+     .with_content(expected_event)
+     .with_metadata({
+         'Content-Type': 'application/json'
+     }))
+
+    with pact:
+        MessageHandler(expected_event)
+
+    progressive_delay(f"{PACT_FILE}")
+    assert isfile(f"{PACT_FILE}") == 1
