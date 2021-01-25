@@ -2,9 +2,10 @@ from pact import MessageProvider
 
 def success_handler():
     return {
-        'success': True
+        'documentName': 'document.doc',
+        'creator': 'TP',
+        'documentType': 'microsoft-word'
     }
-
 
 def delete_handler():
     return {
@@ -14,13 +15,12 @@ def delete_handler():
 def test_start_http_server():
     provider = MessageProvider(
         message_providers={
-            'Document created successfully': success_handler,
+            'A document create in Document Service': success_handler,
             'Document delete successfully': delete_handler
         },
-        provider='DocumentService',
-        consumer='ExtractContentLambda',
-        pact_dir='pacts',
-        version='3.0.0'
+        provider='ContentProvider',
+        consumer='DetectContentLambda',
+        pact_dir='pacts'
     )
 
     provider.verify()
