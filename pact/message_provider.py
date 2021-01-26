@@ -1,3 +1,4 @@
+"""Contract Message Provider."""
 import os
 import requests
 from requests.adapters import HTTPAdapter
@@ -30,9 +31,7 @@ class MessageProvider(object):
         proxy_host='localhost',
         proxy_port='5000'
     ):
-        """
-        Create the Message Provider class.
-        """
+        """Create an Message Provider instance."""
         self.message_providers = message_providers
         self.provider = provider
         self.consumer = consumer
@@ -98,6 +97,7 @@ class MessageProvider(object):
         assert resp.status_code == 200, resp.text
 
     def verify(self):
+        """Verify pact files with executable verifier."""
         verifier = Verifier(provider=self.provider,
                             provider_base_url=self._proxy_url())
 

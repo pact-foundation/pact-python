@@ -1,3 +1,5 @@
+"""Http Proxy to be used as provider url in verifier."""
+
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 import json
@@ -15,15 +17,14 @@ PROXY_PORT = sys.argv[1]
 
 
 def shutdown_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
+    """Shutdown Http Proxy server."""
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    if shutdown is None:
         raise RuntimeError('Not running with the Werkzeug Server')
-    func()
+    shutdown()
 
 def _match_states(payload):
-    """
-    Match state with provided message handler.
-    """
+    """Match states with provided message handlers."""
     log.debug(f'Find handler from payload: {payload}')
     global handlers
     states = handlers['messageHandlers']
@@ -38,15 +39,18 @@ def _match_states(payload):
 
 @app.route('/', methods=['POST'])
 def home():
-    res = jsonify(sys.argv[1])
+    """Match states with provided message handlers."""
+    payload = request.json
+    message = _match_states(payload)
+    res = jsonify({
+        'contents': message
+    })
     res.status_code = 200
     return res
 
 @app.route('/health', methods=['GET'])
 def health():
-    """
-    Check whether the server is available before setting up states.
-    """
+    """Check whether the server is available before setting up states."""
     res = jsonify({
         'ping': 'pong'
     })
@@ -55,9 +59,7 @@ def health():
 
 @app.route("/setup", methods=['POST'])
 def setup():
-    """
-    Setup message handers for provided states.
-    """
+    """Endpoint to setup states."""
     global handlers
     payload = request.json
     handlers = payload
@@ -67,13 +69,13 @@ def setup():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
+    """Shutdown Http Proxy server."""
     shutdown_server()
     return 'Server shutting down...'
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
-
     res = e.get_response()
 
     res.data = json.dumps({
