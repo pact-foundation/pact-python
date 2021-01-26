@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 import json
-import sys
 import logging
 import sys
 log = logging.getLogger(__name__)
