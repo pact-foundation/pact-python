@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
-
+from werkzeug.exceptions import HTTPException
+import json
+import sys
 import logging
 import sys
 log = logging.getLogger(__name__)
@@ -10,8 +12,15 @@ app = Flask(__name__)
 global handlers
 handlers = {}
 
-# log.info('Number of arguments:', len(sys.argv), 'arguments.')
-# log.info('Argument List:', str(sys.argv))
+PROXY_PORT = sys.argv[1]
+
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+
 def _match_states(payload):
     """
     Match state with provided message handler.
@@ -34,6 +43,17 @@ def home():
     res.status_code = 200
     return res
 
+@app.route('/health', methods=['GET'])
+def health():
+    """
+    Check whether the server is available before setting up states.
+    """
+    res = jsonify({
+        'ping': 'pong'
+    })
+    res.status_code = 200
+    return res
+
 @app.route("/setup", methods=['POST'])
 def setup():
     """
@@ -46,6 +66,25 @@ def setup():
     res.status_code = 201
     return res
 
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+
+    res = e.get_response()
+
+    res.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    res.content_type = "application/json"
+    return res
+
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=PROXY_PORT)

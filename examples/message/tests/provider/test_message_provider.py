@@ -23,4 +23,5 @@ def test_start_http_server():
         pact_dir='pacts'
     )
 
-    provider.verify()
+    with provider:
+        provider.verify()
