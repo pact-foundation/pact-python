@@ -7,16 +7,10 @@ def success_handler():
         'documentType': 'microsoft-word'
     }
 
-def delete_handler():
-    return {
-        'message_delete': True
-    }
-
-def test_start_http_server():
+def test_a_document_create_successfully():
     provider = MessageProvider(
         message_providers={
-            'A document create in Document Service': success_handler,
-            'Document delete successfully': delete_handler
+            'A document create in Document Service': success_handler
         },
         provider='ContentProvider',
         consumer='DetectContentLambda',
