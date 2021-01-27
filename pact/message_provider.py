@@ -4,7 +4,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 from subprocess import Popen, PIPE
-
 from .verifier import Verifier
 
 class MessageProvider(object):
@@ -26,12 +25,12 @@ class MessageProvider(object):
         message_providers,
         provider,
         consumer,
-        pact_dir=os.path.dirname(os.path.realpath(__file__)),
+        pact_dir=os.getcwd(),
         version="3.0.0",
         proxy_host='localhost',
         proxy_port='5000'
     ):
-        """Create an Message Provider instance."""
+        """Create a Message Provider instance."""
         self.message_providers = message_providers
         self.provider = provider
         self.consumer = consumer
@@ -70,19 +69,18 @@ class MessageProvider(object):
         retries = Retry(total=9, backoff_factor=0.5)
         http_mount = 'http://'
         s.mount(http_mount, HTTPAdapter(max_retries=retries))
-
         resp = s.get(f'{self._proxy_url()}/health', verify=False)
+
         if resp.status_code != 200:
-            self._process.terminate()
-            self._process.communicate()
+            self._stop_proxy()
             raise RuntimeError(
                 'There was a problem starting the proxy: %s', resp.text
             )
 
     def _start_proxy(self):
         print('====== Start Http Proxy Server======')
-        directory = os.path.dirname(os.path.realpath(__file__))
-        cmd = f'python {directory}/http_proxy.py {self.proxy_port} >/dev/null &'
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        cmd = f'python {current_dir}/http_proxy.py {self.proxy_port}'
         self._process = Popen(cmd.split(), stdout=PIPE)
         self._wait_for_server_start()
         self._setup_states()
@@ -91,8 +89,9 @@ class MessageProvider(object):
         """Stop the Http Proxy.
 
         For some reason, I cannot stop the Flask process using with Popen process.
-        The workaround is to use the endpoint to stop the application.
+        The workaround is to use the API endpoint.
         """
+        print('====== Stop Http Proxy Server======')
         resp = requests.post(f'{self._proxy_url()}/shutdown', verify=False,)
         assert resp.status_code == 200, resp.text
 
@@ -103,7 +102,7 @@ class MessageProvider(object):
 
         output, _ = verifier.verify_pacts(f'{self.pact_dir}/{self._pact_file()}',
                                           verbose=False)
-        assert (output == 1)
+        assert (output == 0)
 
     def __enter__(self):
         """
@@ -119,10 +118,5 @@ class MessageProvider(object):
 
         Stop the Http Proxy.
         """
-        if (exc_type, exc_val, exc_tb) != (None, None, None):
-            if exc_type is not None:
-                self._stop_proxy()
-                return False
-
         self._stop_proxy()
         return True
