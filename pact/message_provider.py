@@ -103,7 +103,7 @@ class MessageProvider(object):
 
         output, _ = verifier.verify_pacts(f'{self.pact_dir}/{self._pact_file()}',
                                           verbose=False)
-        assert (output == 0)
+        assert (output == 1)
 
     def __enter__(self):
         """

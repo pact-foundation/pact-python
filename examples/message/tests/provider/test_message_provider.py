@@ -1,4 +1,5 @@
 from pact import MessageProvider
+import os
 
 def success_handler():
     return {
@@ -14,7 +15,7 @@ def test_a_document_create_successfully():
         },
         provider='ContentProvider',
         consumer='DetectContentLambda',
-        pact_dir='pacts'
+        pact_dir=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     )
 
     with provider:

@@ -41,7 +41,7 @@ class MessageHandler(object):
 ```
 
 Below is a snippet from a test where the message handler has no error.
-Since the expected event contains a key `documentType` with value `microsoft-word`, message handler does not throw an error and a pact file `f"pacts/{expected_json}"` is expected to be generated.
+Since the expected event contains a key `documentType` with value `microsoft-word`, message handler does not throw an error and a pact file `f"{PACT_FILE}""` is expected to be generated.
 
 ```python
 def test_generate_new_pact_file(pact):
@@ -69,7 +69,7 @@ def test_generate_new_pact_file(pact):
     assert isfile(f"{PACT_FILE}") == 1
 ```
 
-For a similar test where the event does not contain a key `documentType` with value `microsoft-word`, a `CustomError` is generated and there there is no generated json file `f"pacts/{expected_json}"`.
+For a similar test where the event does not contain a key `documentType` with value `microsoft-word`, a `CustomError` is generated and there there is no generated json file `f"{PACT_FILE}"`.
 
 ```python
 def test_throw_exception_handler(pact):
@@ -96,8 +96,6 @@ def test_throw_exception_handler(pact):
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 0
 ```
-
-Otherwise, no pact file is generated.
 
 ## Provider
 
