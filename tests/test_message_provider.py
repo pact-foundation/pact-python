@@ -1,6 +1,7 @@
 import os
 from mock import patch, Mock
 from unittest import TestCase
+from pathlib import Path
 
 from pact.message_provider import MessageProvider
 from pact import message_provider as message_provider
@@ -75,16 +76,28 @@ class MessageProviderContextManagerTestCase(MessageProviderTestCase):
 class StartProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StartProxyTestCase, self).setUp()
-
+    @patch.object(Path, 'exists', return_value=True)
     @patch('pact.MessageProvider._setup_states')
     @patch('pact.MessageProvider._wait_for_server_start')
     @patch.object(message_provider, 'Popen')
-    def test_start_proxy_successfully(self, mock_popen, mock_wait_for_server_start, mock_setup_states):
+    def test_start_proxy_successfully(self, mock_popen, mock_wait_for_server_start, mock_setup_states, mock_path_exist):
         self.provider._start_proxy()
 
         mock_wait_for_server_start.assert_called_once()
         mock_setup_states.assert_called_once()
         mock_popen.assert_called_once()
+
+    @patch.object(Path, 'exists', return_value=False)
+    @patch('pact.MessageProvider._setup_states')
+    @patch('pact.MessageProvider._wait_for_server_start')
+    @patch.object(message_provider, 'Popen')
+    def test_pact_files_do_not_exist(self, mock_popen, mock_wait_for_server_start, mock_setup_states, mock_path_exist):
+        with self.assertRaises(FileNotFoundError):
+            self.provider._start_proxy()
+
+        mock_wait_for_server_start.assert_not_called()
+        mock_setup_states.assert_not_called()
+        mock_popen.assert_not_called()
 
 class StopProxyTestCase(MessageProviderTestCase):
     def setUp(self):
