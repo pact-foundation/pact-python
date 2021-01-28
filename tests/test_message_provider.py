@@ -76,6 +76,7 @@ class MessageProviderContextManagerTestCase(MessageProviderTestCase):
 class StartProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StartProxyTestCase, self).setUp()
+
     @patch.object(Path, 'exists', return_value=True)
     @patch('pact.MessageProvider._setup_states')
     @patch('pact.MessageProvider._wait_for_server_start')
