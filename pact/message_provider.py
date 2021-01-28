@@ -1,5 +1,6 @@
 """Contract Message Provider."""
 import os
+from pathlib import Path
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
@@ -77,8 +78,20 @@ class MessageProvider(object):
                 'There was a problem starting the proxy: %s', resp.text
             )
 
+    def _is_pact_files_exist(self):
+        """
+        Validate pact files.
+
+        :rtype: None
+        :raises FileNotFoundError: pact files don't exist.
+        """
+        pact_files = Path(f'{self.pact_dir}/{self._pact_file()}')
+        if not pact_files.exists():
+            raise FileNotFoundError('No such file or directory: %s' % (pact_files))
+
     def _start_proxy(self):
         print('====== Start Http Proxy Server======')
+        self._is_pact_files_exist()
         current_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = f'python {current_dir}/http_proxy.py {self.proxy_port}'
         self._process = Popen(cmd.split(), stdout=PIPE)
@@ -97,12 +110,11 @@ class MessageProvider(object):
 
     def verify(self):
         """Verify pact files with executable verifier."""
+        pact_files = f'{self.pact_dir}/{self._pact_file()}'
         verifier = Verifier(provider=self.provider,
-                            provider_base_url=self._proxy_url())
-
-        output, _ = verifier.verify_pacts(f'{self.pact_dir}/{self._pact_file()}',
-                                          verbose=False)
-        assert (output == 0)
+                        provider_base_url=self._proxy_url())
+        return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
+        assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
     def __enter__(self):
         """
@@ -116,7 +128,12 @@ class MessageProvider(object):
         """
         Exit a Python context.
 
-        Stop the Http Proxy.
+        Return False to cascade the exception in context manager body or __enter__ function.
+        Otherwise it will be supressed and the test will always pass.
         """
+        if (exc_type, exc_val, exc_tb) != (None, None, None):
+            if exc_type is not None:
+                self._stop_proxy()
+                return False
         self._stop_proxy()
         return True
