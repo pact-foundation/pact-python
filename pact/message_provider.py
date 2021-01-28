@@ -112,7 +112,7 @@ class MessageProvider(object):
         """Verify pact files with executable verifier."""
         pact_files = f'{self.pact_dir}/{self._pact_file()}'
         verifier = Verifier(provider=self.provider,
-                        provider_base_url=self._proxy_url())
+                            provider_base_url=self._proxy_url())
         return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
