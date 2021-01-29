@@ -19,7 +19,7 @@ PACT_BROKER_PASSWORD = "pactbroker"
 PACT_DIR = 'pacts'
 
 CONSUMER_NAME = 'DetectContentLambda'
-PROVIDER_NAME = 'ContentProvider'
+PROVIDER_NAME = 'DocumentService'
 PACT_FILE = (f"{CONSUMER_NAME.lower().replace(' ', '_')}_message-"
              + f"{PROVIDER_NAME.lower().replace(' ', '_')}_message.json")
 
@@ -65,14 +65,13 @@ def progressive_delay(file, time_to_wait=10, second_interval=0.5, verbose=False)
 def test_throw_exception_handler(pact):
     cleanup_json(PACT_FILE)
     wrong_event = {
-        'documentName': 'spreadsheet.xls',
-        'creator': 'WI',
-        'documentType': 'microsoft-excel'
+        "event": "ObjectCreated:Put",
+        "documentType": "application/jpg"
     }
 
     (pact
-     .given('Another document in Document Service')
-     .expects_to_receive('Description')
+     .given('Does not matter')
+     .expects_to_receive('it wont make it to the pact file')
      .with_content(wrong_event)
      .with_metadata({
          'Content-Type': 'application/json'
@@ -87,25 +86,25 @@ def test_throw_exception_handler(pact):
     assert isfile(f"{PACT_FILE}") == 0
 
 
-def test_generate_new_pact_file(pact):
+def test_a_document_created_successfully(pact):
     cleanup_json(PACT_FILE)
 
     expected_event = {
-        'documentName': 'document.doc',
-        'creator': 'TP',
-        'documentType': 'microsoft-word'
+        "event": "ObjectCreated:Put",
+        "bucket": "bucket_name",
+        "key": "path_to_file_in_s3.pdf",
+        "documentType": "application/pdf"
     }
 
     (pact
-     .given('A document create in Document Service')
-     .expects_to_receive('Description')
+     .given('A document created successfully')
+     .expects_to_receive('Document created in Document Service')
      .with_content(expected_event)
      .with_metadata({
          'Content-Type': 'application/json'
      }))
 
     with pact:
-        # handler needs 'documentType' == 'microsoft-word'
         MessageHandler(expected_event)
 
     progressive_delay(f"{PACT_FILE}")
@@ -122,14 +121,15 @@ def test_publish_to_broker(pact):
     `pytest tests/consumer/test_message_consumer.py::test_publish_pact_to_broker --publish-pact 2`
     """
     expected_event = {
-        'documentName': 'document.doc',
-        'creator': 'TP',
-        'documentType': 'microsoft-word'
+        "event": "ObjectCreated:Delete",
+        "bucket": "bucket_name",
+        "key": "existing_file_in_s3.pdf",
+        "documentType": "application/pdf"
     }
 
     (pact
-     .given('A document create in Document Service with broker')
-     .expects_to_receive('Description with broker')
+     .given('A document deleted successfully')
+     .expects_to_receive('Document deleted in Document Service')
      .with_content(expected_event)
      .with_metadata({
          'Content-Type': 'application/json'
