@@ -84,15 +84,6 @@ class StartProxyTestCase(MessageProviderTestCase):
         mock_wait_for_server_start.assert_called_once()
         mock_setup_states.assert_called_once()
 
-    @patch('pact.MessageProvider._setup_states')
-    @patch('pact.MessageProvider._wait_for_server_start')
-    def test_pact_files_do_not_exist(self, mock_wait_for_server_start, mock_setup_states):
-        with self.assertRaises(FileNotFoundError):
-            self.provider._start_proxy()
-
-        mock_wait_for_server_start.assert_not_called()
-        mock_setup_states.assert_not_called()
-
 class StopProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StopProxyTestCase, self).setUp()
