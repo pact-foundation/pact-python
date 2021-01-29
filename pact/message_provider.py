@@ -1,6 +1,5 @@
 """Contract Message Provider."""
 import os
-from pathlib import Path
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
@@ -78,20 +77,8 @@ class MessageProvider(object):
                 'There was a problem starting the proxy: %s', resp.text
             )
 
-    def _is_pact_files_exist(self):
-        """
-        Validate pact files.
-
-        :rtype: None
-        :raises FileNotFoundError: pact files don't exist.
-        """
-        pact_files = Path(f'{self.pact_dir}/{self._pact_file()}')
-        if not pact_files.exists():
-            raise FileNotFoundError('No such file or directory: %s' % (pact_files))
-
     def _start_proxy(self):
         print('====== Start Http Proxy Server======')
-        self._is_pact_files_exist()
         current_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = f'python {current_dir}/http_proxy.py {self.proxy_port}'
         self._process = Popen(cmd.split(), stdout=PIPE)

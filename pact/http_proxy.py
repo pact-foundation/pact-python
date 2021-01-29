@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -14,7 +14,6 @@ global handlers
 handlers = {}
 
 PROXY_PORT = sys.argv[1]
-
 
 def shutdown_server():
     """Shutdown Http Proxy server."""
@@ -85,6 +84,20 @@ def handle_exception(e):
     })
     res.content_type = "application/json"
     return res
+
+@app.errorhandler(RuntimeError)
+def handle_runtime_error(e):
+    """Handle the RuntimeError.
+
+    Handle HTML stacktrace when RuntimeError occurs due to no matched handler.
+    when the verifier fails.
+    """
+    response = json.dumps({
+        "code": 500,
+        "name": "RuntimeError",
+        "description": str(e),
+    })
+    return response
 
 
 if __name__ == '__main__':
