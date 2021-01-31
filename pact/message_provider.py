@@ -6,6 +6,10 @@ from requests.packages.urllib3 import Retry
 from subprocess import Popen, PIPE
 from .verifier import Verifier
 
+import logging
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 class MessageProvider(object):
     """
     A Pact message provider.
@@ -36,7 +40,6 @@ class MessageProvider(object):
         self.consumer = consumer
         self.version = version
         self.pact_dir = pact_dir
-
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
         self._process = None
@@ -48,15 +51,15 @@ class MessageProvider(object):
         return f'{self.consumer}_message-{self.provider}_message.json'.lower().replace(' ', '_')
 
     def _setup_states(self):
-        handlers = {}
+        message_handlers = {}
         for key, handler in self.message_providers.items():
-            handlers[f'{key}'] = handler()
+            message_handlers[f'{key}'] = handler()
 
         resp = requests.post(f'{self._proxy_url()}/setup',
                              verify=False,
-                             json={"messageHandlers": handlers},)
+                             json={"messageHandlers": message_handlers})
         assert resp.status_code == 201, resp.text
-        return handlers
+        return message_handlers
 
     def _wait_for_server_start(self):
         """
@@ -69,8 +72,7 @@ class MessageProvider(object):
         retries = Retry(total=9, backoff_factor=0.5)
         http_mount = 'http://'
         s.mount(http_mount, HTTPAdapter(max_retries=retries))
-        resp = s.get(f'{self._proxy_url()}/health', verify=False)
-
+        resp = s.get(f'{self._proxy_url()}/ping', verify=False)
         if resp.status_code != 200:
             self._stop_proxy()
             raise RuntimeError(
@@ -78,7 +80,7 @@ class MessageProvider(object):
             )
 
     def _start_proxy(self):
-        print('====== Start Http Proxy Server======')
+        log.info('Start Http Proxy Server')
         current_dir = os.path.dirname(os.path.realpath(__file__))
         cmd = f'python {current_dir}/http_proxy.py {self.proxy_port}'
         self._process = Popen(cmd.split(), stdout=PIPE)
@@ -91,7 +93,7 @@ class MessageProvider(object):
         For some reason, I cannot stop the Flask process using with Popen process.
         The workaround is to use the API endpoint.
         """
-        print('====== Stop Http Proxy Server======')
+        log.info('Stop Http Proxy Serve')
         resp = requests.post(f'{self._proxy_url()}/shutdown', verify=False,)
         assert resp.status_code == 200, resp.text
 
@@ -115,7 +117,7 @@ class MessageProvider(object):
         """
         Exit a Python context.
 
-        Return False to cascade the exception in context manager body or __enter__ function.
+        Return False to cascade the exception in context manager's body.
         Otherwise it will be supressed and the test will always pass.
         """
         if (exc_type, exc_val, exc_tb) != (None, None, None):

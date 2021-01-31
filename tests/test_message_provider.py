@@ -72,6 +72,15 @@ class MessageProviderContextManagerTestCase(MessageProviderTestCase):
         mock_start_proxy.assert_called_once()
         mock_stop_proxy.assert_called_once()
 
+    @patch('pact.MessageProvider.verify', side_effect=RuntimeError('boom!'))
+    @patch('pact.MessageProvider._stop_proxy')
+    def test_exception_in_context_manager_body_will_cascade(self, mock_stop_proxy, mock_verify):
+        with self.assertRaises(RuntimeError):
+            with self.provider:
+                self.provider.verify()
+
+        mock_stop_proxy.assert_called_once()
+
 class StartProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StartProxyTestCase, self).setUp()
@@ -92,7 +101,7 @@ class StopProxyTestCase(MessageProviderTestCase):
     def test_shutdown_successfully(self, mock_requests):
         mock_requests.return_value = self._mock_response(content="success")
         self.provider._stop_proxy()
-        mock_requests.assert_called_once_with('http://localhost:5000/shutdown', verify=False)
+        mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/shutdown', verify=False)
 
 class SetupStateTestCase(MessageProviderTestCase):
     def setUp(self):
@@ -107,7 +116,8 @@ class SetupStateTestCase(MessageProviderTestCase):
                 'a document created successfully': self.message_handler()
             }
         }
-        mock_requests.assert_called_once_with('http://localhost:5000/setup', verify=False, json=expected_payload)
+
+        mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/setup', verify=False, json=expected_payload)
 
 class WaitForServerStartTestCase(MessageProviderTestCase):
     def setUp(self):
@@ -124,7 +134,7 @@ class WaitForServerStartTestCase(MessageProviderTestCase):
         session = mock_Session.return_value
         session.mount.assert_called_once_with(
             'http://', mock_HTTPAdapter.return_value)
-        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/health', verify=False)
+        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/ping', verify=False)
         mock_HTTPAdapter.assert_called_once_with(
             max_retries=mock_Retry.return_value)
         mock_Retry.assert_called_once_with(total=9, backoff_factor=0.5)
@@ -143,7 +153,7 @@ class WaitForServerStartTestCase(MessageProviderTestCase):
         session = mock_Session.return_value
         session.mount.assert_called_once_with(
             'http://', mock_HTTPAdapter.return_value)
-        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/health', verify=False)
+        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/ping', verify=False)
         mock_HTTPAdapter.assert_called_once_with(
             max_retries=mock_Retry.return_value)
         mock_Retry.assert_called_once_with(total=9, backoff_factor=0.5)
