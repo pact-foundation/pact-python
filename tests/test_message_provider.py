@@ -1,5 +1,5 @@
 import os
-import pytest
+# import pytest
 from mock import patch, Mock
 from unittest import TestCase
 
@@ -73,28 +73,28 @@ class MessageProviderContextManagerTestCase(MessageProviderTestCase):
         mock_start_proxy.assert_called_once()
         mock_stop_proxy.assert_called_once()
 
-    @pytest.mark.skip(reason="Caused BrokenPipeError in PactStartShutdownServerTestCase::test_stop_fails_posix. Need to investigate")
-    @patch('pact.MessageProvider.verify', side_effect=RuntimeError('boom!'))
-    @patch('pact.MessageProvider._stop_proxy')
-    def test_exception_in_context_manager_body_will_cascade(self, mock_stop_proxy, mock_verify):
-        with self.assertRaises(RuntimeError):
-            with self.provider:
-                self.provider.verify()
+    # @pytest.mark.skip(reason="Caused BrokenPipeError in PactStartShutdownServerTestCase::test_stop_fails_posix. Need to investigate")
+    # @patch('pact.MessageProvider.verify', side_effect=RuntimeError('boom!'))
+    # @patch('pact.MessageProvider._stop_proxy')
+    # def test_exception_in_context_manager_body_will_cascade(self, mock_stop_proxy, mock_verify):
+    #     with self.assertRaises(RuntimeError):
+    #         with self.provider:
+    #             self.provider.verify()
 
-        mock_stop_proxy.assert_called_once()
+    #     mock_stop_proxy.assert_called_once()
 
 class StartProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StartProxyTestCase, self).setUp()
 
-    @pytest.mark.skip(reason="Caused BrokenPipeError in PactStartShutdownServerTestCase::test_stop_fails_posix. Need to investigate")
-    @patch('pact.MessageProvider._setup_states')
-    @patch('pact.MessageProvider._wait_for_server_start')
-    def test_start_proxy_successfully(self, mock_wait_for_server_start, mock_setup_states):
-        self.provider._start_proxy()
+    # @pytest.mark.skip(reason="Caused BrokenPipeError in PactStartShutdownServerTestCase::test_stop_fails_posix. Need to investigate")
+    # @patch('pact.MessageProvider._setup_states')
+    # @patch('pact.MessageProvider._wait_for_server_start')
+    # def test_start_proxy_successfully(self, mock_wait_for_server_start, mock_setup_states):
+    #     self.provider._start_proxy()
 
-        mock_wait_for_server_start.assert_called_once()
-        mock_setup_states.assert_called_once()
+    #     mock_wait_for_server_start.assert_called_once()
+    #     mock_setup_states.assert_called_once()
 
 class StopProxyTestCase(MessageProviderTestCase):
     def setUp(self):
