@@ -32,7 +32,7 @@ class MessageProvider(object):
         pact_dir=os.getcwd(),
         version="3.0.0",
         proxy_host='localhost',
-        proxy_port='5000'
+        proxy_port='1234'
     ):
         """Create a Message Provider instance."""
         self.message_providers = message_providers
@@ -82,7 +82,7 @@ class MessageProvider(object):
     def _start_proxy(self):
         log.info('Start Http Proxy Server')
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = f'python {current_dir}/http_proxy.py {self.proxy_port}'
+        cmd = f'python {current_dir}/http_proxy.py {self.proxy_port} >/dev/null &'
         self._process = Popen(cmd.split(), stdout=PIPE)
         self._wait_for_server_start()
         self._setup_states()
