@@ -84,7 +84,7 @@ class Broker():
             for tag in consumer_tags:
                 command.extend(['-t', tag])
 
-        print(f"PactBroker command: {command}")
+        log.debug(f"PactBroker publish command: {command}")
 
         publish_process = Popen(command)
         publish_process.wait()
