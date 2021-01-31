@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 localstack = LocalStack()
-PROXY_PORT = sys.argv[1]
+PROXY_PORT = 1234
 
 def shutdown_server():
     """Shutdown Http Proxy server."""
