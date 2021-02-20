@@ -1,8 +1,8 @@
 # pact-python
 
-[![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
-[![Build Status](https://travis-ci.org/pact-foundation/pact-python.svg?branch=master)](https://travis-ci.org/pact-foundation/pact-python)
+[![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
 [![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
+![Build and Test](https://github.com/pact-foundation/pact-python/workflows/Build%20and%20Test/badge.svg)
 
 Python version of Pact. Enables consumer driven contract testing,
 providing a mock service and DSL for the consumer project, and
@@ -22,8 +22,8 @@ pip install pact-python
 ```
 
 ## Getting started
-
-A guide follows but if you go to the [e2e examples](examples/e2e/README.md). This has a consumer, provider and pact-broker set of tests.
+<!-- Absolute link for rendering page in docs.pact.io -->
+A guide follows but if you go to the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e). This has a consumer, provider and pact-broker set of tests.
 
 ## Writing a Pact
 
@@ -293,7 +293,11 @@ For more information see [Matching](https://docs.pact.io/getting_started/matchin
 ## Verifying Pacts Against a Service
 
 In addition to writing Pacts for Python consumers, you can also verify those Pacts
-against a provider of any language. After installing pact-python a `pact-verifier`
+against a provider of any language. There are two ways to do this.
+
+### CLI
+
+After installing pact-python a `pact-verifier`
 application should be available. To get details about its use you can call it with the
 help argument:
 
@@ -343,9 +347,15 @@ requests.
 
 The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', state: 'a thing exists'}`.
 
+###### --pact-broker-url
+
+Base URl for the Pact Broker instance to publish pacts to. Can also be specified via the environment variable
+`PACT_BROKER_BASE_URL`.
+
 ###### --pact-broker-username
 
-The username to use when contacting the Pact Broker.
+The username to use when contacting the Pact Broker. Can also be specified via the environment variable
+`PACT_BROKER_USERNAME`.
 
 ###### --pact-broker-password
 
@@ -356,6 +366,49 @@ as the environment variable `PACT_BROKER_PASSWORD`.
 
 The bearer token to use when contacting the Pact Broker. You can also specify this value
 as the environment variable `PACT_BROKER_TOKEN`.
+
+###### --consumer-version-tag
+
+Retrieve the latest pacts with this consumer version tag. Used in conjunction with `--provider`.
+May be specified multiple times.
+
+###### --consumer-version-selector
+
+You can also retrieve pacts with consumer version selector, a more flexible approach in specifying which pacts you need.
+May be specified multiple times. Read more about selectors [here](https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/).
+
+###### --provider-version-tag
+
+Tag to apply to the provider application version. May be specified multiple times.
+
+###### --custom-provider-header
+
+Header to add to provider state set up and pact verification requests e.g.`Authorization: Basic cGFjdDpwYWN0`
+May be specified multiple times.
+
+###### -t, --timeout
+
+The duration in seconds we should wait to confirm that the verification process was successful. Defaults to 30.
+
+###### -a, --provider-app-version
+
+The provider application version. Required for publishing verification results.
+
+###### -r, --publish-verification-results
+
+Publish verification results to the broker.
+
+### Python API
+You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice.
+
+```python
+verifier = Verifier(provider='UserService',
+                    provider_base_url=PACT_URL)
+
+output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+
+```
+You can see more details in the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e/tests/provider/test_provider.py).
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
@@ -376,7 +429,8 @@ on the provider application or a separate one. Some strategies for managing stat
 For more information about provider states, refer to the [Pact documentation] on [Provider States].
 
 # Development
-Please read [CONTRIBUTING.md](CONTRIBUTING.md)
+<!-- Absolute link for rendering page in docs.pact.io -->
+Please read [CONTRIBUTING.md](https://github.com/pact-foundation/pact-python/blob/master/CONTRIBUTING.md)
 
 To setup a development environment:
 
@@ -405,21 +459,21 @@ End to end: `make e2e`
 
 ## Contact
 
-Join us in slack: [![slack](http://slack.pact.io/badge.svg)](http://slack.pact.io)
+Join us in slack: [![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
 
 or
 
-- Twitter: [@pact_up]
-- Stack Overflow: stackoverflow.com/questions/tagged/pact
+- Twitter: [@pact_up](https://twitter.com/pact_up)
+- Stack Overflow: [stackoverflow.com/questions/tagged/pact](https://stackoverflow.com/questions/tagged/pact)
 
 [bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
-[Pact]: https://www.gitbook.com/book/pact-foundation/pact/details
-[Pact Broker]: https://docs.pact.io/documentation/sharings_pacts.html
+[Pact]: https://docs.pact.io
+[Pact Broker]: https://docs.pact.io/pact_broker
 [Pact documentation]: https://docs.pact.io/
-[Pact Mock Service]: https://github.com/bethesque/pact-mock_service
+[Pact Mock Service]: https://github.com/pact-foundation/pact-mock_service
 [Pact specification]: https://github.com/pact-foundation/pact-specification
-[Provider States]: https://docs.pact.io/documentation/provider_states.html
+[Provider States]: https://docs.pact.io/getting_started/provider_states
 [pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
 [pyenv]: https://github.com/pyenv/pyenv
 [rvm]: https://rvm.io/

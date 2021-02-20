@@ -1,3 +1,3 @@
 """Pact version info."""
 
-__version__ = '1.1.0b0'
+__version__ = '2.0.0b0'

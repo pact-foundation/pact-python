@@ -34,7 +34,7 @@ class ConsumerTestCase(TestCase):
     def test_has_pact_with_customer_all_options(self):
         result = self.consumer.has_pact_with(
             self.provider, host_name='example.com', port=1111,
-            log_dir='/logs', ssl=True,  sslcert='/ssl.cert', sslkey='ssl.pem',
+            log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='ssl.pem',
             cors=True, pact_dir='/pacts', version='3.0.0',
             file_write_mode='merge')
 

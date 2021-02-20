@@ -13,7 +13,7 @@ from setuptools.command.install import install
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.84.0'
+PACT_STANDALONE_VERSION = '1.88.3'
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -31,7 +31,9 @@ class PactPythonDevelopCommand(develop):
     `pip install -e` it will download and unpack the appropriate Pact
     mock service and provider verifier.
     """
+
     def run(self):
+        """Install ruby command."""
         develop.run(self)
         bin_path = os.path.join(os.path.dirname(__file__), 'pact', 'bin')
         if not os.path.exists(bin_path):
@@ -47,7 +49,9 @@ class PactPythonInstallCommand(install):
     Installs the Python package and unpacks the platform appropriate version
     of the Ruby mock service and provider verifier.
     """
+
     def run(self):
+        """Install python binary."""
         install.run(self)
         bin_path = os.path.join(self.install_lib, 'pact', 'bin')
         os.mkdir(bin_path)
@@ -133,10 +137,10 @@ if __name__ == '__main__':
         url='https://github.com/pact-foundation/pact-python',
         entry_points='''
             [console_scripts]
-            pact-verifier=pact.verify:main
+            pact-verifier=pact.cli.verify:main
         ''',
         install_requires=dependencies,
-        packages=['pact'],
+        packages=['pact', 'pact.cli'],
         package_data={'pact': ['bin/*']},
         package_dir={'pact': 'pact'},
         license='MIT License')
