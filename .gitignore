@@ -101,3 +101,6 @@ ENV/
 
 
 .noseids
+
+# Generated pact directories
+pacts/

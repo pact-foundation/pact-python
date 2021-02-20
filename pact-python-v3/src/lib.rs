@@ -1,22 +1,26 @@
-use cpython::*;
-use log::*;
-use env_logger::{Builder, Target};
-use std::str::FromStr;
-use std::collections::HashMap;
-use pact_matching::models::*;
-use pact_matching::models::provider_states::ProviderState;
-use pact_matching::models::matchingrules::MatchingRules;
-use pact_matching::models::generators::Generators;
 use std::cell::RefCell;
+use std::collections::HashMap;
+use std::str::FromStr;
+use std::sync::Mutex;
+
+use cpython::*;
+use env_logger::{Builder, Target};
+use lazy_static::*;
+use log::*;
 use maplit::*;
-use serde_json::{Value, json};
+use bytes::Bytes;
+use pact_matching::models::*;
+use pact_matching::models::content_types::ContentType;
+use pact_matching::models::generators::Generators;
+use pact_matching::models::matchingrules::MatchingRules;
+use pact_matching::models::provider_states::ProviderState;
+use pact_matching::time_utils::generate_string;
+use pact_mock_server::mock_server::MockServerConfig;
+use pact_mock_server::server_manager::ServerManager;
+use pact_mock_server_ffi::bodies::{process_array, process_object};
+use serde_json::{json, Value};
 use serde_json::map::Map;
 use uuid::Uuid;
-use lazy_static::*;
-use pact_mock_server::server_manager::ServerManager;
-use std::sync::Mutex;
-use pact_mock_server_ffi::bodies::{process_object, process_array};
-use pact_matching::time_utils::generate_string;
 
 lazy_static! {
   static ref MANAGER: Mutex<ServerManager> = Mutex::new(ServerManager::new());
@@ -31,17 +35,17 @@ py_module_initializer!(pact_python_v3, |py, m| {
 });
 
 py_class!(class PactNative |py| {
-  data pact: RefCell<Pact>;
+  data pact: RefCell<RequestResponsePact>;
   data interaction: RefCell<Option<usize>>;
   
   def __new__(_cls, consumer_name: &str, provider_name: &str, version: &str) -> PyResult<PactNative> {
-    let mut metadata = Pact::default_metadata();
+    let mut metadata = RequestResponsePact::default_metadata();
     metadata.insert("pactPython".to_string(), btreemap!{ "version".to_string() => version.to_string() });
-    PactNative::create_instance(py, RefCell::new(Pact {
+    PactNative::create_instance(py, RefCell::new(RequestResponsePact {
       consumer: Consumer { name: consumer_name.to_string() },
       provider: Provider { name: provider_name.to_string() },
-      metadata: metadata,
-      .. Pact::default()
+      metadata,
+      .. RequestResponsePact::default()
     }), RefCell::new(None))
   }
 
@@ -119,21 +123,24 @@ py_class!(class PactNative |py| {
       }
 
       if let Ok(body) = body.cast_as::<PyDict>(py) {
-        let body = self.process_body_as_dict(py, body, interaction.request.content_type_enum(), &mut interaction.request.matching_rules, &mut interaction.request.generators)?;
+        let content_type = interaction.request.content_type().unwrap_or_default();
+        let body = self.process_body_as_dict(py, body, content_type, &mut interaction.request.matching_rules, &mut interaction.request.generators)?;
         debug!("request body = {}", body.0.str_value());
         interaction.request.body = body.0;
         if let Some(content_type) = body.1 {
           interaction.request.add_header("Content-Type", vec![&content_type]);
         }
       } else if let Ok(body) = body.cast_as::<PyList>(py) {
-        let body = self.process_body_as_array(py, body, interaction.request.content_type_enum(), &mut interaction.request.matching_rules, &mut interaction.request.generators)?;
+        let content_type = interaction.request.content_type().unwrap_or_default();
+        let body = self.process_body_as_array(py, body, content_type, &mut interaction.request.matching_rules, &mut interaction.request.generators)?;
         debug!("request body = {}", body.0.str_value());
         interaction.request.body = body.0;
         if let Some(content_type) = body.1 {
           interaction.request.add_header("Content-Type", vec![&content_type]);
         }
       } else if let Ok(body) = body.cast_as::<PyString>(py) {
-        interaction.request.body = OptionalBody::Present(body.to_string_lossy(py).as_bytes().to_vec());
+        interaction.request.body = OptionalBody::Present(Bytes::copy_from_slice(body.to_string_lossy(py).as_bytes()),
+          interaction.request.content_type());
       } else if body.get_type(py).name(py) != "NoneType" {
         return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: '{}' is not an appropriate type for a body", body.get_type(py).name(py))));
       }
@@ -166,21 +173,24 @@ py_class!(class PactNative |py| {
       }
 
       if let Ok(body) = body.cast_as::<PyDict>(py) {
-        let body = self.process_body_as_dict(py, body, interaction.response.content_type_enum(), &mut interaction.response.matching_rules, &mut interaction.response.generators)?;
+        let content_type = interaction.request.content_type().unwrap_or_default();
+        let body = self.process_body_as_dict(py, body, content_type, &mut interaction.response.matching_rules, &mut interaction.response.generators)?;
         debug!("Response body = {}", body.0.str_value());
         interaction.response.body = body.0;
         if let Some(content_type) = body.1 {
           interaction.response.add_header("Content-Type", vec![&content_type]);
         }
       } else if let Ok(body) = body.cast_as::<PyList>(py) {
-        let body = self.process_body_as_array(py, body, interaction.response.content_type_enum(), &mut interaction.response.matching_rules, &mut interaction.response.generators)?;
+        let content_type = interaction.request.content_type().unwrap_or_default();
+        let body = self.process_body_as_array(py, body, content_type, &mut interaction.response.matching_rules, &mut interaction.response.generators)?;
         debug!("Response body = {}", body.0.str_value());
         interaction.response.body = body.0;
         if let Some(content_type) = body.1 {
           interaction.response.add_header("Content-Type", vec![&content_type]);
         }
       } else if let Ok(body) = body.cast_as::<PyString>(py) {
-        interaction.response.body = OptionalBody::Present(body.to_string_lossy(py).as_bytes().to_vec());
+        interaction.response.body = OptionalBody::Present(Bytes::copy_from_slice(body.to_string_lossy(py).as_bytes()),
+          interaction.response.content_type());
       } else if body.get_type(py).name(py) != "NoneType" {
         return Err(PyErr::new::<exc::TypeError, _>(py, format!("will_respond_with: '{}' is not an appropriate type for a body", body.get_type(py).name(py))));
       }
@@ -201,7 +211,8 @@ py_class!(class PactNative |py| {
   def start_mock_server(&self) -> PyResult<MockServerHandle> {
     let pact = self.pact(py).borrow();
     let mock_server_id = Uuid::new_v4().to_string();
-    let port = MANAGER.lock().unwrap().start_mock_server(mock_server_id.clone(), pact.clone(), 0)
+    let config = MockServerConfig::default();
+    let port = MANAGER.lock().unwrap().start_mock_server(mock_server_id.clone(), pact.clone(), 0, config)
       .map_err(|err| PyErr::new::<exc::TypeError, _>(py, err))?;
 
     debug!("start_mock_server: Mock server running on port {}", port);
@@ -211,13 +222,13 @@ py_class!(class PactNative |py| {
 });
 
 impl PactNative {
-  fn with_current_interaction(&self, py: Python, callback: &dyn Fn(&mut Interaction) -> PyResult<PyObject>) -> PyResult<PyObject> {
+  fn with_current_interaction(&self, py: Python, callback: &dyn Fn(&mut RequestResponseInteraction) -> PyResult<PyObject>) -> PyResult<PyObject> {
     let mut pact = self.pact(py).borrow_mut();
     let mut index = self.interaction(py).borrow_mut();
     match *index {
       Some(index) => callback(&mut pact.interactions[index]),
       None => {
-        let mut interaction = Interaction::default();
+        let mut interaction = RequestResponseInteraction::default();
         let result = callback(&mut interaction);
         pact.interactions.push(interaction);
         *index = Some(pact.interactions.len() - 1);
@@ -226,33 +237,50 @@ impl PactNative {
     }
   }
 
-  fn process_body_as_dict(&self, py: Python, body: &PyDict, content_type: DetectedContentType, matching_rules: &mut MatchingRules, generators: &mut Generators) -> PyResult<(OptionalBody, Option<String>)> {
+  fn process_body_as_dict(
+    &self,
+    py: Python,
+    body: &PyDict,
+    content_type: ContentType,
+    matching_rules: &mut MatchingRules,
+    generators: &mut Generators
+  ) -> PyResult<(OptionalBody, Option<String>)> {
     let mut category = matching_rules.add_category("body");
-    match content_type {
-      DetectedContentType::Json => {
-        let body = pyobj_to_json(py, &body.as_object())?;
-        Ok((OptionalBody::from(process_object(body.as_object().unwrap(), &mut category, generators, "$", false).to_string()), None))
-      },
-      // DetectedContentType::Xml => Ok(OptionalBody::Present(process_xml(body, category, generators)?)),
-      _ => {
-        let body = pyobj_to_json(py, &body.as_object())?;
-        Ok((OptionalBody::from(process_object(body.as_object().unwrap(), &mut category, generators, "$", false).to_string()), Some("application/json".to_string())))
-      }
+    if content_type.is_json() {
+      let body = pyobj_to_json(py, &body.as_object())?;
+      let processed = process_object(body.as_object().unwrap(), &mut category,
+                                     generators, "$", false, false);
+      Ok((OptionalBody::from(processed.to_string()), Some(content_type.to_string())))
+    } 
+    // DetectedContentType::Xml => Ok(OptionalBody::Present(process_xml(body, category, generators)?)),
+    else {
+      let body = pyobj_to_json(py, &body.as_object())?;
+      let processed = process_object(body.as_object().unwrap(), &mut category,
+                                     generators, "$", false, false);
+      Ok((OptionalBody::from(processed.to_string()), Some("application/json".to_string())))
     }
   }
 
-  fn process_body_as_array(&self, py: Python, body: &PyList, content_type: DetectedContentType, matching_rules: &mut MatchingRules, generators: &mut Generators) -> PyResult<(OptionalBody, Option<String>)> {
+  fn process_body_as_array(
+    &self,
+    py: Python, body: &PyList,
+    content_type: ContentType,
+    matching_rules: &mut MatchingRules,
+    generators: &mut Generators
+  ) -> PyResult<(OptionalBody, Option<String>)> {
     let mut category = matching_rules.add_category("body");
-    match content_type {
-      DetectedContentType::Json => {
-        let body = pyobj_to_json(py, &body.as_object())?;
-        Ok((OptionalBody::from(process_array(body.as_array().unwrap(), &mut category, generators, "$", false).to_string()), None))
-      },
-      // DetectedContentType::Xml => Ok(OptionalBody::Present(process_xml(body, category, generators)?)),
-      _ => {
-        let body = pyobj_to_json(py, &body.as_object())?;
-        Ok((OptionalBody::from(process_array(body.as_array().unwrap(), &mut category, generators, "$", false).to_string()), Some("application/json".to_string())))
-      }
+    if content_type.is_json() {
+      let body = pyobj_to_json(py, &body.as_object())?;
+      let processed = process_array(body.as_array().unwrap(), &mut category,
+                                    generators, "$", false, false);
+      Ok((OptionalBody::from(processed.to_string()), Some(content_type.to_string())))
+    }
+    // DetectedContentType::Xml => Ok(OptionalBody::Present(process_xml(body, category, generators)?)),
+    else {
+      let body = pyobj_to_json(py, &body.as_object())?;
+      let processed = process_array(body.as_array().unwrap(), &mut category,
+                                    generators, "$", false, false);
+      Ok((OptionalBody::from(processed.to_string()), Some("application/json".to_string())))
     }
   }
 }
@@ -284,7 +312,7 @@ py_class!(class MockServerHandle |py| {
     }
   }
 
-  def write_pact_file(&self, pact_dir: &PyObject) -> PyResult<PyObject> {
+  def write_pact_file(&self, pact_dir: &PyObject, overwrite: &PyObject) -> PyResult<PyObject> {
     let dir = if let Ok(pact_dir) = pact_dir.cast_as::<PyString>(py) {
       let pact_dir = pact_dir.to_string_lossy(py).to_string();
       if pact_dir.is_empty() {
@@ -296,7 +324,12 @@ py_class!(class MockServerHandle |py| {
       None
     };
 
-    match MANAGER.lock().unwrap().find_mock_server_by_id(&self.id(py), &|mock_server| mock_server.write_pact(&dir)) {
+    let overwrite = if let Ok(overwrite) = overwrite.cast_as::<PyBool>(py) {
+      overwrite.is_true()
+    } else {
+      false
+    };
+    match MANAGER.lock().unwrap().find_mock_server_by_id(&self.id(py), &|mock_server| mock_server.write_pact(&dir, overwrite)) {
       Some(result) => result.map(|_| py.None()).map_err(|err| PyErr::new::<exc::TypeError, _>(py, format!("Failed to write pact to file - {}", err))),
       None => Err(PyErr::new::<exc::TypeError, _>(py, format!("Could not get the mock server to write the pact file: there is no mock server with id {}", self.id(py))))
     }
