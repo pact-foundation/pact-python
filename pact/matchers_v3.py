@@ -1,5 +1,6 @@
 from pact_python_v3 import generate_datetime_string
 
+
 class V3Matcher(object):
     """Base class for defining complex contract expectations."""
 
@@ -43,13 +44,14 @@ class EachLike(V3Matcher):
         json = {
             "pact:matcher:type": "type",
             'value': [self.template for i in range(self.examples)]
-            }
+        }
         if self.minimum is not None:
             json['min'] = self.minimum
         if self.maximum is not None:
             json['max'] = self.maximum
 
         return json
+
 
 class AtLeastOneLike(V3Matcher):
     """
@@ -77,6 +79,7 @@ class AtLeastOneLike(V3Matcher):
             'value': [self.template for i in range(self.examples)]
         }
 
+
 class Like(V3Matcher):
     """
     Value must be the same type as the example
@@ -88,8 +91,9 @@ class Like(V3Matcher):
     def generate(self):
         return {
             "pact:matcher:type": "type",
-            'value': self.example 
+            'value': self.example
         }
+
 
 class Integer(V3Matcher):
     """
@@ -111,15 +115,16 @@ class Integer(V3Matcher):
     def generate(self):
         if self.example is not None:
             return {
-              'pact:matcher:type': 'integer',
-              'value': self.example
+                'pact:matcher:type': 'integer',
+                'value': self.example
             }
         else:
             return {
-              "pact:generator:type": "RandomInt",
-              "pact:matcher:type": "integer",
-              "value": 101
+                "pact:generator:type": "RandomInt",
+                "pact:matcher:type": "integer",
+                "value": 101
             }
+
 
 class DateTime(V3Matcher):
     """

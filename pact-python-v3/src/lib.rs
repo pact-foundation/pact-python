@@ -1,18 +1,19 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fs;
 use std::str::FromStr;
 use std::sync::Mutex;
 
+use bytes::Bytes;
 use cpython::*;
 use env_logger::{Builder, Target};
 use lazy_static::*;
 use log::*;
 use maplit::*;
-use bytes::Bytes;
 use pact_matching::models::*;
 use pact_matching::models::content_types::ContentType;
 use pact_matching::models::generators::Generators;
-use pact_matching::models::matchingrules::MatchingRules;
+use pact_matching::models::matchingrules::{MatchingRules, MatchingRule, RuleLogic};
 use pact_matching::models::provider_states::ProviderState;
 use pact_matching::time_utils::generate_string;
 use pact_mock_server::mock_server::MockServerConfig;
@@ -143,6 +144,81 @@ py_class!(class PactNative |py| {
           interaction.request.content_type());
       } else if body.get_type(py).name(py) != "NoneType" {
         return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: '{}' is not an appropriate type for a body", body.get_type(py).name(py))));
+      }
+
+      Ok(py.None())
+    })
+  }
+
+  def add_request_binary_file(&self, content_type: &str, file_path: &str, method: &str, path, query, headers) -> PyResult<PyObject> {
+    self.with_current_interaction(py, &|interaction| {
+      interaction.request.method = method.to_string();
+
+      if let Ok(path) = path.cast_as::<PyString>(py) {
+        interaction.request.path = path.to_string_lossy(py).to_string();
+      } else {
+        // TODO: deal with a matcher
+      }
+
+      if let Ok(query) = query.cast_as::<PyDict>(py) {
+        let mut query_map = hashmap!{};
+        for (k, v) in query.items(py) {
+          let k = k.cast_as::<PyString>(py)?.to_string_lossy(py).to_string();
+          let v = if let Ok(v) = v.cast_as::<PyString>(py) {
+            vec![ v.to_string_lossy(py).to_string() ]
+          } else {
+            // TODO: deal with a matcher or a list
+            vec![]
+          };
+          query_map.insert(k, v);
+        }
+        if !query_map.is_empty() {
+          interaction.request.query = Some(query_map);
+        }
+      } else if query.get_type(py).name(py) != "NoneType" {
+        return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: Query parameters must be supplied as a Dict, got '{}'", query.get_type(py).name(py))));
+      }
+
+      if let Ok(headers) = headers.cast_as::<PyDict>(py) {
+        let mut header_map = hashmap!{};
+        for (k, v) in headers.items(py) {
+          let k = k.cast_as::<PyString>(py)?.to_string_lossy(py).to_string();
+          let v = if let Ok(v) = v.cast_as::<PyString>(py) {
+            vec![ v.to_string_lossy(py).to_string() ]
+          } else {
+            // TODO: deal with a matcher or a list
+            vec![]
+          };
+          header_map.insert(k, v);
+        }
+        if !header_map.is_empty() {
+          interaction.request.headers = Some(header_map);
+        }
+      } else if headers.get_type(py).name(py) != "NoneType" {
+        return Err(PyErr::new::<exc::TypeError, _>(py, format!("with_request: Headers must be supplied as a Dict, got '{}'", headers.get_type(py).name(py))));
+      }
+
+      let file = fs::read(file_path).map(|data| OptionalBody::Present(Bytes::from(data), None));
+      match file {
+        Ok(body) => {
+          interaction.request.body = body;
+          interaction.request.matching_rules.add_category("body").add_rule("$",
+            MatchingRule::ContentType(content_type.to_string()), &RuleLogic::And);
+          if !interaction.request.has_header(&"Content-Type".to_string()) {
+            match interaction.request.headers {
+              Some(ref mut headers) => {
+                headers.insert("Content-Type".to_string(), vec!["application/octet-stream".to_string()]);
+              },
+              None => {
+                interaction.request.headers = Some(hashmap! { "Content-Type".to_string() => vec!["application/octet-stream".to_string()]});
+              }
+            }
+          };
+        },
+        Err(err) => {
+          error!("Could not load file '{}': {}", file_path, err);
+          return Err(PyErr::new::<exc::TypeError, _>(py, format!("add_request_binary_file: could not load binary file - {}'", err)));
+        }
       }
 
       Ok(py.None())

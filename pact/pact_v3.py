@@ -33,6 +33,10 @@ class PactV3(object):
         self.pact.with_request(method, path, query, headers, self.__process_body(body))
         return self
 
+    def with_request_with_binary_file(self, content_type, file, method='POST', path='/', query=None, headers=None):
+        self.pact.add_request_binary_file(content_type, file, method, path, query, headers)
+        return self
+
     def will_respond_with(self, status=200, headers=None, body=None):
         self.pact.will_respond_with(status, headers, self.__process_body(body))
         return self
@@ -57,8 +61,7 @@ class PactV3(object):
                     if 'mismatches' in result:
                         j = 1
                         for mismatch in result['mismatches']:
-                            error += "\n\t    {}) {} {} {}".format(j, mismatch["type"], mismatch["path"],
-                                                                   mismatch["mismatch"])
+                            error += "\n\t    {}) {} {}".format(j, mismatch["type"], mismatch["mismatch"])
 
                     if result['type'] == "request-not-found":
                         error += "\n    The following request was not expected: {}".format(result["request"])

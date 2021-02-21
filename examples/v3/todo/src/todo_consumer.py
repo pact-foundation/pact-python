@@ -19,12 +19,8 @@ class TodoConsumer(object):
         else:
             return ET.fromstring(response.text)
 
-#   postImage: (id, image) => {
-#     const data = fs.readFileSync(image)
-#     return axios.post(serverUrl + "/projects/" + id + "/images", data, {
-#       headers: {
-#         "Content-Type": "application/octet-stream",
-#       },
-#     })
-#   },
-# }
+    def post_image(self, id, file_path):
+        """Store an image against a project"""
+        uri = self.base_uri + '/projects/' + str(id) + '/images'
+        response = requests.post(uri, data=open(file_path, 'rb'), headers={'Content-Type': 'application/octet-stream'})
+        response.raise_for_status()
