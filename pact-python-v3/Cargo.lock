@@ -993,6 +993,8 @@ dependencies = [
 name = "pact_python_v3"
 version = "0.0.0"
 dependencies = [
+ "ansi_term 0.12.1",
+ "async-trait",
  "bytes",
  "cpython",
  "env_logger 0.7.1",
@@ -1003,7 +1005,10 @@ dependencies = [
  "pact_mock_server",
  "pact_mock_server_ffi",
  "pact_verifier",
+ "regex",
+ "reqwest",
  "serde_json",
+ "url",
  "uuid",
 ]
 

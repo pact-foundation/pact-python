@@ -3,3 +3,4 @@ json2xml==3.3.2
 pytest==5.4.2
 pact-python==2.0.0b0
 requests==2.23.0
+pytest-flask==1.1.0

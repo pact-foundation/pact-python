@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::str::FromStr;
-use std::sync::Mutex;
+use std::sync::{Mutex, Arc};
 
 use bytes::Bytes;
 use cpython::*;
@@ -22,6 +22,9 @@ use pact_mock_server_ffi::bodies::{process_array, process_object};
 use serde_json::{json, Value};
 use serde_json::map::Map;
 use uuid::Uuid;
+use crate::verifier::{setup_provider_config, PythonProviderStateExecutor};
+
+mod verifier;
 
 lazy_static! {
   static ref MANAGER: Mutex<ServerManager> = Mutex::new(ServerManager::new());
@@ -31,6 +34,7 @@ py_module_initializer!(pact_python_v3, |py, m| {
   m.add(py, "__doc__", "Pact Python V3 support (provided by Pact-Rust FFI)")?;
   m.add(py, "init", py_fn!(py, init_lib(*args, **kwargs)))?;
   m.add(py, "generate_datetime_string", py_fn!(py, generate_datetime_string(format: &str)))?;
+  m.add(py, "verify_provider", py_fn!(py, verify_provider(*args, **kwargs)))?;
   m.add_class::<PactNative>(py)?;
   Ok(())
 });
@@ -500,4 +504,33 @@ fn json_to_pyobj(py: Python, val: &Value) -> PyObject {
     Value::Array(array) => array.iter().map(|item| json_to_pyobj(py, item)).collect::<Vec<PyObject>>().to_py_object(py).into_object(),
     Value::Object(map) => map.iter().map(|(key, value)| (key.clone(), json_to_pyobj(py, value))).collect::<HashMap<String, PyObject>>().to_py_object(py).into_object()
   }
+}
+
+fn verify_provider(
+  py: Python,
+  args: &PyTuple,
+  kwargs: Option<&PyDict>
+) -> PyResult<PyBool>  {
+  let arg1 = args.get_item(py, 0);
+  let provider = arg1.cast_as::<PyString>(py)?.to_string_lossy(py);
+  let arg2 = args.get_item(py, 1);
+  let base_url = arg2.cast_as::<PyString>(py)?.to_string_lossy(py);
+  let arg3 = args.get_item(py, 2);
+  let options = arg3.cast_as::<PyDict>(py)?;
+
+  debug!("Verifying provider '{}' running at '{}'", provider, base_url);
+  let (provider_info, source, options, filter, consumers) = setup_provider_config(py, provider.as_ref(), base_url.as_ref(), options)?;
+
+  debug!("Pact sources = {:?}", source);
+  let result = pact_verifier::verify_provider(
+    provider_info,
+    source,
+    filter,
+    consumers,
+    options,
+    &Arc::new(PythonProviderStateExecutor::new())
+  );
+  debug!("result = {}", result);
+
+  Ok(PyBool::get(py, result))
 }
