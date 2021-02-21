@@ -57,7 +57,7 @@ class PactV3(object):
                     i += 1
             raise RuntimeError(error)
         else:
-            self.mock_server.write_pact_file(self.pact_dir)
+            self.mock_server.write_pact_file(self.pact_dir, False)
             self.mock_server.shutdown()
 
     def __process_body(self, body):
