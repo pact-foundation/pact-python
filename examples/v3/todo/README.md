@@ -74,3 +74,11 @@ $ pytest
 
 This has 3 tests. The first uses generators and matchers for numbers and datetime values. The second 
 test deals with XML responses. The last one posts an image to the provider.
+
+## Enabling debug logs
+
+The `LOG_LEVEL` environment variable controls the log output from the Rust libs.
+
+```console
+$ LOG_LEVEL=debug pytest --capture=no
+```

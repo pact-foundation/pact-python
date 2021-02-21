@@ -39,9 +39,10 @@ def projects():
         }
     ]
     if request.headers['accept'] == 'application/xml':
-        return json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper = 'projects').to_xml()
+        return json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects').to_xml()
     else:
         return jsonify(todo_response)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

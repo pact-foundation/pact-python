@@ -1,4 +1,5 @@
 import requests
+import xml.etree.ElementTree as ET
 
 
 class TodoConsumer(object):
@@ -8,17 +9,15 @@ class TodoConsumer(object):
     def get_projects(self, format='json'):
         """Fetch all the projects from the server. Supports XML and JSON formats"""
         uri = self.base_uri + '/projects'
-        print(uri)
         response = requests.get(uri,
                                 headers={'Accept': 'application/' + format},
                                 params={'from': 'today'})
-        print(response)
         response.raise_for_status()
 
         if format == 'json':
             return response.json()
         else:
-            return response.text
+            return ET.fromstring(response.text)
 
 #   postImage: (id, image) => {
 #     const data = fs.readFileSync(image)

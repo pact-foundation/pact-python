@@ -350,9 +350,10 @@ fn init_lib(py: Python, _: &PyTuple, kwargs: Option<&PyDict>) -> PyResult<PyObje
       }
     }
   }
-  builder.init();
 
-  debug!("Initialising Pact native library version {}", env!("CARGO_PKG_VERSION"));
+  if let Ok(_) = builder.try_init() {
+    debug!("Initialising Pact native library version {}", env!("CARGO_PKG_VERSION"));
+  }
 
   Ok(py.None())
 }
