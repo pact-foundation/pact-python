@@ -58,7 +58,7 @@ class Pact(Broker):
         broker_password=None,
         broker_token=None,
         pact_dir=None,
-        version='2.0.0',
+        specification_version='2.0.0',
         file_write_mode='overwrite',
     ):
         """
@@ -112,9 +112,9 @@ class Pact(Broker):
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
         :type pact_dir: str
-        :param version: The Pact Specification version to use, defaults to
+        :param specification_version: The Pact Specification version to use, defaults to
             '2.0.0'.
-        :type version: str
+        :type version: str of the consumer version.
         :param file_write_mode: `overwrite` or `merge`. Use `merge` when
             running multiple mock service instances in parallel for the same
             consumer/provider pair. Ensure the pact file is deleted before
@@ -142,7 +142,7 @@ class Pact(Broker):
         self.ssl = ssl
         self.sslcert = sslcert
         self.sslkey = sslkey
-        self.version = version
+        self.specification_version = specification_version
         self._interactions = []
         self._process = None
 
@@ -196,7 +196,7 @@ class Pact(Broker):
             "--log", f"{self.log_dir}/pact-mock-service.log",
             "--pact-dir", self.pact_dir,
             "--pact-file-write-mode", self.file_write_mode,
-            f"--pact-specification-version={self.version}",
+            f"--pact-specification-version={self.specification_version}",
             "--consumer", self.consumer.name,
             "--provider", self.provider.name,
         ]
@@ -235,7 +235,7 @@ class Pact(Broker):
         if self.publish_to_broker:
             self.publish(
                 self.consumer.name,
-                self.version,
+                self.consumer.version,
                 tag_with_git_branch=self.consumer.tag_with_git_branch,
                 consumer_tags=self.consumer.tags,
             )
