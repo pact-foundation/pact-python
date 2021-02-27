@@ -35,14 +35,14 @@ class PactTestCase(TestCase):
         self.assertIsNone(target.sslcert)
         self.assertIsNone(target.sslkey)
         self.assertEqual(target.uri, 'http://localhost:1234')
-        self.assertEqual(target.version, '2.0.0')
+        self.assertEqual(target.specification_version, '2.0.0')
         self.assertEqual(len(target._interactions), 0)
 
     def test_init_custom_mock_service(self):
         target = Pact(
             self.consumer, self.provider, host_name='192.168.1.1', port=8000,
             log_dir='/logs', ssl=True, sslcert='/ssl.cert', sslkey='/ssl.pem',
-            cors=True, pact_dir='/pacts', version='3.0.0',
+            cors=True, pact_dir='/pacts', specification_version='3.0.0',
             file_write_mode='merge')
 
         self.assertIs(target.consumer, self.consumer)
@@ -56,7 +56,7 @@ class PactTestCase(TestCase):
         self.assertEqual(target.sslcert, '/ssl.cert')
         self.assertEqual(target.sslkey, '/ssl.pem')
         self.assertEqual(target.uri, 'https://192.168.1.1:8000')
-        self.assertEqual(target.version, '3.0.0')
+        self.assertEqual(target.specification_version, '3.0.0')
         self.assertEqual(target.file_write_mode, 'merge')
         self.assertEqual(len(target._interactions), 0)
 
@@ -371,7 +371,7 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe = Mock(spec=Process)
         self.mock_Process.return_value.children.return_value = [ruby_exe]
         self.mock_Pid_exists.return_value = False
-        pact = Pact(Consumer('consumer'), Provider('provider'), publish_to_broker=True)
+        pact = Pact(Consumer('consumer', version='abc'), Provider('provider'), publish_to_broker=True)
         pact._process = Mock(spec=Popen, pid=999)
         pact.stop_service()
 
@@ -383,7 +383,8 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe.terminate.assert_called_once_with()
         self.mock_Process.return_value.wait.assert_called_once_with()
         self.mock_Pid_exists.assert_called_once_with(999)
-        self.mock_publish.assert_called_once()
+        self.mock_publish.assert_called_once_with(
+            pact, 'consumer', 'abc', consumer_tags=None, tag_with_git_branch=False)
 
     def test_stop_fails_posix(self):
         self.mock_platform.return_value = 'Linux'
