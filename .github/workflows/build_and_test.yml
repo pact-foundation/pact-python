@@ -24,7 +24,7 @@ jobs:
       run: |
         flake8
         pydocstyle pact
-    - name: Test with nosetests
+    - name: Test with pytest 
       run: |
         tox -e test
     - name: Test examples
