@@ -2,8 +2,10 @@
 
 import logging
 import os
+from testcontainers.compose import DockerCompose
 
 from pact import Verifier
+import pytest
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -33,3 +35,17 @@ def test_get_user_non_admin():
                                          provider_states_setup_url="{}/_pact/provider_states".format(PACT_URL))
 
     assert (output == 0)
+
+
+# @pytest.fixture(scope='session')
+# def broker():
+#     print('Starting broker')
+#     with DockerCompose("../broker",
+#                        compose_file_name=["docker-compose.yml"],
+#                        pull=True) as compose:
+
+#         stdout, stderr = compose.get_logs()
+#         if stderr:
+#             print("Errors\\n:{}".format(stderr))
+#         print(stdout)
+#         yield

@@ -4,6 +4,8 @@ import logging
 import os
 import atexit
 
+from testcontainers.compose import DockerCompose
+
 import pytest
 from pact import Consumer, Like, Provider, Term, Format
 
@@ -30,6 +32,25 @@ def consumer():
         .format(host=PACT_MOCK_HOST, port=PACT_MOCK_PORT)
     )
 
+@pytest.fixture(scope='session')
+def broker(request):
+    version = request.config.getoption('--publish-pact')
+    publish = True if version else False
+
+    if not publish:
+        return
+
+    print('Starting broker')
+    with DockerCompose("../broker",
+                       compose_file_name=["docker-compose.yml"],
+                       pull=True) as compose:
+
+        stdout, stderr = compose.get_logs()
+        if stderr:
+            print("Errors\\n:{}".format(stderr))
+        print(stdout)
+        yield
+
 
 @pytest.fixture(scope='session')
 def pact(request):
@@ -43,13 +64,13 @@ def pact(request):
 
     print('start service')
     pact.start_service()
-    atexit.register(pact.stop_service)
+    # atexit.register(pact.stop_service)
 
     yield pact
     print('stop service')
     pact.stop_service()
 
-def test_get_user_non_admin(pact, consumer):
+def test_get_user_non_admin(broker, pact, consumer):
     expected = {
         'name': 'UserA',
         'id': Format().uuid,
@@ -72,7 +93,7 @@ def test_get_user_non_admin(pact, consumer):
         assert user.name == 'UserA'
 
 
-def test_get_non_existing_user(pact, consumer):
+def test_get_non_existing_user(broker, pact, consumer):
     (pact
      .given('UserA does not exist')
      .upon_receiving('a request for UserA')

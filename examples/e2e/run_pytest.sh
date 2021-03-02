@@ -20,4 +20,3 @@ sleep 3
 pytest
 
 teardown()
-
