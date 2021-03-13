@@ -36,7 +36,6 @@ define E2E
   pip install -r requirements.txt
   pip install -e ../../
   ./run_pytest.sh 
-  ./verify_pact.sh
 endef
 export E2E
 

@@ -2,9 +2,6 @@
 
 import logging
 import os
-import atexit
-
-from testcontainers.compose import DockerCompose
 
 import pytest
 from pact import Consumer, Like, Provider, Term, Format
@@ -32,27 +29,8 @@ def consumer():
         .format(host=PACT_MOCK_HOST, port=PACT_MOCK_PORT)
     )
 
-@pytest.fixture(scope='session')
-def broker(request):
-    version = request.config.getoption('--publish-pact')
-    publish = True if version else False
 
-    if not publish:
-        return
-
-    print('Starting broker')
-    with DockerCompose("../broker",
-                       compose_file_name=["docker-compose.yml"],
-                       pull=True) as compose:
-
-        stdout, stderr = compose.get_logs()
-        if stderr:
-            print("Errors\\n:{}".format(stderr))
-        print(stdout)
-        yield
-
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='class')
 def pact(request):
     version = request.config.getoption('--publish-pact')
     publish = True if version else False
@@ -103,4 +81,4 @@ def test_get_non_existing_user(broker, pact, consumer):
     with pact:
         user = consumer.get_user('UserA')
         assert user is None
-    # pact.verify()
+        pact.verify()
