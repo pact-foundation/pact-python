@@ -14,7 +14,9 @@ def pytest_addoption(parser):
         help="The url to our provider."
     )
 
-
+# This fixture is to simulate a managed Pact Broker or Pactflow account
+# Do not do this yourself but setup one of the above
+# https://github.com/pact-foundation/pact_broker
 @pytest.fixture(scope='session', autouse=True)
 def broker(request):
     version = request.config.getoption('--publish-pact')

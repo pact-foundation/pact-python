@@ -42,7 +42,6 @@ def pact(request):
 
     print('start service')
     pact.start_service()
-    # atexit.register(pact.stop_service)
 
     yield pact
     print('stop service')
