@@ -2,7 +2,6 @@
 
 import logging
 import os
-import atexit
 
 import pytest
 from pact import Consumer, Like, Provider, Term, Format
@@ -31,7 +30,7 @@ def consumer():
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='class')
 def pact(request):
     version = request.config.getoption('--publish-pact')
     publish = True if version else False
@@ -43,13 +42,12 @@ def pact(request):
 
     print('start service')
     pact.start_service()
-    atexit.register(pact.stop_service)
 
     yield pact
     print('stop service')
     pact.stop_service()
 
-def test_get_user_non_admin(pact, consumer):
+def test_get_user_non_admin(broker, pact, consumer):
     expected = {
         'name': 'UserA',
         'id': Format().uuid,
@@ -72,7 +70,7 @@ def test_get_user_non_admin(pact, consumer):
         assert user.name == 'UserA'
 
 
-def test_get_non_existing_user(pact, consumer):
+def test_get_non_existing_user(broker, pact, consumer):
     (pact
      .given('UserA does not exist')
      .upon_receiving('a request for UserA')
@@ -82,4 +80,4 @@ def test_get_non_existing_user(pact, consumer):
     with pact:
         user = consumer.get_user('UserA')
         assert user is None
-    # pact.verify()
+        pact.verify()
