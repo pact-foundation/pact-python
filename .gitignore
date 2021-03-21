@@ -1,5 +1,6 @@
 # pact-python specific ignores
 e2e/pacts
+userserviceclient-userservice.json
 pact/bin
 
 # Byte-compiled / optimized / DLL files

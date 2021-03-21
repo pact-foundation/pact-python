@@ -371,7 +371,7 @@ class PactStartShutdownServerTestCase(TestCase):
         ruby_exe = Mock(spec=Process)
         self.mock_Process.return_value.children.return_value = [ruby_exe]
         self.mock_Pid_exists.return_value = False
-        pact = Pact(Consumer('consumer', version='abc'), Provider('provider'), publish_to_broker=True)
+        pact = Pact(Consumer('consumer', version='abc'), Provider('provider'), publish_to_broker=True, pact_dir='some_dir')
         pact._process = Mock(spec=Popen, pid=999)
         pact.stop_service()
 
@@ -384,7 +384,12 @@ class PactStartShutdownServerTestCase(TestCase):
         self.mock_Process.return_value.wait.assert_called_once_with()
         self.mock_Pid_exists.assert_called_once_with(999)
         self.mock_publish.assert_called_once_with(
-            pact, 'consumer', 'abc', consumer_tags=None, tag_with_git_branch=False)
+            pact,
+            'consumer',
+            'abc',
+            consumer_tags=None,
+            tag_with_git_branch=False,
+            pact_dir='some_dir')
 
     def test_stop_fails_posix(self):
         self.mock_platform.return_value = 'Linux'
