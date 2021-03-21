@@ -1,3 +1,17 @@
+### 1.3.2
+  * 57c8ae8 - Merge pull request #209 from pact-foundation/bug/fix_test_dir (Elliott Murray, Sun Mar 21 14:29:40 2021 +0000)
+  * af3dadf - fix: remove pacts from examples (Elliott Murray, Sun Mar 21 14:21:10 2021 +0000)
+  * 579f3f8 - fix: ensure path is passed to broker and allow running from root rather than test file (Elliott Murray, Sun Mar 21 13:18:01 2021 +0000)
+  * 7e0feab - Merge pull request #208 from pact-foundation/dependabot/pip/examples/e2e/jinja2-2.11.3 (Elliott Murray, Sat Mar 20 12:46:32 2021 +0000)
+  * f82c008 - chore(deps): bump jinja2 from 2.11.2 to 2.11.3 in /examples/e2e (dependabot[bot], Sat Mar 20 04:53:58 2021 +0000)
+  * ea6f635 - Merge pull request #206 from pact-foundation/chore/use-testcontainers (Elliott Murray, Sun Mar 14 11:05:01 2021 +0000)
+  * 565bc80 - chore: added some docs about how to use the e2e example (Elliott Murray, Sun Mar 14 11:02:35 2021 +0000)
+  * 1b4be80 - chore: spiking testcontainers (Elliott Murray, Sat Mar 13 11:15:52 2021 +0000)
+  * 01e4ec4 - chore: wip on using test containers on examples (Elliott Murray, Tue Mar 2 21:30:48 2021 +0000)
+  * 882f4a2 - Merge pull request #204 from pact-foundation/chore/use_pytest (Elliott Murray, Sat Feb 27 10:58:19 2021 +0000)
+  * 261f24b - chore: more clean up (Elliott Murray, Sat Feb 27 10:10:23 2021 +0000)
+  * 5a0934c - chore: update ci stuff (Elliott Murray, Sat Feb 27 09:57:31 2021 +0000)
+  * 66e79e2 - chore: move from nose to pytests as we are now 3.6+ (Elliott Murray, Sat Feb 27 09:34:37 2021 +0000)
 ### 1.3.1
   * 4440022 - Merge pull request #203 from pact-foundation/fix/version_confusion (Elliott Murray, Sat Feb 27 09:15:08 2021 +0000)
   * 9cac2d7 - fix: introduced and renamed specification version (Elliott Murray, Tue Feb 23 21:22:36 2021 +0000)
