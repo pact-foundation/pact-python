@@ -37,7 +37,9 @@ class BrokerTestCase(TestCase):
                         broker_token="token")
 
         with self.assertRaises(RuntimeError):
-            broker.publish("TestConsumer", "2.0.1")
+            broker.publish("TestConsumer",
+                           "2.0.1",
+                           pact_dir='.')
 
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
@@ -46,7 +48,7 @@ class BrokerTestCase(TestCase):
             '--broker-username=username',
             '--broker-password=password',
             '--broker-token=token',
-            'TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'])
 
     def test_publish_with_broker_url_environment_variable(self):
         BROKER_URL_ENV = 'http://broker.url'
@@ -55,7 +57,9 @@ class BrokerTestCase(TestCase):
         broker = Broker(broker_username="username",
                         broker_password="password")
 
-        broker.publish("TestConsumer", "2.0.1")
+        broker.publish("TestConsumer",
+                       "2.0.1",
+                       pact_dir='.')
 
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
@@ -63,7 +67,7 @@ class BrokerTestCase(TestCase):
             f"--broker-base-url={BROKER_URL_ENV}",
             '--broker-username=username',
             '--broker-password=password',
-            'TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'])
 
         del os.environ["PACT_BROKER_BASE_URL"]
 
@@ -72,7 +76,9 @@ class BrokerTestCase(TestCase):
                         broker_username="username",
                         broker_password="password")
 
-        broker.publish("TestConsumer", "2.0.1")
+        broker.publish("TestConsumer",
+                       "2.0.1",
+                       pact_dir='.')
 
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
@@ -80,7 +86,7 @@ class BrokerTestCase(TestCase):
             '--broker-base-url=http://localhost',
             '--broker-username=username',
             '--broker-password=password',
-            'TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'])
 
     def test_token_authenticated_publish(self):
         broker = Broker(broker_base_url="http://localhost",
@@ -88,7 +94,9 @@ class BrokerTestCase(TestCase):
                         broker_password="password",
                         broker_token="token")
 
-        broker.publish("TestConsumer", "2.0.1")
+        broker.publish("TestConsumer",
+                       "2.0.1",
+                       pact_dir='.')
 
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
@@ -97,29 +105,35 @@ class BrokerTestCase(TestCase):
             '--broker-username=username',
             '--broker-password=password',
             '--broker-token=token',
-            'TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'])
 
     def test_git_tagged_publish(self):
         broker = Broker(broker_base_url="http://localhost")
 
-        broker.publish("TestConsumer", "2.0.1", tag_with_git_branch=True)
+        broker.publish("TestConsumer",
+                       "2.0.1",
+                       tag_with_git_branch=True,
+                       pact_dir='.')
 
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json',
+            './TestConsumer-TestProvider.json',
             '--tag-with-git-branch'])
 
     def test_manual_tagged_publish(self):
         broker = Broker(broker_base_url="http://localhost")
 
-        broker.publish("TestConsumer", "2.0.1", consumer_tags=['tag1', 'tag2'])
+        broker.publish("TestConsumer",
+                       "2.0.1",
+                       consumer_tags=['tag1', 'tag2'],
+                       pact_dir='.')
 
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
             '--broker-base-url=http://localhost',
-            'TestConsumer-TestProvider.json',
+            './TestConsumer-TestProvider.json',
             '-t', 'tag1',
             '-t', 'tag2'])

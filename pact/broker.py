@@ -61,6 +61,7 @@ class Broker():
             os.listdir(pact_dir),
             self._normalize_consumer_name(consumer_name) + '*.json'
         )
+        pact_files = list(map(lambda pact_file: f'{pact_dir}/{pact_file}', pact_files))
         command = [
             BROKER_CLIENT_PATH,
             'publish',

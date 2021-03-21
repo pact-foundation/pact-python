@@ -238,6 +238,7 @@ class Pact(Broker):
                 self.consumer.version,
                 tag_with_git_branch=self.consumer.tag_with_git_branch,
                 consumer_tags=self.consumer.tags,
+                pact_dir=self.pact_dir
             )
 
     def upon_receiving(self, scenario):
