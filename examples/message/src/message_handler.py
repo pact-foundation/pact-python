@@ -15,5 +15,5 @@ class MessageHandler(object):
 
     @staticmethod
     def pass_event(event):
-        if event.get('documentType') != 'microsoft-word':
+        if event.get('documentType') != 'application/pdf':
             raise CustomError("Not correct document type")
