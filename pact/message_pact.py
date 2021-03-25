@@ -203,6 +203,7 @@ class MessagePact(Broker):
             self.publish(
                 self.consumer.name,
                 self.consumer.version,
+                pact_dir=self.pact_dir,
                 tag_with_git_branch=self.consumer.tag_with_git_branch,
                 consumer_tags=self.consumer.tags,
             )
