@@ -20,7 +20,7 @@ PACT_DIR = 'pacts'
 
 CONSUMER_NAME = 'DetectContentLambda'
 PROVIDER_NAME = 'ContentProvider'
-PACT_FILE = (f"{CONSUMER_NAME.lower().replace(' ', '_')}_message-"
+PACT_FILE = (f"{PACT_DIR}/{CONSUMER_NAME.lower().replace(' ', '_')}_message-"
              + f"{PROVIDER_NAME.lower().replace(' ', '_')}_message.json")
 
 @pytest.fixture(scope='session')
@@ -31,9 +31,8 @@ def pact(request):
     pact = MessageConsumer(CONSUMER_NAME, version=version).has_pact_with(
         Provider(PROVIDER_NAME),
         publish_to_broker=publish, broker_base_url=PACT_BROKER_URL,
-        broker_username=PACT_BROKER_USERNAME, broker_password=PACT_BROKER_PASSWORD)
+        broker_username=PACT_BROKER_USERNAME, broker_password=PACT_BROKER_PASSWORD, pact_dir=PACT_DIR)
 
-    # current pact does not consider the PACT_DIR argument, assumes none
     yield pact
 
 
