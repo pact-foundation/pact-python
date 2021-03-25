@@ -1,3 +1,6 @@
+### 1.3.3
+  * 5e282ff - Merge pull request #211 from anneschuth/fix/pass-pact-dir (Elliott Murray, Thu Mar 25 21:21:56 2021 +0000)
+  * 987c4fc - fix: pass pact_dir to publish() (Anne Schuth, Thu Mar 25 10:06:54 2021 +0100)
 ### 1.3.2
   * 57c8ae8 - Merge pull request #209 from pact-foundation/bug/fix_test_dir (Elliott Murray, Sun Mar 21 14:29:40 2021 +0000)
   * af3dadf - fix: remove pacts from examples (Elliott Murray, Sun Mar 21 14:21:10 2021 +0000)
