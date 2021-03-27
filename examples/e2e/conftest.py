@@ -14,6 +14,11 @@ def pytest_addoption(parser):
         help="The url to our provider."
     )
 
+    parser.addoption(
+        "--run-broker", type=bool, action="store",
+        help="Whether to run broker in this test or not."
+    )
+
 # This fixture is to simulate a managed Pact Broker or Pactflow account
 # Do not do this yourself but setup one of the above
 # https://github.com/pact-foundation/pact_broker
@@ -27,13 +32,19 @@ def broker(request):
         yield
         return
 
-    print('Starting broker')
-    with DockerCompose("../broker",
-                       compose_file_name=["docker-compose.yml"],
-                       pull=True) as compose:
+    run_broker = request.config.getoption('--run-broker')
 
-        stdout, stderr = compose.get_logs()
-        if stderr:
-            print("Errors\\n:{}".format(stderr))
-        print(stdout)
+    if not run_broker:
         yield
+        return
+    else:
+        print('Starting broker')
+        with DockerCompose("../broker",
+                           compose_file_name=["docker-compose.yml"],
+                           pull=True) as compose:
+
+            stdout, stderr = compose.get_logs()
+            if stderr:
+                print("Errors\\n:{}".format(stderr))
+            print(stdout)
+            yield

@@ -70,6 +70,7 @@ class Verifier(object):
             broker_url ([String]): url of broker
             enable_pending ([Boolean])
             include_wip_pacts_since ([String])
+            publish_version ([String])
 
         """
         broker_username = kwargs.get('broker_username', None)
@@ -103,8 +104,8 @@ class Verifier(object):
         provider_tags = kwargs.get('provider_tags', [])
         states_setup_url = kwargs.get('provider_states_setup_url', None)
         verbose = kwargs.get('verbose', False)
-        publish_version = kwargs.get('publish_version', None)
-
+        provider_app_version = kwargs.get('publish_version', None)
+        publish_verification_results = kwargs.get('publish_verification_results', None)
         raw_consumer_selectors = kwargs.get('consumer_version_selectors', [])
         consumer_selectors = self._build_consumer_selectors(raw_consumer_selectors)
 
@@ -118,8 +119,9 @@ class Verifier(object):
             'provider_tags': list(provider_tags),
             'provider_states_setup_url': states_setup_url,
             'verbose': verbose,
-            'publish_version': publish_version,
-            'consumer_selectors': consumer_selectors
+            'provider_app_version': provider_app_version,
+            'consumer_selectors': consumer_selectors,
+            'publish_verification_results': publish_verification_results
         }
         return self.filter_empty_options(**options)
 
