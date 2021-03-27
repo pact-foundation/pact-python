@@ -1,3 +1,6 @@
+### 1.3.4
+  * c778c71 - Merge pull request #212 from pact-foundation/fix/verify_in_provider (Elliott Murray, Sat Mar 27 18:59:25 2021 +0000)
+  * ea0b64a - fix: verifier should now publish (Elliott Murray, Sat Mar 27 16:21:25 2021 +0000)
 ### 1.3.3
   * 5e282ff - Merge pull request #211 from anneschuth/fix/pass-pact-dir (Elliott Murray, Thu Mar 25 21:21:56 2021 +0000)
   * 987c4fc - fix: pass pact_dir to publish() (Anne Schuth, Thu Mar 25 10:06:54 2021 +0100)
