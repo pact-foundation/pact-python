@@ -29,7 +29,9 @@ def default_opts():
     return {
         'broker_username': PACT_BROKER_USERNAME,
         'broker_password': PACT_BROKER_PASSWORD,
-        'broker_url': PACT_BROKER_URL
+        'broker_url': PACT_BROKER_URL,
+        'publish_version': '3',
+        'publish_verification_results': True
     }
 
 

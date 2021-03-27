@@ -13,7 +13,7 @@ trap teardown EXIT
 
 sleep 3
 
-pytest contract_tests --publish-pact 1
+pytest tests --run-broker True --publish-pact 1
 
 teardown
 

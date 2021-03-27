@@ -164,7 +164,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         raise click.Abort()
 
     if publish_verification_results:
-        publish_results(error, provider_app_version)
+        validate_publish(error, provider_app_version)
 
     options = {
         'broker_password': password,
@@ -196,7 +196,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     sys.exit(success)
 
 
-def publish_results(error, provider_app_version):
+def validate_publish(error, provider_app_version):
     """Publish results to broker."""
     if not provider_app_version:
         click.echo(
