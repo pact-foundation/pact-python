@@ -97,7 +97,6 @@ class Verifier(object):
         """Extract params."""
         log_dir = kwargs.get('log_dir', None)
         log_level = kwargs.get('log_level', 'INFO')
-        provider_app_version = kwargs.get('provider_app_version', None)
         headers = kwargs.get('headers', [])
         timeout = kwargs.get('timeout', None)
         consumer_tags = kwargs.get('consumer_tags', [])
