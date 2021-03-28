@@ -176,7 +176,7 @@ class VerifierBrokerTestCase(TestCase):
 
         mock_wrapper.return_value = (True, 'some value')
 
-        self.default_opts['publish_verification_results'] = True
+        self.default_opts['publish_version'] = '1.0.0'
         output, _ = self.verifier.verify_with_broker(**self.default_opts)
 
         self.assertTrue(output)
@@ -191,7 +191,8 @@ class VerifierBrokerTestCase(TestCase):
                            verbose=False,
                            enable_pending=False,
                            include_wip_pacts_since=None,
-                           publish_verification_results=True)
+                           provider_app_version='1.0.0',
+                           )
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     def test_verifier_with_broker_passes_consumer_selctors(self, mock_wrapper):
