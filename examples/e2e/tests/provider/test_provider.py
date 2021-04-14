@@ -31,7 +31,7 @@ def default_opts():
         'broker_password': PACT_BROKER_PASSWORD,
         'broker_url': PACT_BROKER_URL,
         'publish_version': '3',
-        'publish_verification_results': True
+        'publish_verification_results': False
     }
 
 

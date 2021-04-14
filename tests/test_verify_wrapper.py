@@ -34,9 +34,6 @@ class VerifyWrapperTestCase(TestCase):
 
         self.mock_Popen.return_value.communicate.return_value = self.locale
 
-        # self.mock_isfile = patch.object(
-        #     VerifyWrapper, 'isfile', autospec=True).start()
-
         self.mock_rerun_command = patch.object(
             verify_wrapper, 'rerun_command', autospec=True).start()
 
@@ -114,7 +111,6 @@ class VerifyWrapperTestCase(TestCase):
                                              provider_base_url='http://localhost',
                                              provider_states_setup_url='http://localhost/provider-states/set',
                                              provider='provider',
-                                             publish_verification_results=True,
                                              provider_app_version='1.2.3',
                                              custom_provider_headers=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
                                              log_dir='tmp/logs/pact.test.log',
@@ -135,7 +131,6 @@ class VerifyWrapperTestCase(TestCase):
             '--provider-base-url=http://localhost',
             '--provider-states-setup-url=http://localhost/provider-states/set',
             '--provider=provider',
-            '--publish-verification-results',
             '--provider-app-version', '1.2.3',
             '--log-dir=tmp/logs/pact.test.log',
             '--log-level=INFO',
@@ -199,8 +194,9 @@ class VerifyWrapperTestCase(TestCase):
                                              './pacts/consumer-provider2.json',
                                              provider='test_provider',
                                              provider_base_url='http://localhost',
-                                             provider_app_version='1.2.3'
-                                             )
+                                             provider_app_version='1.2.3',
+                                             publish_verification_results=True)
+
         self.default_call.extend(['--provider-app-version', '1.2.3', '--publish-verification-results'])
 
         self.assertProcess(*self.default_call)
