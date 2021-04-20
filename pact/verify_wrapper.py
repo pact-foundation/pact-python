@@ -164,7 +164,7 @@ class VerifyWrapper(object):
             command.extend(["--provider-app-version",
                             provider_app_version])
 
-        if kwargs.get('publish_verification_results', False):
+        if(kwargs.get('publish_verification_results', False) is True):
             command.extend(['--publish-verification-results'])
 
         if(kwargs.get('verbose', False) is True):
