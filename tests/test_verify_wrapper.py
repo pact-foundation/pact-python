@@ -49,6 +49,7 @@ class VerifyWrapperTestCase(TestCase):
             '--pact-broker-base-url=http://broker',
             '--broker-username=username',
             '--broker-password=pwd',
+            '--broker-token=token',
             '--consumer-version-tag=prod',
             '--consumer-version-tag=dev',
             '--provider-version-tag=dev',
@@ -147,6 +148,7 @@ class VerifyWrapperTestCase(TestCase):
                                              provider_base_url='http://localhost',
                                              broker_username='username',
                                              broker_password='pwd',
+                                             broker_token='token',
                                              broker_url='http://broker',
                                              consumer_tags=['prod', 'dev'],
                                              provider_tags=['dev', 'qa'])

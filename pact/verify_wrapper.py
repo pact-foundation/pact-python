@@ -148,6 +148,7 @@ class VerifyWrapper(object):
             '--provider': provider,
             '--broker-username': kwargs.get('broker_username', None),
             '--broker-password': kwargs.get('broker_password', None),
+            '--broker-token': kwargs.get('broker_token', None),
             '--pact-broker-base-url': kwargs.get('broker_url', None),
             '--provider-states-setup-url': kwargs.get('provider_states_setup_url'),
             '--log-dir': kwargs.get('log_dir'),
