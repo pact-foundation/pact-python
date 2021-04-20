@@ -154,9 +154,6 @@ class VerifyWrapper(object):
             '--log-level': kwargs.get('log_level')
         }
 
-        if(kwargs.get('publish_verification_results', False) is not None):
-            options['--publish-verification-results'] = ''
-
         command = [VERIFIER_PATH]
         all_pact_urls = expand_directories(list(pacts))
 
@@ -165,9 +162,10 @@ class VerifyWrapper(object):
 
         if(provider_app_version):
             command.extend(["--provider-app-version",
-                            provider_app_version,
-                            "--publish-verification-results"])
-            # self.publish_results(provider_app_version, command)
+                            provider_app_version])
+
+        if(kwargs.get('publish_verification_results', False) is True):
+            command.extend(['--publish-verification-results'])
 
         if(kwargs.get('verbose', False) is True):
             command.extend(['--verbose'])
