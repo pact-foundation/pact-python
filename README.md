@@ -399,7 +399,7 @@ The provider application version. Required for publishing verification results.
 Publish verification results to the broker.
 
 ### Python API
-You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice.
+You can use the Verifier class. This allows you to write native python code and the test framework of your choice.
 
 ```python
 verifier = Verifier(provider='UserService',
@@ -408,6 +408,14 @@ verifier = Verifier(provider='UserService',
 output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
 
 ```
+
+The parameters for this differ slightly in naming from their CLI equivalents:
+| CLI        |      native Python                      |
+|-----------------|-------------------------------------------------------------------------------------------------|
+| `consumer_tags`  | `consumer-version-tag`                                     |
+| `provider_tags`  | `provider-version-tag`                                     |
+| `custom-provider-header`  | `headers`                                     |
+
 You can see more details in the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e/tests/provider/test_provider.py).
 
 ### Provider States
