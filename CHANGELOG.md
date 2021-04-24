@@ -1,3 +1,15 @@
+### 1.3.7
+  * 20f828f - fix(broker): token added to verify steps (#226) (Elliott Murray, Sat Apr 24 13:47:22 2021 +0100)
+  * c4fe422 - chore: Releasing version 1.3.6 (Elliott Murray, Tue Apr 20 20:58:50 2021 +0100)
+  * 34160a8 - fix: publish verification results was wrong (#222) (Elliott Murray, Tue Apr 20 20:58:20 2021 +0100)
+  * 2c0252c - Merge pull request #219 from pact-foundation/ci/revert_snyk_36 (Elliott Murray, Sat Apr 3 11:13:49 2021 +0100)
+  * 1a162cf - ci: revert docker36 back (Elliott Murray, Sat Apr 3 11:00:37 2021 +0100)
+  * 4282de4 - Merge pull request #217 from pact-foundation/snyk-fix-8f994ea63cfa41070b04b182dbd11c74 (Elliott Murray, Sat Apr 3 10:54:58 2021 +0100)
+  * 4eb3fbb - Merge pull request #216 from pact-foundation/snyk-fix-fc54d9c7fe536fffe78fbd34fc5fd7ea (Elliott Murray, Sat Apr 3 10:54:10 2021 +0100)
+  * 47373ff - fix: docker/py37.Dockerfile to reduce vulnerabilities (snyk-bot, Fri Apr 2 03:13:49 2021 +0000)
+  * e572221 - fix: docker/py38.Dockerfile to reduce vulnerabilities (snyk-bot, Fri Apr 2 01:10:57 2021 +0000)
+  * f293dbb - Merge pull request #215 from pact-foundation/snyk-fix-ab489d8931bdf95d6ef0d217aa1b2eb6 (Elliott Murray, Wed Mar 31 09:27:02 2021 +0100)
+  * 5946872 - fix: docker/py36.Dockerfile to reduce vulnerabilities (snyk-bot, Tue Mar 30 21:41:35 2021 +0000)
 ### 1.3.6
   * 34160a8 - fix: publish verification results was wrong (#222) (Elliott Murray, Tue Apr 20 20:58:20 2021 +0100)
   * 2c0252c - Merge pull request #219 from pact-foundation/ci/revert_snyk_36 (Elliott Murray, Sat Apr 3 11:13:49 2021 +0100)
