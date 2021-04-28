@@ -331,7 +331,7 @@ class Format:
         return Term(
             self.Regexes.timestamp.value, datetime.datetime(
                 2000, 2, 1, 12, 30, 0, 0
-            )
+            ).isoformat()
         )
 
     def date(self):
@@ -344,7 +344,7 @@ class Format:
         return Term(
             self.Regexes.date.value, datetime.datetime(
                 2000, 2, 1, 12, 30, 0, 0
-            ).date()
+            ).date().isoformat()
         )
 
     def time(self):
@@ -357,7 +357,7 @@ class Format:
         return Term(
             self.Regexes.time_regex.value, datetime.datetime(
                 2000, 2, 1, 12, 30, 0, 0
-            ).time()
+            ).time().isoformat()
         )
 
     class Regexes(Enum):
