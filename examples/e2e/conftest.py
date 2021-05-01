@@ -3,6 +3,7 @@ from testcontainers.compose import DockerCompose
 
 import pytest
 
+
 def pytest_addoption(parser):
     parser.addoption(
         "--publish-pact", type=str, action="store",
@@ -18,6 +19,7 @@ def pytest_addoption(parser):
         "--run-broker", type=bool, action="store",
         help="Whether to run broker in this test or not."
     )
+
 
 # This fixture is to simulate a managed Pact Broker or Pactflow account
 # Do not do this yourself but setup one of the above

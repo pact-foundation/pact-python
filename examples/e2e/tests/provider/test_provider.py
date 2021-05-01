@@ -24,6 +24,7 @@ PACT_MOCK_PORT = 5001
 PACT_URL = "http://{}:{}".format(PACT_MOCK_HOST, PACT_MOCK_PORT)
 PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 
+
 @pytest.fixture
 def default_opts():
     return {
