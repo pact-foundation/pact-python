@@ -21,7 +21,7 @@ import click
     multiple=True)  # Remove in major version 1.0.0
 @click.option(
     'pact_urls', '--pact-urls',
-    default='',
+    default=[],
     help='DEPRECATED: specify pacts as arguments instead.\n'
          'The URI(s) of the pact to verify.'
          ' Can be an HTTP URI(s) or local file path(s).'
@@ -47,19 +47,19 @@ import click
          ' via the environment variable PACT_BROKER_BASE_URL.')
 @click.option(
     'consumer_version_tag', '--consumer-version-tag',
-    default='',
+    default=[],
     multiple=True,
     help='Retrieve the latest pacts with this consumer version tag. '
          'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
     'consumer_version_selector', '--consumer-version-selector',
-    default='',
+    default=[],
     multiple=True,
     help='Retrieve the latest pacts with this consumer version selector. '
          'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
     'provider_version_tag', '--provider-version-tag',
-    default='',
+    default=[],
     multiple=True,
     help='Tag to apply to the provider application version. '
          'May be specified multiple times.')
