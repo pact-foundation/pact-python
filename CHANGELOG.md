@@ -1,3 +1,9 @@
+### 1.3.9
+  * 98d9a4b - chore(ruby): update ruby standalen (#233) (Elliott Murray, Thu May 13 20:21:10 2021 +0100)
+  * 657e770 - fix: change default from empty string to empty list (#235) (Vasile Tofan, Thu May 13 22:20:47 2021 +0300)
+  * 99fd965 - chore: Releasing version 1.3.8 (Elliott Murray, Sat May 1 12:26:47 2021 +0100)
+  * 3c909f1 - docs: example uses date matcher (#231) (Elliott Murray, Sat May 1 11:51:28 2021 +0100)
+  * 6390144 - fix: fix datetime serialization issues in Format (#230) (Syed Muhammad Dawoud Sheraz Ali, Thu Apr 29 01:49:53 2021 +0500)
 ### 1.3.8
   * 3c909f1 - docs: example uses date matcher (#231) (Elliott Murray, Sat May 1 11:51:28 2021 +0100)
   * 6390144 - fix: fix datetime serialization issues in Format (#230) (Syed Muhammad Dawoud Sheraz Ali, Thu Apr 29 01:49:53 2021 +0500)
