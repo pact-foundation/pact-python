@@ -1,4 +1,4 @@
-fastapi==0.61.2
+fastapi==0.65.2
 pytest==5.4.1
 requests==2.23.0
 uvicorn==0.12.3
