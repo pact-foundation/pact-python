@@ -21,7 +21,7 @@ import click
     multiple=True)  # Remove in major version 1.0.0
 @click.option(
     'pact_urls', '--pact-urls',
-    default='',
+    default=[],
     help='DEPRECATED: specify pacts as arguments instead.\n'
          'The URI(s) of the pact to verify.'
          ' Can be an HTTP URI(s) or local file path(s).'
@@ -47,19 +47,19 @@ import click
          ' via the environment variable PACT_BROKER_BASE_URL.')
 @click.option(
     'consumer_version_tag', '--consumer-version-tag',
-    default='',
+    default=[],
     multiple=True,
     help='Retrieve the latest pacts with this consumer version tag. '
          'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
     'consumer_version_selector', '--consumer-version-selector',
-    default='',
+    default=[],
     multiple=True,
     help='Retrieve the latest pacts with this consumer version selector. '
          'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
     'provider_version_tag', '--provider-version-tag',
-    default='',
+    default=[],
     multiple=True,
     help='Tag to apply to the provider application version. '
          'May be specified multiple times.')
@@ -164,7 +164,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         raise click.Abort()
 
     if publish_verification_results:
-        publish_results(error, provider_app_version)
+        validate_publish(error, provider_app_version)
 
     options = {
         'broker_password': password,
@@ -175,6 +175,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         'log_level': log_level,
         'provider_app_version': provider_app_version,
         'custom_provider_headers': list(headers),
+        'publish_verification_results': publish_verification_results,
         'timeout': timeout,
         'verbose': verbose,
         'consumer_tags': list(consumer_version_tag),
@@ -196,7 +197,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     sys.exit(success)
 
 
-def publish_results(error, provider_app_version):
+def validate_publish(error, provider_app_version):
     """Publish results to broker."""
     if not provider_app_version:
         click.echo(

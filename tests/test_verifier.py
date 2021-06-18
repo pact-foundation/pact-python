@@ -89,7 +89,7 @@ class VerifierPactsTestCase(TestCase):
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
                            verbose=False,
-                           publish_version='1.0.0',
+                           provider_app_version='1.0.0',
                            enable_pending=False,
                            include_wip_pacts_since=None)
 
@@ -172,6 +172,29 @@ class VerifierBrokerTestCase(TestCase):
                            include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    def test_verifier_and_pubish_with_broker(self, mock_wrapper):
+
+        mock_wrapper.return_value = (True, 'some value')
+
+        self.default_opts['publish_version'] = '1.0.0'
+        output, _ = self.verifier.verify_with_broker(**self.default_opts)
+
+        self.assertTrue(output)
+        assertVerifyCalled(mock_wrapper,
+                           provider='test_provider',
+                           provider_base_url='http://localhost:8888',
+                           broker_password=self.broker_password,
+                           broker_username=self.broker_username,
+                           broker_token='token',
+                           broker_url=self.broker_url,
+                           log_level='INFO',
+                           verbose=False,
+                           enable_pending=False,
+                           include_wip_pacts_since=None,
+                           provider_app_version='1.0.0',
+                           )
+
+    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     def test_verifier_with_broker_passes_consumer_selctors(self, mock_wrapper):
 
         mock_wrapper.return_value = (True, 'some value')
@@ -216,7 +239,7 @@ class VerifierBrokerTestCase(TestCase):
                            broker_url=self.broker_url,
                            log_level='INFO',
                            verbose=False,
-                           publish_version='1.0.0',
+                           provider_app_version='1.0.0',
                            enable_pending=False,
                            include_wip_pacts_since=None)
 

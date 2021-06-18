@@ -112,6 +112,7 @@ class mainTestCase(TestCase):
                                 timeout=30,
                                 verbose=True,
                                 enable_pending=False,
+                                publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -141,6 +142,7 @@ class mainTestCase(TestCase):
                                         timeout=30,
                                         verbose=False,
                                         enable_pending=False,
+                                        publish_verification_results=False,
                                         include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
 
@@ -163,6 +165,7 @@ class mainTestCase(TestCase):
                                         timeout=30,
                                         verbose=False,
                                         enable_pending=False,
+                                        publish_verification_results=False,
                                         include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
 
@@ -189,6 +192,7 @@ class mainTestCase(TestCase):
                                         timeout=30,
                                         verbose=False,
                                         enable_pending=False,
+                                        publish_verification_results=False,
                                         include_wip_pacts_since=None)
 
     @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd',
@@ -212,6 +216,7 @@ class mainTestCase(TestCase):
                                 timeout=30,
                                 verbose=False,
                                 enable_pending=False,
+                                publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -233,7 +238,6 @@ class mainTestCase(TestCase):
             '--pact-broker-token=token',
             '--pact-broker-url=http://localhost/docker',
             '--provider=provider',
-            '--publish-verification-results',
             '--provider-app-version=1.2.3',
             '--log-dir=tmp/logs/pact.test.log',
             '--log-level=INFO',
@@ -263,6 +267,7 @@ class mainTestCase(TestCase):
                                 timeout=60,
                                 verbose=True,
                                 enable_pending=True,
+                                publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -305,7 +310,7 @@ class mainTestCase(TestCase):
                                                     '{"tag": "staging", "latest": true}'],
                                 provider_tags=['dev', 'qa'],
                                 provider_app_version='1.2.3',
-                                # custom_provider_header=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
+                                publish_verification_results=True,
                                 provider_states_setup_url='http://localhost/provider-states/set',
                                 timeout=60,
                                 verbose=True,

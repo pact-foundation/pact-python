@@ -362,7 +362,7 @@ class FormatTestCase(TestCase):
                         "s": self.formatter.Regexes.timestamp.value,
                         "o": 0,
                     },
-                    "generate": datetime.datetime(2000, 2, 1, 12, 30, 0, 0),
+                    "generate": datetime.datetime(2000, 2, 1, 12, 30, 0, 0).isoformat(),
                 },
             },
         )
@@ -381,7 +381,7 @@ class FormatTestCase(TestCase):
                         "o": 0,
                     },
                     "generate": datetime.datetime(
-                        2000, 2, 1, 12, 30, 0, 0).date(),
+                        2000, 2, 1, 12, 30, 0, 0).date().isoformat(),
                 },
             },
         )
@@ -400,7 +400,7 @@ class FormatTestCase(TestCase):
                         "o": 0,
                     },
                     "generate": datetime.datetime(
-                        2000, 2, 1, 12, 30, 0, 0).time(),
+                        2000, 2, 1, 12, 30, 0, 0).time().isoformat(),
                 },
             },
         )

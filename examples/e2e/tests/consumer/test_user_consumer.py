@@ -2,10 +2,10 @@
 
 import logging
 import os
-import atexit
+from datetime import datetime
 
 import pytest
-from pact import Consumer, Like, Provider, Term, Format
+from pact import Consumer, Like, Provider, Format
 
 from src.consumer import UserConsumer
 
@@ -31,7 +31,7 @@ def consumer():
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='class')
 def pact(request):
     version = request.config.getoption('--publish-pact')
     publish = True if version else False
@@ -43,20 +43,17 @@ def pact(request):
 
     print('start service')
     pact.start_service()
-    atexit.register(pact.stop_service)
 
     yield pact
     print('stop service')
     pact.stop_service()
 
-def test_get_user_non_admin(pact, consumer):
+
+def test_get_user_non_admin(broker, pact, consumer):
     expected = {
         'name': 'UserA',
         'id': Format().uuid,
-        'created_on': Term(
-            r'\d+-\d+-\d+T\d+:\d+:\d+',
-            '2016-12-15T20:16:01'
-        ),
+        'created_on': Format().timestamp,
         'ip_address': Format().ip_address,
         'admin': False
     }
@@ -70,9 +67,10 @@ def test_get_user_non_admin(pact, consumer):
     with pact:
         user = consumer.get_user('UserA')
         assert user.name == 'UserA'
+        assert user.created_on == datetime.strptime('2000-2-1T12:30:00', '%Y-%m-%dT%H:%M:%S')
 
 
-def test_get_non_existing_user(pact, consumer):
+def test_get_non_existing_user(broker, pact, consumer):
     (pact
      .given('UserA does not exist')
      .upon_receiving('a request for UserA')
@@ -82,4 +80,4 @@ def test_get_non_existing_user(pact, consumer):
     with pact:
         user = consumer.get_user('UserA')
         assert user is None
-    # pact.verify()
+        pact.verify()

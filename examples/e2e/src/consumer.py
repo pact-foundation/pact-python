@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 
 class UserConsumer(object):
@@ -13,9 +14,12 @@ class UserConsumer(object):
             return None
 
         name = response.json()['name']
-        return User(name)
+        created_on = datetime.strptime(response.json()['created_on'], '%Y-%m-%dT%H:%M:%S')
+
+        return User(name, created_on)
 
 
 class User(object):
-    def __init__(self, name):
+    def __init__(self, name, created_on):
         self.name = name
+        self.created_on = created_on
