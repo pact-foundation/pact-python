@@ -6,15 +6,18 @@ import sys
 import tarfile
 
 from zipfile import ZipFile
+import shutil
+import gzip
 
 from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
+from urllib.request import urlopen
 
 
 IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = '1.88.51'
-
+PACT_FFI_VERSION = '0.0.0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -40,6 +43,7 @@ class PactPythonDevelopCommand(develop):
             os.mkdir(bin_path)
 
         install_ruby_app(bin_path)
+        install_rust_app(bin_path)
 
 
 class PactPythonInstallCommand(install):
@@ -56,6 +60,72 @@ class PactPythonInstallCommand(install):
         bin_path = os.path.join(self.install_lib, 'pact', 'bin')
         os.mkdir(bin_path)
         install_ruby_app(bin_path)
+        install_rust_app(bin_path)
+
+
+def install_rust_app(bin_path):
+    """
+    Download the relevant rust binaries and install it for use.
+
+    :param bin_path: The path where binaries should be installed.
+    """
+    target_platform = platform.platform().lower()
+
+    if 'darwin' in target_platform or 'macos' in target_platform:
+        suffix = 'libpact_ffi-osx-x86_64'
+    elif 'linux' in target_platform:
+        suffix = 'libpact_ffi-linux-x86_64'
+    elif 'windows' in target_platform:
+        suffix = 'pact_ffi-windows-x86_64'
+    else:
+        msg = ('Unfortunately, {} is not a supported platform. Only Linux,'
+               ' Windows, and OSX are currently supported.').format(
+            platform.platform())
+        raise Exception(msg)
+
+    if 'windows' in platform.platform().lower():
+        fetch_lib(bin_path, suffix, 'dll')
+        fetch_lib(bin_path, suffix, 'dll.lib')
+        fetch_lib(bin_path, suffix, 'lib')
+
+    else:
+        fetch_lib(bin_path, suffix, 'a')
+        if 'darwin' in target_platform or 'macos' in target_platform:
+            fetch_lib(bin_path, suffix, 'dylib')
+
+        elif 'linux' in target_platform:
+            fetch_lib(bin_path, suffix, 'so')
+
+
+def fetch_lib(bin_path, suffix, type):
+
+    """[summary]
+    Fetches rust binaries to the bin_path based on a suffix which specifies the platform
+    and the type of libary.
+
+    :param bin_path: The path where binaries should be installed.
+    :param suffix: The suffix filenamne unique to this platform (e.g. libpact_ffi-osx-x86_64).
+    "param type: The type of library (e.g. so|a|dll|dylib)
+    Raises:
+        RuntimeError: [description]
+    """
+    dest = os.path.join(bin_path, f'{suffix}.{type}')
+    zipped = os.path.join(bin_path, f'{suffix}.{type}.gz')
+    uri = (
+        f"https://github.com/pact-foundation/pact-reference/releases"
+        f"/download/libpact_ffi-v{PACT_FFI_VERSION}/{suffix}.{type}.gz")
+
+    resp = urlopen(uri)
+    with open(zipped, 'wb') as f:
+        if resp.code == 200:
+            f.write(resp.read())
+        else:
+            raise RuntimeError(
+                'Received HTTP {} when downloading {}'.format(
+                    resp.code, resp.url))
+
+    with gzip.open(zipped) as g, open(dest, 'wb') as f_out:
+        shutil.copyfileobj(g, f_out)
 
 
 def install_ruby_app(bin_path):
@@ -81,11 +151,6 @@ def install_ruby_app(bin_path):
                ' Windows, and OSX are currently supported.').format(
             platform.platform())
         raise Exception(msg)
-
-    if sys.version_info.major == 2:
-        from urllib import urlopen
-    else:
-        from urllib.request import urlopen
 
     path = os.path.join(bin_path, suffix)
     resp = urlopen(uri.format(version=PACT_STANDALONE_VERSION, suffix=suffix))
