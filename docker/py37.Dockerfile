@@ -7,7 +7,8 @@ COPY requirements_dev.txt .
 RUN apk update
 RUN apk upgrade
 
-RUN apk add gcc py-pip python-dev libffi-dev openssl-dev gcc libc-dev bash cmake make
+RUN apk add gcc py-pip python-dev libffi-dev openssl-dev gcc libc-dev bash cmake make libc6-compat
+RUN ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2
 ENV MUSL_LOCALE_DEPS musl-dev gettext-dev libintl
 
 RUN apk add --no-cache \
