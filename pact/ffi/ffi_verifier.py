@@ -22,7 +22,7 @@ class FFIVerify(object):
         if 'darwin' in target_platform or 'macos' in target_platform:
             libname = "libpact_ffi-osx-x86_64.dylib"
         elif 'linux' in target_platform:
-            libname = "libpact_ffi-linux-x86_64.so"
+            libname = "./libpact_ffi-linux-x86_64.so"
         elif 'windows' in target_platform:
             libname = "libpact_ffi-osx-x86_64.dylib"
         else:
