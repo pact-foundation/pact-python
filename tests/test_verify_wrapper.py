@@ -69,6 +69,10 @@ class VerifyWrapperTestCase(TestCase):
             self.mock_rerun_command.return_value)
         self.assertTrue(self.mock_Popen.called)
 
+    def test_version(self):
+        wrapper = VerifyWrapper()
+        self.assertEqual(wrapper.version(), "0.0.0")
+
     def test_pact_urls_or_broker_required(self):
         self.mock_Popen.return_value.returncode = 2
         wrapper = VerifyWrapper()

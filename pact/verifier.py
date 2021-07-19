@@ -26,6 +26,10 @@ class Verifier(object):
         """
         return 'Verifier for {} with url {}'.format(self.provider, self.provider_base_url)
 
+    def version(self):
+        """Return version info."""
+        return VerifyWrapper().version()
+
     def validate_publish(self, **kwargs):
         """Validate publish has a version."""
         if ((kwargs.get('publish') is not None) and (kwargs.get('publish_version') is None)):

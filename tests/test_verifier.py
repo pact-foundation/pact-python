@@ -24,6 +24,9 @@ class VerifierPactsTestCase(TestCase):
         self.mock_wrapper = patch.object(
             VerifyWrapper, 'call_verify').start()
 
+    def test_version(self):
+        self.assertEqual(self.verifier.version(), "0.0.0")
+
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.verifier.path_exists', return_value=True)
     def test_verifier_with_provider_and_files(self, mock_path_exists, mock_wrapper):
