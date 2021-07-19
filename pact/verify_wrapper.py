@@ -205,3 +205,7 @@ class VerifyWrapper(object):
         command.extend(["--provider-app-version",
                        provider_app_version,
                        "--publish-verification-results"])
+
+    def version(self):
+        """Publish version info."""
+        return '0.0.0'

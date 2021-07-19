@@ -98,16 +98,15 @@ def install_rust_app(bin_path):
 
 
 def fetch_lib(bin_path, suffix, type):
-
-    """[summary]
-    Fetches rust binaries to the bin_path based on a suffix which specifies the platform
-    and the type of libary.
+    """
+    Fetch rust binaries to the bin_path.
 
     :param bin_path: The path where binaries should be installed.
     :param suffix: The suffix filenamne unique to this platform (e.g. libpact_ffi-osx-x86_64).
     "param type: The type of library (e.g. so|a|dll|dylib)
     Raises:
         RuntimeError: [description]
+
     """
     dest = os.path.join(bin_path, f'{suffix}.{type}')
     zipped = os.path.join(bin_path, f'{suffix}.{type}.gz')
@@ -182,6 +181,7 @@ dependencies = [
     'psutil>=2.0.0',
     'requests>=2.5.0',
     'six>=1.9.0',
+    'cffi==1.14.6'
 ]
 
 if __name__ == '__main__':
