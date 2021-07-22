@@ -89,8 +89,7 @@ class MessageProvider(object):
         self._setup_states()
 
     def _stop_proxy(self):
-        """Stop the Http Proxy.
-        """
+        """Stop the Http Proxy."""
         log.info('Stop Http Proxy Serve')
         if isinstance(self._process, Process):
             self._process.terminate()
