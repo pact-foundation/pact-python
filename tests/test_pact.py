@@ -486,7 +486,6 @@ class PactVerifyTestCase(PactTestCase):
          .will_respond_with(200, body='success'))
         self.get_verification_call = call(
             'get', 'http://localhost:1234/interactions/verification',
-            allow_redirects=True,
             headers={'X-Pact-Mock-Service': 'true'},
             verify=False,
             params=None)

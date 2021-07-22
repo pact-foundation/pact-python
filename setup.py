@@ -118,7 +118,6 @@ dependencies = [
     'requests>=2.5.0',
     'six>=1.9.0',
     'fastapi==0.65.2',
-    'persist-queue==0.6.0',
     'uvicorn==0.14.0'
 ]
 
