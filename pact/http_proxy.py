@@ -53,5 +53,5 @@ async def setup(request: Request):
 
 
 def run_proxy():
-    """Rub HTTP Proxy"""
+    """Rub HTTP Proxy."""
     uvicorn.run("pact.http_proxy:app", port=PROXY_PORT)
