@@ -1,27 +1,22 @@
 """Http Proxy to be used as provider url in verifier."""
-from werkzeug.local import LocalStack
-from flask import Flask, jsonify, request
-from werkzeug.exceptions import HTTPException
-import json
+#from werkzeug.local import LocalStack
+from fastapi import FastAPI, status, Request, HTTPException
+import uvicorn as uvicorn
 import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-app = Flask(__name__)
-localstack = LocalStack()
+app = FastAPI()
 PROXY_PORT = 1234
+items = {
+    "states": None
+}
 
-def shutdown_server():
-    """Shutdown Http Proxy server."""
-    shutdown = request.environ.get('werkzeug.server.shutdown')
-    if shutdown is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    shutdown()
 
 def _match_states(payload):
     """Match states in payload against stored message handlers."""
     log.debug(f'Find handler from payload: {payload}')
-    handlers = localstack.top
+    handlers = items["states"]
     states = handlers['messageHandlers']
     log.debug(f'Setup states: {handlers}')
     provider_states = payload['providerStates']
@@ -30,74 +25,33 @@ def _match_states(payload):
         matching_state = state['name']
         if matching_state in states:
             return states[matching_state]
-    raise RuntimeError('No matched handler.')
+    raise HTTPException(status_code=500, detail='No matched handler.')
 
-@app.route('/', methods=['POST'])
-def home():
+
+@app.post("/")
+async def root(request: Request):
     """Match states with provided message handlers."""
-    payload = request.json
+    payload = await request.json()
     message = _match_states(payload)
-    res = jsonify({
-        'contents': message
-    })
-    res.status_code = 200
-    return res
+    return {'contents': message}
 
-@app.route('/ping', methods=['GET'])
+
+@app.get('/ping', status_code=status.HTTP_200_OK)
 def ping():
     """Check whether the server is available before setting up states."""
-    res = jsonify({
-        'ping': 'pong'
-    })
-    res.status_code = 200
-    return res
+    return {"ping": "pong"}
 
-@app.route("/setup", methods=['POST'])
-def setup():
+
+@app.post("/setup", status_code=status.HTTP_201_CREATED)
+async def setup(request: Request):
     """Endpoint to setup states.
 
     Use localstack to store payload.
     """
-    payload = request.json
-    # Store payload in localstack
-    localstack.push(payload)
-    res = jsonify(payload)
-    res.status_code = 201
-    return res
-
-@app.route('/shutdown', methods=['POST'])
-def shutdown():
-    """Shutdown Http Proxy server."""
-    shutdown_server()
-    return 'Server shutting down...'
-
-@app.errorhandler(HTTPException)
-def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors."""
-    res = e.get_response()
-    res.data = json.dumps({
-        "code": e.code,
-        "name": e.name,
-        "description": e.description,
-    })
-    res.content_type = "application/json"
-    return res
-
-@app.errorhandler(RuntimeError)
-def handle_runtime_error(e):
-    """Handle the RuntimeError.
-
-    Handle HTML stacktrace when RuntimeError occurs due to no matched handler.
-    when the verifier fails.
-    """
-    res = jsonify({
-        "name": "RuntimeError",
-        "description": str(e),
-    })
-    res.status_code = 500
-    res.content_type = "application/json"
-    return res
+    payload = await request.json()
+    items["states"] = payload
+    return items["states"]
 
 
-if __name__ == '__main__':
-    app.run(debug=True, port=PROXY_PORT)
+def run_proxy():
+    uvicorn.run("pact.http_proxy:app", port=PROXY_PORT)

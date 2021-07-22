@@ -9,11 +9,12 @@ class CustomError(Exception):
         if self.topic:
             return 'Custom Error:, {0}'.format(self.topic)
 
+
 class MessageHandler(object):
     def __init__(self, event):
         self.pass_event(event)
 
     @staticmethod
     def pass_event(event):
-        if event.get('documentType') != 'application/pdf':
+        if event.get('documentType') != 'microsoft-word':
             raise CustomError("Not correct document type")

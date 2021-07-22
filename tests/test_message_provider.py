@@ -104,7 +104,6 @@ class StopProxyTestCase(MessageProviderTestCase):
     def test_shutdown_successfully(self, mock_requests):
         mock_requests.return_value = self._mock_response(content="success")
         self.provider._stop_proxy()
-        mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/shutdown', verify=False)
 
 class SetupStateTestCase(MessageProviderTestCase):
     def setUp(self):

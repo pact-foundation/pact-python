@@ -3,12 +3,14 @@ import os
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
-from subprocess import Popen, PIPE
+from multiprocessing import Process
 from .verifier import Verifier
+from .http_proxy import run_proxy
 
 import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 class MessageProvider(object):
     """
@@ -81,21 +83,18 @@ class MessageProvider(object):
 
     def _start_proxy(self):
         log.info('Start Http Proxy Server')
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = f'python {current_dir}/http_proxy.py {self.proxy_port} >/dev/null &'
-        self._process = Popen(cmd.split(), stdout=PIPE)
+        self._process = Process(target=run_proxy, args=(), daemon=True)
+        self._process.start()
         self._wait_for_server_start()
         self._setup_states()
 
     def _stop_proxy(self):
         """Stop the Http Proxy.
-
-        For some reason, I cannot stop the Flask process using with Popen process.
-        The workaround is to use the API endpoint.
         """
         log.info('Stop Http Proxy Serve')
-        resp = requests.post(f'{self._proxy_url()}/shutdown', verify=False,)
-        assert resp.status_code == 200, resp.text
+        if isinstance(self._process, Process):
+            self._process.terminate()
+            assert not self._process.is_alive()
 
     def verify(self):
         """Verify pact files with executable verifier."""
