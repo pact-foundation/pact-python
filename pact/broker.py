@@ -61,7 +61,7 @@ class Broker():
             os.listdir(pact_dir),
             self._normalize_consumer_name(consumer_name) + '*.json'
         )
-        pact_files = list(map(lambda pact_file: f'{pact_dir}/{pact_file}', pact_files))
+        pact_files[0] = f'{pact_dir}/{pact_files[0]}'
         command = [
             BROKER_CLIENT_PATH,
             'publish',
@@ -85,7 +85,7 @@ class Broker():
             for tag in consumer_tags:
                 command.extend(['-t', tag])
 
-        print(f"PactBroker command: {command}")
+        log.debug(f"PactBroker publish command: {command}")
 
         publish_process = Popen(command)
         publish_process.wait()

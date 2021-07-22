@@ -161,6 +161,12 @@ class Term(Matcher):
         self.matcher = matcher
         self._generate = generate
 
+    def get_gemerate(self):
+        return self._generate
+
+    def __len__(self):
+        return len(self.matcher+self._generate)
+
     def generate(self):
         """
         Return the value that should be used in the request/response.
@@ -331,7 +337,7 @@ class Format:
         return Term(
             self.Regexes.timestamp.value, datetime.datetime(
                 2000, 2, 1, 12, 30, 0, 0
-            ).isoformat()
+            )
         )
 
     def date(self):
@@ -344,7 +350,7 @@ class Format:
         return Term(
             self.Regexes.date.value, datetime.datetime(
                 2000, 2, 1, 12, 30, 0, 0
-            ).date().isoformat()
+            ).date()
         )
 
     def time(self):
@@ -357,7 +363,7 @@ class Format:
         return Term(
             self.Regexes.time_regex.value, datetime.datetime(
                 2000, 2, 1, 12, 30, 0, 0
-            ).time().isoformat()
+            ).time()
         )
 
     class Regexes(Enum):

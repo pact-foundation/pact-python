@@ -49,8 +49,7 @@ class Consumer(object):
                       cors=False, publish_to_broker=False,
                       broker_base_url=None, broker_username=None,
                       broker_password=None, broker_token=None, pact_dir=None,
-                      specification_version='2.0.0',
-                      file_write_mode='overwrite'):
+                      version='2.0.0', file_write_mode='overwrite'):
         """
         Create a contract between the `provider` and this consumer.
 
@@ -109,8 +108,8 @@ class Consumer(object):
         :param pact_dir: Directory where the resulting pact files will be
             written. Defaults to the current directory.
         :type pact_dir: str
-        :param specification_version: The Pact Specification version to use.
-            Defaults to '2.0.0'.
+        :param version: The Pact Specification version to use, defaults to
+            '2.0.0'.
         :type version: str
         :param file_write_mode: How the mock service should apply multiple
             calls to .verify(). Pass 'overwrite' to overwrite the generated
@@ -143,5 +142,5 @@ class Consumer(object):
             cors=cors,
             pact_dir=pact_dir,
             publish_to_broker=publish_to_broker,
-            specification_version=specification_version,
+            version=version,
             file_write_mode=file_write_mode)
