@@ -1,5 +1,4 @@
 """Http Proxy to be used as provider url in verifier."""
-#from werkzeug.local import LocalStack
 from fastapi import FastAPI, status, Request, HTTPException
 import uvicorn as uvicorn
 import logging

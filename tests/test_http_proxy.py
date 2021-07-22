@@ -1,7 +1,4 @@
-from pact import http_proxy as http_proxy
 from unittest import TestCase
-from mock import patch, Mock
-import json
 from pact.http_proxy import app
 from fastapi.testclient import TestClient
 client = TestClient(app)
