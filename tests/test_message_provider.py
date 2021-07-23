@@ -1,5 +1,4 @@
 import os
-# import pytest
 from mock import patch, Mock
 from unittest import TestCase
 
