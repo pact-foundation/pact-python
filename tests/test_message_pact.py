@@ -9,6 +9,7 @@ from pact.message_pact import MessagePact
 from pact.constants import MESSAGE_PATH
 from pact import message_pact as message_pact
 
+
 class MessagePactTestCase(TestCase):
     def setUp(self):
         self.consumer = MessageConsumer('TestConsumer')
