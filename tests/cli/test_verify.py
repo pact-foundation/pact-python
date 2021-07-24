@@ -69,7 +69,7 @@ class mainTestCase(TestCase):
         self.assertEqual(result.exit_code, 2)
         self.assertIn('--provider-base-url', result.output)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     def test_pact_urls_or_broker_are_required(self, mock_wrapper):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost'])
@@ -78,7 +78,7 @@ class mainTestCase(TestCase):
         self.assertIn('at least one', result.output)
         mock_wrapper.assert_not_called()
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     def test_broker_url_but_no_provider_required(self, mock_wrapper):
         result = self.runner.invoke(
             verify.main, ['--provider-base-url=http://localhost',
@@ -87,17 +87,17 @@ class mainTestCase(TestCase):
         mock_wrapper.assert_not_called()
         self.assertEqual(result.exit_code, 1)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_wrapper_error_code_returned(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 8, None  # rnd number to indicate retval returned
 
         result = self.runner.invoke(verify.main, self.all_url_opts)
 
-        self.assertFalse(mock_wrapper.call_verify.called)
+        self.assertFalse(mock_wrapper.verify.called)
         self.assertEqual(result.exit_code, 8)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_successful_verification(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None  # rnd number to indicate retval returned
@@ -115,7 +115,7 @@ class mainTestCase(TestCase):
                                 publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_broker_url_and_provider_required(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
@@ -125,7 +125,7 @@ class mainTestCase(TestCase):
         mock_wrapper.assert_called()
         self.assertEqual(result.exit_code, 0)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_pact_url_param_supported(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
@@ -146,7 +146,7 @@ class mainTestCase(TestCase):
                                         include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_pact_urls_param_supported(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
@@ -169,7 +169,7 @@ class mainTestCase(TestCase):
                                         include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=False)
     def test_local_pact_urls_must_exist(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
@@ -177,9 +177,9 @@ class mainTestCase(TestCase):
         result = self.runner.invoke(verify.main, self.all_url_opts)
         self.assertEqual(result.exit_code, 1)
         self.assertIn('./pacts/consumer-provider.json', result.output)
-        mock_wrapper.call_verify.assert_not_called
+        mock_wrapper.verify.assert_not_called
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_failed_verification(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 3, None
@@ -198,7 +198,7 @@ class mainTestCase(TestCase):
     @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd',
                              'PACT_BROKER_USERNAME': 'broker_user',
                              'PACT_BROKER_BASE_URL': 'http://broker/'})
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_broker_creds_from_env_var(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
@@ -219,7 +219,7 @@ class mainTestCase(TestCase):
                                 publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_all_url_options(self, mock_isfile, mock_wrapper):
         mock_wrapper.return_value = 0, None
@@ -270,7 +270,7 @@ class mainTestCase(TestCase):
                                 publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     def test_all_broker_options(self, mock_wrapper):
         mock_wrapper.return_value = 0, None
         result = self.runner.invoke(verify.main, [

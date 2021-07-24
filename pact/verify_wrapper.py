@@ -133,7 +133,7 @@ class VerifyWrapper(object):
         if len(pacts) == 0 and not self._broker_present(**kwargs):
             raise PactException('Pact urls or Pact broker required')
 
-    def call_verify(
+    def verify(
             self, *pacts, provider_base_url, provider, enable_pending=False,
             include_wip_pacts_since=None, **kwargs
     ):
@@ -195,16 +195,6 @@ class VerifyWrapper(object):
         logs = capture_logs(result, verbose)
 
         return result.returncode, logs
-
-    def publish_results(self, provider_app_version, command):
-        """Publish results to broker."""
-        if not provider_app_version:
-            # todo implement
-            raise Exception('todo')
-
-        command.extend(["--provider-app-version",
-                       provider_app_version,
-                       "--publish-verification-results"])
 
     def version(self):
         """Publish version info."""

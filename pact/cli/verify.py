@@ -188,7 +188,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     options = dict(filter(lambda item: item[1] != '', options.items()))
     options = dict(filter(lambda item: is_empty_list(item), options.items()))
 
-    success, logs = VerifyWrapper().call_verify(*all_pact_urls,
+    success, logs = VerifyWrapper().verify(*all_pact_urls,
                                                 provider=provider,
                                                 provider_base_url=base_url,
                                                 enable_pending=enable_pending,
