@@ -15,6 +15,19 @@ class FFIVerify(object):
         result = lib.pactffi_version()
         return ffi.string(result).decode('utf-8')
 
+
+    def verify(self):
+        """Call verify method."""
+        ffi = FFI()
+        ffi.cdef("""
+        char *pactffi_verify(void);
+        """)
+        lib = self._load_ffi_library(ffi)
+        result = lib.pactffi_version()
+        return ffi.string(result).decode('utf-8')
+
+# pactffi_verify
+
     def _load_ffi_library(self, ffi):
         """Load the right library."""
         target_platform = platform.platform().lower()

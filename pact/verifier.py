@@ -56,7 +56,7 @@ class Verifier(object):
         # rerun_command()  # env =
 
         options = self.extract_params(**kwargs)
-        success, logs = VerifyWrapper().call_verify(*pacts,
+        success, logs = VerifyWrapper().verify(*pacts,
                                                     provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
                                                     enable_pending=enable_pending,
@@ -90,7 +90,7 @@ class Verifier(object):
         }
         options.update(self.extract_params(**kwargs))
 
-        success, logs = VerifyWrapper().call_verify(provider=self.provider,
+        success, logs = VerifyWrapper().verify(provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
                                                     enable_pending=enable_pending,
                                                     include_wip_pacts_since=include_wip_pacts_since,

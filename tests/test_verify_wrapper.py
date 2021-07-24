@@ -78,14 +78,14 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         with self.assertRaises(PactException) as context:
-            wrapper.call_verify(provider='provider', provider_base_url='http://localhost')
+            wrapper.verify(provider='provider', provider_base_url='http://localhost')
 
         self.assertTrue('Pact urls or Pact broker required' in context.exception.message)
 
     def test_broker_without_authentication_can_be_used(self):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
-        wrapper.call_verify(
+        wrapper.verify(
             provider='provider', provider_base_url='http://localhost', broker_url='http://broker.example.com'
         )
         self.assertProcess(*[
@@ -98,7 +98,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('./pacts/consumer-provider.json',
+        result, output = wrapper.verify('./pacts/consumer-provider.json',
                                              './pacts/consumer-provider2.json',
                                              provider='test_provider',
                                              provider_base_url='http://localhost')
@@ -111,7 +111,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('./pacts/consumer-provider5.json',
+        result, output = wrapper.verify('./pacts/consumer-provider5.json',
                                              './pacts/consumer-provider3.json',
                                              provider_base_url='http://localhost',
                                              provider_states_setup_url='http://localhost/provider-states/set',
@@ -148,7 +148,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify(provider='test_provider',
+        result, output = wrapper.verify(provider='test_provider',
                                              provider_base_url='http://localhost',
                                              broker_username='username',
                                              broker_password='pwd',
@@ -168,7 +168,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('path/to/pact1',
+        result, output = wrapper.verify('path/to/pact1',
                                              'path/to/pact2',
                                              provider_base_url='http://localhost',
                                              provider='provider')
@@ -183,7 +183,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('path/to/pact1',
+        result, output = wrapper.verify('path/to/pact1',
                                              'path/to/pact2',
                                              provider_base_url='http://localhost',
                                              provider='provider')
@@ -196,7 +196,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('./pacts/consumer-provider.json',
+        result, output = wrapper.verify('./pacts/consumer-provider.json',
                                              './pacts/consumer-provider2.json',
                                              provider='test_provider',
                                              provider_base_url='http://localhost',
@@ -216,7 +216,7 @@ class VerifyWrapperTestCase(TestCase):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('path/to/pact1',
+        result, output = wrapper.verify('path/to/pact1',
                                              'path/to/pact2',
                                              provider_base_url='http://localhost',
                                              provider='provider')
