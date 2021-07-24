@@ -264,7 +264,7 @@ class Pact(Broker):
         """
         self._interactions = []
         resp = requests.get(
-            self.uri + "/interactions/verification", headers=self.HEADERS, verify=False, allow_redirects=True
+            self.uri + "/interactions/verification", headers=self.HEADERS, verify=False
         )
         assert resp.status_code == 200, resp.text
         resp = requests.post(self.uri + "/pact", headers=self.HEADERS, verify=False)
