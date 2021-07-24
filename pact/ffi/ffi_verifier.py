@@ -15,7 +15,6 @@ class FFIVerify(object):
         result = lib.pactffi_version()
         return ffi.string(result).decode('utf-8')
 
-
     def verify(self):
         """Call verify method."""
         ffi = FFI()

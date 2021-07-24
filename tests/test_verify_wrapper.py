@@ -99,9 +99,9 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('./pacts/consumer-provider.json',
-                                             './pacts/consumer-provider2.json',
-                                             provider='test_provider',
-                                             provider_base_url='http://localhost')
+                                        './pacts/consumer-provider2.json',
+                                        provider='test_provider',
+                                        provider_base_url='http://localhost')
 
         self.assertProcess(*self.default_call)
         self.assertEqual(result, 0)
@@ -112,18 +112,18 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('./pacts/consumer-provider5.json',
-                                             './pacts/consumer-provider3.json',
-                                             provider_base_url='http://localhost',
-                                             provider_states_setup_url='http://localhost/provider-states/set',
-                                             provider='provider',
-                                             provider_app_version='1.2.3',
-                                             custom_provider_headers=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
-                                             log_dir='tmp/logs/pact.test.log',
-                                             log_level='INFO',
-                                             timeout=60,
-                                             verbose=True,
-                                             enable_pending=True,
-                                             include_wip_pacts_since='2018-01-01')
+                                        './pacts/consumer-provider3.json',
+                                        provider_base_url='http://localhost',
+                                        provider_states_setup_url='http://localhost/provider-states/set',
+                                        provider='provider',
+                                        provider_app_version='1.2.3',
+                                        custom_provider_headers=['Authorization: Basic cGFj', 'CustomHeader: somevalue'],
+                                        log_dir='tmp/logs/pact.test.log',
+                                        log_level='INFO',
+                                        timeout=60,
+                                        verbose=True,
+                                        enable_pending=True,
+                                        include_wip_pacts_since='2018-01-01')
 
         self.assertEqual(result, 0)
         self.mock_Popen.return_value.wait.assert_called_once_with()
@@ -149,13 +149,13 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify(provider='test_provider',
-                                             provider_base_url='http://localhost',
-                                             broker_username='username',
-                                             broker_password='pwd',
-                                             broker_token='token',
-                                             broker_url='http://broker',
-                                             consumer_tags=['prod', 'dev'],
-                                             provider_tags=['dev', 'qa'])
+                                        provider_base_url='http://localhost',
+                                        broker_username='username',
+                                        broker_password='pwd',
+                                        broker_token='token',
+                                        broker_url='http://broker',
+                                        consumer_tags=['prod', 'dev'],
+                                        provider_tags=['dev', 'qa'])
 
         self.assertProcess(*self.broker_call)
         self.assertEqual(result, 0)
@@ -169,9 +169,9 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('path/to/pact1',
-                                             'path/to/pact2',
-                                             provider_base_url='http://localhost',
-                                             provider='provider')
+                                        'path/to/pact2',
+                                        provider_base_url='http://localhost',
+                                        provider='provider')
 
         mock_rerun_cmd.assert_called_once()
 
@@ -184,9 +184,9 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('path/to/pact1',
-                                             'path/to/pact2',
-                                             provider_base_url='http://localhost',
-                                             provider='provider')
+                                        'path/to/pact2',
+                                        provider_base_url='http://localhost',
+                                        provider='provider')
 
         mock_sanitize_logs.assert_called_with(self.mock_Popen.return_value, False)
 
@@ -197,11 +197,11 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('./pacts/consumer-provider.json',
-                                             './pacts/consumer-provider2.json',
-                                             provider='test_provider',
-                                             provider_base_url='http://localhost',
-                                             provider_app_version='1.2.3',
-                                             publish_verification_results=True)
+                                        './pacts/consumer-provider2.json',
+                                        provider='test_provider',
+                                        provider_base_url='http://localhost',
+                                        provider_app_version='1.2.3',
+                                        publish_verification_results=True)
 
         self.default_call.extend(['--provider-app-version', '1.2.3', '--publish-verification-results'])
 
@@ -217,9 +217,9 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('path/to/pact1',
-                                             'path/to/pact2',
-                                             provider_base_url='http://localhost',
-                                             provider='provider')
+                                        'path/to/pact2',
+                                        provider_base_url='http://localhost',
+                                        provider='provider')
 
         mock_expand_dirs.assert_called_with(['path/to/pact1',
                                              'path/to/pact2'])

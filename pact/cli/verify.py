@@ -189,11 +189,11 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
     options = dict(filter(lambda item: is_empty_list(item), options.items()))
 
     success, logs = VerifyWrapper().verify(*all_pact_urls,
-                                                provider=provider,
-                                                provider_base_url=base_url,
-                                                enable_pending=enable_pending,
-                                                include_wip_pacts_since=include_wip_pacts_since,
-                                                **options)
+                                           provider=provider,
+                                           provider_base_url=base_url,
+                                           enable_pending=enable_pending,
+                                           include_wip_pacts_since=include_wip_pacts_since,
+                                           **options)
     sys.exit(success)
 
 
