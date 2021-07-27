@@ -1,0 +1,55 @@
+{
+  "consumer": {
+    "name": "DetectContentLambda"
+  },
+  "provider": {
+    "name": "ContentProvider"
+  },
+  "messages": [
+    {
+      "description": "Description",
+      "providerStates": [
+        {
+          "name": "A document created successfully",
+          "params": null
+        }
+      ],
+      "contents": {
+        "event": "ObjectCreated:Put",
+        "documentName": "document.doc",
+        "creator": "TP",
+        "documentType": "microsoft-word"
+      },
+      "matchingRules": {
+      },
+      "metaData": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "description": "Description with broker",
+      "providerStates": [
+        {
+          "name": "A document deleted successfully",
+          "params": null
+        }
+      ],
+      "contents": {
+        "event": "ObjectCreated:Delete",
+        "documentName": "document.doc",
+        "creator": "TP",
+        "documentType": "microsoft-word"
+      },
+      "matchingRules": {
+      },
+      "metaData": {
+        "Content-Type": "application/json"
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  }
+}

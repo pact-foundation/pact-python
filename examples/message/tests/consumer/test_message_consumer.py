@@ -16,16 +16,17 @@ logging.basicConfig(level=logging.INFO)
 PACT_BROKER_URL = "http://localhost"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
-PACT_DIR = 'pacts'
+PACT_DIR = "pacts"
 
-CONSUMER_NAME = 'DetectContentLambda'
-PROVIDER_NAME = 'ContentProvider'
-PACT_FILE = (f"{PACT_DIR}/{CONSUMER_NAME.lower().replace(' ', '_')}_message-"
-             + f"{PROVIDER_NAME.lower().replace(' ', '_')}_message.json")
+CONSUMER_NAME = "DetectContentLambda"
+PROVIDER_NAME = "ContentProvider"
+PACT_FILE = (f"{PACT_DIR}/{CONSUMER_NAME.lower().replace(' ', '_')}-"
+             + f"{PROVIDER_NAME.lower().replace(' ', '_')}.json")
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="session")
 def pact(request):
-    version = request.config.getoption('--publish-pact')
+    version = request.config.getoption("--publish-pact")
     publish = True if version else False
 
     pact = MessageConsumer(CONSUMER_NAME, version=version).has_pact_with(
@@ -54,57 +55,59 @@ def progressive_delay(file, time_to_wait=10, second_interval=0.5, verbose=False)
         time.sleep(second_interval)
         time_counter += 1
         if verbose:
-            print(f'Trying for {time_counter*second_interval} seconds')
+            print(f"Trying for {time_counter*second_interval} seconds")
         if time_counter > time_to_wait:
             if verbose:
-                print(f'Already waited {time_counter*second_interval} seconds')
+                print(f"Already waited {time_counter*second_interval} seconds")
             break
 
 
 def test_throw_exception_handler(pact):
     cleanup_json(PACT_FILE)
+
     wrong_event = {
-        'documentName': 'spreadsheet.xls',
-        'creator': 'WI',
-        'documentType': 'microsoft-excel'
+        "event": "ObjectCreated:Put",
+        "documentName": "spreadsheet.xls",
+        "creator": "WI",
+        "documentType": "microsoft-excel"
     }
 
     (pact
-     .given('Another document in Document Service')
-     .expects_to_receive('Description')
+     .given("Document unsupported type")
+     .expects_to_receive("Description")
      .with_content(wrong_event)
      .with_metadata({
-         'Content-Type': 'application/json'
+         "Content-Type": "application/json"
      }))
 
     with pytest.raises(CustomError):
         with pact:
-            # handler needs 'documentType' == 'microsoft-word'
+            # handler needs "documentType" == "microsoft-word"
             MessageHandler(wrong_event)
 
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 0
 
 
-def test_generate_new_pact_file(pact):
+def test_put_file(pact):
     cleanup_json(PACT_FILE)
 
     expected_event = {
-        'documentName': 'document.doc',
-        'creator': 'TP',
-        'documentType': 'microsoft-word'
+        "event": "ObjectCreated:Put",
+        "documentName": "document.doc",
+        "creator": "TP",
+        "documentType": "microsoft-word"
     }
 
     (pact
-     .given('A document create in Document Service')
-     .expects_to_receive('Description')
+     .given("A document created successfully")
+     .expects_to_receive("Description")
      .with_content(expected_event)
      .with_metadata({
-         'Content-Type': 'application/json'
+         "Content-Type": "application/json"
      }))
 
     with pact:
-        # handler needs 'documentType' == 'microsoft-word'
         MessageHandler(expected_event)
 
     progressive_delay(f"{PACT_FILE}")
@@ -121,17 +124,18 @@ def test_publish_to_broker(pact):
     `pytest tests/consumer/test_message_consumer.py::test_publish_pact_to_broker --publish-pact 2`
     """
     expected_event = {
-        'documentName': 'document.doc',
-        'creator': 'TP',
-        'documentType': 'microsoft-word'
+        "event": "ObjectCreated:Delete",
+        "documentName": "document.doc",
+        "creator": "TP",
+        "documentType": "microsoft-word"
     }
 
     (pact
-     .given('A document create in Document Service with broker')
-     .expects_to_receive('Description with broker')
+     .given("A document deleted successfully")
+     .expects_to_receive("Description with broker")
      .with_content(expected_event)
      .with_metadata({
-         'Content-Type': 'application/json'
+         "Content-Type": "application/json"
      }))
 
     with pact:

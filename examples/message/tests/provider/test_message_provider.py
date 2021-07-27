@@ -1,6 +1,7 @@
 import pytest
 from pact import MessageProvider
 
+
 def document_created_handler():
     return {
         "event": "ObjectCreated:Put",
@@ -9,6 +10,7 @@ def document_created_handler():
         "documentType": "application/pdf"
     }
 
+
 def document_deleted_handler():
     return {
         "event": "ObjectCreated:Delete",
@@ -16,6 +18,7 @@ def document_deleted_handler():
         "key": "existing_file_in_s3.pdf",
         "documentType": "application/pdf"
     }
+
 
 def test_verify_success():
     provider = MessageProvider(
@@ -28,6 +31,7 @@ def test_verify_success():
     )
     with provider:
         provider.verify()
+
 
 def test_verify_failure_when_a_provider_missing():
     provider = MessageProvider(
