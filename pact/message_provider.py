@@ -83,7 +83,7 @@ class MessageProvider(object):
             )
 
     def _wait_for_server_stop(self):
-        """Wait for server to finish, or raise exception after timeout"""
+        """Wait for server to finish, or raise exception after timeout."""
         retry = 20
         while True:
             self._process.terminate()
