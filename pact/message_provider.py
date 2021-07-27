@@ -1,14 +1,17 @@
 """Contract Message Provider."""
 import os
+import time
+
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
-from subprocess import Popen, PIPE
+from multiprocessing import Process
 from .verifier import Verifier
+from .http_proxy import run_proxy
 
 import logging
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.getLogger("urllib3").setLevel(logging.ERROR)
+
 
 class MessageProvider(object):
     """
@@ -48,7 +51,7 @@ class MessageProvider(object):
         return f'http://{self.proxy_host}:{self.proxy_port}'
 
     def _pact_file(self):
-        return f'{self.consumer}_message-{self.provider}_message.json'.lower().replace(' ', '_')
+        return f'{self.consumer}-{self.provider}.json'.lower().replace(' ', '_')
 
     def _setup_states(self):
         message_handlers = {}
@@ -79,23 +82,30 @@ class MessageProvider(object):
                 'There was a problem starting the proxy: %s', resp.text
             )
 
+    def _wait_for_server_stop(self):
+        """Wait for server to finish, or raise exception after timeout"""
+        retry = 20
+        while True:
+            self._process.terminate()
+            time.sleep(0.1)
+            try:
+                assert not self._process.is_alive()
+                return 0
+            except AssertionError:
+                if retry == 0:
+                    raise RuntimeError("Process timed out")
+                retry -= 1
+
     def _start_proxy(self):
-        log.info('Start Http Proxy Server')
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = f'python {current_dir}/http_proxy.py {self.proxy_port} >/dev/null &'
-        self._process = Popen(cmd.split(), stdout=PIPE)
+        self._process = Process(target=run_proxy, args=(), daemon=True)
+        self._process.start()
         self._wait_for_server_start()
         self._setup_states()
 
     def _stop_proxy(self):
-        """Stop the Http Proxy.
-
-        For some reason, I cannot stop the Flask process using with Popen process.
-        The workaround is to use the API endpoint.
-        """
-        log.info('Stop Http Proxy Serve')
-        resp = requests.post(f'{self._proxy_url()}/shutdown', verify=False,)
-        assert resp.status_code == 200, resp.text
+        """Stop the Http Proxy."""
+        if isinstance(self._process, Process):
+            self._wait_for_server_stop()
 
     def verify(self):
         """Verify pact files with executable verifier."""

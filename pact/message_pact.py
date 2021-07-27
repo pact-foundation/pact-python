@@ -9,6 +9,7 @@ from .broker import Broker
 from .constants import MESSAGE_PATH
 from .matchers import from_term
 
+
 class MessagePact(Broker):
     """
     Represents a contract between a consumer and provider using messages.
