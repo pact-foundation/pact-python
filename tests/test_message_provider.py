@@ -50,6 +50,7 @@ class MessageProviderTestCase(TestCase):
         assert mock_verify_pacts.call_count == 1
         mock_verify_pacts.assert_called_with(f'{self.provider.pact_dir}/{self.provider._pact_file()}', verbose=False)
 
+
 class MessageProviderContextManagerTestCase(MessageProviderTestCase):
     def setUp(self):
         super(MessageProviderContextManagerTestCase, self).setUp()
@@ -83,6 +84,7 @@ class MessageProviderContextManagerTestCase(MessageProviderTestCase):
 
     #     mock_stop_proxy.assert_called_once()
 
+
 class StartProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StartProxyTestCase, self).setUp()
@@ -96,6 +98,7 @@ class StartProxyTestCase(MessageProviderTestCase):
     #     mock_wait_for_server_start.assert_called_once()
     #     mock_setup_states.assert_called_once()
 
+
 class StopProxyTestCase(MessageProviderTestCase):
     def setUp(self):
         super(StopProxyTestCase, self).setUp()
@@ -105,6 +108,7 @@ class StopProxyTestCase(MessageProviderTestCase):
         mock_requests.return_value = self._mock_response(content="success")
         self.provider._stop_proxy()
         mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/shutdown', verify=False)
+
 
 class SetupStateTestCase(MessageProviderTestCase):
     def setUp(self):
@@ -121,6 +125,7 @@ class SetupStateTestCase(MessageProviderTestCase):
         }
 
         mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/setup', verify=False, json=expected_payload)
+
 
 class WaitForServerStartTestCase(MessageProviderTestCase):
     def setUp(self):
