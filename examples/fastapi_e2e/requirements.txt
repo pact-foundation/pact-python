@@ -2,3 +2,4 @@ fastapi==0.65.2
 pytest==5.4.1
 requests==2.23.0
 uvicorn==0.12.3
+urllib3>=1.26.5 # not directly required, pinned by Snyk to avoid a vulnerability
