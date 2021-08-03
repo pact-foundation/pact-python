@@ -1,5 +1,6 @@
 """Contract Message Provider."""
 import os
+
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
@@ -9,6 +10,9 @@ from .verifier import Verifier
 import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+
+
 
 class MessageProvider(object):
     """
@@ -50,11 +54,13 @@ class MessageProvider(object):
         self.broker_password = broker_password 
         self.broker_url = broker_url 
 
+
     def _proxy_url(self):
         return f'http://{self.proxy_host}:{self.proxy_port}'
 
     def _pact_file(self):
         return f'{self.consumer}_message-{self.provider}_message.json'.lower().replace(' ', '_')
+
 
     def _setup_states(self):
         message_handlers = {}
@@ -113,6 +119,7 @@ class MessageProvider(object):
                                                     broker_password = self.broker_password,
                                                     broker_url = self.broker_url,
                                                     publish_version = self.version)
+
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
     def __enter__(self):

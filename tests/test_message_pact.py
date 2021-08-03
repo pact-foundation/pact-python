@@ -125,6 +125,7 @@ class MessagePactTestCase(TestCase):
             target._messages[0]['metaData'],
             {'source': 'legacy_api'})
 
+
 class MessagePactContextManagerTestCase(MessagePactTestCase):
     def setUp(self):
         super(MessagePactContextManagerTestCase, self).setUp()
@@ -194,6 +195,6 @@ class PactGeneratePactFileTestCase(TestCase):
             json.dumps(target._messages[0]),
             '--pact-dir', '/pacts',
             '--pact-specification-version=3.0.0',
-            '--consumer', 'TestConsumer_message',
-            '--provider', 'TestProvider_message',
+            '--consumer', 'TestConsumer',
+            '--provider', 'TestProvider',
         ])

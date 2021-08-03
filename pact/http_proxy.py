@@ -36,6 +36,7 @@ def _match_states(payload):
     json_data = json_data.replace("true",'"true"')
     handlers = json.loads(json_data)
     log.info(f'handlers: {handlers}')
+
     states = handlers['messageHandlers']
     log.debug(f'Setup states: {handlers}')
     provider_states = payload['providerStates']
@@ -68,6 +69,7 @@ def ping():
 
 @app.route("/setup", methods=['POST'])
 def setup():
+
     """Endpoint to setup states.
 
     Use localstack to store payload.

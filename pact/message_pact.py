@@ -9,6 +9,7 @@ from .broker import Broker
 from .constants import MESSAGE_PATH
 from .matchers import from_term
 
+
 class MessagePact(Broker):
     """
     Represents a contract between a consumer and provider using messages.
@@ -165,8 +166,8 @@ class MessagePact(Broker):
             json.dumps(self._messages[0]),
             "--pact-dir", self.pact_dir,
             f"--pact-specification-version={self.version}",
-            "--consumer", f"{self.consumer.name}_message",
-            "--provider", f"{self.provider.name}_message",
+            "--consumer", f"{self.consumer.name}",
+            "--provider", f"{self.provider.name}",
         ]
 
         self._message_process = Popen(command)
