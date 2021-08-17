@@ -117,9 +117,9 @@ dependencies = [
     'psutil>=2.0.0',
     'requests>=2.5.0',
     'six>=1.9.0',
-    'fastapi==0.67.0',
+    'fastapi>=0.67.0',
     'urllib3>=1.26.5',
-    'uvicorn==0.14.0'
+    'uvicorn>=0.14.0'
 ]
 
 if __name__ == '__main__':
