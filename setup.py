@@ -17,7 +17,7 @@ from urllib.request import urlopen
 
 IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = '1.88.51'
-PACT_FFI_VERSION = '0.0.0'
+PACT_FFI_VERSION = '0.0.1'
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -31,7 +31,7 @@ class PactPythonDevelopCommand(develop):
     Custom develop mode installer for pact-python.
 
     When the package is installed using `python setup.py develop` or
-    `pip install -e` it will download and unpack the appropriate Pact
+    `pip install -e .` it will download and unpack the appropriate Pact
     mock service and provider verifier.
     """
 
@@ -59,6 +59,7 @@ class PactPythonInstallCommand(install):
         install.run(self)
         bin_path = os.path.join(self.install_lib, 'pact', 'bin')
         os.mkdir(bin_path)
+
         install_ruby_app(bin_path)
         install_rust_app(bin_path)
 
@@ -102,8 +103,8 @@ def fetch_lib(bin_path, suffix, type):
     Fetch rust binaries to the bin_path.
 
     :param bin_path: The path where binaries should be installed.
-    :param suffix: The suffix filenamne unique to this platform (e.g. libpact_ffi-osx-x86_64).
-    "param type: The type of library (e.g. so|a|dll|dylib)
+    :param suffix: The suffix filename unique to this platform (e.g. libpact_ffi-osx-x86_64).
+    :param type: The type of library (e.g. so|a|dll|dylib)
     Raises:
         RuntimeError: [description]
 
