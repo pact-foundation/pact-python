@@ -442,14 +442,14 @@ Please read [CONTRIBUTING.md](https://github.com/pact-foundation/pact-python/blo
 
 To setup a development environment:
 
-1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv]
-2. Its recommended to create a Python [virtualenv] for the project.
+1. If you want to run tests for all Python versions, install 3.6, 3.7, 3.8, and 3.9 from source or using a tool like [pyenv]
+2. It's recommended to create a Python [virtualenv] for the project.
 3. We are now using FFI bindings. For mac you might want to read these [setup FFI](https://cffi.readthedocs.io/en/latest/installation.html)
 
 The setup the environment, run tests, and package the application, run:
 `make release`
 
-If you are just interested in packaging pact-python so you can install it using pip:
+If you are just interested in packaging pact-python you can install it using pip:
 
 `make package`
 
