@@ -119,4 +119,4 @@ class PactFFI(object):
 
         lines = open(PactFFI.output_file).readlines()
         open(PactFFI.output_file, 'w').close()
-        return lines
+        return [line.lstrip('\x00') for line in lines]
