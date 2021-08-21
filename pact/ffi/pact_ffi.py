@@ -20,6 +20,16 @@ class LogToBufferStatus(Enum):
     CANT_CONSTRUCT_SINK = -7  # Can't construct sink
 
 
+@unique
+class LogLevel(Enum):
+    OFF = 0
+    ERROR = 1
+    WARN = 2
+    INFO = 3
+    DEBUG = 4
+    TRACE = 5
+
+
 class PactFFI(object):
     """This interfaces with the Rust crate `pact_ffi`_, which exposes the Pact
     API via a C Foreign Function Interface. In the case of python, the library
@@ -60,7 +70,7 @@ class PactFFI(object):
             int pactffi_verify(char *);
             
             // log
-            int pactffi_log_to_file(char *);
+            int pactffi_log_to_file(char *, int);
             """
             )
             PactFFI.lib = self._load_ffi_library(PactFFI.ffi)
@@ -68,7 +78,9 @@ class PactFFI(object):
             # Setup logging to a file in the output_dir
             PactFFI.output_file = os.path.join(PactFFI.output_dir.name, 'output')
             output_c = self.ffi.new('char[]', bytes(self.output_file, 'utf-8'))
-            result = self.lib.pactffi_log_to_file(output_c)
+
+            # By default, we get TRACE logs, set to INFO for now
+            result = self.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
             assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
 
     def version(self) -> str:
