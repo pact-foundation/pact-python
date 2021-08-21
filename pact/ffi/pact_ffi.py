@@ -21,8 +21,6 @@ class PactFFI(object):
         https://cffi.readthedocs.io/en/latest/
     """
 
-
-
     def version(self) -> str:
         """Get the current library version.
 
