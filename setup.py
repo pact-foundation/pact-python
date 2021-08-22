@@ -202,7 +202,7 @@ if __name__ == '__main__':
         url='https://github.com/pact-foundation/pact-python',
         entry_points='''
             [console_scripts]
-            pact-verifier=pact.cli.verify:main
+            pact-verifier=pact.ffi.cli.verify:main
         ''',
         install_requires=dependencies,
         packages=['pact', 'pact.cli'],

@@ -3,6 +3,7 @@ from enum import Enum, unique
 from typing import NamedTuple, List
 
 from pact.ffi.pact_ffi import PactFFI
+import json
 
 
 @unique
@@ -33,7 +34,7 @@ class Verifier(PactFFI):
         """Call verify method."""
 
         if args:
-            c_args = self.ffi.new('char[]', bytes(args, 'utf-8'))
+            c_args = self.ffi.new("char[]", bytes(args, "utf-8"))
         else:
             c_args = self.ffi.NULL
 
@@ -55,3 +56,8 @@ class Verifier(PactFFI):
         result = self.lib.pactffi_verify(c_args)
         logs = self._get_logs()
         return VerifyResult(result, logs)
+
+    def cli_args(self) -> str:
+        result = self.lib.pactffi_verifier_cli_args()
+        # result = self.lib.pactffi_versiona()
+        return json.loads(self.ffi.string(result).decode("utf-8"))

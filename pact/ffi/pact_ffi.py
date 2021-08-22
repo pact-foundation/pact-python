@@ -71,13 +71,16 @@ class PactFFI(object):
             
             // log
             int pactffi_log_to_file(char *, int);
+            
+            // experimenting
+            char *pactffi_verifier_cli_args(void);
             """
             )
             PactFFI.lib = self._load_ffi_library(PactFFI.ffi)
 
             # Setup logging to a file in the output_dir
-            PactFFI.output_file = os.path.join(PactFFI.output_dir.name, 'output')
-            output_c = self.ffi.new('char[]', bytes(self.output_file, 'utf-8'))
+            PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
+            output_c = self.ffi.new("char[]", bytes(self.output_file, "utf-8"))
 
             # By default, we get TRACE logs, set to INFO for now
             result = self.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
@@ -89,26 +92,28 @@ class PactFFI(object):
         :return: pact_ffi library version, for example "0.0.1"
         """
         result = self.lib.pactffi_version()
-        return self.ffi.string(result).decode('utf-8')
+        return self.ffi.string(result).decode("utf-8")
 
     def _load_ffi_library(self, ffi):
         """Load the appropriate library for the current platform."""
         target_platform = platform.platform().lower()
 
-        if target_platform in ['darwin', 'macos']:
+        if target_platform in ["darwin", "macos"]:
             libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
-        elif 'linux' in target_platform:
+        elif "linux" in target_platform:
             libname = "pact/bin/libpact_ffi-linux-x86_64.so"
-        elif 'windows' in target_platform:
+        elif "windows" in target_platform:
             libname = "pact/bin/pact_ffi-windows-x86_64.dll"
         else:
             msg = (
-                f'Unfortunately, {platform.platform()} is not a supported '
-                f'platform. Only Linux, Windows, and OSX are currently '
-                f'supported.'
+                f"Unfortunately, {platform.platform()} is not a supported "
+                f"platform. Only Linux, Windows, and OSX are currently "
+                f"supported."
             )
             raise Exception(msg)
 
+        # TODO: Hardcoding while messing, revert when done
+        libname = "/home/mgeeves/dev/GitHub/pact-reference/rust/target/release/libpact_ffi.so"
         return ffi.dlopen(libname)
 
     def _get_logs(self) -> List[str]:
@@ -118,5 +123,5 @@ class PactFFI(object):
         """
 
         lines = open(PactFFI.output_file).readlines()
-        open(PactFFI.output_file, 'w').close()
-        return [line.lstrip('\x00') for line in lines]
+        open(PactFFI.output_file, "w").close()
+        return [line.lstrip("\x00") for line in lines]
