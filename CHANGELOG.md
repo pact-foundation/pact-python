@@ -1,3 +1,11 @@
+### 1.4.2
+  * f2230b6 - chore: Bundle Ruby standalones into dist artifact. (#256) (Taj Pereira, Sun Aug 22 19:53:53 2021 +0930)
+  * e370786 - chore: Releasing version 1.4.1 (Elliott Murray, Tue Aug 17 18:55:53 2021 +0100)
+  * 7dc8864 - fix: make uvicorn versions over 0.14 (#255) (Elliott Murray, Tue Aug 17 18:51:52 2021 +0100)
+  * da49cd7 - chore: Releasing version 1.4.0 (Elliott Murray, Sat Aug 7 10:17:26 2021 +0100)
+  * 0089937 - fix: issue originating from snyk with requests and urllib (#252) (Elliott Murray, Sat Jul 31 12:46:15 2021 +0100)
+  * 903371b - feat: added support for message provider (#251) (Fabio Pulvirenti, Sat Jul 31 13:24:19 2021 +0200)
+  * 2c81029 - chore(snyk): update fastapi (#239) (Elliott Murray, Fri Jun 11 09:12:38 2021 +0100)
 ### 1.4.1
   * 7dc8864 - fix: make uvicorn versions over 0.14 (#255) (Elliott Murray, Tue Aug 17 18:51:52 2021 +0100)
 ### 1.4.0
