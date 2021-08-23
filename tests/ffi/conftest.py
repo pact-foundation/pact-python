@@ -1,5 +1,36 @@
 import pytest
 
+# CLI arguments supported, correct as of Pact FFI 0.0.1.
+@pytest.fixture
+def cli_arguments():
+    return [
+        "loglevel",
+        "file",
+        "dir",
+        "url",
+        "broker-url",
+        "hostname",
+        "port",
+        "scheme",
+        "provider-name",
+        "state-change-url",
+        "filter-description",
+        "filter-state",
+        "filter-no-state",
+        "filter-consumer",
+        "user",
+        "password",
+        "token",
+        "provider-version",
+        "build-url",
+        "provider-tags",
+        "base-path",
+        "consumer-version-tags",
+        "consumer-version-selectors",
+        "include-wip-pacts-since",
+        "request-timeout",
+    ]
+
 
 @pytest.fixture
 def simple_pact_opts():

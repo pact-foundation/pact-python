@@ -14,10 +14,17 @@ def cli_options():
         for arg in args:
             arg_name = arg["name"].replace("-", "_")
 
-            if arg["short"]:
-                function = click.option(arg_name, f"-{arg['short']}", f"--{arg['long']}", help=arg["help"])(function)
+            if arg["possible_values"]:
+                type_choice = click.Choice(arg["possible_values"])
             else:
-                function = click.option(arg_name, f"--{arg['long']}", help=arg["help"])(function)
+                type_choice = None
+                x = 1
+            if arg["short"]:
+                function = click.option(
+                    arg_name, f"-{arg['short']}", f"--{arg['long']}", help=arg["help"], type=type_choice
+                )(function)
+            else:
+                function = click.option(arg_name, f"--{arg['long']}", help=arg["help"], type=type_choice)(function)
         return function
 
     return inner_func
