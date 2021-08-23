@@ -21,10 +21,17 @@ def cli_options():
                 x = 1
             if arg["short"]:
                 function = click.option(
-                    arg_name, f"-{arg['short']}", f"--{arg['long']}", help=arg["help"], type=type_choice
+                    arg_name,
+                    f"-{arg['short']}",
+                    f"--{arg['long']}",
+                    help=arg["help"],
+                    type=type_choice,
+                    default=arg["default_value"],
                 )(function)
             else:
-                function = click.option(arg_name, f"--{arg['long']}", help=arg["help"], type=type_choice)(function)
+                function = click.option(
+                    arg_name, f"--{arg['long']}", help=arg["help"], type=type_choice, default=arg["default_value"]
+                )(function)
         return function
 
     return inner_func
