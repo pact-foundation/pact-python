@@ -11,12 +11,15 @@ def test_cli_args():
     verifier = Verifier()
     args = verifier.cli_args()
 
-    assert len(args) > 0
-    assert any(["help" in arg for arg in args])
-    assert all(["long" in arg for arg in args])
+    assert len(args.options) > 0
+    assert len(args.flags) > 0
+    assert all([arg.help is not None for arg in args.options])
+    assert all([arg.long is not None for arg in args.options])
+    assert all([arg.help is not None for arg in args.flags])
+    assert all([arg.long is not None for arg in args.flags])
 
 
-def test_cli_args_cautious(cli_arguments):
+def test_cli_args_cautious(cli_options, cli_flags):
     """
     If desired, we can keep track of the list of arguments supported by the FFI
     CLI, and then at least be alerted if there is a change (this test will fail).
@@ -27,8 +30,11 @@ def test_cli_args_cautious(cli_arguments):
     verifier = Verifier()
     args = verifier.cli_args()
 
-    assert len(args) == len(cli_arguments)
-    assert all([arg["name"] in cli_arguments for arg in args])
+    assert len(args.options) == len(cli_options)
+    assert all([arg.long in cli_options for arg in args.options])
+
+    assert len(args.flags) == len(cli_flags)
+    assert all([arg.long in cli_flags for arg in args.flags])
 
 
 def test_cli_help():

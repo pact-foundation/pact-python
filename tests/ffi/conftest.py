@@ -1,8 +1,8 @@
 import pytest
 
-# CLI arguments supported, correct as of Pact FFI 0.0.1.
+# CLI arguments supported, correct as of Pact FFI 0.0.2.
 @pytest.fixture
-def cli_arguments():
+def cli_options():
     return [
         "loglevel",
         "file",
@@ -30,6 +30,11 @@ def cli_arguments():
         "include-wip-pacts-since",
         "request-timeout",
     ]
+
+
+@pytest.fixture
+def cli_flags():
+    return ["state-change-as-query", "state-change-teardown", "publish", "disable-ssl-verification", "enable-pending"]
 
 
 @pytest.fixture

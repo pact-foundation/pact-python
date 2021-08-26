@@ -3,35 +3,34 @@ import sys
 
 import click
 
-from pact.ffi.verifier import Verifier
+from pact.ffi.verifier import Verifier, Arguments
 
 
 def cli_options():
     def inner_func(function):
         verifier = Verifier()
-        args = verifier.cli_args()
+        args: Arguments = verifier.cli_args()
 
-        for arg in args:
-            arg_name = arg["name"].replace("-", "_")
+        for opt in args.options:
+            type_choice = click.Choice(opt.possible_values) if opt.possible_values else None
 
-            if arg["possible_values"]:
-                type_choice = click.Choice(arg["possible_values"])
-            else:
-                type_choice = None
-                x = 1
-            if arg["short"]:
+            if opt.short:
                 function = click.option(
-                    arg_name,
-                    f"-{arg['short']}",
-                    f"--{arg['long']}",
-                    help=arg["help"],
+                    f"-{opt.short}",
+                    f"--{opt.long}",
+                    help=opt.help,
                     type=type_choice,
-                    default=arg["default_value"],
+                    default=opt.default_value,
+                    multiple=opt.multiple,
                 )(function)
             else:
                 function = click.option(
-                    arg_name, f"--{arg['long']}", help=arg["help"], type=type_choice, default=arg["default_value"]
+                    f"--{opt.long}", help=opt.help, type=type_choice, default=opt.default_value, multiple=opt.multiple
                 )(function)
+
+        for flag in args.flags:
+            function = click.option(f"--{flag.long}", help=flag.help, is_flag=True)(function)
+
         return function
 
     return inner_func

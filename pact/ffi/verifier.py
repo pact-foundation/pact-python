@@ -20,6 +20,40 @@ class VerifyResult(NamedTuple):
     logs: List[str]
 
 
+class Argument:
+    long: str
+    short: str = None
+    help: str
+    default_value: str = None
+    possible_values: List[str] = None
+    multiple: bool
+
+    def __init__(
+        self,
+        long: str,
+        help: str,
+        multiple: bool,
+        short: str = None,
+        default_value: str = None,
+        possible_values: List[str] = None,
+    ):
+        self.long = long
+        self.short = short
+        self.help = help
+        self.default_value = default_value
+        self.possible_values = possible_values
+        self.multiple = multiple
+
+
+class Arguments:
+    options: List[Argument] = []
+    flags: List[Argument] = []
+
+    def __init__(self, options: List[Argument], flags: List[Argument]):
+        self.options = [Argument(**option) for option in options]
+        self.flags = [Argument(**flags) for flags in flags]
+
+
 class Verifier(PactFFI):
     """A Pact Verifier Wrapper.
 
@@ -59,5 +93,4 @@ class Verifier(PactFFI):
 
     def cli_args(self) -> str:
         result = self.lib.pactffi_verifier_cli_args()
-        # result = self.lib.pactffi_versiona()
-        return json.loads(self.ffi.string(result).decode("utf-8"))
+        return Arguments(**json.loads(self.ffi.string(result).decode("utf-8")))
