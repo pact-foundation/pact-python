@@ -1,0 +1,44 @@
+{
+  "consumer": {
+    "name": "pact-consumer-two"
+  },
+  "provider": {
+    "name": "pact-provider-one"
+  },
+  "interactions": [
+    {
+      "description": "a request for that data",
+      "providerState": "Some data exists to be returned by provider-one endpoint a",
+      "request": {
+        "method": "get",
+        "path": "/test-provider-one-a"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": {
+          "data": [
+            {
+              "id": 34,
+              "averageRainfall": 223.4,
+              "crop": "Wheat (feed) - irrigated",
+              "baled": false
+            },
+            {
+              "id": 23,
+              "averageRainfall": 25.3,
+              "crop": "Carrots",
+              "baled": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

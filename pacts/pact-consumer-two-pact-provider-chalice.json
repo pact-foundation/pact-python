@@ -1,0 +1,42 @@
+{
+  "consumer": {
+    "name": "pact-consumer-two"
+  },
+  "provider": {
+    "name": "pact-provider-chalice"
+  },
+  "interactions": [
+    {
+      "description": "a request for that data",
+      "providerState": "Some data exists to be returned by provider-chalice endpoint a",
+      "request": {
+        "method": "post",
+        "path": "/test-provider-chalice-a",
+        "headers": {
+          "Content-type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "source": "pact-consumer-two"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": {
+          "data": [
+            {
+              "hello pact-consumer-two": "from inside a lambda"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

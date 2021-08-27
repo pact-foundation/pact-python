@@ -37,6 +37,23 @@ def test_verify_invalid_args():
     assert len(result.logs) == 1  # 1 for only the ERROR log, otherwise will be 2
 
 
+def test_verify_simple():
+    verifier = Verifier()
+    args_list = [
+        "--broker-url=http://localhost:9292",
+        "--publish",
+        "--url=http://localhost:8080",
+        "--provider-name=pact-provider-chalice",
+        "--provider-version=0.0.1",
+        "--provider-tags=tag"
+        "--file=/home/mgeeves/dev/GitHub/pact-python/pacts/pact-consumer-two-pact-provider-chalice.json",
+    ]
+    args = "\n".join(args_list)
+    result = verifier.verify(args=args)
+    logs = result.logs
+    # assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
+
+
 """
 Original verifier tests. Moving as they are implemented via FFI instead.
 

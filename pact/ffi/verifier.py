@@ -61,7 +61,7 @@ class Verifier(PactFFI):
     `verifier`_ module.
 
     .. _verifier:
-        https://docs.rs/pact_ffi/0.0.1/pact_ffi/verifier/index.html
+        https://docs.rs/pact_ffi/0.0.2/pact_ffi/verifier/index.html
     """
 
     def verify(self, args=None) -> VerifyResult:
