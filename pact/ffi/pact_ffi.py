@@ -69,6 +69,9 @@ class PactFFI(object):
             // verifier
             int pactffi_verify(char *);
             
+            // mock_server
+            void pactffi_free_string(char *);
+            
             // log
             int pactffi_log_to_file(char *, int);
             

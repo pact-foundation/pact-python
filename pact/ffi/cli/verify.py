@@ -1,5 +1,6 @@
 """Methods to verify previously created pacts."""
 import sys
+from typing import List
 
 import click
 
@@ -40,7 +41,23 @@ def cli_options():
 @cli_options()
 def main(**kwargs):
     print("Hello world!")
+
+    print("kwargs received:")
     print(kwargs)
+
+    cli_args = ""
+    for key, value in kwargs.items():
+        key_arg = key.replace("_", "-")
+        if value and isinstance(value, bool):
+            cli_args = f"{cli_args}\n--{key_arg}"
+        elif value and isinstance(value, str):
+            cli_args = f"{cli_args}\n--{key_arg}={value}"
+        elif value and isinstance(value, tuple):
+            for multiple_opt in value:
+                cli_args = f"{cli_args}\n--{key_arg}={multiple_opt}"
+    print("")
+    print("CLI args to send via FFI:")
+    print(cli_args.strip())
 
 
 if __name__ == "__main__":

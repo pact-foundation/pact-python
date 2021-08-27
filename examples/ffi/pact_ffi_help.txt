@@ -1,0 +1,67 @@
+$ pact-verifier --help
+Usage: pact-verifier [OPTIONS]
+
+Options:
+  --enable-pending                Enables Pending Pacts
+  --disable-ssl-verification      Disables validation of SSL certificates
+  --publish                       Enables publishing of verification results
+                                  back to the Pact Broker. Requires the
+                                  broker-url and provider-version parameters.
+  --state-change-teardown         State change teardown requests are to be
+                                  made after each interaction
+  --state-change-as-query         State change request data will be sent as
+                                  query parameters instead of in the request
+                                  body
+  --request-timeout TEXT          Sets the HTTP request timeout in
+                                  milliseconds for requests to the target API
+                                  and for state change requests.
+  --include-wip-pacts-since TEXT  Allow pacts that don't match given consumer
+                                  selectors (or tags) to  be verified, without
+                                  causing the overall task to fail. For more
+                                  information, see https://pact.io/wip
+  --consumer-version-selectors TEXT
+                                  Consumer version selectors to use when
+                                  fetching pacts from the Broker. Accepts a
+                                  JSON string as per https://docs.pact.io/pact
+                                  _broker/advanced_topics/consumer_version_sel
+                                  ectors/
+  --consumer-version-tags TEXT    Consumer tags to use when fetching pacts
+                                  from the Broker. Accepts comma-separated
+                                  values.
+  --base-path TEXT                Base path to add to all requests
+  --provider-tags TEXT            Provider tags to use when publishing
+                                  results. Accepts comma-separated values.
+  --build-url TEXT                URL of the build to associate with the
+                                  published verification results.
+  --provider-version TEXT         Provider version that is being verified.
+                                  This is required when publishing results.
+  -t, --token TEXT                Bearer token to use when fetching pacts from
+                                  URLS
+  --password TEXT                 Password to use when fetching pacts from
+                                  URLS
+  --user TEXT                     Username to use when fetching pacts from
+                                  URLS
+  -c, --filter-consumer TEXT      Consumer name to filter the pacts to be
+                                  verified (can be repeated)
+  --filter-no-state TEXT          Only validate interactions that have no
+                                  defined provider state
+  --filter-state TEXT             Only validate interactions whose provider
+                                  states match this filter
+  --filter-description TEXT       Only validate interactions whose
+                                  descriptions match this filter
+  -s, --state-change-url TEXT     URL to post state change requests to
+  -n, --provider-name TEXT        Provider name (defaults to provider)
+  --scheme [http|https]           Provider URI scheme (defaults to http)
+  -p, --port TEXT                 Provider port (defaults to protocol default
+                                  80/443)
+  -h, --hostname TEXT             Provider hostname (defaults to localhost)
+  -b, --broker-url TEXT           URL of the pact broker to fetch pacts from
+                                  to verify (requires the provider name
+                                  parameter)
+  -u, --url TEXT                  URL of pact file to verify (can be repeated)
+  -d, --dir TEXT                  Directory of pact files to verify (can be
+                                  repeated)
+  -f, --file TEXT                 Pact file to verify (can be repeated)
+  -l, --loglevel [error|warn|info|debug|trace|none]
+                                  Log level (defaults to warn)
+  --help                          Show this message and exit.
