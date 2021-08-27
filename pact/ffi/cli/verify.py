@@ -55,9 +55,17 @@ def main(**kwargs):
         elif value and isinstance(value, tuple):
             for multiple_opt in value:
                 cli_args = f"{cli_args}\n--{key_arg}={multiple_opt}"
+    cli_args = cli_args.strip()
     print("")
     print("CLI args to send via FFI:")
     print(cli_args.strip())
+
+    print("")
+    verifier = Verifier()
+    result = verifier.verify(cli_args)
+    print("Result from FFI call to verify:")
+    print(f"{result.return_code=}")
+    print(f"{result.logs=}")
 
 
 if __name__ == "__main__":

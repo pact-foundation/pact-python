@@ -74,6 +74,8 @@ class PactFFI(object):
             
             // log
             int pactffi_log_to_file(char *, int);
+            int pactffi_log_to_buffer(int);
+            char * pactffi_fetch_log_buffer(void);
             
             // experimenting
             char *pactffi_verifier_cli_args(void);
@@ -88,6 +90,10 @@ class PactFFI(object):
             # By default, we get TRACE logs, set to INFO for now
             result = self.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
             assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
+
+            # TODO: Try using the log buffer instead of a file for better portability
+            # result = self.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
+            # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
 
     def version(self) -> str:
         """Get the current library version.
@@ -124,6 +130,10 @@ class PactFFI(object):
         This will additionally empty the log file, ready for the next call.
         :return:
         """
+
+        # TODO: Try using the log buffer instead of a file for better portability
+        # result = self.lib.pactffi_fetch_log_buffer()
+        # return self.ffi.string(result).decode("utf-8")
 
         lines = open(PactFFI.output_file).readlines()
         open(PactFFI.output_file, "w").close()
