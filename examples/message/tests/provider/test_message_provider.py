@@ -71,6 +71,7 @@ def test_verify_from_broker(default_opts):
     provider = MessageProvider(
         message_providers={
             'A document created successfully': document_created_handler,
+            'A document deleted successfully': document_deleted_handler
         },
         provider='ContentProvider',
         consumer='DetectContentLambda',
@@ -78,6 +79,5 @@ def test_verify_from_broker(default_opts):
 
     )
 
-    with pytest.raises(AssertionError):
-        with provider:
-            provider.verify_with_broker(**default_opts)
+    with provider:
+        provider.verify_with_broker(**default_opts)

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import json
 import os
+import time
 from subprocess import Popen
 
 from .broker import Broker
@@ -171,6 +172,7 @@ class MessagePact(Broker):
         ]
 
         self._message_process = Popen(command)
+        self._message_process.wait()
 
     def _insert_message_if_complete(self):
         """
