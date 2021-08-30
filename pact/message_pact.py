@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import json
 import os
-import time
 from subprocess import Popen
 
 from .broker import Broker
