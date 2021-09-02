@@ -171,6 +171,7 @@ class MessagePact(Broker):
         ]
 
         self._message_process = Popen(command)
+        self._message_process.wait()
 
     def _insert_message_if_complete(self):
         """

@@ -104,3 +104,4 @@ ENV/
 
 .noseids
 
+.venv
