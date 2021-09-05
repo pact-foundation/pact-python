@@ -1,3 +1,5 @@
+### 1.4.3
+  * 08f0dc0 - feat: added support for message provider using pact broker (#257) (Fabio Pulvirenti, Sun Sep 5 22:49:51 2021 +0200)
 ### 1.4.2
   * f2230b6 - chore: Bundle Ruby standalones into dist artifact. (#256) (Taj Pereira, Sun Aug 22 19:53:53 2021 +0930)
   * e370786 - chore: Releasing version 1.4.1 (Elliott Murray, Tue Aug 17 18:55:53 2021 +0100)
