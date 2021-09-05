@@ -123,6 +123,8 @@ def test_publish_to_broker(pact):
 
     `pytest tests/consumer/test_message_consumer.py::test_publish_pact_to_broker --publish-pact 2`
     """
+    cleanup_json(PACT_FILE)
+
     expected_event = {
         "event": "ObjectCreated:Delete",
         "documentName": "document.doc",

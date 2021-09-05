@@ -7,11 +7,13 @@ from mock import patch
 from pact.verifier import Verifier
 from pact.verify_wrapper import VerifyWrapper
 
+
 def assertVerifyCalled(mock_wrapper, *pacts, **options):
     tc = unittest.TestCase()
     tc.assertEqual(mock_wrapper.call_count, 1)
 
     mock_wrapper.assert_called_once_with(*pacts, **options)
+
 
 class VerifierPactsTestCase(TestCase):
 
@@ -129,6 +131,7 @@ class VerifierPactsTestCase(TestCase):
             ('include_wip_pacts_since', '2018-01-01') in mock_wrapper.call_args.kwargs.items(),
             mock_wrapper.call_args.kwargs,
         )
+
 
 class VerifierBrokerTestCase(TestCase):
 
