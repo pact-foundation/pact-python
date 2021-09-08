@@ -21,6 +21,8 @@ class VerifyResult(NamedTuple):
 
 
 class Argument:
+    """Hold the attributes of a single argument which can be used by the Verifier"""
+
     long: str  # For example: "token"
     short: str = None  # For example "t"
     help: str  # Help description, for example: "Bearer token to use when fetching pacts from URLS"
@@ -49,6 +51,8 @@ class Argument:
 
 
 class Arguments:
+    """Hold the various options and flags which can be used by the Verifier"""
+
     options: List[Argument] = []
     flags: List[Argument] = []
 
@@ -79,8 +83,8 @@ class Verifier(PactFFI):
         logs = self._get_logs()
         return VerifyResult(result, logs)
 
-    def cli_args(self) -> str:
+    def cli_args(self) -> Arguments:
         result = self.lib.pactffi_verifier_cli_args()
-        cli_args_json = Arguments(**json.loads(self.ffi.string(result).decode("utf-8")))
+        arguments = Arguments(**json.loads(self.ffi.string(result).decode("utf-8")))
         self.lib.pactffi_free_string(result)
-        return cli_args_json
+        return arguments
