@@ -39,26 +39,40 @@ def test_verify_invalid_args():
     assert len(result.logs) == 1  # 1 for only the ERROR log, otherwise will be 2
 
 
-def test_verify_simple():
-    pact_file = "examples/pacts/pact-consumer-one-pact-provider-one.json"
-    pact_file_path = os.path.join(os.getcwd(), pact_file)
-    assert os.path.isfile(
-        pact_file_path
-    ), "The working directory is expected to be pact-python, rather than pact-python/tests"
+def test_verify_success(httpserver, pact_consumer_one_pact_provider_one_path):
+    """
+    Use the FFI library to verify a simple pact, using a mock httpserver.
+    In this case the response is as expected, so the verify succeeds.
+    """
+    body = {"answer": 42}  # 42 will be returned as an int, as expected
+    endpoint = "/test-provider-one"
+    httpserver.expect_request(endpoint).respond_with_json(body)
 
     args_list = [
-        f"--broker-url=http://localhost:9292",
-        f"--publish",
-        f"--url=http://localhost:8080",
-        f"--provider-name=pact-provider-chalice",
-        f"--provider-version=0.0.1",
-        f"--provider-tags=tag",
-        f"--file={pact_file_path}",
+        f"--port={httpserver.port}",
+        f"--file={pact_consumer_one_pact_provider_one_path}",
     ]
     args = "\n".join(args_list)
     result = Verifier().verify(args=args)
-    logs = result.logs
-    # assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
+    assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
+
+
+def test_verify_failure(httpserver, pact_consumer_one_pact_provider_one_path):
+    """
+    Use the FFI library to verify a simple pact, using a mock httpserver.
+    In this case the response is NOT as expected (str not int), so the verify fails.
+    """
+    body = {"answer": "42"}  # 42 will be returned as a str, which will fail
+    endpoint = "/test-provider-one"
+    httpserver.expect_request(endpoint).respond_with_json(body)
+
+    args_list = [
+        f"--port={httpserver.port}",
+        f"--file={pact_consumer_one_pact_provider_one_path}",
+    ]
+    args = "\n".join(args_list)
+    result = Verifier().verify(args=args)
+    assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
 
 
 """

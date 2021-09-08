@@ -17,7 +17,7 @@ from urllib.request import urlopen
 
 IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = '1.88.51'
-PACT_FFI_VERSION = '0.0.1'
+PACT_FFI_VERSION = '0.0.2'
 
 here = os.path.abspath(os.path.dirname(__file__))
 

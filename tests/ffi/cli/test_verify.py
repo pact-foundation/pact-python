@@ -49,44 +49,36 @@ def test_cli_no_args(runner):
     assert result.output.startswith("Usage: pact-verifier [OPTIONS]")
 
 
-def test_cli_verify_success(runner, httpserver):
+def test_cli_verify_success(runner, httpserver, pact_consumer_one_pact_provider_one_path):
     """
     Use the FFI library to verify a simple pact, using a mock httpserver.
     In this case the response is as expected, so the verify succeeds.
     """
-    pact_file = "examples/pacts/pact-consumer-one-pact-provider-one.json"
-    pact_file_path = os.path.join(os.getcwd(), pact_file)
-    assert os.path.isfile(pact_file_path), "The working directory must be pact-python, rather than pact-python/tests"
-
     body = {"answer": 42}  # 42 will be returned as an int, as expected
     endpoint = "/test-provider-one"
     httpserver.expect_request(endpoint).respond_with_json(body)
 
     args = [
         f"--port={httpserver.port}",
-        f"--file={pact_file_path}",
+        f"--file={pact_consumer_one_pact_provider_one_path}",
     ]
     result = runner.invoke(main, args)
 
     assert VerifyStatus(result.exit_code) == VerifyStatus.SUCCESS
 
 
-def test_cli_verify_failure(runner, httpserver):
+def test_cli_verify_failure(runner, httpserver, pact_consumer_one_pact_provider_one_path):
     """
     Use the FFI library to verify a simple pact, using a mock httpserver.
     In this case the response is NOT as expected (str not int), so the verify fails.
     """
-    pact_file = "examples/pacts/pact-consumer-one-pact-provider-one.json"
-    pact_file_path = os.path.join(os.getcwd(), pact_file)
-    assert os.path.isfile(pact_file_path), "The working directory must be pact-python, rather than pact-python/tests"
-
     body = {"answer": "42"}  # 42 will be returned as a str, which will fail
     endpoint = "/test-provider-one"
     httpserver.expect_request(endpoint).respond_with_json(body)
 
     args = [
         f"--port={httpserver.port}",
-        f"--file={pact_file_path}",
+        f"--file={pact_consumer_one_pact_provider_one_path}",
     ]
     result = runner.invoke(main, args)
 
