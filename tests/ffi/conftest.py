@@ -1,9 +1,6 @@
-import os
-
-import pytest
 from pathlib import Path
 
-# CLI arguments supported, correct as of Pact FFI 0.0.2.
+import pytest
 from click.testing import CliRunner
 
 
@@ -12,6 +9,7 @@ def runner():
     return CliRunner()
 
 
+# CLI option arguments supported, correct as of Pact FFI 0.0.2.
 @pytest.fixture
 def cli_options():
     return [
@@ -43,6 +41,7 @@ def cli_options():
     ]
 
 
+# CLI flag arguments supported, correct as of Pact FFI 0.0.2.
 @pytest.fixture
 def cli_flags():
     return ["state-change-as-query", "state-change-teardown", "publish", "disable-ssl-verification", "enable-pending"]
@@ -57,6 +56,7 @@ def pacts_dir():
 
 @pytest.fixture
 def pact_consumer_one_pact_provider_one_path(pacts_dir):
+    """Provide the full path to a JSON pact for tests"""
     pact = pacts_dir.joinpath("pact-consumer-one-pact-provider-one.json")
     assert pact.is_file()
     return str(pact)
