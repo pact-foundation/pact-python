@@ -21,12 +21,13 @@ class VerifyResult(NamedTuple):
 
 
 class Argument:
-    long: str
-    short: str = None
-    help: str
-    default_value: str = None
-    possible_values: List[str] = None
-    multiple: bool
+    long: str  # For example: "token"
+    short: str = None  # For example "t"
+    help: str  # Help description, for example: "Bearer token to use when fetching pacts from URLS"
+    default_value: str = None  # The value which will be passed if none are provided, such as "http" for schema
+    possible_values: List[str] = None  # If only specific values can be used, such as ["http", "https"] for schema
+    multiple: bool  # If the argument can be provided multiple times, for example with file
+    env: str = None  # ENV which will be used in the absence of a provided argument, for example PACT_BROKER_TOKEN
 
     def __init__(
         self,
@@ -36,6 +37,7 @@ class Argument:
         short: str = None,
         default_value: str = None,
         possible_values: List[str] = None,
+        env: str = None,
     ):
         self.long = long
         self.short = short
@@ -43,6 +45,7 @@ class Argument:
         self.default_value = default_value
         self.possible_values = possible_values
         self.multiple = multiple
+        self.env = env
 
 
 class Arguments:
@@ -71,21 +74,6 @@ class Verifier(PactFFI):
             c_args = self.ffi.new("char[]", bytes(args, "utf-8"))
         else:
             c_args = self.ffi.NULL
-
-        # This fails if called a second time after the library has been loaded
-        # ..but still seems to work
-        # result = lib.pactffi_log_to_buffer()
-        # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
-        # Additionally, when reading from the buffer it seems to come back empty
-        # when running normally. Storing to a temporary file, at least for now.
-        # with tempfile.TemporaryDirectory() as td:
-        #     output = os.path.join(td, 'output')
-        #     output_c = ffi.new('char[]', bytes(output, 'utf-8'))
-        #     result = lib.pactffi_log_to_file(output_c)
-        #     x = 1
-        #     result = lib.pactffi_verify(c_args)
-        #
-        #     lines = open(output).readlines()
 
         result = self.lib.pactffi_verify(c_args)
         logs = self._get_logs()

@@ -41,3 +41,9 @@ def test_cli_help():
     runner = CliRunner()
     result = runner.invoke(main, ["--help"])
     assert result.exit_code == 0
+
+
+def test_cli_no_args():
+    runner = CliRunner()
+    result = runner.invoke(main, [])
+    assert result.exit_code == 0
