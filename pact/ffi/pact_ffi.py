@@ -48,15 +48,14 @@ class PactFFI(object):
 
     ffi: FFI = None
     lib = None
-    output_dir: tempfile.TemporaryDirectory = None
-    output_file: str = None
+
+    # Required if outputting logs to a file, can be remove if using a buffer
+    # output_dir: tempfile.TemporaryDirectory = None
+    # output_file: str = None
 
     def __init__(self):
-        if not PactFFI.output_dir:
-            # The output will be stored in a file in this directory, which will
-            # be cleaned up automatically at the end
-            PactFFI.output_dir = tempfile.TemporaryDirectory()
-
+        # We want to make sure we only initialise once, or the log setup will fail
+        if not PactFFI.ffi:
             PactFFI.ffi = FFI()
 
             # Define all the functions from the various modules, since we can
@@ -83,17 +82,18 @@ class PactFFI(object):
             )
             PactFFI.lib = self._load_ffi_library(PactFFI.ffi)
 
+            # We can setup logs like this, if preferred to buffer:
+            # The output will be stored in a file in this directory, which will
+            # be cleaned up automatically at the end
+            # PactFFI.output_dir = tempfile.TemporaryDirectory()
             # Setup logging to a file in the output_dir
-            PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
-            output_c = self.ffi.new("char[]", bytes(self.output_file, "utf-8"))
-
-            # By default, we get TRACE logs, set to INFO for now
-            result = self.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
-            assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
-
-            # TODO: Try using the log buffer instead of a file for better portability
-            # result = self.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
+            # PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
+            # output_c = self.ffi.new("char[]", bytes(self.output_file, "utf-8"))
+            # result = self.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
             # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
+
+            result = self.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
+            assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
 
     def version(self) -> str:
         """Get the current library version.
@@ -103,7 +103,8 @@ class PactFFI(object):
         result = self.lib.pactffi_version()
         return self.ffi.string(result).decode("utf-8")
 
-    def _load_ffi_library(self, ffi):
+    @staticmethod
+    def _load_ffi_library(ffi):
         """Load the appropriate library for the current platform."""
         target_platform = platform.platform().lower()
 
@@ -131,10 +132,10 @@ class PactFFI(object):
         :return:
         """
 
-        # TODO: Try using the log buffer instead of a file for better portability
-        # result = self.lib.pactffi_fetch_log_buffer()
-        # return self.ffi.string(result).decode("utf-8")
+        result = self.lib.pactffi_fetch_log_buffer()
+        return self.ffi.string(result).decode("utf-8").rstrip().split("\n")
 
-        lines = open(PactFFI.output_file).readlines()
-        open(PactFFI.output_file, "w").close()
-        return [line.lstrip("\x00") for line in lines]
+        # If using log to file, retrieve like this, otherwise remove
+        # lines = open(PactFFI.output_file).readlines()
+        # open(PactFFI.output_file, "w").close()
+        # return [line.lstrip("\x00") for line in lines]
