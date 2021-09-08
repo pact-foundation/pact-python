@@ -54,8 +54,8 @@ class PactFFI(object):
     _lock = threading.Lock()
 
     # Required if outputting logs to a file, can be remove if using a buffer
-    # output_dir: tempfile.TemporaryDirectory = None
-    # output_file: str = None
+    output_dir: tempfile.TemporaryDirectory = None
+    output_file: str = None
 
     def __new__(cls):
         # We want to make sure we only initialise once, or the log setup will fail
@@ -92,15 +92,17 @@ class PactFFI(object):
                 # We can setup logs like this, if preferred to buffer:
                 # The output will be stored in a file in this directory, which will
                 # be cleaned up automatically at the end
-                # PactFFI.output_dir = tempfile.TemporaryDirectory()
+                PactFFI.output_dir = tempfile.TemporaryDirectory()
                 # Setup logging to a file in the output_dir
-                # PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
-                # output_c = self.ffi.new("char[]", bytes(self.output_file, "utf-8"))
-                # result = self.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
-                # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
-
-                result = cls.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
+                PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
+                output_c = cls.ffi.new("char[]", bytes(cls.output_file, "utf-8"))
+                result = cls.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
                 assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
+
+                # Having problems with the buffer output, when running via CLI
+                # Reverting to log file output instead
+                # result = cls.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
+                # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
         return cls._instance
 
     def version(self) -> str:
@@ -140,11 +142,13 @@ class PactFFI(object):
         :return: List of log entries, each a line of log output
         """
 
-        result = self.lib.pactffi_fetch_log_buffer()
-        print(f"{result=}")
-        return self.ffi.string(result).decode("utf-8").rstrip().split("\n")
+        # Having problems with the buffer output, when running via CLI
+        # Reverting to log file output instead
+        # result = self.lib.pactffi_fetch_log_buffer()
+        # print(f"{result=}")
+        # return self.ffi.string(result).decode("utf-8").rstrip().split("\n")
 
         # If using log to file, retrieve like this, otherwise remove
-        # lines = open(PactFFI.output_file).readlines()
-        # open(PactFFI.output_file, "w").close()
-        # return [line.lstrip("\x00") for line in lines]
+        lines = open(PactFFI.output_file).readlines()
+        open(PactFFI.output_file, "w").close()
+        return [line.lstrip("\x00") for line in lines]

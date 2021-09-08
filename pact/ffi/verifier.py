@@ -77,17 +77,16 @@ class Verifier(PactFFI):
     def verify(self, args=None) -> VerifyResult:
         """Call verify method."""
 
-        print("get a lock")
-        with self._lock:
-            if args:
-                c_args = self.ffi.new("char[]", bytes(args, "utf-8"))
-            else:
-                c_args = self.ffi.NULL
+        # The FFI library specifically defines "usage" of no args, so we will
+        # replicate that here. In reality we will always want args.
+        if args:
+            c_args = self.ffi.new("char[]", bytes(args, "utf-8"))
+        else:
+            c_args = self.ffi.NULL
 
-            print(f"{c_args=}")
-            result = self.lib.pactffi_verify(c_args)
-            logs = self.get_logs()
-            return VerifyResult(result, logs)
+        result = self.lib.pactffi_verify(c_args)
+        logs = self.get_logs()
+        return VerifyResult(result, logs)
 
     def cli_args(self) -> Arguments:
         result = self.lib.pactffi_verifier_cli_args()

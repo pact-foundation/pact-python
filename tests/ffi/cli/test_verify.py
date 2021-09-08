@@ -1,19 +1,14 @@
 import os
 
-import pytest
 
 from pact.ffi.cli.verify import main
 from pact.ffi.verifier import Verifier, VerifyStatus
-from click.testing import CliRunner
 
 
 def test_cli_args():
-    """
-    Basic test to make sure we have at least some arguments and they all have
-    the required long version and help
-    """
-    verifier = Verifier()
-    args = verifier.cli_args()
+    """Make sure we have at least some arguments and they all have the required
+    long version and help."""
+    args = Verifier().cli_args()
 
     assert len(args.options) > 0
     assert len(args.flags) > 0
@@ -31,8 +26,7 @@ def test_cli_args_cautious(cli_options, cli_flags):
     We don't really *need* to test against this, but it might be nice to know to
     avoid any surprises.
     """
-    verifier = Verifier()
-    args = verifier.cli_args()
+    args = Verifier().cli_args()
 
     assert len(args.options) == len(cli_options)
     assert all([arg.long in cli_options for arg in args.options])
@@ -41,56 +35,59 @@ def test_cli_args_cautious(cli_options, cli_flags):
     assert all([arg.long in cli_flags for arg in args.flags])
 
 
-def test_cli_help():
-    """Click should return the usage information"""
-    runner = CliRunner()
+def test_cli_help(runner):
+    """Click should return the usage information."""
     result = runner.invoke(main, ["--help"])
     assert result.exit_code == 0
     assert result.output.startswith("Usage: pact-verifier [OPTIONS]")
 
 
-def test_cli_no_args():
-    """If no args are provided, but Click passes the default, we still want help"""
-    runner = CliRunner()
+def test_cli_no_args(runner):
+    """If no args are provided, but Click passes the default, we still want help."""
     result = runner.invoke(main, [])
     assert result.exit_code == 0
     assert result.output.startswith("Usage: pact-verifier [OPTIONS]")
 
 
-def test_cli_verify_success(httpserver):
+def test_cli_verify_success(runner, httpserver):
+    """
+    Use the FFI library to verify a simple pact, using a mock httpserver.
+    In this case the response is as expected, so the verify succeeds.
+    """
     pact_file = "examples/pacts/pact-consumer-one-pact-provider-one.json"
     pact_file_path = os.path.join(os.getcwd(), pact_file)
     assert os.path.isfile(pact_file_path), "The working directory must be pact-python, rather than pact-python/tests"
 
-    body = {"hello": "world"}
+    body = {"answer": 42}  # 42 will be returned as an int, as expected
     endpoint = "/test-provider-one"
     httpserver.expect_request(endpoint).respond_with_json(body)
 
     args = [
-        # f"--url=http://localhost:{httpserver.port}",
         f"--port={httpserver.port}",
-        f"--provider-name=pact-provider-one",
-        f"--provider-version=0.0.1",
-        f"--provider-tags=tag",
         f"--file={pact_file_path}",
     ]
-    print(args)
-    runner = CliRunner()
     result = runner.invoke(main, args)
-    logs = result.output
+
     assert VerifyStatus(result.exit_code) == VerifyStatus.SUCCESS
 
 
-from urllib.request import urlopen
+def test_cli_verify_failure(runner, httpserver):
+    """
+    Use the FFI library to verify a simple pact, using a mock httpserver.
+    In this case the response is NOT as expected (str not int), so the verify fails.
+    """
+    pact_file = "examples/pacts/pact-consumer-one-pact-provider-one.json"
+    pact_file_path = os.path.join(os.getcwd(), pact_file)
+    assert os.path.isfile(pact_file_path), "The working directory must be pact-python, rather than pact-python/tests"
 
+    body = {"answer": "42"}  # 42 will be returned as a str, which will fail
+    endpoint = "/test-provider-one"
+    httpserver.expect_request(endpoint).respond_with_json(body)
 
-def test_hello(httpserver):
-    runner = CliRunner()
-    result = runner.invoke(main, [])
+    args = [
+        f"--port={httpserver.port}",
+        f"--file={pact_file_path}",
+    ]
+    result = runner.invoke(main, args)
 
-    body = "Hello, World!"
-    endpoint = "/hello"
-    httpserver.expect_request(endpoint).respond_with_data(body)
-    with urlopen(httpserver.url_for(endpoint)) as response:
-        result = response.read().decode()
-    assert result == "Hello, World!"
+    assert VerifyStatus(result.exit_code) == VerifyStatus.VERIFIER_FAILED

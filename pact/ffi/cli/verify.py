@@ -24,7 +24,7 @@ def cli_options():
             type_choice = click.Choice(opt.possible_values) if opt.possible_values else None
 
             # Let the user know if an ENV can be used here instead
-            _help = f"{opt.help}{f'. Alternatively: ${opt.env}' if opt.env else ''}"
+            _help = f"{opt.help}{f'. Alternatively: ${click.style(opt.env, bold=True)}' if opt.env else ''}"
 
             if opt.short:
                 function = click.option(
@@ -50,9 +50,9 @@ def cli_options():
         for flag in args.flags:
             # Let the user know if an ENV can be used here instead
             # Note: future proofing, there do not seem to be any as of Pact FFI Library 0.0.2
-            _help = f"{flag.help}{f'. Alternatively: ${flag.env}' if flag.env else ''}"
+            _help = f"{flag.help}{f'. Alternatively: ${click.style(flag.env, bold=True)}' if flag.env else ''}"
 
-            function = click.option(f"--{flag.long}", help=_help, envvar=opt.env, is_flag=True)(function)
+            function = click.option(f"--{flag.long}", help=_help, envvar=flag.env, is_flag=True)(function)
 
         function = click.option(
             f"--debug-click",
@@ -65,7 +65,7 @@ def cli_options():
     return inner_func
 
 
-@click.command(name="pact-verifier")
+@click.command(name="pact-verifier", context_settings=dict(max_content_width=120))
 @cli_options()
 def main(**kwargs):
     # Since we may only have default args, which are SOME args and we don't know
@@ -77,6 +77,9 @@ def main(**kwargs):
 
     cli_args = ""
     for key, value in kwargs.items():
+        # Don't pass through the debug flag for Click
+        if key in ["debug_click", "scheme"]:
+            continue
         key_arg = key.replace("_", "-")
         if value and isinstance(value, bool):
             cli_args = f"{cli_args}\n--{key_arg}"
@@ -96,9 +99,14 @@ def main(**kwargs):
 
     verifier = Verifier()
     result = verifier.verify(cli_args)
-    click.echo("Result from FFI call to verify:")
-    click.echo(f"{result.return_code=}")
-    click.echo(f"{result.logs=}")
+
+    if kwargs.get("debug_click"):
+        click.echo("Result from FFI call to verify:")
+        click.echo(f"{result.return_code=}")
+        click.echo(f"{result.logs=}")
+
+    if result.logs:
+        click.echo(line for line in result.logs)
 
     sys.exit(result.return_code)
 

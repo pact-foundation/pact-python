@@ -19,7 +19,7 @@
           "Content-type": "application/json"
         },
         "body": {
-          "hello": "world"
+          "answer": 42
         }
       }
     }
