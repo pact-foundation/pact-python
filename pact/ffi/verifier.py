@@ -93,3 +93,21 @@ class Verifier(PactFFI):
         arguments = Arguments(**json.loads(self.ffi.string(result).decode("utf-8")))
         self.lib.pactffi_free_string(result)
         return arguments
+
+    @staticmethod
+    def args_dict_to_str(cli_args_dict):
+        cli_args = ""
+        for key, value in cli_args_dict.items():
+            # Don't pass through the debug flag for Click
+            if key == "debug_click":
+                continue
+            key_arg = key.replace("_", "-")
+            if value and isinstance(value, bool):
+                cli_args = f"{cli_args}\n--{key_arg}"
+            elif value and isinstance(value, str):
+                cli_args = f"{cli_args}\n--{key_arg}={value}"
+            elif value and isinstance(value, tuple) or isinstance(value, list):
+                for multiple_opt in value:
+                    cli_args = f"{cli_args}\n--{key_arg}={multiple_opt}"
+        cli_args = cli_args.strip()
+        return cli_args

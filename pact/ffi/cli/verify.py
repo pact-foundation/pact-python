@@ -75,20 +75,9 @@ def main(**kwargs):
         click.echo(ctx.get_help())
         sys.exit(0)
 
-    cli_args = ""
-    for key, value in kwargs.items():
-        # Don't pass through the debug flag for Click
-        if key in ["debug_click", "scheme"]:
-            continue
-        key_arg = key.replace("_", "-")
-        if value and isinstance(value, bool):
-            cli_args = f"{cli_args}\n--{key_arg}"
-        elif value and isinstance(value, str):
-            cli_args = f"{cli_args}\n--{key_arg}={value}"
-        elif value and isinstance(value, tuple):
-            for multiple_opt in value:
-                cli_args = f"{cli_args}\n--{key_arg}={multiple_opt}"
-    cli_args = cli_args.strip()
+    verifier = Verifier()
+
+    cli_args = verifier.args_dict_to_str(kwargs)
 
     if kwargs.get("debug_click"):
         click.echo("kwargs received:")
@@ -97,7 +86,6 @@ def main(**kwargs):
         click.echo(cli_args)
         click.echo("")
 
-    verifier = Verifier()
     result = verifier.verify(cli_args)
 
     if kwargs.get("debug_click"):
