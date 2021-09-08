@@ -3,6 +3,7 @@ import sys
 from typing import Callable
 
 import click
+from click.core import ParameterSource
 
 from pact.ffi.verifier import Verifier, Arguments
 
@@ -64,9 +65,16 @@ def cli_options():
     return inner_func
 
 
-@click.command()
+@click.command(name="pact-verifier")
 @cli_options()
 def main(**kwargs):
+    # Since we may only have default args, which are SOME args and we don't know
+    # which are required, make sure we have at least one CLI argument
+    ctx = click.get_current_context()
+    if not [key for key, value in kwargs.items() if ctx.get_parameter_source(key) != ParameterSource.DEFAULT]:
+        click.echo(ctx.get_help())
+        sys.exit(0)
+
     cli_args = ""
     for key, value in kwargs.items():
         key_arg = key.replace("_", "-")
@@ -80,17 +88,19 @@ def main(**kwargs):
     cli_args = cli_args.strip()
 
     if kwargs.get("debug_click"):
-        print("kwargs received:")
-        print(kwargs)
-        print("CLI args to send via FFI:")
-        print(cli_args)
-        print("")
+        click.echo("kwargs received:")
+        click.echo(kwargs)
+        click.echo("CLI args to send via FFI:")
+        click.echo(cli_args)
+        click.echo("")
 
     verifier = Verifier()
     result = verifier.verify(cli_args)
-    print("Result from FFI call to verify:")
-    print(f"{result.return_code=}")
-    print(f"{result.logs=}")
+    click.echo("Result from FFI call to verify:")
+    click.echo(f"{result.return_code=}")
+    click.echo(f"{result.logs=}")
+
+    sys.exit(result.return_code)
 
 
 if __name__ == "__main__":

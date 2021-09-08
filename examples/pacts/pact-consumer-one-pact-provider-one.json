@@ -1,0 +1,32 @@
+{
+  "consumer": {
+    "name": "pact-consumer-one"
+  },
+  "provider": {
+    "name": "pact-provider-one"
+  },
+  "interactions": [
+    {
+      "description": "Data is requested from provider-one",
+      "providerState": "Some data exists to be returned by provider-one endpoint",
+      "request": {
+        "method": "get",
+        "path": "/test-provider-one"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-type": "application/json"
+        },
+        "body": {
+          "hello": "world"
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

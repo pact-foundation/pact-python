@@ -1,9 +1,12 @@
+import os
+from pathlib import Path
+
 from pact.ffi.verifier import Verifier, VerifyStatus
 
 
 def test_version():
-    verifier = Verifier()
-    assert verifier.version() == "0.0.3"
+    result = Verifier().version()
+    assert result == "0.0.3"
 
 
 def test_verify_no_args():
@@ -30,26 +33,30 @@ def test_verify_invalid_args():
     [TRACE][mio::poll] registering event source with poller: token=Token(0), interests=READABLE | WRITABLE
     [ERROR][pact_ffi::verifier::verifier] error verifying Pact: "error: Found argument 'Your argument is invalid' which wasn't expected, or isn't valid in this context\n\nUSAGE:\n    pact_verifier_cli [FLAGS] [OPTIONS] --broker-url <broker-url>... --dir <dir>... --file <file>... --provider-name <provider-name> --url <url>...\n\nFor more information try --help" Error { message: "error: Found argument 'Your argument is invalid' which wasn't expected, or isn't valid in this context\n\nUSAGE:\n    pact_verifier_cli [FLAGS] [OPTIONS] --broker-url <broker-url>... --dir <dir>... --file <file>... --provider-name <provider-name> --url <url>...\n\nFor more information try --help", kind: UnknownArgument, info: Some(["Your argument is invalid"]) }
     """
-    verifier = Verifier()
-    result = verifier.verify(args="Your argument is invalid")
+    result = Verifier().verify(args="Your argument is invalid")
     assert VerifyStatus(result.return_code) == VerifyStatus.INVALID_ARGS
     assert "kind: UnknownArgument" in "\n".join(result.logs)
     assert len(result.logs) == 1  # 1 for only the ERROR log, otherwise will be 2
 
 
 def test_verify_simple():
-    verifier = Verifier()
+    pact_file = "examples/pacts/pact-consumer-one-pact-provider-one.json"
+    pact_file_path = os.path.join(os.getcwd(), pact_file)
+    assert os.path.isfile(
+        pact_file_path
+    ), "The working directory is expected to be pact-python, rather than pact-python/tests"
+
     args_list = [
-        "--broker-url=http://localhost:9292",
-        "--publish",
-        "--url=http://localhost:8080",
-        "--provider-name=pact-provider-chalice",
-        "--provider-version=0.0.1",
-        "--provider-tags=tag"
-        "--file=/home/mgeeves/dev/GitHub/pact-python/pacts/pact-consumer-two-pact-provider-chalice.json",
+        f"--broker-url=http://localhost:9292",
+        f"--publish",
+        f"--url=http://localhost:8080",
+        f"--provider-name=pact-provider-chalice",
+        f"--provider-version=0.0.1",
+        f"--provider-tags=tag",
+        f"--file={pact_file_path}",
     ]
     args = "\n".join(args_list)
-    result = verifier.verify(args=args)
+    result = Verifier().verify(args=args)
     logs = result.logs
     # assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 

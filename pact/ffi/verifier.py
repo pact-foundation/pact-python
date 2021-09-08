@@ -71,17 +71,23 @@ class Verifier(PactFFI):
         https://docs.rs/pact_ffi/0.0.2/pact_ffi/verifier/index.html
     """
 
+    def __new__(cls):
+        return super(Verifier, cls).__new__(cls)
+
     def verify(self, args=None) -> VerifyResult:
         """Call verify method."""
 
-        if args:
-            c_args = self.ffi.new("char[]", bytes(args, "utf-8"))
-        else:
-            c_args = self.ffi.NULL
+        print("get a lock")
+        with self._lock:
+            if args:
+                c_args = self.ffi.new("char[]", bytes(args, "utf-8"))
+            else:
+                c_args = self.ffi.NULL
 
-        result = self.lib.pactffi_verify(c_args)
-        logs = self._get_logs()
-        return VerifyResult(result, logs)
+            print(f"{c_args=}")
+            result = self.lib.pactffi_verify(c_args)
+            logs = self.get_logs()
+            return VerifyResult(result, logs)
 
     def cli_args(self) -> Arguments:
         result = self.lib.pactffi_verifier_cli_args()
