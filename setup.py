@@ -27,6 +27,7 @@ about = {}
 with open(os.path.join(here, "pact", "__version__.py")) as f:
     exec(f.read(), about)
 
+
 class sdist(sdist_orig):
     """
     Subclass sdist so that we can download all standalone ruby applications
@@ -46,14 +47,12 @@ class sdist(sdist_orig):
 
 
 class PactPythonDevelopCommand(develop):
-    """
-    Custom develop mode installer for pact-python.
+    """Custom develop mode installer for pact-python.
 
     When the package is installed using `python setup.py develop` or
     `pip install -e` it will download and unpack the appropriate Pact
     mock service and provider verifier.
     """
-
     def run(self):
         """Install ruby command."""
         develop.run(self)
@@ -65,17 +64,15 @@ class PactPythonDevelopCommand(develop):
 
 
 class PactPythonInstallCommand(install):
-    """
-    Custom installer for pact-python.
+    """Custom installer for pact-python.
 
     Installs the Python package and unpacks the platform appropriate version
     of the Ruby mock service and provider verifier.
 
     User Options:
-        --bin-path  An absolute folder path containing predownloaded pact binaries
+        --bin-path  An absolute folder path containing pre-downloaded pact binaries
                     that should be used instead of fetching from the internet.
     """
-
     user_options = install.user_options + [('bin-path=', None, None)]
 
     def initialize_options(self):
@@ -97,13 +94,11 @@ class PactPythonInstallCommand(install):
 
 
 def install_ruby_app(package_bin_path, download_bin_path):
-    """
-    Installs the ruby standalone application for this OS.
+    """Installs the ruby standalone application for this OS.
 
     :param package_bin_path: The path where we want our pact binaries unarchived.
     :param download_bin_path: An optional path containing pre-downloaded pact binaries.
     """
-
     binary = ruby_app_binary()
     if download_bin_path is None:
         download_bin_path = package_bin_path
@@ -121,9 +116,9 @@ def install_ruby_app(package_bin_path, download_bin_path):
             download_ruby_app_binary(package_bin_path, binary['filename'], binary['suffix'])
             extract_ruby_app_binary(package_bin_path, package_bin_path, binary['filename'])
 
+
 def ruby_app_binary():
-    """
-    Determines the ruby app binary required for this OS.
+    """Determines the ruby app binary required for this OS.
 
     :return A dictionary of type {'filename': string, 'version': string, 'suffix': string }
     """
@@ -148,9 +143,9 @@ def ruby_app_binary():
     binary = binary.format(version=PACT_STANDALONE_VERSION, suffix=suffix)
     return {'filename': binary, 'version': PACT_STANDALONE_VERSION, 'suffix': suffix}
 
+
 def download_ruby_app_binary(path_to_download_to, filename, suffix):
-    """
-    Downloads `binary` into `path_to_download_to`.
+    """Downloads `binary` into `path_to_download_to`.
 
     :param path_to_download_to: The path where binaries should be downloaded.
     :param filename: The filename that should be installed.
@@ -174,9 +169,9 @@ def download_ruby_app_binary(path_to_download_to, filename, suffix):
                 'Received HTTP {} when downloading {}'.format(
                     resp.code, resp.url))
 
+
 def extract_ruby_app_binary(source, destination, binary):
-    """
-    Extracts the ruby app binary from `source` into `destination`.
+    """Extracts the ruby app binary from `source` into `destination`.
 
     :param source: The location of the binary to unarchive.
     :param destination: The location to unarchive to.
