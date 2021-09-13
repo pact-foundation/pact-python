@@ -1,4 +1,5 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
+import typing
 from enum import Enum, unique
 from typing import NamedTuple, List
 
@@ -88,10 +89,23 @@ class Verifier(PactFFI):
         logs = self.get_logs()
         return VerifyResult(result, logs)
 
-    def cli_args(self) -> Arguments:
+    def _cli_args_raw(self) -> typing.Dict:
+        """Call and return the output from the pactffi_verifier_cli_args method.
+
+        :return: The arguments, in raw dict form
+        """
+
         result = self.lib.pactffi_verifier_cli_args()
-        arguments = Arguments(**json.loads(self.ffi.string(result).decode("utf-8")))
+        arguments = json.loads(self.ffi.string(result).decode("utf-8"))
         self.lib.pactffi_free_string(result)
+        return arguments
+
+    def cli_args(self) -> Arguments:
+        """Retrieve the Arguments available to the Pact Verifier.
+
+        :return: The arguments, in a Arguments structure
+        """
+        arguments = Arguments(**self._cli_args_raw())
         return arguments
 
     @staticmethod
