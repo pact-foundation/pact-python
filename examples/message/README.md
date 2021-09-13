@@ -41,7 +41,7 @@ class MessageHandler(object):
 ```
 
 Below is a snippet from a test where the message handler has no error.
-Since the expected event contains a key `documentType` with value `microsoft-word`, message handler does not throw an error and a pact file `f"pacts/{expected_json}"` is expected to be generated.
+Since the expected event contains a key `documentType` with value `microsoft-word`, message handler does not throw an error and a pact file `f"{PACT_FILE}""` is expected to be generated.
 
 ```python
 def test_generate_new_pact_file(pact):
@@ -69,7 +69,7 @@ def test_generate_new_pact_file(pact):
     assert isfile(f"{PACT_FILE}") == 1
 ```
 
-For a similar test where the event does not contain a key `documentType` with value `microsoft-word`, a `CustomError` is generated and there there is no generated json file `f"pacts/{expected_json}"`.
+For a similar test where the event does not contain a key `documentType` with value `microsoft-word`, a `CustomError` is generated and there there is no generated json file `f"{PACT_FILE}"`.
 
 ```python
 def test_throw_exception_handler(pact):
@@ -97,12 +97,7 @@ def test_throw_exception_handler(pact):
     assert isfile(f"{PACT_FILE}") == 0
 ```
 
-Otherwise, no pact file is generated.
-
 ## Provider
-
-Note: The current example only tests the consumer side.
-In the future, provider tests will also be included.
 
 ```
 +-------------------+          +-----------+
@@ -112,10 +107,82 @@ In the future, provider tests will also be included.
 +-------------------+          +-----------+
 ```
 
-## E2E Messaging
+```python
+import pytest
+from pact import MessageProvider
 
-Note: The current example only tests the consumer side.
-In the future, provider tests will also be included.
+def document_created_handler():
+    return {
+        "event": "ObjectCreated:Put",
+        "documentName": "document.doc",
+        "creator": "TP",
+        "documentType": "microsoft-word"
+    }
+
+
+def test_verify_success():
+    provider = MessageProvider(
+        message_providers={
+            'A document created successfully': document_created_handler
+        },
+        provider='ContentProvider',
+        consumer='DetectContentLambda',
+        pact_dir='pacts'
+
+    )
+    with provider:
+        provider.verify()
+```
+
+
+### Provider with pact broker
+```python
+import pytest
+from pact import MessageProvider
+
+
+PACT_BROKER_URL = "http://localhost"
+PACT_BROKER_USERNAME = "pactbroker"
+PACT_BROKER_PASSWORD = "pactbroker"
+PACT_DIR = "pacts"
+
+
+@pytest.fixture
+def default_opts():
+    return {
+        'broker_username': PACT_BROKER_USERNAME,
+        'broker_password': PACT_BROKER_PASSWORD,
+        'broker_url': PACT_BROKER_URL,
+        'publish_version': '3',
+        'publish_verification_results': False
+    }
+
+def document_created_handler():
+    return {
+        "event": "ObjectCreated:Put",
+        "documentName": "document.doc",
+        "creator": "TP",
+        "documentType": "microsoft-word"
+    }
+
+def test_verify_from_broker(default_opts):
+    provider = MessageProvider(
+        message_providers={
+            'A document created successfully': document_created_handler,
+        },
+        provider='ContentProvider',
+        consumer='DetectContentLambda',
+        pact_dir='pacts'
+
+    )
+
+    with pytest.raises(AssertionError):
+        with provider:
+            provider.verify_with_broker(**default_opts)
+
+```
+
+## E2E Messaging
 
 ```
 +-------------------+          +-----------+          +-------------------+

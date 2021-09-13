@@ -7,6 +7,7 @@ from subprocess import Popen
 
 from .broker import Broker
 from .constants import MESSAGE_PATH
+from .matchers import from_term
 
 
 class MessagePact(Broker):
@@ -136,7 +137,7 @@ class MessagePact(Broker):
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        self._messages[0]['contents'] = contents
+        self._messages[0]['contents'] = from_term(contents)
         return self
 
     def expects_to_receive(self, description):
@@ -165,11 +166,12 @@ class MessagePact(Broker):
             json.dumps(self._messages[0]),
             "--pact-dir", self.pact_dir,
             f"--pact-specification-version={self.version}",
-            "--consumer", f"{self.consumer.name}_message",
-            "--provider", f"{self.provider.name}_message",
+            "--consumer", f"{self.consumer.name}",
+            "--provider", f"{self.provider.name}",
         ]
 
         self._message_process = Popen(command)
+        self._message_process.wait()
 
     def _insert_message_if_complete(self):
         """
