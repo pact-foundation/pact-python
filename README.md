@@ -446,7 +446,7 @@ To setup a development environment:
 2. It's recommended to create a Python [virtualenv] for the project.
 3. We are now using FFI bindings. For mac you might want to read these [setup FFI](https://cffi.readthedocs.io/en/latest/installation.html)
 
-The setup the environment, run tests, and package the application, run:
+To setup the environment, run tests, and package the application, run:
 `make release`
 
 If you are just interested in packaging pact-python you can install it using pip:
@@ -457,6 +457,15 @@ This creates a `dist/pact-python-N.N.N.tar.gz` file, where the Ns are the curren
 From there you can use pip to install it:
 
 `pip install ./dist/pact-python-N.N.N.tar.gz`
+
+## Offline Installation of Standalone Packages
+
+Although all Ruby standalone applications are predownloaded into the wheel artifact, it may be useful, for development, purposes to install custom Ruby binaries. In which case, use the `bin-path` flag.
+```
+pip install pact-python --bin-path=/absolute/path/to/folder/containing/pact/binaries/for/your/os
+```
+
+Pact binaries can be found at [Pact Ruby Releases](https://github.com/pact-foundation/pact-ruby-standalone/releases).
 
 ## Testing
 

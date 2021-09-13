@@ -1,6 +1,6 @@
 include LICENSE
 include *.txt
 include *.md
+include pact/bin/*
 prune pact/test
-prune pact/bin
 prune e2e
