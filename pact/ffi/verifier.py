@@ -1,7 +1,6 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
-import typing
 from enum import Enum, unique
-from typing import NamedTuple, List
+from typing import Dict, NamedTuple, List
 
 from pact.ffi.pact_ffi import PactFFI
 import json
@@ -9,6 +8,11 @@ import json
 
 @unique
 class VerifyStatus(Enum):
+    """Return codes from a verify request.
+
+    As per: https://docs.rs/pact_ffi/0.0.2/pact_ffi/verifier/fn.pactffi_verify.html
+    """
+
     SUCCESS = 0  # Operation succeeded
     VERIFIER_FAILED = 1  # The verification process failed, see output for errors
     NULL_POINTER = 2  # A null pointer was received
@@ -17,12 +21,14 @@ class VerifyStatus(Enum):
 
 
 class VerifyResult(NamedTuple):
+    """Wrap up the return code, and log output."""
+
     return_code: VerifyStatus
     logs: List[str]
 
 
 class Argument:
-    """Hold the attributes of a single argument which can be used by the Verifier"""
+    """Hold the attributes of a single argument which can be used by the Verifier."""
 
     long: str  # For example: "token"
     short: str = None  # For example "t"
@@ -52,7 +58,7 @@ class Argument:
 
 
 class Arguments:
-    """Hold the various options and flags which can be used by the Verifier"""
+    """Hold the various options and flags which can be used by the Verifier."""
 
     options: List[Argument] = []
     flags: List[Argument] = []
@@ -89,7 +95,7 @@ class Verifier(PactFFI):
         logs = self.get_logs()
         return VerifyResult(result, logs)
 
-    def _cli_args_raw(self) -> typing.Dict:
+    def _cli_args_raw(self) -> Dict:
         """Call and return the output from the pactffi_verifier_cli_args method.
 
         :return: The arguments, in raw dict form
@@ -109,13 +115,15 @@ class Verifier(PactFFI):
         return arguments
 
     @staticmethod
-    def args_dict_to_str(cli_args_dict):
+    def args_dict_to_str(cli_args_dict: Dict) -> str:
+        """Convert a dict of arguments to the \n delimited str required to call the FFI function."""
         cli_args = ""
         for key, value in cli_args_dict.items():
-            # Don't pass through the debug flag for Click
+            # Special case, don't pass through the debug flag for Click
             if key == "debug_click":
                 continue
-            key_arg = key.replace("_", "-")
+
+            key_arg = key.replace("_", "-")  # Snake case for python, kebab case for CLI
             if value and isinstance(value, bool):
                 cli_args = f"{cli_args}\n--{key_arg}"
             elif value and isinstance(value, str):

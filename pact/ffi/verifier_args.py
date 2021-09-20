@@ -1,6 +1,7 @@
 import typing
 from dataclasses import dataclass, field
 
+
 @dataclass
 class VerifierArgs:
     """Auto-generated class, containing the arguments available to the pact verifier."""

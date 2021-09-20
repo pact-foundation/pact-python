@@ -2,33 +2,12 @@
 import os
 import platform
 import tempfile
-from enum import unique, Enum
 from typing import List
 
 from cffi import FFI
 import threading
 
-
-@unique
-class LogToBufferStatus(Enum):
-    SUCCESS = 0  # Operation succeeded
-    CANT_SET_LOGGER = -1  # Can't set the logger
-    NO_LOGGER = -2  # No logger has been initialized
-    SPECIFIER_NOT_UTF8 = -3  # The sink specifier was not UTF-8 encoded
-    UNKNOWN_SINK_TYPE = -4  # The sink type specified is not a known type
-    MISSING_FILE_PATH = -5  # No file path was specified in the sink specification
-    CANT_OPEN_SINK_TO_FILE = -6  # Opening a sink to the given file failed
-    CANT_CONSTRUCT_SINK = -7  # Can't construct sink
-
-
-@unique
-class LogLevel(Enum):
-    OFF = 0
-    ERROR = 1
-    WARN = 2
-    INFO = 3
-    DEBUG = 4
-    TRACE = 5
+from pact.ffi.log import LogToBufferStatus, LogLevel
 
 
 class PactFFI(object):
@@ -58,15 +37,15 @@ class PactFFI(object):
     output_file: str = None
 
     def __new__(cls):
-        # We want to make sure we only initialise once, or the log setup will fail
+        # Make sure we only initialise once, or the log setup will fail
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:
                     cls._instance = super(PactFFI, cls).__new__(cls)
                 cls.ffi = FFI()
 
-                # Define all the functions from the various modules, since we can
-                # only load the library once
+                # Define all the functions from the various modules, since we
+                # can only load the library once
                 cls.ffi.cdef(
                     """
                 // root crate
@@ -90,8 +69,8 @@ class PactFFI(object):
                 cls.lib = cls._load_ffi_library(cls.ffi)
 
                 # We can setup logs like this, if preferred to buffer:
-                # The output will be stored in a file in this directory, which will
-                # be cleaned up automatically at the end
+                # The output will be stored in a file in this directory, which
+                # will be cleaned up automatically at the end
                 PactFFI.output_dir = tempfile.TemporaryDirectory()
                 # Setup logging to a file in the output_dir
                 PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
@@ -148,7 +127,7 @@ class PactFFI(object):
         # print(f"{result=}")
         # return self.ffi.string(result).decode("utf-8").rstrip().split("\n")
 
-        # If using log to file, retrieve like this, otherwise remove
+        # If using log to file, retrieve like this:
         lines = open(PactFFI.output_file).readlines()
         open(PactFFI.output_file, "w").close()
         return [line.lstrip("\x00") for line in lines]

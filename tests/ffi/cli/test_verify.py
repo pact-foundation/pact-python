@@ -1,6 +1,3 @@
-import os
-
-
 from pact.ffi.cli.verify import main
 from pact.ffi.verifier import Verifier, VerifyStatus
 
