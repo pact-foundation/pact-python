@@ -134,7 +134,7 @@ class VerifyWrapper(object):
             raise PactException('Pact urls or Pact broker required')
 
     def call_verify(
-            self, *pacts, provider_base_url, provider, enable_pending=False,
+            self, *pacts, provider_base_url, provider, enable_pending=True,
             include_wip_pacts_since=None, **kwargs
     ):
         """Call verify method."""

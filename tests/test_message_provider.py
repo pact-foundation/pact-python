@@ -63,7 +63,7 @@ class MessageProviderTestCase(TestCase):
         self.provider.verify_with_broker(**self.options)
 
         assert mock_verify_pacts.call_count == 1
-        mock_verify_pacts.assert_called_with(False, None, broker_username="test",
+        mock_verify_pacts.assert_called_with(True, None, broker_username="test",
                                              broker_password="test",
                                              broker_url="http://localhost",
                                              publish_version='3',

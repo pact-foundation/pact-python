@@ -115,7 +115,7 @@ class MessageProvider(object):
         return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
-    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_with_broker(self, enable_pending=True, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
 
         Args:

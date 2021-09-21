@@ -111,7 +111,7 @@ class mainTestCase(TestCase):
                                 provider_base_url='http://localhost',
                                 timeout=30,
                                 verbose=True,
-                                enable_pending=False,
+                                enable_pending=True,
                                 publish_verification_results=False,
                                 include_wip_pacts_since=None)
 
@@ -141,7 +141,7 @@ class mainTestCase(TestCase):
                                         provider_base_url='http://localhost',
                                         timeout=30,
                                         verbose=False,
-                                        enable_pending=False,
+                                        enable_pending=True,
                                         publish_verification_results=False,
                                         include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
@@ -164,7 +164,7 @@ class mainTestCase(TestCase):
                                         provider_base_url='http://localhost',
                                         timeout=30,
                                         verbose=False,
-                                        enable_pending=False,
+                                        enable_pending=True,
                                         publish_verification_results=False,
                                         include_wip_pacts_since=None)
         self.assertEqual(result.exit_code, 0)
@@ -191,7 +191,7 @@ class mainTestCase(TestCase):
                                         provider_base_url='http://localhost',
                                         timeout=30,
                                         verbose=False,
-                                        enable_pending=False,
+                                        enable_pending=True,
                                         publish_verification_results=False,
                                         include_wip_pacts_since=None)
 
@@ -215,7 +215,7 @@ class mainTestCase(TestCase):
                                 broker_url='http://broker/',
                                 timeout=30,
                                 verbose=False,
-                                enable_pending=False,
+                                enable_pending=True,
                                 publish_verification_results=False,
                                 include_wip_pacts_since=None)
 

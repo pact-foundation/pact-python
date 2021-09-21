@@ -43,7 +43,7 @@ class VerifierPactsTestCase(TestCase):
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -70,7 +70,7 @@ class VerifierPactsTestCase(TestCase):
                            provider_base_url='http://localhost:8888',
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None,
                            consumer_selectors=['{"tag": "main", "latest": true}',
                                                '{"tag": "test", "latest": false}'])
@@ -92,7 +92,7 @@ class VerifierPactsTestCase(TestCase):
                            log_level='INFO',
                            verbose=False,
                            provider_app_version='1.0.0',
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None)
 
     @patch('pact.verifier.path_exists', return_value=False)
@@ -171,7 +171,7 @@ class VerifierBrokerTestCase(TestCase):
                            broker_url=self.broker_url,
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -192,7 +192,7 @@ class VerifierBrokerTestCase(TestCase):
                            broker_url=self.broker_url,
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None,
                            provider_app_version='1.0.0',
                            )
@@ -221,7 +221,7 @@ class VerifierBrokerTestCase(TestCase):
                            broker_url=self.broker_url,
                            log_level='INFO',
                            verbose=False,
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None,
                            consumer_selectors=['{"tag": "main", "latest": true}',
                                                '{"tag": "test", "latest": false}'])
@@ -243,7 +243,7 @@ class VerifierBrokerTestCase(TestCase):
                            log_level='INFO',
                            verbose=False,
                            provider_app_version='1.0.0',
-                           enable_pending=False,
+                           enable_pending=True,
                            include_wip_pacts_since=None)
 
     @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))

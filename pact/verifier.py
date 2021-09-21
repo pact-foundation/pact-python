@@ -33,7 +33,7 @@ class Verifier(object):
             # do something
             raise Exception()
 
-    def verify_pacts(self, *pacts, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_pacts(self, *pacts, enable_pending=True, include_wip_pacts_since=None, **kwargs):
         """Verify our pacts from the provider.
 
         Returns:
@@ -62,7 +62,7 @@ class Verifier(object):
 
         return success, logs
 
-    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_with_broker(self, enable_pending=True, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
 
         Args:

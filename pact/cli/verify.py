@@ -111,11 +111,10 @@ import click
     'log_level', '--log-level',
     help='The logging level.')
 @click.option(
-    'enable_pending', '--enable-pending',
-    default=False,
+    'enable_pending', '--enable-pending/--no-enable-pending',
+    default=True,
     help='Allow pacts which are in pending state to be verified without causing the '
-         'overall task to fail. For more information, see https://pact.io/pending',
-    is_flag=True)
+         'overall task to fail. For more information, see https://pact.io/pending')
 @click.option(
     'include_wip_pacts_since', '--include-wip-pacts-since',
     default=None,
@@ -138,6 +137,9 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
 
     for urls in pact_urls:  # Remove in major version 1.0.0
         all_pact_urls.extend(p for p in urls.split(',') if p)
+
+    if not enable_pending:
+        click.echo(warning + ' We recommend setting enablePending to true. For more information, please see https://docs.pact.io/pending')
 
     if len(pact_urls) > 1:
         click.echo(

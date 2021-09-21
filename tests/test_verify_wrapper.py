@@ -41,7 +41,8 @@ class VerifyWrapperTestCase(TestCase):
             './pacts/consumer-provider.json',
             './pacts/consumer-provider2.json',
             '--provider=test_provider',
-            '--provider-base-url=http://localhost']
+            '--provider-base-url=http://localhost',
+            '--enable-pending']
 
         self.broker_call = [
             '--provider=test_provider',
@@ -53,7 +54,8 @@ class VerifyWrapperTestCase(TestCase):
             '--consumer-version-tag=prod',
             '--consumer-version-tag=dev',
             '--provider-version-tag=dev',
-            '--provider-version-tag=qa']
+            '--provider-version-tag=qa',
+            '--enable-pending']
 
     def assertProcess(self, *expected):
         self.assertEqual(self.mock_Popen.call_count, 1)
@@ -88,6 +90,7 @@ class VerifyWrapperTestCase(TestCase):
             '--provider-base-url=http://localhost',
             '--provider=provider',
             '--pact-broker-base-url=http://broker.example.com',
+            '--enable-pending'
         ])
 
     def test_pact_urls_provided(self):
