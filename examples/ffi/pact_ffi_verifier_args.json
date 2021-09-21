@@ -1,0 +1,187 @@
+{
+  "options": [
+    {
+      "long": "loglevel",
+      "short": "l",
+      "help": "Log level (defaults to warn)",
+      "possible_values": [
+        "error",
+        "warn",
+        "info",
+        "debug",
+        "trace",
+        "none"
+      ],
+      "multiple": false
+    },
+    {
+      "long": "file",
+      "short": "f",
+      "help": "Pact file to verify (can be repeated)",
+      "multiple": true
+    },
+    {
+      "long": "dir",
+      "short": "d",
+      "help": "Directory of pact files to verify (can be repeated)",
+      "multiple": true
+    },
+    {
+      "long": "url",
+      "short": "u",
+      "help": "URL of pact file to verify (can be repeated)",
+      "multiple": true
+    },
+    {
+      "long": "broker-url",
+      "short": "b",
+      "help": "URL of the pact broker to fetch pacts from to verify (requires the provider name parameter)",
+      "multiple": false,
+      "env": "PACT_BROKER_BASE_URL"
+    },
+    {
+      "long": "hostname",
+      "short": "h",
+      "help": "Provider hostname (defaults to localhost)",
+      "multiple": false
+    },
+    {
+      "long": "port",
+      "short": "p",
+      "help": "Provider port (defaults to protocol default 80/443)",
+      "multiple": false
+    },
+    {
+      "long": "scheme",
+      "help": "Provider URI scheme (defaults to http)",
+      "possible_values": [
+        "http",
+        "https"
+      ],
+      "default_value": "http",
+      "multiple": false
+    },
+    {
+      "long": "provider-name",
+      "short": "n",
+      "help": "Provider name (defaults to provider)",
+      "multiple": false
+    },
+    {
+      "long": "state-change-url",
+      "short": "s",
+      "help": "URL to post state change requests to",
+      "multiple": false
+    },
+    {
+      "long": "filter-description",
+      "help": "Only validate interactions whose descriptions match this filter",
+      "multiple": false,
+      "env": "PACT_DESCRIPTION"
+    },
+    {
+      "long": "filter-state",
+      "help": "Only validate interactions whose provider states match this filter",
+      "multiple": false,
+      "env": "PACT_PROVIDER_STATE"
+    },
+    {
+      "long": "filter-no-state",
+      "help": "Only validate interactions that have no defined provider state",
+      "multiple": false,
+      "env": "PACT_PROVIDER_NO_STATE"
+    },
+    {
+      "long": "filter-consumer",
+      "short": "c",
+      "help": "Consumer name to filter the pacts to be verified (can be repeated)",
+      "multiple": true
+    },
+    {
+      "long": "user",
+      "help": "Username to use when fetching pacts from URLS",
+      "multiple": false,
+      "env": "PACT_BROKER_USERNAME"
+    },
+    {
+      "long": "password",
+      "help": "Password to use when fetching pacts from URLS",
+      "multiple": false,
+      "env": "PACT_BROKER_PASSWORD"
+    },
+    {
+      "long": "token",
+      "short": "t",
+      "help": "Bearer token to use when fetching pacts from URLS",
+      "multiple": false,
+      "env": "PACT_BROKER_TOKEN"
+    },
+    {
+      "long": "provider-version",
+      "help": "Provider version that is being verified. This is required when publishing results.",
+      "multiple": false
+    },
+    {
+      "long": "build-url",
+      "help": "URL of the build to associate with the published verification results.",
+      "multiple": false
+    },
+    {
+      "long": "provider-tags",
+      "help": "Provider tags to use when publishing results. Accepts comma-separated values.",
+      "multiple": false
+    },
+    {
+      "long": "base-path",
+      "help": "Base path to add to all requests",
+      "multiple": false
+    },
+    {
+      "long": "consumer-version-tags",
+      "help": "Consumer tags to use when fetching pacts from the Broker. Accepts comma-separated values.",
+      "multiple": false
+    },
+    {
+      "long": "consumer-version-selectors",
+      "help": "Consumer version selectors to use when fetching pacts from the Broker. Accepts a JSON string as per https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/",
+      "multiple": false
+    },
+    {
+      "long": "include-wip-pacts-since",
+      "help": "Allow pacts that don't match given consumer selectors (or tags) to  be verified, without causing the overall task to fail. For more information, see https://pact.io/wip",
+      "multiple": false
+    },
+    {
+      "long": "request-timeout",
+      "help": "Sets the HTTP request timeout in milliseconds for requests to the target API and for state change requests.",
+      "multiple": false
+    }
+  ],
+  "flags": [
+    {
+      "long": "state-change-as-query",
+      "help": "State change request data will be sent as query parameters instead of in the request body",
+      "multiple": false
+    },
+    {
+      "long": "state-change-teardown",
+      "help": "State change teardown requests are to be made after each interaction",
+      "multiple": false
+    },
+    {
+      "long": "publish",
+      "help": "Enables publishing of verification results back to the Pact Broker. Requires the broker-url and provider-version parameters.",
+      "multiple": false
+    },
+    {
+      "long": "disable-ssl-verification",
+      "help": "Disables validation of SSL certificates",
+      "multiple": false
+    },
+    {
+      "long": "enable-pending",
+      "help": "Enables Pending Pacts",
+      "multiple": false
+    }
+  ]
+}

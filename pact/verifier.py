@@ -3,6 +3,7 @@ import json
 
 from pact.verify_wrapper import VerifyWrapper, path_exists, expand_directories
 
+
 class Verifier(object):
     """A Pact Verifier."""
 

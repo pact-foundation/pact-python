@@ -45,7 +45,7 @@ define messaging
 	cd examples/message
   pip install -r requirements.txt
   pip install -e ../../
-  pytest
+  ./run_pytest.sh
 endef
 export messaging
 

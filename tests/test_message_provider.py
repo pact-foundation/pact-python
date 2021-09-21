@@ -6,6 +6,7 @@ from unittest import TestCase
 from pact.message_provider import MessageProvider
 from pact import message_provider as message_provider
 
+
 class MessageProviderTestCase(TestCase):
     def _mock_response(
             self,
@@ -33,6 +34,13 @@ class MessageProviderTestCase(TestCase):
                 'a document created successfully': self.message_handler
             }
         )
+        self.options = {
+            'broker_username': "test",
+            'broker_password': "test",
+            'broker_url': "http://localhost",
+            'publish_version': '3',
+            'publish_verification_results': False
+        }
 
     def test_init(self):
         self.assertIsInstance(self.provider, MessageProvider)
@@ -49,6 +57,17 @@ class MessageProviderTestCase(TestCase):
 
         assert mock_verify_pacts.call_count == 1
         mock_verify_pacts.assert_called_with(f'{self.provider.pact_dir}/{self.provider._pact_file()}', verbose=False)
+
+    @patch('pact.Verifier.verify_with_broker', return_value=(0, 'logs'))
+    def test_verify_with_broker(self, mock_verify_pacts):
+        self.provider.verify_with_broker(**self.options)
+
+        assert mock_verify_pacts.call_count == 1
+        mock_verify_pacts.assert_called_with(False, None, broker_username="test",
+                                             broker_password="test",
+                                             broker_url="http://localhost",
+                                             publish_version='3',
+                                             publish_verification_results=False)
 
 
 class MessageProviderContextManagerTestCase(MessageProviderTestCase):

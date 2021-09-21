@@ -14,7 +14,8 @@ pytest-cov==2.11.1
 requests==2.26
 urllib3>=1.26.5
 wheel==0.24.0
+requests>=2.5.0
 six>=1.9.0
-fastapi==0.67.0
-uvicorn==0.14.0
 cffi==1.14.6
+pytest-httpserver==1.0.1
+uvicorn==0.14.0
