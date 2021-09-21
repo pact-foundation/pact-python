@@ -1,6 +1,7 @@
 """Wrapper to verify previously created pacts."""
 
 from pact.constants import VERIFIER_PATH
+from pact.pact_exception import PactException
 import sys
 import os
 import platform
@@ -100,26 +101,6 @@ def rerun_command():
     env = os.environ.copy()
     env['PACT_INTERACTION_RERUN_COMMAND'] = command
     return env
-
-class PactException(Exception):
-    """PactException when input isn't valid.
-
-    Args:
-        Exception ([type]): [description]
-
-    Raises:
-        KeyError: [description]
-        Exception: [description]
-
-    Returns:
-        [type]: [description]
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Create wrapper."""
-        super().__init__(*args, **kwargs)
-        self.message = args[0]
 
 class VerifyWrapper(object):
     """A Pact Verifier Wrapper."""

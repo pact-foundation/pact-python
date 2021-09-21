@@ -8,16 +8,18 @@ import tarfile
 from distutils.command.sdist import sdist as sdist_orig
 from typing import NamedTuple
 from zipfile import ZipFile
+import shutil
+import gzip
 
 from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
+from urllib.request import urlopen
 
 IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = "1.88.51"
 PACT_STANDALONE_SUFFIXES = ["osx.tar.gz", "linux-x86_64.tar.gz", "linux-x86.tar.gz", "win32.zip"]
 PACT_FFI_VERSION = "0.0.3"
-# TODO: Do we really need 2 for 'nix and 3 for Win?
 PACT_FFI_FILENAMES = [
     "libpact_ffi-linux-x86_64.so.gz",
     "libpact_ffi-osx-aarch64-apple-darwin.dylib.gz",
@@ -293,6 +295,7 @@ def read(filename):
 
 
 dependencies = [
+    "cffi==1.14.6",
     "click>=2.0.0",
     "psutil>=2.0.0",
     "requests>=2.5.0",
@@ -300,7 +303,6 @@ dependencies = [
     "fastapi>=0.67.0",
     "urllib3>=1.26.5",
     "uvicorn>=0.14.0",
-    "cffi==1.14.6",
 ]
 
 if __name__ == "__main__":
