@@ -15,11 +15,8 @@ from distutils.command.sdist import sdist as sdist_orig
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.88.51'
-PACT_STANDALONE_SUFFIXES = ['osx.tar.gz',
-                            'linux-x86_64.tar.gz',
-                            'linux-x86.tar.gz',
-                            'win32.zip']
+PACT_STANDALONE_VERSION = "1.88.51"
+PACT_STANDALONE_SUFFIXES = ["osx.tar.gz", "linux-x86_64.tar.gz", "linux-x86.tar.gz", "win32.zip"]
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -33,15 +30,16 @@ class sdist(sdist_orig):
     Subclass sdist so that we can download all standalone ruby applications
     into ./pact/bin so our users receive all the binaries on pip install.
     """
+
     def run(self):
-        package_bin_path = os.path.join(os.path.dirname(__file__), 'pact', 'bin')
+        package_bin_path = os.path.join(os.path.dirname(__file__), "pact", "bin")
 
         if os.path.exists(package_bin_path):
             shutil.rmtree(package_bin_path, ignore_errors=True)
         os.mkdir(package_bin_path)
 
         for suffix in PACT_STANDALONE_SUFFIXES:
-            filename = ('pact-{version}-{suffix}').format(version=PACT_STANDALONE_VERSION, suffix=suffix)
+            filename = ("pact-{version}-{suffix}").format(version=PACT_STANDALONE_VERSION, suffix=suffix)
             download_ruby_app_binary(package_bin_path, filename, suffix)
         super().run()
 
@@ -53,10 +51,11 @@ class PactPythonDevelopCommand(develop):
     `pip install -e` it will download and unpack the appropriate Pact
     mock service and provider verifier.
     """
+
     def run(self):
         """Install ruby command."""
         develop.run(self)
-        package_bin_path = os.path.join(os.path.dirname(__file__), 'pact', 'bin')
+        package_bin_path = os.path.join(os.path.dirname(__file__), "pact", "bin")
         if not os.path.exists(package_bin_path):
             os.mkdir(package_bin_path)
 
@@ -73,7 +72,8 @@ class PactPythonInstallCommand(install):
         --bin-path  An absolute folder path containing pre-downloaded pact binaries
                     that should be used instead of fetching from the internet.
     """
-    user_options = install.user_options + [('bin-path=', None, None)]
+
+    user_options = install.user_options + [("bin-path=", None, None)]
 
     def initialize_options(self):
         """Load our preconfigured options"""
@@ -87,7 +87,7 @@ class PactPythonInstallCommand(install):
     def run(self):
         """Install python binary."""
         install.run(self)
-        package_bin_path = os.path.join(self.install_lib, 'pact', 'bin')
+        package_bin_path = os.path.join(self.install_lib, "pact", "bin")
         if not os.path.exists(package_bin_path):
             os.mkdir(package_bin_path)
         install_ruby_app(package_bin_path, self.bin_path)
@@ -103,18 +103,18 @@ def install_ruby_app(package_bin_path, download_bin_path):
     if download_bin_path is None:
         download_bin_path = package_bin_path
 
-    path = os.path.join(download_bin_path, binary['filename'])
+    path = os.path.join(download_bin_path, binary["filename"])
 
     if os.path.isfile(path) is True:
-        extract_ruby_app_binary(download_bin_path, package_bin_path, binary['filename'])
+        extract_ruby_app_binary(download_bin_path, package_bin_path, binary["filename"])
     else:
         if download_bin_path is not None:
             if os.path.isfile(path) is not True:
-                raise RuntimeError('Could not find {} binary.'.format(path))
-            extract_ruby_app_binary(download_bin_path, package_bin_path, binary['filename'])
+                raise RuntimeError("Could not find {} binary.".format(path))
+            extract_ruby_app_binary(download_bin_path, package_bin_path, binary["filename"])
         else:
-            download_ruby_app_binary(package_bin_path, binary['filename'], binary['suffix'])
-            extract_ruby_app_binary(package_bin_path, package_bin_path, binary['filename'])
+            download_ruby_app_binary(package_bin_path, binary["filename"], binary["suffix"])
+            extract_ruby_app_binary(package_bin_path, package_bin_path, binary["filename"])
 
 
 def ruby_app_binary():
@@ -124,24 +124,24 @@ def ruby_app_binary():
     """
     target_platform = platform.platform().lower()
 
-    binary = ('pact-{version}-{suffix}')
+    binary = "pact-{version}-{suffix}"
 
-    if 'darwin' in target_platform or 'macos' in target_platform:
-        suffix = 'osx.tar.gz'
-    elif 'linux' in target_platform and IS_64:
-        suffix = 'linux-x86_64.tar.gz'
-    elif 'linux' in target_platform:
-        suffix = 'linux-x86.tar.gz'
-    elif 'windows' in target_platform:
-        suffix = 'win32.zip'
+    if "darwin" in target_platform or "macos" in target_platform:
+        suffix = "osx.tar.gz"
+    elif "linux" in target_platform and IS_64:
+        suffix = "linux-x86_64.tar.gz"
+    elif "linux" in target_platform:
+        suffix = "linux-x86.tar.gz"
+    elif "windows" in target_platform:
+        suffix = "win32.zip"
     else:
-        msg = ('Unfortunately, {} is not a supported platform. Only Linux,'
-               ' Windows, and OSX are currently supported.').format(
-            platform.platform())
+        msg = (
+            "Unfortunately, {} is not a supported platform. Only Linux," " Windows, and OSX are currently supported."
+        ).format(platform.platform())
         raise Exception(msg)
 
     binary = binary.format(version=PACT_STANDALONE_VERSION, suffix=suffix)
-    return {'filename': binary, 'version': PACT_STANDALONE_VERSION, 'suffix': suffix}
+    return {"filename": binary, "version": PACT_STANDALONE_VERSION, "suffix": suffix}
 
 
 def download_ruby_app_binary(path_to_download_to, filename, suffix):
@@ -151,8 +151,10 @@ def download_ruby_app_binary(path_to_download_to, filename, suffix):
     :param filename: The filename that should be installed.
     :param suffix: The suffix of the standalone app to install.
     """
-    uri = ('https://github.com/pact-foundation/pact-ruby-standalone/releases'
-           '/download/v{version}/pact-{version}-{suffix}')
+    uri = (
+        "https://github.com/pact-foundation/pact-ruby-standalone/releases"
+        "/download/v{version}/pact-{version}-{suffix}"
+    )
 
     if sys.version_info.major == 2:
         from urllib import urlopen
@@ -161,13 +163,11 @@ def download_ruby_app_binary(path_to_download_to, filename, suffix):
 
     path = os.path.join(path_to_download_to, filename)
     resp = urlopen(uri.format(version=PACT_STANDALONE_VERSION, suffix=suffix))
-    with open(path, 'wb') as f:
+    with open(path, "wb") as f:
         if resp.code == 200:
             f.write(resp.read())
         else:
-            raise RuntimeError(
-                'Received HTTP {} when downloading {}'.format(
-                    resp.code, resp.url))
+            raise RuntimeError("Received HTTP {} when downloading {}".format(resp.code, resp.url))
 
 
 def extract_ruby_app_binary(source, destination, binary):
@@ -178,7 +178,7 @@ def extract_ruby_app_binary(source, destination, binary):
     :param binary: The binary that needs to be unarchived.
     """
     path = os.path.join(source, binary)
-    if 'windows' in platform.platform().lower():
+    if "windows" in platform.platform().lower():
         with ZipFile(path) as f:
             f.extractall(destination)
     else:
@@ -189,42 +189,38 @@ def extract_ruby_app_binary(source, destination, binary):
 def read(filename):
     """Read file contents."""
     path = os.path.realpath(os.path.join(os.path.dirname(__file__), filename))
-    with open(path, 'rb') as f:
-        return f.read().decode('utf-8')
+    with open(path, "rb") as f:
+        return f.read().decode("utf-8")
 
 
 dependencies = [
-    'click>=2.0.0',
-    'psutil>=2.0.0',
-    'requests>=2.5.0',
-    'six>=1.9.0',
-    'fastapi>=0.67.0',
-    'urllib3>=1.26.5',
-    'uvicorn>=0.14.0'
+    "click>=2.0.0",
+    "psutil>=2.0.0",
+    "requests>=2.5.0",
+    "six>=1.9.0",
+    "fastapi>=0.67.0",
+    "urllib3>=1.26.5",
+    "uvicorn>=0.14.0",
 ]
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setup(
-        cmdclass={
-            'develop': PactPythonDevelopCommand,
-            'install': PactPythonInstallCommand,
-            'sdist': sdist},
-        name='pact-python',
-        version=about['__version__'],
-        description=(
-            'Tools for creating and verifying consumer driven '
-            'contracts using the Pact framework.'),
-        long_description=read('README.md'),
-        long_description_content_type='text/markdown',
-        author='Matthew Balvanz',
-        author_email='matthew.balvanz@workiva.com',
-        url='https://github.com/pact-foundation/pact-python',
-        entry_points='''
+        cmdclass={"develop": PactPythonDevelopCommand, "install": PactPythonInstallCommand, "sdist": sdist},
+        name="pact-python",
+        version=about["__version__"],
+        description=("Tools for creating and verifying consumer driven " "contracts using the Pact framework."),
+        long_description=read("README.md"),
+        long_description_content_type="text/markdown",
+        author="Matthew Balvanz",
+        author_email="matthew.balvanz@workiva.com",
+        url="https://github.com/pact-foundation/pact-python",
+        entry_points="""
             [console_scripts]
             pact-verifier=pact.cli.verify:main
-        ''',
+        """,
         install_requires=dependencies,
-        packages=['pact', 'pact.cli'],
-        package_data={'pact': ['bin/*']},
-        package_dir={'pact': 'pact'},
-        license='MIT License')
+        packages=["pact", "pact.cli"],
+        package_data={"pact": ["bin/*"]},
+        package_dir={"pact": "pact"},
+        license="MIT License",
+    )
