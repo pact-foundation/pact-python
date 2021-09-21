@@ -97,7 +97,10 @@ class PactFFI(object):
         """Load the appropriate library for the current platform."""
         target_platform = platform.platform().lower()
 
-        if target_platform in ["darwin", "macos"]:
+        if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" in platform.machine():
+            # TODO: Untested, can someone with the appropriate architecture verify?
+            libname = "libpact_ffi-osx-aarch64-apple-darwin.dylib"
+        elif target_platform in ["darwin", "macos"]:
             libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
         elif "linux" in target_platform:
             libname = "pact/bin/libpact_ffi-linux-x86_64.so"
@@ -111,8 +114,11 @@ class PactFFI(object):
             )
             raise Exception(msg)
 
-        # TODO: Hardcoding while messing, revert when done
-        libname = "/home/mgeeves/dev/GitHub/pact-reference/rust/target/release/libpact_ffi.so"
+        # If a custom libpact_ffi.so is available in the pact/bin dir, use that instead
+        custom_libpact_ffi = os.path.join("pact/bin", "libpact_ffi.so")
+        if os.path.isfile(custom_libpact_ffi):
+            libname = custom_libpact_ffi
+
         return ffi.dlopen(libname)
 
     def get_logs(self) -> List[str]:
