@@ -488,7 +488,8 @@ class PactVerifyTestCase(PactTestCase):
             'get', 'http://localhost:1234/interactions/verification',
             headers={'X-Pact-Mock-Service': 'true'},
             verify=False,
-            params=None)
+            params=None,
+            allow_redirects=True)
 
         self.post_publish_pacts_call = call(
             'post', 'http://localhost:1234/pact',
