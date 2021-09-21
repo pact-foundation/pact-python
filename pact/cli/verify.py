@@ -139,7 +139,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         all_pact_urls.extend(p for p in urls.split(',') if p)
 
     if not enable_pending:
-        click.echo(warning + ' We recommend setting enablePending to true. For more information, please see https://docs.pact.io/pending')
+        click.echo(warning + ' We recommend setting enable-pending to true. For more information, please see https://docs.pact.io/pending')
 
     if len(pact_urls) > 1:
         click.echo(
