@@ -1,4 +1,5 @@
 """Methods to verify previously created pacts."""
+import re
 import sys
 from typing import Callable
 
@@ -12,7 +13,8 @@ def cli_options():
     """
     Dynamically construct the Click CLI options available to interface with the
     current version of the FFI library.
-    This attempts to ensure there cannot be a mismatch between the two.
+    This attempts to ensure there cannot be a mismatch between the two, and
+    means there doesn't need to be a duplication of logic.
     """
 
     def inner_func(function: Callable) -> Callable:
@@ -56,7 +58,7 @@ def cli_options():
 
         function = click.option(
             f"--debug-click",
-            help="Display arguments passed to the FFI library",
+            help="Display arguments passed to the Pact Rust FFI library, for debugging pact-verifier wrapper",
             is_flag=True,
         )(function)
 
@@ -68,6 +70,11 @@ def cli_options():
 @click.command(name="pact-verifier", context_settings=dict(max_content_width=120))
 @cli_options()
 def main(**kwargs):
+    """
+    Verify one or more contracts against a provider service.
+
+    Minimal example: pact-verifier --hostname localhost --port 8080 -d ./pacts
+    """
     # Since we may only have default args, which are SOME args and we don't know
     # which are required, make sure we have at least one CLI argument
     ctx = click.get_current_context()
@@ -82,6 +89,16 @@ def main(**kwargs):
     if kwargs.get("debug_click"):
         click.echo("kwargs received:")
         click.echo(kwargs)
+        click.echo("")
+
+        # To try and avoid confusion and help with debugging, notify the user when ENVs are being used
+        arguments_from_envs = [
+            key for key, value in kwargs.items() if ctx.get_parameter_source(key) == ParameterSource.ENVIRONMENT
+        ]
+        if arguments_from_envs:
+            click.echo(f"The following arguments are using values provided by ENVs: {arguments_from_envs}")
+        click.echo("")
+
         click.echo("CLI args to send via FFI:")
         click.echo(cli_args)
         click.echo("")
@@ -93,8 +110,15 @@ def main(**kwargs):
         click.echo(f"{result.return_code=}")
         click.echo(f"{result.logs=}")
 
+    # If the FFI method returned some log output
     if result.logs:
-        click.echo(line for line in result.logs)
+        for log in result.logs:
+            m = re.search('.*error verifying Pact: "error: (.*)", kind: .*', log)
+            if m:
+                for line in m.group(1).split("\\n"):
+                    click.echo(line)
+            else:
+                click.echo(log)
 
     sys.exit(result.return_code)
 
