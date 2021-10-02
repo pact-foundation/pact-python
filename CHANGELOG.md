@@ -1,3 +1,5 @@
+### 1.4.4
+  * b90cf3d - fix(ruby): update ruby standalone to support disabling SSL verification via an environment variable (m-aciek, Sat Oct 2 03:04:14 2021 +0200)
 ### 1.4.3
   * 08f0dc0 - feat: added support for message provider using pact broker (#257) (Fabio Pulvirenti, Sun Sep 5 22:49:51 2021 +0200)
 ### 1.4.2
