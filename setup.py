@@ -201,7 +201,7 @@ def read(filename):
 dependencies = [
     'click>=2.0.0',
     'psutil>=2.0.0',
-    'requests>=2.5.0',
+    'requests>=2.26.0',
     'six>=1.9.0',
     'fastapi>=0.67.0',
     'urllib3>=1.26.5',

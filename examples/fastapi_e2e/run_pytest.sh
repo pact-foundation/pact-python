@@ -1,23 +1,15 @@
 #!/bin/bash
 set -o pipefail
 
-
-
-FLASK_APP=pact_provider.py python -m flask run -p 1235 & &>/dev/null
-
-# python pact_provider.py & &>/dev/null
-FLASK_PID=$!
+uvicorn src.provider:app --host 0.0.0.0 --port 8080 & &>/dev/null
+FASTAPI_PID=$!
 
 function teardown {
-  echo "Tearing down Flask server ${FLASK_PID}"
-
+  echo "Tearing down FastAPI server: ${FASTAPI_PID}"
   kill -9 $FLASK_PID
 }
 trap teardown EXIT
 
-sleep 3
+sleep 1
 
 pytest
-
-teardown()
-

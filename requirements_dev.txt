@@ -10,7 +10,7 @@ pydocstyle==4.0.1
 tox==3.14.0
 pytest==5.4.1
 pytest-cov==2.11.1
-requests==2.26
+requests>=2.26.0
 tox-travis==0.8
 urllib3>=1.26.5
 wheel==0.24.0

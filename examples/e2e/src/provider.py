@@ -1,19 +1,20 @@
 from flask import Flask, abort, jsonify
 
-fakedb = {}
+fakedb = {}  # Use a simple dict to represent a database
 
 app = Flask(__name__)
 
 
-@app.route('/users/<name>')
-def get_user_by_name(name):
+@app.route("/users/<name>")
+def get_user_by_name(name: str):
     user_data = fakedb.get(name)
     if not user_data:
+        app.logger.debug(f"GET user for: '{name}', HTTP 404 not found")
         abort(404)
     response = jsonify(**user_data)
-    app.logger.debug('get user for %s returns data:\n%s', name, response.data)
+    app.logger.debug(f"GET user for: '{name}', returning: {response.data}")
     return response
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True, port=5001)

@@ -1,8 +1,9 @@
 # Introduction
 
-This is an e2e example to show the provider verification working for both cli and python api. 
+This is an e2e example to show the provider verification working for both CLI and Python API. 
 
-Note in this example we are within conftest we are creating a Broker instance. This is purely to help demonstrate using Pact Broker in the code and you are strongly advised to set up a persistent Broker or use Pactflow
+Note: in this example within conftest we are creating a Broker instance. This is purely to help demonstrate using Pact Broker in the code and you are
+strongly advised to set up a persistent Broker or use Pactflow
 
 ## Setup
 

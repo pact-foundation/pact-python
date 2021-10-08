@@ -39,6 +39,15 @@ define E2E
 endef
 export E2E
 
+define FASTAPI_E2E
+	echo "fastapi_e2e make"
+	cd examples/fastapi_e2e
+  pip install -r requirements.txt
+  pip install -e ../../
+  ./run_pytest.sh
+endef
+export FASTAPI_E2E
+
 
 define messaging
 	echo "messaging make"
@@ -60,8 +69,13 @@ messaging:
 	bash -c "$$messaging"
 
 
+.PHONY: fastapi
+fastapi:
+	bash -c "$$FASTAPI_E2E"
+
+
 .PHONY: examples
-examples: e2e messaging
+examples: e2e messaging fastapi
 
 
 .PHONY: package

@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-
+  # A PostgreSQL database for the Broker to store Pacts and verification results
   postgres:
     image: postgres
     healthcheck:
@@ -13,10 +13,16 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
 
+  # The Pact Broker
   broker_app:
-    image: dius/pact-broker
+    # Alternatively the DiUS Pact Broker can be used:
+    # image: dius/pact-broker
+    #
+    # As well as changing the image, the destination port will need to be changed
+    # from 9292 below, and in the nginx.conf proxy_pass section
+    image: pactfoundation/pact-broker
     ports:
-      - "80:80"
+      - "80:9292"
     links:
       - postgres
     environment:
@@ -27,6 +33,8 @@ services:
       PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
       PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
 
+  # An NGINX reverse proxy in front of the Broker on port 8443, to be able to
+  # terminate with SSL
   nginx:
     image: nginx:alpine
     links:
