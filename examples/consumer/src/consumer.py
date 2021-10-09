@@ -5,13 +5,22 @@ from datetime import datetime
 
 
 class User(object):
+    """Define the basic User data we expect to receive from the User Provider."""
+
     def __init__(self, name: str, created_on: str):
         self.name = name
         self.created_on = created_on
 
 
 class UserConsumer(object):
+    """Demonstrate some basic functionality of how the User Consumer will interact
+    with the User Provider, in this case a simple get_user."""
+
     def __init__(self, base_uri: str):
+        """Initialise the Consumer, in this case we only need to know the URI.
+
+        :param base_uri: The full URI, including port of the Provider to connect to
+        """
         self.base_uri = base_uri
 
     def get_user(self, user_name: str) -> Optional[User]:
