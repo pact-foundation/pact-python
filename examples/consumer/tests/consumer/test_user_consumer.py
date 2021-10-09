@@ -12,9 +12,9 @@ from src.consumer import UserConsumer
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# PACT_FILE = "userserviceclient-userservice.json"
-
-# If publishing the Pact(s), they will be submitted to the Pact Broker here
+# If publishing the Pact(s), they will be submitted to the Pact Broker here.
+# For the purposes of this example, the broker is started up as a fixture defined
+# in conftest.py. For normal usage this would be self-hosted or using Pactflow.
 PACT_BROKER_URL = "http://localhost"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
@@ -34,8 +34,9 @@ def consumer() -> UserConsumer:
 
 
 @pytest.fixture(scope="session")
-def pact(request) -> None:
-    """Setup a Pact Consumer mock service, which will optionally publish Pacts"""
+def pact(request):
+    """Setup a Pact Consumer, which provides the Provider mock service. This
+    will generate and optionally publish Pacts to the Pact Broker"""
 
     # When publishing a Pact to the Pact Broker, a version number of the Consumer
     # is required, to be able to construct the compatability matrix between the
@@ -74,7 +75,7 @@ def pact(request) -> None:
 
 
 def test_get_user_non_admin(pact, consumer):
-
+    # Define the Matcher; the expected structure and content of the response
     expected = {
         "name": "UserA",
         "id": Format().uuid,

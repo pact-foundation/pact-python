@@ -37,6 +37,7 @@ def broker(request):
             if stderr:
                 print("Errors\\n:{}".format(stderr))
             print("{}".format(stdout))
+            print("Started broker")
 
             yield
             print("Stopping broker")

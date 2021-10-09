@@ -13,6 +13,8 @@
 
 TODO
 
+In these examples, `1` is just used to meet the need of having *some* consumer version.
+
 ## broker
 
 The [Pact Broker] stores Pacts and verification results. It is used here for the [consumer](#consumer), [flask_provider](#flask-provider) and [message](#message) tests.
@@ -38,29 +40,42 @@ When the tests are run, the "minimum" is to generate the Pact contract JSON. Add
 
 - To startup the broker, run the tests, and publish the results to the broker:
     ```bash
-    pytest --publish-pact 2 --run-broker True
+    pytest --run-broker True --publish-pact 1 
     ```
-
+- Alternatively the same can be performed with the following command, which is called from a `make consumer`:
+    ```bash
+    ./run_pytest.sh
+    ```
 - To run the tests, and publish the results to the broker which is already running:
     ```bash
-    pytest --publish-pact 2
+    pytest --publish-pact 1
     ```
 - To just run the tests:
     ```bash
     pytest
     ```
-In these examples, `2` is just used to meet the need of having *some* consumer version.
+
 
 ### Output
 
-The following files will be created when the tests are run:
+The following file(s) will be created when the tests are run:
 
- - **consumer/pact-mock-service.log**: All interactions with the mock provider such as expected interactions, requests, and interaction verifications.
- - **consumer/userserviceclient-userservice.json**: This contains the Pact interactions between the `UserServiceClient` and `UserService`, as defined in the tests.
+ - **consumer/pact-mock-service.log**
+   - All interactions with the mock provider such as expected interactions, requests, and interaction verifications.
+ - **consumer/userserviceclient-userservice.json**
+   - This contains the Pact interactions between the `UserServiceClient` and `UserService`, as defined in the tests. The naming being derived from the named Pacticipants: `Consumer("UserServiceClient")` and `Provider("UserService")`
 
 ## flask_provider
 
 TODO
+
+### Output
+
+The following file(s) will be created when the tests are run
+
+ - **flask_provider/log/pact.log**
+   - All Pact interactions with the Flask Provider. Every interaction example retrieved from the Pact Broker will be performed during the Verification test; the request/response logged here. 
+
 
 ## fastapi_provider
 
