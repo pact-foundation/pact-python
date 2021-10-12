@@ -17,4 +17,4 @@ trap teardown EXIT
 sleep 1
 
 # Now run the tests
-pytest tests --run-broker True --publish-pact 1 -s
+pytest tests --run-broker True --publish-pact 1

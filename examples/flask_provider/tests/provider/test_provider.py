@@ -1,7 +1,6 @@
 """pact test for user service provider"""
 
 import logging
-import time
 
 import pytest
 
