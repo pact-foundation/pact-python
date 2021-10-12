@@ -68,7 +68,6 @@ following commands can be run from the `examples/consumer` folder:
     pytest
     ```
 
-
 ### Output
 
 The following file(s) will be created when the tests are run:
@@ -118,6 +117,10 @@ pip install -r requirements.txt # Install the dependencies for the Flask example
 ./verify_pact.sh 1              # Wrapper script to first run Flask, and then use `pact-verifier` to verify and publish
 ```
 
+These examples demonstrate by first launching Flask via a `python -m flask run`, you may prefer to start Flask using an
+`app.run()` call in the python code instead, see [How to Run a Flask Application]. Additionally for tests, you may want
+to manage starting and stopping Flask as part of a fixture setup. Any approach can be chosen here, in line with your
+existing Flask testing practices.
 
 ### Output
 
@@ -126,7 +129,6 @@ The following file(s) will be created when the tests are run
 | Filename                    | Contents  |
 |-----------------------------| ----------|
 | flask_provider/log/pact.log | All Pact interactions with the Flask Provider. Every interaction example retrieved from the Pact Broker will be performed during the Verification test; the request/response logged here. | 
-
 
 ## fastapi_provider
 
@@ -151,3 +153,4 @@ without a [Pact Broker].
 [Pact verification]: https://docs.pact.io/getting_started/terminology#pact-verification]
 [Virtual Environment]: https://docs.python.org/3/tutorial/venv.html
 [Sharing Pacts]: https://docs.pact.io/getting_started/sharing_pacts/]
+[How to Run a Flask Application]: https://www.twilio.com/blog/how-run-flask-application
