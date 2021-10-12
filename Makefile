@@ -44,7 +44,7 @@ export CONSUMER
 
 
 define FLASK_PROVIDER
-	echo "flask_provider make"
+	echo "flask make"
 	cd examples/flask_provider
 	pip install -q -r requirements.txt
 	pip install -e ../../
@@ -54,7 +54,7 @@ export FLASK_PROVIDER
 
 
 define FASTAPI_PROVIDER
-	echo "fastapi_provider make"
+	echo "fastapi make"
 	cd examples/fastapi_provider
 	pip install -q -r requirements.txt
 	pip install -e ../../
@@ -94,7 +94,8 @@ messaging:
 
 
 .PHONY: examples
-examples: consumer flask_provider fastapi_provider messaging
+examples: consumer flask messaging
+# TODO: Fix fastapi, to run all examples this should be: consumer flask fastapi messaging
 
 
 .PHONY: package
