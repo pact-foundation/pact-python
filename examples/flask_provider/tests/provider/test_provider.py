@@ -50,7 +50,10 @@ def test_user_service_provider_against_broker(broker_opts):
     # If publish_verification_results is set to True, the results will be
     # published to the Pact Broker.
     # In the Pact Broker logs, this corresponds to the following entry:
-    # PactBroker::Verifications::Service -- Creating verification 200 for pact_version_sha=c8568cbb30d2e3933b2df4d6e1248b3d37f3be34 -- {"success"=>true, "providerApplicationVersion"=>"3", "wip"=>false, "pending"=>"true"}
+    #   PactBroker::Verifications::Service -- Creating verification 200 for \
+    #   pact_version_sha=c8568cbb30d2e3933b2df4d6e1248b3d37f3be34 -- \
+    #   {"success"=>true, "providerApplicationVersion"=>"3", "wip"=>false, \
+    #   "pending"=>"true"}
 
     # Note:
     #  If "successful", then the return code here will be 0

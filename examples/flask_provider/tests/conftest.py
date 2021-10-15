@@ -24,7 +24,10 @@ def publish_existing_pact(broker):
     required Pacts, so we must first spin up the pact-cli and publish them.
 
     In the Pact Broker logs, this corresponds to the following entry:
-    PactBroker::Pacts::Service -- Creating new pact publication with params {:consumer_name=>"UserServiceClient", :provider_name=>"UserService", :revision_number=>nil, :consumer_version_number=>"1", :pact_version_sha=>nil, :consumer_name_in_pact=>"UserServiceClient", :provider_name_in_pact=>"UserService"}
+      PactBroker::Pacts::Service -- Creating new pact publication with params \
+      {:consumer_name=>"UserServiceClient", :provider_name=>"UserService", \
+      :revision_number=>nil, :consumer_version_number=>"1", :pact_version_sha=>nil, \
+      :consumer_name_in_pact=>"UserServiceClient", :provider_name_in_pact=>"UserService"}
     """
     source = str(pathlib.Path.cwd().joinpath("..", "pacts").resolve())
     pacts = [f"{source}:/pacts"]
