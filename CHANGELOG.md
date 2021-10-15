@@ -1,3 +1,5 @@
+### 1.4.5
+  * 695d51f - fix: update standalone to 1.88.77 to fix Let's Encrypt CA issue (Matt Fellows, Mon Oct 11 13:29:34 2021 +1100)
 ### 1.4.4
   * b90cf3d - fix(ruby): update ruby standalone to support disabling SSL verification via an environment variable (m-aciek, Sat Oct 2 03:04:14 2021 +0200)
 ### 1.4.3
