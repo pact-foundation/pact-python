@@ -127,4 +127,5 @@ def test_get_non_existing_user(pact, consumer):
 
         # Make sure that all interactions defined occurred
         pact.verify()
-#
+
+# bump
