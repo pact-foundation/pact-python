@@ -5,9 +5,12 @@ help:
 	@echo ""
 	@echo "  clean      to clear build and distribution directories"
 	@echo "  deps       to install the required files for development"
-	@echo "  e2e        to run the end to end tests"
 	@echo "  verifier   to run the verifier end to end tests"
-	@echo "  examples   to run the example end to end tests"
+	@echo "  examples   to run the example end to end tests (consumer, fastapi, flask, messaging)"
+	@echo "  consumer   to run the example consumer tests"
+	@echo "  fastapi    to run the example FastApi provider tests"
+	@echo "  flask      to run the example Flask provider tests"
+	@echo "  messaging  to run the example messaging e2e tests"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
@@ -30,38 +33,69 @@ deps:
 	pip install -r requirements_dev.txt -e .
 
 
-define E2E
-	echo "e2e make"
-	cd examples/e2e
-  pip install -r requirements.txt
-  pip install -e ../../
-  ./run_pytest.sh 
+define CONSUMER
+	echo "consumer make"
+	cd examples/consumer
+	pip install -q -r requirements.txt
+	pip install -e ../../
+	./run_pytest.sh
 endef
-export E2E
+export CONSUMER
 
 
-define messaging
+define FLASK_PROVIDER
+	echo "flask make"
+	cd examples/flask_provider
+	pip install -q -r requirements.txt
+	pip install -e ../../
+	./run_pytest.sh
+endef
+export FLASK_PROVIDER
+
+
+define FASTAPI_PROVIDER
+	echo "fastapi make"
+	cd examples/fastapi_provider
+	pip install -q -r requirements.txt
+	pip install -e ../../
+	./run_pytest.sh
+endef
+export FASTAPI_PROVIDER
+
+
+define MESSAGING
 	echo "messaging make"
 	cd examples/message
-  pip install -r requirements.txt
-  pip install -e ../../
-  ./run_pytest.sh
+	pip install -q -r requirements.txt
+	pip install -e ../../
+	./run_pytest.sh
 endef
-export messaging
+export MESSAGING
 
 
-.PHONY: e2e
-e2e:
-	bash -c "$$E2E"
+.PHONY: consumer
+consumer:
+	bash -c "$$CONSUMER"
+
+
+.PHONY: flask
+flask:
+	bash -c "$$FLASK_PROVIDER"
+
+
+.PHONY: fastapi
+fastapi:
+	bash -c "$$FASTAPI_PROVIDER"
 
 
 .PHONY: messaging
 messaging:
-	bash -c "$$messaging"
+	bash -c "$$MESSAGING"
 
 
 .PHONY: examples
-examples: e2e messaging
+examples: consumer flask messaging
+# TODO: Fix fastapi, to run all examples this should be: consumer flask fastapi messaging
 
 
 .PHONY: package

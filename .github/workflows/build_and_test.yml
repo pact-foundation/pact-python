@@ -29,4 +29,4 @@ jobs:
         tox -e test
     - name: Test examples
       run: |
-        make e2e
+        make examples
