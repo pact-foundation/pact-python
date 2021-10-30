@@ -1,4 +1,5 @@
 import pathlib
+import sys
 from multiprocessing import Process
 
 import docker
@@ -13,7 +14,13 @@ def server():
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
     yield proc
-    proc.kill()  # Cleanup after test
+
+    # Cleanup after test
+    if sys.version_info >= (3, 7):
+        # multiprocessing.kill is new in 3.7
+        proc.kill()
+    else:
+        proc.terminate()
 
 
 def pytest_addoption(parser):
