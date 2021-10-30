@@ -157,14 +157,14 @@ The following commands can be run from within your [Virtual Environment], in the
 
 To perform the python tests:
 ```bash
-pip install -r requirements.txt # Install the dependencies for the Flask example
+pip install -r requirements.txt # Install the dependencies for the FastAPI example
 pip install -e ../../           # Using setup.py in the pact-python root, install any pact dependencies and pact-python
 ./run_pytest.sh                 # Wrapper script to first run FastAPI, and then run the tests
 ```
 
 To perform verification using CLI to verify the [Pact file] against the FastAPI [Provider] instead of the python tests:
 ```bash
-pip install -r requirements.txt # Install the dependencies for the Flask example
+pip install -r requirements.txt # Install the dependencies for the FastAPI example
 ./verify_pact.sh                # Wrapper script to first run FastAPI, and then use `pact-verifier` to verify locally
 ```
 
@@ -172,8 +172,8 @@ To perform verification using CLI, but verifying the [Pact file] previously prov
 results. This example requires that the [Pact broker] is already running, and the [Consumer] tests have been published
 already, described in the [consumer](#consumer) section above.
 ```bash
-pip install -r requirements.txt # Install the dependencies for the Flask example
-./verify_pact.sh 1              # Wrapper script to first run Flask, and then use `pact-verifier` to verify and publish
+pip install -r requirements.txt # Install the dependencies for the FastAPI example
+./verify_pact.sh 1              # Wrapper script to first run FastAPI, and then use `pact-verifier` to verify and publish
 ```
 
 ### Output
