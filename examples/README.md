@@ -82,6 +82,9 @@ The following file(s) will be created when the tests are run:
 The Flask [Provider] example consists of a basic Flask app, with a single endpoint route.
 This implements the service expected by the [consumer](#consumer).
 
+Functionally, this provides the same service and tests as the [fastapi_provider](#fastapi_provider). Both are included to
+demonstrate how Pact can be used in different environments with different technology stacks and approaches.
+
 The [Provider] side is responsible for performing the tests to verify if it is compliant with the [Pact file] contracts
 associated with it.
 
@@ -132,7 +135,55 @@ The following file(s) will be created when the tests are run
 
 ## fastapi_provider
 
-TODO
+The FastAPI [Provider] example consists of a basic FastAPI app, with a single endpoint route.
+This implements the service expected by the [consumer](#consumer).
+
+Functionally, this provides the same service and tests as the [flask_provider](#flask_provider). Both are included to
+demonstrate how Pact can be used in different environments with different technology stacks and approaches.
+
+The [Provider] side is responsible for performing the tests to verify if it is compliant with the [Pact file] contracts
+associated with it.
+
+As such, the tests use the pact-python Verifier to perform this verification. Two approaches are demonstrated:
+- Testing against the [Pact broker]. Generally this is the preferred approach, see information on [Sharing Pacts].
+- Testing against the [Pact file] directly. If no [Pact broker] is available you can verify against a static [Pact file].
+- 
+### Running
+
+To avoid package version conflicts with different applications, it is recommended to run these tests from a
+[Virtual Environment]
+
+The following commands can be run from within your [Virtual Environment], in the `examples/fastapi_provider`.
+
+To perform the python tests:
+```bash
+pip install -r requirements.txt # Install the dependencies for the Flask example
+pip install -e ../../           # Using setup.py in the pact-python root, install any pact dependencies and pact-python
+./run_pytest.sh                 # Wrapper script to first run FastAPI, and then run the tests
+```
+
+To perform verification using CLI to verify the [Pact file] against the FastAPI [Provider] instead of the python tests:
+```bash
+pip install -r requirements.txt # Install the dependencies for the Flask example
+./verify_pact.sh                # Wrapper script to first run FastAPI, and then use `pact-verifier` to verify locally
+```
+
+To perform verification using CLI, but verifying the [Pact file] previously provided by a [Consumer], and publish the
+results. This example requires that the [Pact broker] is already running, and the [Consumer] tests have been published
+already, described in the [consumer](#consumer) section above.
+```bash
+pip install -r requirements.txt # Install the dependencies for the Flask example
+./verify_pact.sh 1              # Wrapper script to first run Flask, and then use `pact-verifier` to verify and publish
+```
+
+### Output
+
+The following file(s) will be created when the tests are run
+
+| Filename                      | Contents  |
+|-------------------------------| ----------|
+| fastapi_provider/log/pact.log | All Pact interactions with the FastAPI Provider. Every interaction example retrieved from the Pact Broker will be performed during the Verification test; the request/response logged here. | 
+
 
 ## message
 

@@ -94,8 +94,7 @@ messaging:
 
 
 .PHONY: examples
-examples: consumer flask messaging
-# TODO: Fix fastapi, to run all examples this should be: consumer flask fastapi messaging
+examples: consumer flask fastapi messaging
 
 
 .PHONY: package
