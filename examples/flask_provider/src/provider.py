@@ -10,7 +10,7 @@ def get_user_by_name(name: str):
     """Handle requests to retrieve a single user from the simulated database.
 
     :param name: Name of the user to "search for"
-    :return: The user data if found, None if not
+    :return: The user data if found, None (HTTP 404) if not
     """
     user_data = fakedb.get(name)
     if not user_data:
