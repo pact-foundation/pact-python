@@ -9,6 +9,7 @@
   * [fastapi_provider](#fastapi_provider)
   * [message](#message)
   * [pacts](#pacts)
+  * [abc](#abc)
 
 ## Overview
 
@@ -194,6 +195,20 @@ TODO
 Both the Flask and the FastAPI [Provider] examples implement the same service the [Consumer] example interacts with.
 This folder contains the generated [Pact file] for reference, which is also used when running the [Provider] tests
 without a [Pact Broker].
+
+## abc
+
+In some situations, there may be a chain of dependent components e.g.  `A -> B -> C`. Both Layers i.e. `A -> B` and
+`B -> C` will need to be Pact tested separately, but the apparent "state" of `C` will need to be different for the
+various tests of `A`.
+
+To deal with this, one approach is to use the provider state of `B` to mock the response from `C` using the Pact "given".
+
+In the examples here, we have the consumer A, `consumer_a_client` which sends all requests via B, `provider_b_hub`.
+Sitting behind B are the various "internal" services, in this case `provider_c_products` and `provider_d_orders`.
+
+When defining the Pact between A and B, we declare the "state" of C and D - how B should mock the behaviour.
+
 
 [Pact Broker]: https://docs.pact.io/pact_broker
 [Pact Introduction]: https://docs.pact.io/
