@@ -64,6 +64,22 @@
       }
     },
     {
+      "description": "a request for products when none exist",
+      "providerState": "No books exist",
+      "request": {
+        "method": "get",
+        "path": "/products"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+
+        ]
+      }
+    },
+    {
       "description": "a request for order 1",
       "providerState": "Some orders exist",
       "request": {

@@ -49,7 +49,7 @@ order_consumer = OrderConsumer(ORDER_URL)
 
 @app.get("/products/{product_id}")
 def get_product_by_id(product_id: int):
-    return product_consumer.get_product_by_id(product_id)
+    return product_consumer.get_product_by_id(product_id=product_id)
 
 
 @app.get("/products")
@@ -59,4 +59,4 @@ def get_products():
 
 @app.get("/orders/{order_id}")
 def get_order(order_id: int):
-    return order_consumer.get_order(order_id)
+    return order_consumer.get_order(order_id=order_id)

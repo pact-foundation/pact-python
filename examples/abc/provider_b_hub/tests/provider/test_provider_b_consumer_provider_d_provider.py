@@ -15,7 +15,7 @@ PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
 
 PACT_MOCK_HOST = "localhost"
-PACT_MOCK_PORT = 1234
+PACT_MOCK_PORT = 1235  # Since we will use multiple Consumers, we need unique ports to avoid a conflict
 
 PACT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -23,7 +23,7 @@ EXAMPLE_ORDER = {"id": 1, "ordered": "2021-11-01", "shipped": "2021-11-14", "pro
 
 
 @pytest.fixture
-def consumer() -> OrderConsumer:
+def order_consumer() -> OrderConsumer:
     return OrderConsumer("http://{host}:{port}".format(host=PACT_MOCK_HOST, port=PACT_MOCK_PORT))
 
 
@@ -51,7 +51,7 @@ def pact():
     pact.publish_to_broker = False
 
 
-def test_get_orders(pact, consumer):
+def test_get_orders(pact, order_consumer):
     (
         pact.given("Some orders exist")
         .upon_receiving("a request for order 1")
@@ -60,6 +60,6 @@ def test_get_orders(pact, consumer):
     )
 
     with pact:
-        orders = consumer.get_order(1)
+        orders = order_consumer.get_order(1)
         assert len(orders) > 0
         pact.verify()

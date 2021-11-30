@@ -7,10 +7,10 @@
   },
   "interactions": [
     {
-      "description": "a request for products",
+      "description": "todo",
       "providerState": "Some books exist",
       "request": {
-        "method": "get",
+        "method": "GET",
         "path": "/"
       },
       "response": {
@@ -35,6 +35,22 @@
             "match": "type"
           }
         }
+      }
+    },
+    {
+      "description": "todo",
+      "providerState": "No books exist",
+      "request": {
+        "method": "GET",
+        "path": "/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+
+        ]
       }
     }
   ],

@@ -8,7 +8,6 @@ from pact import Verifier
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
 # For the purposes of this example, the broker is started up as a fixture defined
 # in conftest.py. For normal usage this would be self-hosted or using Pactflow.
 PACT_BROKER_URL = "http://localhost"
@@ -22,6 +21,7 @@ PACT_BROKER_PASSWORD = "pactbroker"
 PROVIDER_HOST = "127.0.0.1"
 PROVIDER_PORT = 8000
 PROVIDER_URL = f"http://{PROVIDER_HOST}:{PROVIDER_PORT}"
+PROVIDER_NAME = "ProviderBHub"
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def broker_opts():
 
 
 def test_provider_b_hub_against_broker(server, broker_opts, **kwargs):
-    verifier = Verifier(provider="ProviderBHub", provider_base_url=PROVIDER_URL)
+    verifier = Verifier(provider=PROVIDER_NAME, provider_base_url=PROVIDER_URL)
 
     success, logs = verifier.verify_with_broker(
         **broker_opts,

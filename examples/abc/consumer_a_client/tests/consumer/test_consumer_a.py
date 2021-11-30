@@ -108,6 +108,21 @@ def test_get_products(pact, consumer):
         pact.verify()
 
 
+def test_get_products_empty(pact, consumer):
+
+    (
+        pact.given("No books exist")
+        .upon_receiving("a request for products when none exist")
+        .with_request("get", "/products")
+        .will_respond_with(200, body=[])
+    )
+
+    with pact:
+        products = consumer.get_products()
+        assert len(products) == 0
+        pact.verify()
+
+
 def test_get_order(pact, consumer):
     (
         pact.given("Some orders exist")
