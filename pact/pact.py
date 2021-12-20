@@ -13,6 +13,7 @@ from requests.packages.urllib3 import Retry
 from .broker import Broker
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
+from .verify_wrapper import PactException
 
 
 class Pact(Broker):
@@ -165,6 +166,12 @@ class Pact(Broker):
     def setup(self):
         """Configure the Mock Service to ready it for a test."""
         try:
+            # First, check that the interactions are all complete
+            for interaction in self._interactions:
+                missing_fields = [f for f in self.MANDATORY_FIELDS if f not in interaction]
+                if missing_fields:
+                    raise PactException(f"Interaction incomplete, missing field(s): {', '.join(missing_fields)}")
+
             interactions_uri = f"{self.uri}/interactions"
             resp = requests.delete(
                 interactions_uri, headers=self.HEADERS, verify=False

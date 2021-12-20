@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 services:
   # A PostgreSQL database for the Broker to store Pacts and verification results
@@ -32,6 +32,13 @@ services:
       PACT_BROKER_DATABASE_NAME: postgres
       PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
       PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+    # The Pact Broker provides a healthcheck endpoint which we will use to wait
+    # for it to become available before starting up
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--tries=1", "--spider", "http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat" ]
+      interval: 1s
+      timeout: 2s
+      retries: 5
 
   # An NGINX reverse proxy in front of the Broker on port 8443, to be able to
   # terminate with SSL
@@ -44,3 +51,7 @@ services:
       - ./ssl:/etc/nginx/ssl
     ports:
       - "8443:443"
+    restart: always
+    depends_on:
+      broker_app:
+        condition: service_healthy
