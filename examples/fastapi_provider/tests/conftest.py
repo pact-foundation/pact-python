@@ -1,17 +1,16 @@
-# Load in the fixtures from common/sharedfixtures.py
 import sys
-
-sys.path.append("../common")
-
-pytest_plugins = [
-    "sharedfixtures",
-]
-
 from multiprocessing import Process
 
 import pytest
 
 from .pact_provider import run_server
+
+# Load in the fixtures from common/sharedfixtures.py
+sys.path.append("../common")
+
+pytest_plugins = [
+    "sharedfixtures",
+]
 
 
 @pytest.fixture(scope="module")
