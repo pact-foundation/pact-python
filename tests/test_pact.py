@@ -11,6 +11,7 @@ from pact.matchers import Term
 from pact.constants import MOCK_SERVICE_PATH
 from pact.pact import Pact, FromTerms, Request, Response
 from pact import pact as pact
+from pact.verify_wrapper import PactException
 
 
 class PactTestCase(TestCase):
@@ -557,6 +558,25 @@ class PactContextManagerTestCase(PactTestCase):
 
         self.mock_setup.assert_called_once_with(pact)
         self.assertFalse(self.mock_verify.called)
+
+
+class PactContextManagerSetupTestCase(PactTestCase):
+    def test_definition_without_description(self):
+        # Description (populated from "given") is listed in the MANDATORY_FIELDS.
+        # Make sure if it isn't there that an exception is raised
+        pact = Pact(self.consumer, self.provider)
+        (pact.given("A request without a description")
+            .with_request('GET', '/path')
+            .will_respond_with(200, body='success'))
+
+        self.assertEqual(len(pact._interactions), 1)
+
+        self.assertTrue('description' not in pact._interactions[0])
+
+        # By using "with", __enter__ will call the setup method that will verify if this is present
+        with self.assertRaises(PactException):
+            with pact:
+                pact.verify()
 
 
 class FromTermsTestCase(TestCase):
