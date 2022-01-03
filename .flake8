@@ -2,4 +2,4 @@
 ignore = E226,E302,E41,W503
 max-line-length = 160
 max-complexity = 10
-exclude = .git,venv,.tox
+exclude = .git,venv,.tox,.pytest_cache,.direnv
