@@ -135,6 +135,9 @@ class FromTermTestCase(TestCase):
     def test_float(self):
         self.assertEqual(from_term(3.14), 3.14)
 
+    def test_bytes(self):
+        self.assertEqual(from_term(b'testing'), b'testing')
+
     def test_list(self):
         term = [1, 123, 'sample']
         self.assertEqual(from_term(term), term)

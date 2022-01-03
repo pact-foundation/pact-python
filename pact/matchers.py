@@ -184,13 +184,13 @@ def from_term(term):
     Parse the provided term into the JSON for the mock service.
 
     :param term: The term to be parsed.
-    :type term: None, list, dict, int, float, str, unicode, Matcher
+    :type term: None, list, dict, int, float, str, bytes, unicode, Matcher
     :return: The JSON representation for this term.
     :rtype: dict, list, str
     """
     if term is None:
         return term
-    elif isinstance(term, (six.string_types, int, float)):
+    elif isinstance(term, (six.string_types, six.binary_type, int, float)):
         return term
     elif isinstance(term, dict):
         return {k: from_term(v) for k, v in term.items()}
