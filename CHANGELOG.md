@@ -1,3 +1,9 @@
+### 1.4.6
+  * 6c25844 - chore: flake8 config to ignore direnv (Elliott Murray, Mon Jan 3 18:33:47 2022 +0000)
+  * 891134a - feat(matcher): Allow bytes type in from_term function (#281) (joshua-badger, Mon Jan 3 11:23:40 2022 -0700)
+  * 588b55d - fix(consumer): ensure a description is provided for all interactions (#278) (mikegeeves, Thu Dec 30 16:57:03 2021 +0000)
+  * 02643d4 - test(examples-fastapi): tidy FastAPI example, making consistent with Flask (#274) (mikegeeves, Sun Oct 31 21:52:54 2021 +0000)
+  * bf110e2 - docs: Docs/examples (#273) (Elliott Murray, Tue Oct 26 21:54:00 2021 +0100)
 ### 1.4.5
   * 695d51f - fix: update standalone to 1.88.77 to fix Let's Encrypt CA issue (Matt Fellows, Mon Oct 11 13:29:34 2021 +1100)
 ### 1.4.4
