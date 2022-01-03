@@ -190,7 +190,7 @@ def from_term(term):
     """
     if term is None:
         return term
-    elif isinstance(term, (six.string_types, int, float)):
+    elif isinstance(term, (six.string_types, six.binary_type, int, float)):
         return term
     elif isinstance(term, dict):
         return {k: from_term(v) for k, v in term.items()}
