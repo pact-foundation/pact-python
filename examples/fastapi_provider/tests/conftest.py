@@ -1,5 +1,6 @@
 import pathlib
 import sys
+import time
 from multiprocessing import Process
 
 import docker
@@ -13,6 +14,8 @@ from .pact_provider import run_server
 def server():
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
+    time.sleep(0.5)
+
     yield proc
 
     # Cleanup after test
