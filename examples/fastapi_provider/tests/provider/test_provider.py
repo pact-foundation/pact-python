@@ -20,7 +20,7 @@ PACT_BROKER_PASSWORD = "pactbroker"
 # running a Docker container with a database of test data configured.
 # This is the "real" provider to verify against.
 PROVIDER_HOST = "127.0.0.1"
-PROVIDER_PORT = 8001
+PROVIDER_PORT = 8000
 PROVIDER_URL = f"http://{PROVIDER_HOST}:{PROVIDER_PORT}"
 
 

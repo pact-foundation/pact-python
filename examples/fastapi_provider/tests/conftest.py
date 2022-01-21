@@ -14,7 +14,7 @@ from .pact_provider import run_server
 def server():
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
-    time.sleep(2)
+    time.sleep(5)
 
     yield proc
 

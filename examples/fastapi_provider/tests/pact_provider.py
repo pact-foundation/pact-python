@@ -30,7 +30,7 @@ app.include_router(pact_router)
 
 
 def run_server():
-    uvicorn.run(app, log_level="debug", port=8001)
+    uvicorn.run(app, log_level="debug", port=8000)
 
 
 def setup_no_user_a():
