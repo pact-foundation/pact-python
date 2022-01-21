@@ -1,0 +1,47 @@
+{
+  "consumer": {
+    "name": "ConsumerBClient"
+  },
+  "provider": {
+    "name": "ProviderDOrders"
+  },
+  "interactions": [
+    {
+      "description": "a request for order 1",
+      "providerState": "Some orders exist",
+      "request": {
+        "method": "get",
+        "path": "/1"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+          {
+            "id": 1,
+            "ordered": "2021-11-01",
+            "shipped": "2021-11-14",
+            "product_ids": [
+              1,
+              2
+            ]
+          }
+        ],
+        "matchingRules": {
+          "$.body": {
+            "min": 1
+          },
+          "$.body[*].*": {
+            "match": "type"
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}
