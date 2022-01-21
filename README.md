@@ -408,7 +408,7 @@ verifier = Verifier(provider='UserService',
 output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
 
 ```
-You can see more details in the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e/tests/provider/test_provider.py).
+You can see more details in the [examples](https://github.com/pact-foundation/pact-python/tree/master/examples/).
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
