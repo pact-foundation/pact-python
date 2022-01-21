@@ -12,7 +12,7 @@ from .pact_provider import run_server
 
 @pytest.fixture(scope="module")
 def server():
-    proc = Process(target=run_server, args=(), daemon=True, )
+    proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
     time.sleep(2)
 
