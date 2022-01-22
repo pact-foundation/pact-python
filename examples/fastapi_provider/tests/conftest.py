@@ -16,11 +16,7 @@ def server():
     yield proc
 
     # Cleanup after test
-    if sys.version_info >= (3, 7):
-        # multiprocessing.kill is new in 3.7
-        proc.kill()
-    else:
-        proc.terminate()
+    proc.kill()
 
 
 def pytest_addoption(parser):
