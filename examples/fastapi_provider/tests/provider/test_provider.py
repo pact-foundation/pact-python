@@ -1,5 +1,4 @@
 """pact test for user service client"""
-import datetime
 import logging
 
 import pytest
@@ -70,7 +69,6 @@ def test_user_service_provider_against_broker(server, broker_opts):
 
 
 def test_user_service_provider_against_pact(server):
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} CREATING VERIFIER")
     verifier = Verifier(provider="UserService", provider_base_url=PROVIDER_URL)
 
     # Rather than requesting the Pact interactions from the Pact Broker, this
@@ -80,12 +78,10 @@ def test_user_service_provider_against_pact(server):
     # if it has been successful in the past (since this is what the Pact Broker
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} GOING TO VERIFY")
     output, _ = verifier.verify_pacts(
         "../pacts/userserviceclient-userservice.json",
         verbose=False,
         provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
     )
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} FINISHED VERIFY")
 
     assert output == 0

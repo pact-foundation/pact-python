@@ -13,23 +13,18 @@ from .pact_provider import run_server
 
 @pytest.fixture(scope="module")
 def server():
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} STARTING UP")
     proc = Process(target=run_server, args=(), daemon=True)
     proc.start()
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} STARTED")
-    time.sleep(5)
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} FINISHED SLEEPING")
+    time.sleep(0.0)
 
     yield proc
 
     # Cleanup after test
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} CLEANUP START")
     if sys.version_info >= (3, 7):
         # multiprocessing.kill is new in 3.7
         proc.kill()
     else:
         proc.terminate()
-    print(f"{datetime.datetime.now().strftime('%d.%b %Y %H:%M:%S')} CLEANUP FINISHED")
 
 
 def pytest_addoption(parser):
