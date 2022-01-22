@@ -23,7 +23,7 @@ pip install pact-python
 
 ## Getting started
 <!-- Absolute link for rendering page in docs.pact.io -->
-A guide follows but if you go to the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e). This has a consumer, provider and pact-broker set of tests.
+A guide follows but if you go to the [examples](https://github.com/pact-foundation/pact-python/tree/master/examples). This has a consumer, provider and pact-broker set of tests for both FastAPI and Flask.
 
 ## Writing a Pact
 
