@@ -1,5 +1,4 @@
 import pathlib
-import sys
 from multiprocessing import Process
 
 import docker
