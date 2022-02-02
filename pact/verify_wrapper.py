@@ -170,8 +170,12 @@ class VerifyWrapper(object):
 
         if(kwargs.get('verbose', False) is True):
             command.extend(['--verbose'])
+
         if enable_pending:
             command.append('--enable-pending')
+
+        else:
+            command.append('--no-enable-pending')
 
         if include_wip_pacts_since:
             command.extend(['--include-wip-pacts-since={}'.format(include_wip_pacts_since)])

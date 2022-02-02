@@ -40,6 +40,7 @@ class VerifyWrapperTestCase(TestCase):
         self.default_call = [
             './pacts/consumer-provider.json',
             './pacts/consumer-provider2.json',
+            '--no-enable-pending',
             '--provider=test_provider',
             '--provider-base-url=http://localhost']
 
@@ -52,6 +53,7 @@ class VerifyWrapperTestCase(TestCase):
             '--broker-token=token',
             '--consumer-version-tag=prod',
             '--consumer-version-tag=dev',
+            '--no-enable-pending',
             '--provider-version-tag=dev',
             '--provider-version-tag=qa']
 
@@ -85,9 +87,10 @@ class VerifyWrapperTestCase(TestCase):
             provider='provider', provider_base_url='http://localhost', broker_url='http://broker.example.com'
         )
         self.assertProcess(*[
+            '--no-enable-pending',
+            '--pact-broker-base-url=http://broker.example.com',
             '--provider-base-url=http://localhost',
             '--provider=provider',
-            '--pact-broker-base-url=http://broker.example.com',
         ])
 
     def test_pact_urls_provided(self):
