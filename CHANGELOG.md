@@ -1,3 +1,6 @@
+### 1.5.0
+  * 8085be0 - feat: No include pending (#284) (Abraham Gonzalez, Wed Feb 2 13:20:39 2022 +0100)
+  * f169f3b - ci: python36-support-removed (#283) (mikegeeves, Sat Jan 22 10:26:44 2022 +0000)
 ### 1.4.6
   * 6c25844 - chore: flake8 config to ignore direnv (Elliott Murray, Mon Jan 3 18:33:47 2022 +0000)
   * 891134a - feat(matcher): Allow bytes type in from_term function (#281) (joshua-badger, Mon Jan 3 11:23:40 2022 -0700)
