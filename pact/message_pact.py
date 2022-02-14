@@ -125,7 +125,7 @@ class MessagePact(Broker):
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        self._messages[0]['metaData'] = from_term(metadata)
+        self._messages[0]['metaData'] = from_term(metadata
         return self
 
     def with_content(self, contents):
