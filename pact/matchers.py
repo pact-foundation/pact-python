@@ -38,7 +38,7 @@ class EachLike(Matcher):
     with the keys `name` and `text`,
 
     """
-
+ 
     def __init__(self, matcher, minimum=1):
         """
         Create a new EachLike.
