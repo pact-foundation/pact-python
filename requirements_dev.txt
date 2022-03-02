@@ -14,3 +14,4 @@ requests>=2.26.0
 tox-travis==0.8
 urllib3>=1.26.5
 wheel==0.24.0
+markupsafe==2.0.1
