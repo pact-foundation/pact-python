@@ -51,6 +51,10 @@ execution of the consumer tests.
 When the tests are run, the "minimum" is to generate the Pact contract JSON, additional options are available. The
 following commands can be run from the `examples/consumer` folder:
 
+- Install any necessary dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 - To startup the broker, run the tests, and publish the results to the broker:
     ```bash
     pytest --run-broker True --publish-pact 1 
