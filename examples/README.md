@@ -4,6 +4,7 @@
 
   * [Overview](#overview)
   * [broker](#broker)
+  * [common](#common)
   * [consumer](#consumer)
   * [flask_provider](#flask_provider)
   * [fastapi_provider](#fastapi_provider)
@@ -40,6 +41,13 @@ default Example App/Example API Pact.
 
 Running the [Pact Broker] outside the tests will mean you are able to then see the [Pact file]s submitted to the
 [Pact Broker] as the various tests are performed.
+
+## common
+
+To avoid needing to duplicate certain fixtures, such as starting up a docker based Pact broker (to demonstrate how the
+test process could work), the shared fixtures used by the pytests have all been placed into a single location.]
+This means it is easier to see the relevant code for the example without having to go through the boilerplate fixtures.
+See [Requiring/Loading plugins in a test module or conftest file] for further details of this approach.
 
 ## consumer
 
@@ -205,3 +213,4 @@ without a [Pact Broker].
 [Virtual Environment]: https://docs.python.org/3/tutorial/venv.html
 [Sharing Pacts]: https://docs.pact.io/getting_started/sharing_pacts/]
 [How to Run a Flask Application]: https://www.twilio.com/blog/how-run-flask-application
+[Requiring/Loading plugins in a test module or conftest file]: https://docs.pytest.org/en/6.2.x/writing_plugins.html#requiring-loading-plugins-in-a-test-module-or-conftest-file
