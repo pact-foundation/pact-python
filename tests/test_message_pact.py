@@ -58,7 +58,9 @@ class MessagePactTestCase(TestCase):
             .given('there is an alligator named John')
             .expects_to_receive('an alligator message')
             .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
-            .with_metadata({'contentType': 'application/json', 'source': 'legacy_api', 'some-header': Term('\\d+-\\d+-\\d+T\\d+:\\d+:\\d+', '2022-02-15T20:16:01')})
+            .with_metadata({'contentType': 'application/json',
+                            'source': 'legacy_api',
+                            'some-header': Term('\\d+-\\d+-\\d+T\\d+:\\d+:\\d+', '2022-02-15T20:16:01')})
         )
 
         self.assertEqual(len(target._messages), 1)
@@ -79,7 +81,6 @@ class MessagePactTestCase(TestCase):
                         <= target._messages[0]['metaData'].items())
 
         self.assertTrue(target._messages[0]['metaData']['some-header'], 'Pact::Term')
-    
 
     def test_insert_new_message_once_required_attributes_provided(self):
         target = MessagePact(self.consumer, self.provider)
