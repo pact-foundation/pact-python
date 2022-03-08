@@ -8,6 +8,7 @@ from pact.message_consumer import MessageConsumer, Provider
 from pact.message_pact import MessagePact
 from pact.constants import MESSAGE_PATH
 from pact import message_pact as message_pact
+from pact import Term
 
 class MessagePactTestCase(TestCase):
     def setUp(self):
@@ -57,7 +58,9 @@ class MessagePactTestCase(TestCase):
             .given('there is an alligator named John')
             .expects_to_receive('an alligator message')
             .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
-            .with_metadata({'contentType': 'application/json', 'source': 'legacy_api'})
+            .with_metadata({'contentType': 'application/json',
+                            'source': 'legacy_api',
+                            'some-header': Term('\\d+-\\d+-\\d+T\\d+:\\d+:\\d+', '2022-02-15T20:16:01')})
         )
 
         self.assertEqual(len(target._messages), 1)
@@ -74,9 +77,10 @@ class MessagePactTestCase(TestCase):
             target._messages[0]['contents'],
             {'name': 'John', 'document_name': 'sample_document.doc'})
 
-        self.assertEqual(
-            target._messages[0]['metaData'],
-            {'contentType': 'application/json', 'source': 'legacy_api'})
+        self.assertTrue({'contentType': 'application/json', 'source': 'legacy_api'}.items()
+                        <= target._messages[0]['metaData'].items())
+
+        self.assertTrue(target._messages[0]['metaData']['some-header'], 'Pact::Term')
 
     def test_insert_new_message_once_required_attributes_provided(self):
         target = MessagePact(self.consumer, self.provider)
