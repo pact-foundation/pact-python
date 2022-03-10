@@ -1,3 +1,7 @@
+### 1.5.1
+  * e645b24 - feat: message_pact -> with_metadata() updated to accept term (#289) (sunsathish88, Tue Mar 8 12:08:34 2022 -0500)
+  * b981865 - docs(examples-consumer): add pip install requirements to the consumer… (#291) (mikegeeves, Sun Mar 6 10:12:32 2022 +0000)
+  * 4c76ae8 - test(examples): move shared fixtures to a common folder so they can b… (#280) (mikegeeves, Sun Mar 6 10:10:11 2022 +0000)
 ### 1.5.0
   * 8085be0 - feat: No include pending (#284) (Abraham Gonzalez, Wed Feb 2 13:20:39 2022 +0100)
   * f169f3b - ci: python36-support-removed (#283) (mikegeeves, Sat Jan 22 10:26:44 2022 +0000)
