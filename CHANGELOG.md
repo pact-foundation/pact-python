@@ -1,3 +1,5 @@
+### 1.5.2
+  * 25823ae - chore: update PACT_STANDALONE_VERSION to 1.88.83 (#292) (Yousaf Nabi, Mon Mar 21 22:14:40 2022 +0000)
 ### 1.5.1
   * e645b24 - feat: message_pact -> with_metadata() updated to accept term (#289) (sunsathish88, Tue Mar 8 12:08:34 2022 -0500)
   * b981865 - docs(examples-consumer): add pip install requirements to the consumer… (#291) (mikegeeves, Sun Mar 6 10:12:32 2022 +0000)
