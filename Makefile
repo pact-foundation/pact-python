@@ -12,6 +12,7 @@ help:
 	@echo "  flask      to run the example Flask provider tests"
 	@echo "  messaging  to run the example messaging e2e tests"
 	@echo "  package    to create a distribution package in /dist/"
+	@echo "  style      to run all style checks"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
 	@echo ""
@@ -30,7 +31,7 @@ clean:
 
 .PHONY: deps
 deps:
-	pip install -r requirements_dev.txt -e .
+	poetry install
 
 
 define CONSUMER
@@ -102,10 +103,14 @@ package:
 	python setup.py sdist
 
 
+.PHONY: style
+style: deps
+	poetry run flake8 pact *.py
+	poetry run pydocstyle pact
+
+
 .PHONY: test
 test: deps
-	flake8
-	pydocstyle pact
-	coverage erase
-	tox
-	coverage report -m --fail-under=100
+	poetry run coverage erase
+	poetry run pytest --cov pact tests
+	poetry run coverage report -m --fail-under=95

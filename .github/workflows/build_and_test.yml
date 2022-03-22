@@ -19,14 +19,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements_dev.txt
+        pip install poetry
+        make deps
     - name: Lint with flake8, pydocstyle
       run: |
-        flake8
-        pydocstyle pact
-    - name: Test with pytest 
+        make test
+    - name: Test with pytest
       run: |
-        tox -e test
+        poetry run pytest
     - name: Test examples
       run: |
+        poetry build
+        pip install -U pip setuptools
         make examples

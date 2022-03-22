@@ -1,0 +1,29 @@
+Metadata-Version: 2.1
+Name: pact
+Version: 0.1.0
+Summary: Pact Python dependencies
+License: MIT
+Author: Your Name
+Author-email: you@example.com
+Requires-Python: >=3.7,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: Flask (==1.1.4)
+Requires-Dist: MarkupSafe (==2.0.1)
+Requires-Dist: click (>=2.0.0)
+Requires-Dist: configparser (==3.5.0)
+Requires-Dist: coverage (==5.4)
+Requires-Dist: fastapi (>=0.75.1,<0.76.0)
+Requires-Dist: mock (==3.0.5)
+Requires-Dist: psutil (==5.7.0)
+Requires-Dist: pytest (==5.4.1)
+Requires-Dist: pytest-cov (==2.11.1)
+Requires-Dist: requests (>=2.26.0)
+Requires-Dist: setuptools (>=62.0.0,<63.0.0)
+Requires-Dist: urllib3 (>=1.26.5)
+Requires-Dist: uvicorn (>=0.17.6,<0.18.0)
+Requires-Dist: wheel (==0.24.0)
