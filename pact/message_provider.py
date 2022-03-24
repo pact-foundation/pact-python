@@ -86,7 +86,7 @@ class MessageProvider(object):
         """Wait for server to finish, or raise exception after timeout."""
         retry = 20
         while True:
-            self._process.terminate()
+            self._process.kill()
             time.sleep(0.1)
             try:
                 assert not self._process.is_alive()
