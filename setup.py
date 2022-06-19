@@ -96,28 +96,29 @@ class PactPythonInstallCommand(install):
         install_ruby_app(package_bin_path, self.bin_path)
 
 
-def install_ruby_app(package_bin_path, download_bin_path):
+def install_ruby_app(package_bin_path: str, download_bin_path=None):
     """
     Installs the ruby standalone application for this OS.
 
     :param package_bin_path: The path where we want our pact binaries unarchived.
     :param download_bin_path: An optional path containing pre-downloaded pact binaries.
     """
-
     binary = ruby_app_binary()
-    if download_bin_path is None:
-        download_bin_path = package_bin_path
 
-    path = os.path.join(download_bin_path, binary['filename'])
+    # The compressed Pact .tar.gz, zip etc file is expected to be in download_bin_path (if provided).
+    # Otherwise we will look in package_bin_path.
+    source_dir = download_bin_path if download_bin_path else package_bin_path
+    pact_unextracted_path = os.path.join(source_dir, binary['filename'])
 
-    if os.path.isfile(path) is True:
-        extract_ruby_app_binary(download_bin_path, package_bin_path, binary['filename'])
+    if os.path.isfile(pact_unextracted_path):
+        # Already downloaded, so just need to extract
+        extract_ruby_app_binary(source_dir, package_bin_path, binary['filename'])
     else:
-        if download_bin_path is not None:
-            if os.path.isfile(path) is not True:
-                raise RuntimeError('Could not find {} binary.'.format(path))
-            extract_ruby_app_binary(download_bin_path, package_bin_path, binary['filename'])
+        if download_bin_path:
+            # An alternative source was provided, but did not contain the .tar.gz
+            raise RuntimeError('Could not find {} binary.'.format(pact_unextracted_path))
         else:
+            # Clean start, download an extract
             download_ruby_app_binary(package_bin_path, binary['filename'], binary['suffix'])
             extract_ruby_app_binary(package_bin_path, package_bin_path, binary['filename'])
 
