@@ -300,7 +300,9 @@ class mainTestCase(TestCase):
             '--verbose',
             '--enable-pending',
             '--include-wip-pacts-since=2018-01-01',
-            '--no-auto-detect-version-properties'
+            '--no-auto-detect-version-properties',
+            '--build-url=http://ci',
+            '--branch=consumer-branch'
         ])
 
         self.assertEqual(result.exit_code, 0, result.output)
@@ -323,7 +325,9 @@ class mainTestCase(TestCase):
                                 verbose=True,
                                 enable_pending=True,
                                 include_wip_pacts_since='2018-01-01',
-                                auto_detect_version_properties=False)
+                                auto_detect_version_properties=False,
+                                branch='consumer-branch',
+                                build_url='http://ci')
 
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_publishing_missing_version(self, mock_isfile):
