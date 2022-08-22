@@ -28,6 +28,10 @@ import click
          ' Provide multiple URI separated by a comma.',
     multiple=True)  # Remove in major version 1.0.0
 @click.option(
+    'build_url', '--build-url',
+    default="",
+    help='The build URL that created the pact')  # Remove in major version 1.0.0
+@click.option(
     'states_url', '--provider-states-url',
     help='DEPRECATED: URL to fetch the provider states for'
          ' the given provider API.')  # Remove in major version 1.0.0
@@ -136,7 +140,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,
          provider_app_version, publish_verification_results, verbose, log_dir,
-         log_level, enable_pending, include_wip_pacts_since, branch, auto_detect_version_properties):
+         log_level, enable_pending, include_wip_pacts_since, branch, auto_detect_version_properties, build_url):
     """
     Verify one or more contracts against a provider service.
 
@@ -194,7 +198,8 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         'consumer_selectors': list(consumer_version_selector),
         'provider_tags': list(provider_version_tag),
         'provider_states_setup_url': states_setup_url,
-        'auto_detect_version_properties': auto_detect_version_properties
+        'auto_detect_version_properties': auto_detect_version_properties,
+        'build_url': build_url
     }
 
     options = dict(filter(lambda item: item[1] is not None, options.items()))

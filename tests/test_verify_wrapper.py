@@ -58,7 +58,8 @@ class VerifyWrapperTestCase(TestCase):
             '--provider-version-tag=dev',
             '--provider-version-tag=qa',
             '--branch=consumer-branch',
-            '--auto-detect-version-properties']
+            '--auto-detect-version-properties',
+            '--build-url=http://ci']
 
     def assertProcess(self, *expected):
         self.assertEqual(self.mock_Popen.call_count, 1)
@@ -177,7 +178,8 @@ class VerifyWrapperTestCase(TestCase):
                                              broker_url='http://broker',
                                              consumer_tags=['prod', 'dev'],
                                              provider_tags=['dev', 'qa'],
-                                             branch='consumer-branch')
+                                             branch='consumer-branch',
+                                             build_url='http://ci')
 
         self.assertProcess(*self.broker_call)
         self.assertEqual(result, 0)

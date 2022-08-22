@@ -146,6 +146,8 @@ class VerifyWrapper(object):
 
         branch = kwargs.get('branch')
 
+        build_url = kwargs.get('build_url')
+
         options = {
             '--provider-base-url': provider_base_url,
             '--provider': provider,
@@ -185,6 +187,9 @@ class VerifyWrapper(object):
 
         if branch:
             command.extend(['--branch={}'.format(branch)])
+
+        if build_url:
+            command.extend(['--build-url={}'.format(build_url)])
 
         if(kwargs.get('auto_detect_version_properties', True) is True):
             command.append('--auto-detect-version-properties')
