@@ -52,6 +52,10 @@ import click
     help='Retrieve the latest pacts with this consumer version tag. '
          'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
+    'branch', '--branch',
+    default='',
+    help='Repository branch of the consumer version')
+@click.option(
     'consumer_version_selector', '--consumer-version-selector',
     default=[],
     multiple=True,
@@ -125,7 +129,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,
          provider_app_version, publish_verification_results, verbose, log_dir,
-         log_level, enable_pending, include_wip_pacts_since):
+         log_level, enable_pending, include_wip_pacts_since, branch):
     """
     Verify one or more contracts against a provider service.
 
@@ -179,6 +183,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         'timeout': timeout,
         'verbose': verbose,
         'consumer_tags': list(consumer_version_tag),
+        'branch': branch,
         'consumer_selectors': list(consumer_version_selector),
         'provider_tags': list(provider_version_tag),
         'provider_states_setup_url': states_setup_url,

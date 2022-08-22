@@ -143,6 +143,9 @@ class VerifyWrapper(object):
         self._validate_input(pacts, **kwargs)
 
         provider_app_version = kwargs.get('provider_app_version')
+
+        branch = kwargs.get('branch')
+
         options = {
             '--provider-base-url': provider_base_url,
             '--provider': provider,
@@ -179,6 +182,9 @@ class VerifyWrapper(object):
 
         if include_wip_pacts_since:
             command.extend(['--include-wip-pacts-since={}'.format(include_wip_pacts_since)])
+
+        if branch:
+            command.extend(['--branch={}'.format(branch)])
 
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:
