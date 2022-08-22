@@ -16,7 +16,7 @@ class Consumer(object):
     """
 
     def __init__(self, name, service_cls=Pact, tags=None,
-                 tag_with_git_branch=False, version='0.0.0'):
+                 tag_with_git_branch=False, version='0.0.0', branch=None):
         """
         Create the Consumer class.
 
@@ -37,12 +37,15 @@ class Consumer(object):
         :type tag_with_git_branch: bool
         :param version: The version of this Consumer. This will be used when
             publishing pacts to a pact broker. Defaults to '0.0.0'
+        :param branch: The branch of this Consumer.
+        :type name: str
         """
         self.name = name
         self.service_cls = service_cls
         self.tags = tags
         self.tag_with_git_branch = tag_with_git_branch
         self.version = version
+        self.branch = branch
 
     def has_pact_with(self, provider, host_name='localhost', port=1234,
                       log_dir=None, ssl=False, sslcert=None, sslkey=None,

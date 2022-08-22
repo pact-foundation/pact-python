@@ -137,3 +137,18 @@ class BrokerTestCase(TestCase):
             './TestConsumer-TestProvider.json',
             '-t', 'tag1',
             '-t', 'tag2'])
+
+    def test_branch_publish(self):
+        broker = Broker(broker_base_url="http://localhost")
+
+        broker.publish("TestConsumer",
+                       "2.0.1",
+                       branch='consumer-branch',
+                       pact_dir='.')
+
+        self.mock_Popen.assert_called_once_with([
+            BROKER_CLIENT_PATH, 'publish',
+            '--consumer-app-version=2.0.1',
+            '--broker-base-url=http://localhost',
+            './TestConsumer-TestProvider.json',
+            '--branch=consumer-branch'])
