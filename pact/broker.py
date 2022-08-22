@@ -49,7 +49,7 @@ class Broker():
         return name.lower().replace(' ', '_')
 
     def publish(self, consumer_name, version, pact_dir=None,
-                tag_with_git_branch=None, consumer_tags=None, branch=None):
+                tag_with_git_branch=None, consumer_tags=None, branch=None, build_url=None):
         """Publish the generated pact files to the specified pact broker."""
         if self.broker_base_url is None \
                 and "PACT_BROKER_BASE_URL" not in os.environ:
@@ -87,6 +87,9 @@ class Broker():
 
         if branch:
             command.extend(['--branch={}'.format(branch)])
+
+        if build_url:
+            command.extend(['--build-url={}'.format(build_url)])
 
         log.debug(f"PactBroker publish command: {command}")
 
