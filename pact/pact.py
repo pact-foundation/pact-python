@@ -247,7 +247,8 @@ class Pact(Broker):
                 consumer_tags=self.consumer.tags,
                 branch=self.consumer.branch,
                 pact_dir=self.pact_dir,
-                build_url=self.consumer.build_url
+                build_url=self.consumer.build_url,
+                auto_detect_version_properties=self.consumer.auto_detect_version_properties
             )
 
     def upon_receiving(self, scenario):
