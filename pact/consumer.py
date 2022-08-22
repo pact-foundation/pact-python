@@ -38,13 +38,13 @@ class Consumer(object):
         :param version: The version of this Consumer. This will be used when
             publishing pacts to a pact broker. Defaults to '0.0.0'
         :param branch: The branch of this Consumer.
-        :type name: str
+        :type branch: str
         :param build_url: The build URL that created the pact.
-        :type name: str
+        :type build_url: str
         :param auto_detect_version_properties: Automatically detect the repository branch from known CI,
             environment variables or git CLI. Supports Buildkite, Circle CI, Travis CI, GitHub Actions,
             Jenkins, Hudson, AppVeyor, GitLab, CodeShip, Bitbucket and Azure DevOps.'.
-            Defaults to False.
+            Defaults to True.
         :type auto_detect_version_properties: bool
         """
         self.name = name
