@@ -153,7 +153,7 @@ class BrokerTestCase(TestCase):
             './TestConsumer-TestProvider.json',
             '--branch=consumer-branch'])
 
-    def test_buildUrl_publish(self):
+    def test_build_url_publish(self):
         broker = Broker(broker_base_url="http://localhost")
 
         broker.publish("TestConsumer",
