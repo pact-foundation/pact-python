@@ -52,6 +52,13 @@ import click
     help='Retrieve the latest pacts with this consumer version tag. '
          'Used in conjunction with --provider. May be specified multiple times.')
 @click.option(
+    'auto_detect_version_properties', '--auto-detect-version-properties/--no-auto-detect-version-properties',
+    default=True,
+    show_default=True,
+    help='Automatically detect the repository branch from known CI, environment variables or git CLI.'
+         'Supports Buildkite, Circle CI, Travis CI, GitHub Actions, Jenkins, Hudson, AppVeyor,'
+         'GitLab, CodeShip, Bitbucket and Azure DevOps.')
+@click.option(
     'branch', '--branch',
     default='',
     help='Repository branch of the consumer version')
@@ -129,7 +136,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,
          provider_app_version, publish_verification_results, verbose, log_dir,
-         log_level, enable_pending, include_wip_pacts_since, branch):
+         log_level, enable_pending, include_wip_pacts_since, branch, auto_detect_version_properties):
     """
     Verify one or more contracts against a provider service.
 
@@ -187,6 +194,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         'consumer_selectors': list(consumer_version_selector),
         'provider_tags': list(provider_version_tag),
         'provider_states_setup_url': states_setup_url,
+        'auto_detect_version_properties': auto_detect_version_properties
     }
 
     options = dict(filter(lambda item: item[1] is not None, options.items()))

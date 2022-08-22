@@ -42,7 +42,8 @@ class VerifyWrapperTestCase(TestCase):
             './pacts/consumer-provider2.json',
             '--no-enable-pending',
             '--provider=test_provider',
-            '--provider-base-url=http://localhost']
+            '--provider-base-url=http://localhost',
+            '--auto-detect-version-properties']
 
         self.broker_call = [
             '--provider=test_provider',
@@ -56,7 +57,8 @@ class VerifyWrapperTestCase(TestCase):
             '--no-enable-pending',
             '--provider-version-tag=dev',
             '--provider-version-tag=qa',
-            '--branch=consumer-branch']
+            '--branch=consumer-branch',
+            '--auto-detect-version-properties']
 
     def assertProcess(self, *expected):
         self.assertEqual(self.mock_Popen.call_count, 1)
@@ -92,6 +94,24 @@ class VerifyWrapperTestCase(TestCase):
             '--pact-broker-base-url=http://broker.example.com',
             '--provider-base-url=http://localhost',
             '--provider=provider',
+            '--auto-detect-version-properties'
+        ])
+
+    def test_broker_disable_auto_detect_version_properties(self):
+        self.mock_Popen.return_value.returncode = 0
+        wrapper = VerifyWrapper()
+        wrapper.call_verify(
+            provider='provider',
+            provider_base_url='http://localhost',
+            broker_url='http://broker.example.com',
+            auto_detect_version_properties=False
+        )
+        self.assertProcess(*[
+            '--no-enable-pending',
+            '--pact-broker-base-url=http://broker.example.com',
+            '--provider-base-url=http://localhost',
+            '--provider=provider',
+            '--no-auto-detect-version-properties'
         ])
 
     def test_pact_urls_provided(self):
@@ -142,6 +162,7 @@ class VerifyWrapperTestCase(TestCase):
             '--verbose',
             '--enable-pending',
             '--include-wip-pacts-since=2018-01-01',
+            '--auto-detect-version-properties'
         )
 
     def test_uses_broker_if_no_pacts_and_provider_required(self):

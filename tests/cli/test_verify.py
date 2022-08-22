@@ -113,7 +113,8 @@ class mainTestCase(TestCase):
                                 verbose=True,
                                 enable_pending=False,
                                 publish_verification_results=False,
-                                include_wip_pacts_since=None)
+                                include_wip_pacts_since=None,
+                                auto_detect_version_properties=True)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
@@ -143,7 +144,8 @@ class mainTestCase(TestCase):
                                         verbose=False,
                                         enable_pending=False,
                                         publish_verification_results=False,
-                                        include_wip_pacts_since=None)
+                                        include_wip_pacts_since=None,
+                                        auto_detect_version_properties=True)
         self.assertEqual(result.exit_code, 0)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -166,7 +168,8 @@ class mainTestCase(TestCase):
                                         verbose=False,
                                         enable_pending=False,
                                         publish_verification_results=False,
-                                        include_wip_pacts_since=None)
+                                        include_wip_pacts_since=None,
+                                        auto_detect_version_properties=True)
         self.assertEqual(result.exit_code, 0)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -193,7 +196,8 @@ class mainTestCase(TestCase):
                                         verbose=False,
                                         enable_pending=False,
                                         publish_verification_results=False,
-                                        include_wip_pacts_since=None)
+                                        include_wip_pacts_since=None,
+                                        auto_detect_version_properties=True)
 
     @patch.dict(os.environ, {'PACT_BROKER_PASSWORD': 'pwd',
                              'PACT_BROKER_USERNAME': 'broker_user',
@@ -217,7 +221,8 @@ class mainTestCase(TestCase):
                                 verbose=False,
                                 enable_pending=False,
                                 publish_verification_results=False,
-                                include_wip_pacts_since=None)
+                                include_wip_pacts_since=None,
+                                auto_detect_version_properties=True)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch("pact.verify_wrapper.isfile", return_value=True)
@@ -268,7 +273,8 @@ class mainTestCase(TestCase):
                                 verbose=True,
                                 enable_pending=True,
                                 publish_verification_results=False,
-                                include_wip_pacts_since=None)
+                                include_wip_pacts_since=None,
+                                auto_detect_version_properties=True)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     def test_all_broker_options(self, mock_wrapper):
@@ -294,6 +300,7 @@ class mainTestCase(TestCase):
             '--verbose',
             '--enable-pending',
             '--include-wip-pacts-since=2018-01-01',
+            '--no-auto-detect-version-properties'
         ])
 
         self.assertEqual(result.exit_code, 0, result.output)
@@ -315,7 +322,8 @@ class mainTestCase(TestCase):
                                 timeout=60,
                                 verbose=True,
                                 enable_pending=True,
-                                include_wip_pacts_since='2018-01-01')
+                                include_wip_pacts_since='2018-01-01',
+                                auto_detect_version_properties=False)
 
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_publishing_missing_version(self, mock_isfile):

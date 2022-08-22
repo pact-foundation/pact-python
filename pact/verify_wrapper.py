@@ -186,6 +186,11 @@ class VerifyWrapper(object):
         if branch:
             command.extend(['--branch={}'.format(branch)])
 
+        if(kwargs.get('auto_detect_version_properties', True) is True):
+            command.append('--auto-detect-version-properties')
+        else:
+            command.append('--no-auto-detect-version-properties')
+
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:
             command.extend(['{}={}'.format('--custom-provider-header', header)])
@@ -195,7 +200,6 @@ class VerifyWrapper(object):
             command.extend(["--consumer-version-selector={}".format(tag)])
         for tag in kwargs.get('provider_tags', []):
             command.extend(["--provider-version-tag={}".format(tag)])
-
         env = rerun_command()
         result = subprocess.Popen(command, bufsize=1, env=env, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT, universal_newlines=True)
