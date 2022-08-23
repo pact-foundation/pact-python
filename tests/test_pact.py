@@ -393,7 +393,7 @@ class PactStartShutdownServerTestCase(TestCase):
             pact_dir='some_dir',
             branch=None,
             build_url=None,
-            auto_detect_version_properties=True)
+            auto_detect_version_properties=False)
 
     def test_stop_fails_posix(self):
         self.mock_platform.return_value = 'Linux'

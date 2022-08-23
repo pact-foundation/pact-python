@@ -16,7 +16,7 @@ class Consumer(object):
     """
 
     def __init__(self, name, service_cls=Pact, tags=None,
-                 tag_with_git_branch=False, version='0.0.0', branch=None, build_url=None, auto_detect_version_properties=True):
+                 tag_with_git_branch=False, version='0.0.0', branch=None, build_url=None, auto_detect_version_properties=False):
         """
         Create the Consumer class.
 
@@ -44,7 +44,7 @@ class Consumer(object):
         :param auto_detect_version_properties: Automatically detect the repository branch from known CI,
             environment variables or git CLI. Supports Buildkite, Circle CI, Travis CI, GitHub Actions,
             Jenkins, Hudson, AppVeyor, GitLab, CodeShip, Bitbucket and Azure DevOps.'.
-            Defaults to True.
+            Defaults to False.
         :type auto_detect_version_properties: bool
         """
         self.name = name
