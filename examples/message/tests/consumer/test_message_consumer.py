@@ -37,6 +37,16 @@ def pact(request):
     yield pact
 
 
+@pytest.fixture(scope="session")
+def pact_no_publish(request):
+    version = request.config.getoption("--publish-pact")
+    pact = MessageConsumer(CONSUMER_NAME, version=version).has_pact_with(
+        Provider(PROVIDER_NAME),
+        publish_to_broker=False, broker_base_url=PACT_BROKER_URL,
+        broker_username=PACT_BROKER_USERNAME, broker_password=PACT_BROKER_PASSWORD, pact_dir=PACT_DIR)
+
+    yield pact
+
 def cleanup_json(file):
     """
     Remove existing json file before test if any
@@ -62,7 +72,7 @@ def progressive_delay(file, time_to_wait=10, second_interval=0.5, verbose=False)
             break
 
 
-def test_throw_exception_handler(pact):
+def test_throw_exception_handler(pact_no_publish):
     cleanup_json(PACT_FILE)
 
     wrong_event = {
@@ -72,7 +82,7 @@ def test_throw_exception_handler(pact):
         "documentType": "microsoft-excel"
     }
 
-    (pact
+    (pact_no_publish
      .given("Document unsupported type")
      .expects_to_receive("Description")
      .with_content(wrong_event)
@@ -81,7 +91,7 @@ def test_throw_exception_handler(pact):
      }))
 
     with pytest.raises(CustomError):
-        with pact:
+        with pact_no_publish:
             # handler needs "documentType" == "microsoft-word"
             MessageHandler(wrong_event)
 
@@ -89,7 +99,7 @@ def test_throw_exception_handler(pact):
     assert isfile(f"{PACT_FILE}") == 0
 
 
-def test_put_file(pact):
+def test_put_file(pact_no_publish):
     cleanup_json(PACT_FILE)
 
     expected_event = {
@@ -99,7 +109,7 @@ def test_put_file(pact):
         "documentType": "microsoft-word"
     }
 
-    (pact
+    (pact_no_publish
      .given("A document created successfully")
      .expects_to_receive("Description")
      .with_content(expected_event)
@@ -107,7 +117,7 @@ def test_put_file(pact):
          "Content-Type": "application/json"
      }))
 
-    with pact:
+    with pact_no_publish:
         MessageHandler(expected_event)
 
     progressive_delay(f"{PACT_FILE}")
