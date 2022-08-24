@@ -64,8 +64,6 @@ class VerifyWrapperTestCase(TestCase):
 
         actual = process_call[1][0]
         self.assertEqual(actual[0], VERIFIER_PATH)
-        print(actual)
-        print(expected)
         self.assertEqual(len(actual), len(expected) + 1)
         self.assertEqual(set(actual[1:]), set(expected))
         self.assertEqual(set(expected), set(actual[1:]))
