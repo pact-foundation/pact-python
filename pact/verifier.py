@@ -108,6 +108,7 @@ class Verifier(object):
         publish_verification_results = kwargs.get('publish_verification_results', None)
         raw_consumer_selectors = kwargs.get('consumer_version_selectors', [])
         consumer_selectors = self._build_consumer_selectors(raw_consumer_selectors)
+        provider_version_branch = kwargs.get('provider_version_branch')
 
         options = {
             'log_dir': log_dir,
@@ -121,7 +122,8 @@ class Verifier(object):
             'verbose': verbose,
             'provider_app_version': provider_app_version,
             'consumer_selectors': consumer_selectors,
-            'publish_verification_results': publish_verification_results
+            'publish_verification_results': publish_verification_results,
+            'provider_version_branch': provider_version_branch
         }
         return self.filter_empty_options(**options)
 

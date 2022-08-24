@@ -294,6 +294,7 @@ class mainTestCase(TestCase):
             '--verbose',
             '--enable-pending',
             '--include-wip-pacts-since=2018-01-01',
+            '--provider-version-branch=provider-branch'
         ])
 
         self.assertEqual(result.exit_code, 0, result.output)
@@ -315,7 +316,8 @@ class mainTestCase(TestCase):
                                 timeout=60,
                                 verbose=True,
                                 enable_pending=True,
-                                include_wip_pacts_since='2018-01-01')
+                                include_wip_pacts_since='2018-01-01',
+                                provider_version_branch='provider-branch')
 
     @patch("pact.verify_wrapper.isfile", return_value=True)
     def test_publishing_missing_version(self, mock_isfile):
