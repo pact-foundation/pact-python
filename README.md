@@ -457,7 +457,28 @@ You can use the Verifier class. This allows you to write native python code and 
 verifier = Verifier(provider='UserService',
                     provider_base_url=PACT_URL)
 
-output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+# Using a local pact file
+
+success, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+assert success == 0
+
+# Using a pact broker
+
+- For OSS Pact Broker, use broker_username / broker_password
+- For Pactflow Pact Broker, use broker_token
+
+success, logs = verifier.verify_with_broker(
+    # broker_username=PACT_BROKER_USERNAME,
+    # broker_password=PACT_BROKER_PASSWORD,
+    broker_url=PACT_BROKER_URL,
+    broker_token=PACT_BROKER_TOKEN,
+    publish_version=APPLICATION_VERSION,
+    publish_verification_results=True,
+    verbose=True,
+    provider_version_branch=PROVIDER_BRANCH,
+    enable_pending=True,
+)
+assert success == 0
 
 ```
 
