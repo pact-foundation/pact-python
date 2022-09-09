@@ -22,6 +22,9 @@ class MessageConsumer(object):
         tags=None,
         tag_with_git_branch=False,
         version="0.0.0",
+        branch=None,
+        build_url=None,
+        auto_detect_version_properties=False
     ):
         """
         Create the Message Consumer class.
@@ -43,12 +46,24 @@ class MessageConsumer(object):
         :type tag_with_git_branch: bool
         :param version: The version of this Consumer. This will be used when
             publishing pacts to a pact broker. Defaults to '0.0.0'
+        :param branch: The branch of this Consumer.
+        :type branch: str
+        :param build_url: The build URL that created the pact.
+        :type build_url: str
+        :param auto_detect_version_properties: Automatically detect the repository branch from known CI,
+            environment variables or git CLI. Supports Buildkite, Circle CI, Travis CI, GitHub Actions,
+            Jenkins, Hudson, AppVeyor, GitLab, CodeShip, Bitbucket and Azure DevOps.'.
+            Defaults to False.
+        :type auto_detect_version_properties: bool
         """
         self.name = name
         self.service_cls = service_cls
         self.tags = tags
         self.tag_with_git_branch = tag_with_git_branch
         self.version = version
+        self.branch = branch
+        self.build_url = build_url
+        self.auto_detect_version_properties = auto_detect_version_properties
 
     def has_pact_with(
         self,

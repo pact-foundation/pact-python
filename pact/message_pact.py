@@ -208,4 +208,7 @@ class MessagePact(Broker):
                 pact_dir=self.pact_dir,
                 tag_with_git_branch=self.consumer.tag_with_git_branch,
                 consumer_tags=self.consumer.tags,
+                branch=self.consumer.branch,
+                build_url=self.consumer.build_url,
+                auto_detect_version_properties=self.consumer.auto_detect_version_properties
             )
