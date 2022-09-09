@@ -64,6 +64,10 @@ import click
     help='Tag to apply to the provider application version. '
          'May be specified multiple times.')
 @click.option(
+    'provider_version_branch', '--provider-version-branch',
+    default='',
+    help='The name of the branch the provider version belongs to.')
+@click.option(
     'password', '--pact-broker-password',
     envvar='PACT_BROKER_PASSWORD',
     help='Password for Pact Broker basic authentication. Can also be specified'
@@ -125,7 +129,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,
          provider_app_version, publish_verification_results, verbose, log_dir,
-         log_level, enable_pending, include_wip_pacts_since):
+         log_level, enable_pending, include_wip_pacts_since, provider_version_branch):
     """
     Verify one or more contracts against a provider service.
 
@@ -181,6 +185,7 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
         'consumer_tags': list(consumer_version_tag),
         'consumer_selectors': list(consumer_version_selector),
         'provider_tags': list(provider_version_tag),
+        'provider_version_branch': provider_version_branch,
         'provider_states_setup_url': states_setup_url,
     }
 
