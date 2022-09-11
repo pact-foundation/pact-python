@@ -1,3 +1,10 @@
+### 1.6.0
+  * ceff89b - Publish verify branches (#306) (Yousaf Nabi, Sun Sep 11 11:33:44 2022 +0100)
+  * 89733d6 - feat: Support verify with branch (#302) (B3nnyL, Sun Sep 11 20:14:13 2022 +1000)
+  * 42e0db8 - feat: Support publish pact with branch (#300) (B3nnyL, Sun Sep 11 20:06:27 2022 +1000)
+  * 80d7b13 - chore(test): fix consumer message test (#301) (B3nnyL, Tue Aug 23 23:50:27 2022 +1000)
+  * 2015f72 - build: Correct download logic when installing. Add a helper target to setup a pyenv via make (#297) (mikegeeves, Sun Jun 19 09:27:07 2022 +0100)
+  * c17ac70 - docs: Update docs to reflect usage for native Python (#227) (Jiayun Fang, Wed Apr 27 10:00:50 2022 -0700)
 ### 1.5.2
   * 25823ae - chore: update PACT_STANDALONE_VERSION to 1.88.83 (#292) (Yousaf Nabi, Mon Mar 21 22:14:40 2022 +0000)
 ### 1.5.1
