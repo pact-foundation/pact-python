@@ -146,13 +146,24 @@ class MessagePactContextManagerTestCase(MessagePactTestCase):
     def test_successful(self):
         pact = MessagePact(
             self.consumer, self.provider, publish_to_broker=True,
-            broker_base_url='http://localhost', broker_username='username', broker_password='password')
+            broker_base_url='http://localhost', broker_username='username', broker_password='password',
+            pact_dir='some_dir')
 
         with pact:
             pass
 
         self.write_to_pact_file.assert_called_once()
-        self.mock_publish.assert_called_once()
+        self.mock_publish.assert_called_once_with(
+            pact,
+            'TestConsumer',
+            '0.0.0',
+            auto_detect_version_properties=False,
+            branch=None,
+            build_url=None,
+            consumer_tags=None,
+            pact_dir='some_dir',
+            tag_with_git_branch=False
+        )
 
     def test_context_raises_error(self):
         pact = MessagePact(
