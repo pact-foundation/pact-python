@@ -11,7 +11,6 @@ help:
 	@echo ""
 	@echo "  clean      to clear build and distribution directories"
 	@echo "  deps       to install the required files for development"
-	@echo "  verifier   to run the verifier end to end tests"
 	@echo "  examples   to run the example end to end tests (consumer, fastapi, flask, messaging)"
 	@echo "  consumer   to run the example consumer tests"
 	@echo "  fastapi    to run the example FastApi provider tests"

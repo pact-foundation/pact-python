@@ -290,6 +290,54 @@ Like({
 
 For more information see [Matching](https://docs.pact.io/getting_started/matching)
 
+## Uploading pact files to a Pact Broker
+
+There are two ways to publish your pact files, to a Pact Broker.
+
+1. [Pact CLI tools](https://docs.pact.io/pact_broker/client_cli) **recommended**
+2. Pact Python API
+
+### CLI
+
+See [Publishing and retrieving pacts](https://docs.pact.io/pact_broker/publishing_and_retrieving_pacts)
+
+Example uploading to a Pact Broker
+
+```
+pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-username someUsername --broker-password somePassword
+```
+
+Example uploading to a Pactflow Broker
+
+```
+pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-token SomeToken
+```
+
+### Python API
+
+```python
+broker = Broker(broker_base_url="http://localhost")
+broker.publish("TestConsumer",
+                       "2.0.1",
+                       branch='consumer-branch',
+                       pact_dir='.')
+
+output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+
+```
+
+The parameters for this differ slightly in naming from their CLI equivalents:
+| CLI        |      native Python                      |
+|-----------------|-------------------------------------------------------------------------------------------------|
+| `--branch`  | `branch`                                     |
+| `--build-url`  | `build_url`                                     |
+| `--auto-detect-version-properties`  | `auto_detect_version_properties`                                     |
+| `--tag=TAG`  | `consumer_tags`                                   |
+| `--tag-with-git-branch`  | `tag_with_git_branch`                                     |
+| `PACT_DIRS_OR_FILES`  | `pact_dir`                                     |
+| `--consumer-app-version`  | `version`                                     |
+| `n/a`  | `consumer_name`                                     |
+
 ## Verifying Pacts Against a Service
 
 In addition to writing Pacts for Python consumers, you can also verify those Pacts
@@ -409,7 +457,28 @@ You can use the Verifier class. This allows you to write native python code and 
 verifier = Verifier(provider='UserService',
                     provider_base_url=PACT_URL)
 
-output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+# Using a local pact file
+
+success, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
+assert success == 0
+
+# Using a pact broker
+
+- For OSS Pact Broker, use broker_username / broker_password
+- For Pactflow Pact Broker, use broker_token
+
+success, logs = verifier.verify_with_broker(
+    # broker_username=PACT_BROKER_USERNAME,
+    # broker_password=PACT_BROKER_PASSWORD,
+    broker_url=PACT_BROKER_URL,
+    broker_token=PACT_BROKER_TOKEN,
+    publish_version=APPLICATION_VERSION,
+    publish_verification_results=True,
+    verbose=True,
+    provider_version_branch=PROVIDER_BRANCH,
+    enable_pending=True,
+)
+assert success == 0
 
 ```
 
