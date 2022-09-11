@@ -381,6 +381,10 @@ May be specified multiple times. Read more about selectors [here](https://docs.p
 
 Tag to apply to the provider application version. May be specified multiple times.
 
+###### --provider-version-branch
+
+Branch to apply to the provider application version.
+
 ###### --custom-provider-header
 
 Header to add to provider state set up and pact verification requests e.g.`Authorization: Basic cGFjdDpwYWN0`
