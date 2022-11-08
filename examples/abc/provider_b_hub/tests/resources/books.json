@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "title": "The Last Continent",
+    "author": "Terry Pratchett",
+    "category": "Fantasy",
+    "isbn": "0385409893",
+    "published": "1998"
+  },
+  {
+    "id": 2,
+    "title": "Northern Lights",
+    "author": "Philip Pullman",
+    "category": "Fantasy",
+    "isbn": "0-590-54178-1",
+    "published": "1995-07-09"
+  }
+]

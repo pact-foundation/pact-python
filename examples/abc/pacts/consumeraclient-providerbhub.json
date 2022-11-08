@@ -1,0 +1,115 @@
+{
+  "consumer": {
+    "name": "ConsumerAClient"
+  },
+  "provider": {
+    "name": "ProviderBHub"
+  },
+  "interactions": [
+    {
+      "description": "a request for product 1",
+      "providerState": "Some books exist",
+      "request": {
+        "method": "get",
+        "path": "/products/1"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": {
+          "id": 1,
+          "title": "The Last Continent",
+          "author": "Terry Pratchett",
+          "category": "Fantasy",
+          "isbn": "0385409893",
+          "published": "1998"
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "a request for products",
+      "providerState": "Some books exist",
+      "request": {
+        "method": "get",
+        "path": "/products"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+          {
+            "id": 1,
+            "title": "The Last Continent",
+            "author": "Terry Pratchett",
+            "category": "Fantasy",
+            "isbn": "0385409893",
+            "published": "1998"
+          }
+        ],
+        "matchingRules": {
+          "$.body": {
+            "min": 1
+          },
+          "$.body[*].*": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "a request for products when none exist",
+      "providerState": "No books exist",
+      "request": {
+        "method": "get",
+        "path": "/products"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+
+        ]
+      }
+    },
+    {
+      "description": "a request for order 1",
+      "providerState": "Some orders exist",
+      "request": {
+        "method": "get",
+        "path": "/orders/1"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": {
+          "id": 1,
+          "ordered": "2021-11-01",
+          "shipped": "2021-11-14",
+          "product_ids": [
+            1,
+            2
+          ]
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type"
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

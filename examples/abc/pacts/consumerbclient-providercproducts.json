@@ -1,0 +1,62 @@
+{
+  "consumer": {
+    "name": "ConsumerBClient"
+  },
+  "provider": {
+    "name": "ProviderCProducts"
+  },
+  "interactions": [
+    {
+      "description": "todo",
+      "providerState": "Some books exist",
+      "request": {
+        "method": "GET",
+        "path": "/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+          {
+            "id": 1,
+            "title": "The Last Continent",
+            "author": "Terry Pratchett",
+            "category": "Fantasy",
+            "isbn": "0385409893",
+            "published": "1998"
+          }
+        ],
+        "matchingRules": {
+          "$.body": {
+            "min": 1
+          },
+          "$.body[*].*": {
+            "match": "type"
+          }
+        }
+      }
+    },
+    {
+      "description": "todo",
+      "providerState": "No books exist",
+      "request": {
+        "method": "GET",
+        "path": "/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}
