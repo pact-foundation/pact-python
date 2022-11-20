@@ -5,7 +5,7 @@ from pact.pact_exception import PactException
 from pact.ffi.ffi_verifier import FFIVerify
 
 def test_version():
-    assert FFIVerify().version() == "0.0.0"
+    assert FFIVerify().version() == "0.3.14"
 
 
 @mock.patch("os.listdir")
