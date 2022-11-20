@@ -278,7 +278,7 @@ def extract_ruby_app_binary(source: str, destination: str, binary: str):
     else:
         with tarfile.open(path) as f:
             f.extractall(destination)
-
+    os.remove(path)
     print("<- extract_ruby_app_binary")
 
 
@@ -290,6 +290,7 @@ def extract_gz(source: str, destination: str, binary: str):
 
     with gzip.open(path, "rb") as f_in, open(dest, "wb") as f_out:
         shutil.copyfileobj(f_in, f_out)
+    os.remove(path)
 
     print("<- extract_gz")
 
