@@ -16,3 +16,8 @@ tox-travis==0.8
 urllib3>=1.26.5
 wheel==0.38.0
 markupsafe==2.0.1
+pytest-httpserver==1.0.1
+uvicorn==0.14.0
+cffi==1.14.6
+six>=1.9.0
+
