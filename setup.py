@@ -158,11 +158,11 @@ def install_binary(package_bin_path, download_bin_path, binary: Binary):
         path = os.path.join(download_bin_path, binary.filename)
         if not os.path.isfile(path):
             raise RuntimeError("Could not find {} binary.".format(path))
-        # else:
-        #     if binary.single_file:
-        #         extract_gz(download_bin_path, package_bin_path, binary.filename)
-        #     # else:
-        #     #     extract_ruby_app_binary(download_bin_path, package_bin_path, binary.filename)
+        else:
+            if binary.single_file:
+                extract_gz(download_bin_path, package_bin_path, binary.filename)
+            else:
+                extract_ruby_app_binary(download_bin_path, package_bin_path, binary.filename)
     else:
         # Otherwise, download to the destination package_bin_path, skipping to
         # just extract if we have it already
@@ -177,12 +177,11 @@ def install_binary(package_bin_path, download_bin_path, binary: Binary):
                 print(binary.filename)
                 download_binary(package_bin_path, binary.filename, get_rust_uri(filename=binary.filename))
 
-        # if binary.single_file:
-        #     extract_gz(package_bin_path, package_bin_path, binary.filename)
-        # else:
-        #     extract_ruby_app_binary(package_bin_path, package_bin_path, binary.filename)
+        if binary.single_file:
+            extract_gz(package_bin_path, package_bin_path, binary.filename)
+        else:
+            extract_ruby_app_binary(package_bin_path, package_bin_path, binary.filename)
 
-            print('foo')
     print("<- install_binary")
 
 
