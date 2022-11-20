@@ -27,6 +27,10 @@ class Verifier(object):
         """
         return 'Verifier for {} with url {}'.format(self.provider, self.provider_base_url)
 
+    def version(self):
+        """Return version info."""
+        return VerifyWrapper().version()
+
     def validate_publish(self, **kwargs):
         """Validate publish has a version."""
         if ((kwargs.get('publish') is not None) and (kwargs.get('publish_version') is None)):
@@ -53,12 +57,12 @@ class Verifier(object):
         # rerun_command()  # env =
 
         options = self.extract_params(**kwargs)
-        success, logs = VerifyWrapper().call_verify(*pacts,
-                                                    provider=self.provider,
-                                                    provider_base_url=self.provider_base_url,
-                                                    enable_pending=enable_pending,
-                                                    include_wip_pacts_since=include_wip_pacts_since,
-                                                    **options)
+        success, logs = VerifyWrapper().verify(*pacts,
+                                               provider=self.provider,
+                                               provider_base_url=self.provider_base_url,
+                                               enable_pending=enable_pending,
+                                               include_wip_pacts_since=include_wip_pacts_since,
+                                               **options)
 
         return success, logs
 
@@ -87,11 +91,11 @@ class Verifier(object):
         }
         options.update(self.extract_params(**kwargs))
 
-        success, logs = VerifyWrapper().call_verify(provider=self.provider,
-                                                    provider_base_url=self.provider_base_url,
-                                                    enable_pending=enable_pending,
-                                                    include_wip_pacts_since=include_wip_pacts_since,
-                                                    **options)
+        success, logs = VerifyWrapper().verify(provider=self.provider,
+                                               provider_base_url=self.provider_base_url,
+                                               enable_pending=enable_pending,
+                                               include_wip_pacts_since=include_wip_pacts_since,
+                                               **options)
         return success, logs
 
     def extract_params(self, **kwargs):
