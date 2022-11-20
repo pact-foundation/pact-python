@@ -17,7 +17,7 @@ from setuptools.command.install import install
 from urllib.request import urlopen
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.88.83'
+PACT_STANDALONE_VERSION = "1.88.51"
 PACT_STANDALONE_SUFFIXES = ["osx.tar.gz", "linux-x86_64.tar.gz", "linux-x86.tar.gz", "win32.zip"]
 PACT_FFI_VERSION = "0.0.3"
 PACT_FFI_FILENAMES = [
@@ -158,23 +158,31 @@ def install_binary(package_bin_path, download_bin_path, binary: Binary):
         path = os.path.join(download_bin_path, binary.filename)
         if not os.path.isfile(path):
             raise RuntimeError("Could not find {} binary.".format(path))
-        else:
-            if binary.single_file:
-                extract_gz(download_bin_path, package_bin_path, binary.filename)
-            else:
-                extract_ruby_app_binary(download_bin_path, package_bin_path, binary.filename)
+        # else:
+        #     if binary.single_file:
+        #         extract_gz(download_bin_path, package_bin_path, binary.filename)
+        #     # else:
+        #     #     extract_ruby_app_binary(download_bin_path, package_bin_path, binary.filename)
     else:
         # Otherwise, download to the destination package_bin_path, skipping to
         # just extract if we have it already
         path = os.path.join(package_bin_path, binary.filename)
         if not os.path.isfile(path):
-            download_binary(package_bin_path, binary.filename, uri=get_ruby_uri(binary.suffix))
+            # Ruby binary
+            if binary.suffix in PACT_STANDALONE_SUFFIXES:
+                download_binary(package_bin_path, binary.filename, uri=get_ruby_uri(binary.suffix))
 
-        if binary.single_file:
-            extract_gz(package_bin_path, package_bin_path, binary.filename)
-        else:
-            extract_ruby_app_binary(package_bin_path, package_bin_path, binary.filename)
+            # Rust FFI library
+            if binary.filename in PACT_FFI_FILENAMES:
+                print(binary.filename)
+                download_binary(package_bin_path, binary.filename, get_rust_uri(filename=binary.filename))
 
+        # if binary.single_file:
+        #     extract_gz(package_bin_path, package_bin_path, binary.filename)
+        # else:
+        #     extract_ruby_app_binary(package_bin_path, package_bin_path, binary.filename)
+
+            print('foo')
     print("<- install_binary")
 
 
