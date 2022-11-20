@@ -50,18 +50,18 @@ class PactFFI(object):
                     """
                 // root crate
                 char *pactffi_version(void);
-    
+
                 // verifier
                 int pactffi_verify(char *);
-                
+
                 // mock_server
                 void pactffi_free_string(char *);
-                
+
                 // log
                 int pactffi_log_to_file(char *, int);
                 int pactffi_log_to_buffer(int);
                 char * pactffi_fetch_log_buffer(void);
-                
+
                 // experimenting
                 char *pactffi_verifier_cli_args(void);
                 """

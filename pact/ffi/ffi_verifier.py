@@ -34,8 +34,11 @@ class FFIVerify(object):
         """Load the right library."""
         target_platform = platform.platform().lower()
 
-        if 'darwin' in target_platform or 'macos' in target_platform:
-            libname = "libs/libpact_ffi-osx-x86_64.dylib"
+        if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" or "arm64" in platform.machine():
+            # TODO: Untested, can someone with the appropriate architecture verify?
+            libname = "pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib"
+        elif target_platform in ["darwin", "macos"]:
+            libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
         elif 'linux' in target_platform:
             libname = "libs/libpact_ffi-linux-x86_64.so"
         elif 'windows' in target_platform:

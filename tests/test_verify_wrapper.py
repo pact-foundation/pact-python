@@ -160,7 +160,7 @@ class VerifyWrapperTestCase(TestCase):
                                         broker_url='http://broker',
                                         consumer_tags=['prod', 'dev'],
                                         provider_tags=['dev', 'qa'],
-                                             provider_version_branch='provider-branch')
+                                        provider_version_branch='provider-branch')
 
         self.assertProcess(*self.broker_call)
         self.assertEqual(result, 0)

@@ -11,8 +11,7 @@ from pact.ffi.verifier import Verifier, Arguments
 
 def cli_options():
     """
-    Dynamically construct the Click CLI options available to interface with the
-    current version of the FFI library.
+    Dynamically construct the Click CLI options available to interface with the current version of the FFI library.
     This attempts to ensure there cannot be a mismatch between the two, and
     means there doesn't need to be a duplication of logic.
     """
@@ -57,7 +56,7 @@ def cli_options():
             function = click.option(f"--{flag.long}", help=_help, envvar=flag.env, is_flag=True)(function)
 
         function = click.option(
-            f"--debug-click",
+            f'{"--debug-click"}',
             help="Display arguments passed to the Pact Rust FFI library, for debugging pact-verifier wrapper",
             is_flag=True,
         )(function)

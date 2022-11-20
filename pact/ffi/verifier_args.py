@@ -60,10 +60,12 @@ class VerifierArgs:
     # Consumer tags to use when fetching pacts from the Broker. Accepts comma-separated values.
     consumer_version_tags: typing.Optional[str] = None
 
-    # Consumer version selectors to use when fetching pacts from the Broker. Accepts a JSON string as per https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/
+    # Consumer version selectors to use when fetching pacts from the Broker. Accepts a JSON string as
+    # per https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/
     consumer_version_selectors: typing.Optional[str] = None
 
-    # Allow pacts that don't match given consumer selectors (or tags) to  be verified, without causing the overall task to fail. For more information, see https://pact.io/wip
+    # Allow pacts that don't match given consumer selectors (or tags) to  be verified, without causing
+    # the overall task to fail. For more information, see https://pact.io/wip
     include_wip_pacts_since: typing.Optional[str] = None
 
     # Sets the HTTP request timeout in milliseconds for requests to the target API and for state change requests.

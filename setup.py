@@ -8,18 +8,15 @@ import tarfile
 from distutils.command.sdist import sdist as sdist_orig
 from typing import NamedTuple
 from zipfile import ZipFile
-import shutil
-import gzip
 
 from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
-from urllib.request import urlopen
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = "1.88.51"
+PACT_STANDALONE_VERSION = "1.88.83"
 PACT_STANDALONE_SUFFIXES = ["osx.tar.gz", "linux-x86_64.tar.gz", "linux-x86.tar.gz", "win32.zip"]
-PACT_FFI_VERSION = "0.0.3"
+PACT_FFI_VERSION = "0.3.14"
 PACT_FFI_FILENAMES = [
     "libpact_ffi-linux-x86_64.so.gz",
     "libpact_ffi-osx-aarch64-apple-darwin.dylib.gz",
@@ -217,7 +214,7 @@ def rust_lib_binary() -> Binary:
     """
     target_platform = platform.platform().lower()
 
-    if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" in platform.machine():
+    if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" or "arm64" in platform.machine():
         # TODO: Untested, can someone with the appropriate architecture verify?
         binary = "libpact_ffi-osx-aarch64-apple-darwin.dylib.gz"
     elif "darwin" in target_platform or "macos" in target_platform:
