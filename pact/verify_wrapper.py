@@ -9,6 +9,7 @@ import subprocess
 from os.path import isdir, join, isfile
 from os import listdir
 
+
 def capture_logs(process, verbose):
     """Capture logs from ruby process."""
     result = ''
@@ -162,14 +163,14 @@ class VerifyWrapper(object):
         command.extend(all_pact_urls)
         command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
-        if(provider_app_version):
+        if (provider_app_version):
             command.extend(["--provider-app-version",
                             provider_app_version])
 
-        if(kwargs.get('publish_verification_results', False) is True):
+        if (kwargs.get('publish_verification_results', False) is True):
             command.extend(['--publish-verification-results'])
 
-        if(kwargs.get('verbose', False) is True):
+        if (kwargs.get('verbose', False) is True):
             command.extend(['--verbose'])
 
         if enable_pending:

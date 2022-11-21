@@ -28,11 +28,10 @@ with open(os.path.join(here, "pact", "__version__.py")) as f:
     exec(f.read(), about)
 
 class sdist(sdist_orig):
-    """
-    Subclass sdist so that we can download all standalone ruby applications
-    into ./pact/bin so our users receive all the binaries on pip install.
-    """
+    """Subclass sdist to download all standalone ruby applications into ./pact/bin."""
+
     def run(self):
+        """Installs the dist."""
         package_bin_path = os.path.join(os.path.dirname(__file__), 'pact', 'bin')
 
         if os.path.exists(package_bin_path):
@@ -79,12 +78,12 @@ class PactPythonInstallCommand(install):
     user_options = install.user_options + [('bin-path=', None, None)]
 
     def initialize_options(self):
-        """Load our preconfigured options"""
+        """Load our preconfigured options."""
         install.initialize_options(self)
         self.bin_path = None
 
     def finalize_options(self):
-        """Load provided CLI arguments into our options"""
+        """Load provided CLI arguments into our options."""
         install.finalize_options(self)
 
     def run(self):
@@ -124,7 +123,7 @@ def install_ruby_app(package_bin_path: str, download_bin_path=None):
 
 def ruby_app_binary():
     """
-    Determines the ruby app binary required for this OS.
+    Determine the ruby app binary required for this OS.
 
     :return A dictionary of type {'filename': string, 'version': string, 'suffix': string }
     """
@@ -151,7 +150,7 @@ def ruby_app_binary():
 
 def download_ruby_app_binary(path_to_download_to, filename, suffix):
     """
-    Downloads `binary` into `path_to_download_to`.
+    Download `binary` into `path_to_download_to`.
 
     :param path_to_download_to: The path where binaries should be downloaded.
     :param filename: The filename that should be installed.
@@ -177,7 +176,7 @@ def download_ruby_app_binary(path_to_download_to, filename, suffix):
 
 def extract_ruby_app_binary(source, destination, binary):
     """
-    Extracts the ruby app binary from `source` into `destination`.
+    Extract the ruby app binary from `source` into `destination`.
 
     :param source: The location of the binary to unarchive.
     :param destination: The location to unarchive to.
@@ -189,8 +188,25 @@ def extract_ruby_app_binary(source, destination, binary):
             f.extractall(destination)
     else:
         with tarfile.open(path) as f:
-            f.extractall(destination)
+            def is_within_directory(directory, target):
 
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+
+                return prefix == abs_directory
+
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+
+                tar.extractall(path, members, numeric_owner=numeric_owner)
+
+            safe_extract(f, destination)
 
 def read(filename):
     """Read file contents."""
@@ -200,13 +216,14 @@ def read(filename):
 
 
 dependencies = [
-    'click>=2.0.0',
-    'psutil>=2.0.0',
-    'requests>=2.26.0',
-    'six>=1.9.0',
+    'click>=8.1.3',
+    'psutil>=5.9.4',
+    'requests>=2.28.0',
+    'six>=1.16.0',
     'fastapi>=0.67.0',
-    'urllib3>=1.26.5',
-    'uvicorn>=0.14.0'
+    'urllib3>=1.26.12',
+    'uvicorn>=0.19.0',
+    'httpx==0.23.1'
 ]
 
 if __name__ == '__main__':
