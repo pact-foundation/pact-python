@@ -18,7 +18,6 @@ IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = '1.88.83'
 PACT_STANDALONE_SUFFIXES = ['osx.tar.gz',
                             'linux-x86_64.tar.gz',
-                            'linux-x86.tar.gz',
                             'win32.zip']
 
 here = os.path.abspath(os.path.dirname(__file__))
