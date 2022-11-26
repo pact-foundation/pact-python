@@ -108,7 +108,7 @@ class MessagePact(Broker):
         :param name: The short sentence that is unique to describe the provider
         state for this contract.
         :type name: basestring
-        :param params: Additional arguments necessary to set the porovider state
+        :param params: Additional arguments necessary to set the provider state
         :type params: dict
         :rtype: Pact
         """
@@ -116,7 +116,7 @@ class MessagePact(Broker):
 
         provider_state = {'name': "{}".format(name)}
         if params:
-            provider_state['params'] = from_term(params)
+            provider_state['params'] = params
 
         if 'providerStates' not in self._messages[0]:
             self._messages[0]['providerStates'] = [provider_state]

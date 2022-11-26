@@ -87,11 +87,9 @@ class MessagePactTestCase(TestCase):
         (
             target
             .given('there is an alligator named John',
-                params={'color':'green', 'weight_kg': 130, 'lenght_m': 1.95}
-            )
+                   params={'color': 'green', 'weight_kg': 130, 'length_m': 1.95})
             .given('there is an spider named Jack',
-                params={'color':'mostly black', 'weight_kg': 0.009, 'lenght_m': 0.05}
-            )
+                   params={'color': 'mostly black', 'weight_kg': 0.009, 'length_m': 0.05})
             .expects_to_receive('an alligator message')
             .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
             .with_metadata({'contentType': 'application/json',
@@ -107,17 +105,17 @@ class MessagePactTestCase(TestCase):
                 {
                     'name': 'there is an alligator named John',
                     'params': {
-                        'color':'green',
+                        'color': 'green',
                         'weight_kg': 130,
-                        'lenght_m': 1.95
+                        'length_m': 1.95
                     }
                 },
                 {
                     'name': 'there is an spider named Jack',
                     'params': {
-                        'color':'mostly black',
+                        'color': 'mostly black',
                         'weight_kg': 0.009,
-                        'lenght_m': 0.05
+                        'length_m': 0.05
                     }
                 }
             ]
