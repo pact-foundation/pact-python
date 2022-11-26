@@ -82,6 +82,60 @@ class MessagePactTestCase(TestCase):
 
         self.assertTrue(target._messages[0]['metaData']['some-header'], 'Pact::Term')
 
+    def test_definition_multiple_provider_states(self):
+        target = MessagePact(self.consumer, self.provider)
+        (
+            target
+            .given('there is an alligator named John',
+                params={'color':'green', 'weight_kg': 130, 'lenght_m': 1.95}
+            )
+            .given('there is an spider named Jack',
+                params={'color':'mostly black', 'weight_kg': 0.009, 'lenght_m': 0.05}
+            )
+            .expects_to_receive('an alligator message')
+            .with_content({'name': 'John', 'document_name': 'sample_document.doc'})
+            .with_metadata({'contentType': 'application/json',
+                            'source': 'legacy_api',
+                            'some-header': Term('\\d+-\\d+-\\d+T\\d+:\\d+:\\d+', '2022-02-15T20:16:01')})
+        )
+
+        self.assertEqual(len(target._messages), 1)
+
+        self.assertEqual(
+            target._messages[0]['providerStates'],
+            [
+                {
+                    'name': 'there is an alligator named John',
+                    'params': {
+                        'color':'green',
+                        'weight_kg': 130,
+                        'lenght_m': 1.95
+                    }
+                },
+                {
+                    'name': 'there is an spider named Jack',
+                    'params': {
+                        'color':'mostly black',
+                        'weight_kg': 0.009,
+                        'lenght_m': 0.05
+                    }
+                }
+            ]
+        )
+
+        self.assertEqual(
+            target._messages[0]['description'],
+            'an alligator message')
+
+        self.assertEqual(
+            target._messages[0]['contents'],
+            {'name': 'John', 'document_name': 'sample_document.doc'})
+
+        self.assertTrue({'contentType': 'application/json', 'source': 'legacy_api'}.items()
+                        <= target._messages[0]['metaData'].items())
+
+        self.assertTrue(target._messages[0]['metaData']['some-header'], 'Pact::Term')
+
     def test_insert_new_message_once_required_attributes_provided(self):
         target = MessagePact(self.consumer, self.provider)
         (
