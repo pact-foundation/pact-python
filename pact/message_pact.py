@@ -98,22 +98,31 @@ class MessagePact(Broker):
         self._messages = []
         self._message_process = None
 
-    def given(self, provider_states):
+    def given(self, name, params=None):
         """
         Define the provider state for this pact.
 
         When the provider verifies this contract, they will use this field to
         setup pre-defined data that will satisfy the response expectations.
 
-        :param provider_state: The short sentence that is unique to describe
-            the provider state for this contract.
-        :type provider_state: basestring
+        :param name: The short sentence that is unique to describe the provider
+        state for this contract.
+        :type name: basestring
+        :param params: Additional arguments necessary to set the provider state
+        :type params: dict
         :rtype: Pact
         """
         self._insert_message_if_complete()
 
-        state = [{"name": "{}".format(provider_states)}]
-        self._messages[0]['providerStates'] = state
+        provider_state = {'name': "{}".format(name)}
+        if params:
+            provider_state['params'] = params
+
+        if 'providerStates' not in self._messages[0]:
+            self._messages[0]['providerStates'] = [provider_state]
+        else:
+            self._messages[0]['providerStates'].append(provider_state)
+
         return self
 
     def with_metadata(self, metadata):
