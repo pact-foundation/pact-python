@@ -307,7 +307,7 @@ Example uploading to a Pact Broker
 pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-username someUsername --broker-password somePassword
 ```
 
-Example uploading to a Pactflow Broker
+Example uploading to a PactFlow Broker
 
 ```
 pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-token SomeToken
@@ -465,7 +465,7 @@ assert success == 0
 # Using a pact broker
 
 - For OSS Pact Broker, use broker_username / broker_password
-- For Pactflow Pact Broker, use broker_token
+- For PactFlow Pact Broker, use broker_token
 
 success, logs = verifier.verify_with_broker(
     # broker_username=PACT_BROKER_USERNAME,
