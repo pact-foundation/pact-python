@@ -5,7 +5,7 @@ import pytest
 from testcontainers.compose import DockerCompose
 
 
-# This fixture is to simulate a managed Pact Broker or Pactflow account.
+# This fixture is to simulate a managed Pact Broker or PactFlow account.
 # For almost all purposes outside this example, you will want to use a real
 # broker. See https://github.com/pact-foundation/pact_broker for further details.
 @pytest.fixture(scope="session", autouse=True)
