@@ -1,3 +1,10 @@
+### 1.7.0
+  * 9c1132e - Merge pull request #325 from pact-foundation/pactflow_camelcase (Yousaf Nabi, Fri Jan 27 12:29:59 2023 +0000)
+  * 44cda33 - chore: /s/Pactflow/PactFlow (Yousaf Nabi, Thu Jan 26 16:11:54 2023 +0000)
+  * 1bbdd37 - feat: Enhance provider states for pact-message (#322) (nsfrias, Tue Jan 24 17:04:29 2023 +0000)
+  * 53ca129 - chore: add workflow to create a jira issue for pactflow team when smartbear-supported label added to github issue (Beth Skurrie, Wed Jan 18 10:51:05 2023 +1100)
+  * d87d54b - fix: setup security issue (#318) (Elliott Murray, Mon Nov 21 09:39:41 2022 +0000)
+  * 55f2a64 - fix: requirements_dev.txt to reduce vulnerabilities (#317) (Matt Fellows, Sun Nov 6 02:12:30 2022 +1100)
 ### 1.6.0
   * ceff89b - Publish verify branches (#306) (Yousaf Nabi, Sun Sep 11 11:33:44 2022 +0100)
   * 89733d6 - feat: Support verify with branch (#302) (B3nnyL, Sun Sep 11 20:14:13 2022 +1000)
