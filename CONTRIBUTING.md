@@ -37,15 +37,20 @@ Take a look at the git history (`git log`) to get the gist of it.
 
 If you'd like to get some CLI assistance there is a node npm package. Example usage is:
 
-```
+```shell
 npm install -g commitizen
 npm install -g cz-conventional-changelog
+echo '{ "path": "cz-conventional-changelog" }' > ~/.czrc
 ```
 
-`git cz` to commit and `commitizen` will guide you.
+When you commit with Commitizen, you'll be prompted to fill out any required
+commit fields at commit time. Simply use `git cz` or just `cz` instead of
+`git commit` when committing. You can also use `git-cz`, which is an alias
+for `cz`.
+
+See https://www.npmjs.com/package/commitizen for more info.
 
 There is a pypi package that does similar [commitizen](https://pypi.org/project/commitizen/).
-This would make a great feature to add!
 
 ## Running the tests
 
