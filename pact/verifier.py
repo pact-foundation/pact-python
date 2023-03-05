@@ -29,7 +29,7 @@ class Verifier(object):
 
     def validate_publish(self, **kwargs):
         """Validate publish has a version."""
-        if ((kwargs.get('publish') is not None) and (kwargs.get('publish_version') is None)):
+        if (kwargs.get('publish') is not None) and (kwargs.get('publish_version') is None):
             # do something
             raise Exception()
 
@@ -48,9 +48,6 @@ class Verifier(object):
             raise Exception("Missing pact files {}".format(missing_files))
 
         pacts = expand_directories(pacts)
-        missing_files = [path for path in pacts if not path_exists(path)]
-
-        # rerun_command()  # env =
 
         options = self.extract_params(**kwargs)
         success, logs = VerifyWrapper().call_verify(*pacts,
@@ -120,7 +117,6 @@ class Verifier(object):
             'provider_tags': list(provider_tags),
             'provider_states_setup_url': states_setup_url,
             'verbose': verbose,
-            'provider_app_version': provider_app_version,
             'consumer_selectors': consumer_selectors,
             'publish_verification_results': publish_verification_results,
             'provider_version_branch': provider_version_branch
