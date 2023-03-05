@@ -121,6 +121,7 @@ def install_ruby_app(package_bin_path: str, download_bin_path=None):
             download_ruby_app_binary(package_bin_path, binary['filename'], binary['suffix'])
             extract_ruby_app_binary(package_bin_path, package_bin_path, binary['filename'])
 
+
 def ruby_app_binary():
     """
     Determine the ruby app binary required for this OS.
@@ -208,6 +209,7 @@ def extract_ruby_app_binary(source, destination, binary):
 
             safe_extract(f, destination)
 
+
 def read(filename):
     """Read file contents."""
     path = os.path.realpath(os.path.join(os.path.dirname(__file__), filename))
@@ -224,6 +226,26 @@ dependencies = [
     'urllib3>=1.26.12',
     'uvicorn>=0.19.0',
     'httpx==0.23.1'
+]
+
+# Classifiers: available ones listed at https://pypi.org/classifiers
+CLASSIFIERS = [
+    'Development Status :: 5 - Production/Stable',
+
+    'Operating System :: OS Independent',
+
+    'Intended Audience :: Developers',
+
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+
+    'License :: OSI Approved :: MIT License',
 ]
 
 if __name__ == '__main__':
@@ -246,6 +268,8 @@ if __name__ == '__main__':
             [console_scripts]
             pact-verifier=pact.cli.verify:main
         ''',
+        classifiers=CLASSIFIERS,
+        python_requires='>=3.6,<4',
         install_requires=dependencies,
         packages=['pact', 'pact.cli'],
         package_data={'pact': ['bin/*']},
