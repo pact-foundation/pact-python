@@ -42,7 +42,7 @@ class Verifier(object):
     ):
         """Verify pacts from the provider.
 
-        Example:
+        Usage:
 
         >>> from pact import Verifier
         >>>
@@ -106,7 +106,7 @@ class Verifier(object):
     ):
         """Use Broker to verify.
 
-        Example:
+        Usage:
 
         >>> from pact import Verifier
         >>>
