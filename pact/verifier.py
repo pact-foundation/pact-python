@@ -33,63 +33,149 @@ class Verifier(object):
             # do something
             raise Exception()
 
-    def verify_pacts(self, *pacts, enable_pending=False, include_wip_pacts_since=None, **kwargs):
-        """Verify our pacts from the provider.
+    def verify_pacts(
+            self,
+            *pacts,
+            enable_pending=False,
+            include_wip_pacts_since=None,
+            **kwargs
+    ):
+        """Verify pacts from the provider.
 
-        Returns:
-          success: True if no failures
-          logs: some tbd output of logs
+        Example:
 
+        >>> from pact import Verifier
+        >>>
+        >>> PROVIDER_URL = f'http://127.0.0.1:5001'
+        >>>
+        >>> verifier = Verifier(
+        ...   provider='AcmeAPI',
+        ...   provider_base_url=PROVIDER_URL
+        ... )
+        >>>
+        >>> result, _ = verifier.verify_pacts(
+        ...   'consumer-provider.json',
+        ...   enable_pending=True,
+        ... )
+        >>>
+        >>> assert result == 0
+
+        :param pacts: List of pact to verify. Every pact in that list can be
+            an HTTP URI or a local file.
+        :type pacts: str
+        :param enable_pending: Allow pacts which are in pending state to be
+            verified without causing the overall task to fail.
+        :type enable_pending: bool
+        :param include_wip_pacts_since: Allow pacts that don't match given
+            consumer selectors (or tags) to  be verified, without causing the
+            overall task to fail
+        :type include_wip_pacts_since: str or None
+        :return: Returns a tuple of two elements. The first indicates the
+            status of the operation, so that 0 means success, and the second
+            contains the logs of the operation.
+        :rtype: tuple
         """
         self.validate_publish(**kwargs)
 
-        missing_files = [path for path in pacts if not path_exists(path)]
-        if missing_files:
-            raise Exception("Missing pact files {}".format(missing_files))
+        missing_pacts = [path for path in pacts if not path_exists(path)]
+        if missing_pacts:
+            raise Exception("Missing pact files: {}".format(
+                ', '.join(missing_pacts))
+            )
 
-        pacts = expand_directories(pacts)
-
+        pacts = expand_directories(list(pacts))
         options = self.extract_params(**kwargs)
-        success, logs = VerifyWrapper().call_verify(*pacts,
-                                                    provider=self.provider,
-                                                    provider_base_url=self.provider_base_url,
-                                                    enable_pending=enable_pending,
-                                                    include_wip_pacts_since=include_wip_pacts_since,
-                                                    **options)
 
-        return success, logs
+        return_code, logs = VerifyWrapper().call_verify(
+            *pacts,
+            provider=self.provider,
+            provider_base_url=self.provider_base_url,
+            enable_pending=enable_pending,
+            include_wip_pacts_since=include_wip_pacts_since,
+            **options
+        )
 
-    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+        return return_code, logs
+
+    def verify_with_broker(
+            self,
+            *pacts,
+            enable_pending=False,
+            include_wip_pacts_since=None,
+            **kwargs
+    ):
         """Use Broker to verify.
 
-        Args:
-            broker_username ([String]): broker username
-            broker_password ([String]): broker password
-            broker_url ([String]): url of broker
-            enable_pending ([Boolean])
-            include_wip_pacts_since ([String])
-            publish_version ([String])
+        Example:
 
+        >>> from pact import Verifier
+        >>>
+        >>> PROVIDER_URL = f'http://127.0.0.1:5001'
+        >>>
+        >>> verifier = Verifier(
+        ...   provider='AcmeAPI',
+        ...   provider_base_url=PROVIDER_URL
+        ... )
+        >>>
+        >>> result, _ = verifier.verify_with_broker(
+        ...   'https://broker/consumer-provider.json',
+        ...   enable_pending=True,
+        ...   broker_username='pactbroker',
+        ...   broker_password='pactbroker',
+        ...   broker_url='http://localhost',
+        ... )
+        >>>
+        >>> assert result == 0
+
+        :param pacts: List of pact to verify. Every pact in that list can be
+            an HTTP URI or a local file.
+        :type pacts: str
+        :param enable_pending: Allow pacts which are in pending state to be
+            verified without causing the overall task to fail.
+        :type enable_pending: bool
+        :param include_wip_pacts_since: Allow pacts that don't match given
+            consumer selectors (or tags) to  be verified, without causing the
+            overall task to fail
+        :type include_wip_pacts_since: str or None
+        :keyword str broker_username: Pact Broker basic auth username.
+        :keyword str broker_password: Pact Broker basic auth password.
+        :keyword str broker_token: Pact Broker bearer token.
+        :keyword str broker_url: Base URL of the Pact Broker from which to
+            retrieve the pacts.
+        :raises Exception: [ErrorDescription]
+        :return: Returns a tuple of two elements. The first indicates the
+            status of the operation, so that 0 means success, and the second
+            contains the logs of the operation.
+        :rtype: tuple
         """
-        broker_username = kwargs.get('broker_username', None)
-        broker_password = kwargs.get('broker_password', None)
-        broker_url = kwargs.get('broker_url', None)
-        broker_token = kwargs.get('broker_token', None)
+        self.validate_publish(**kwargs)
 
         options = {
-            'broker_password': broker_password,
-            'broker_username': broker_username,
-            'broker_token': broker_token,
-            'broker_url': broker_url
+            'broker_password': kwargs.get('broker_password', None),
+            'broker_username': kwargs.get('broker_username', None),
+            'broker_token': kwargs.get('broker_token', None),
+            'broker_url': kwargs.get('broker_url', None),
         }
+
+        missing_pacts = [path for path in pacts if not path_exists(path)]
+        if missing_pacts:
+            raise Exception("Missing pact files: {}".format(
+                ', '.join(missing_pacts))
+            )
+
+        pacts = expand_directories(list(pacts))
         options.update(self.extract_params(**kwargs))
 
-        success, logs = VerifyWrapper().call_verify(provider=self.provider,
-                                                    provider_base_url=self.provider_base_url,
-                                                    enable_pending=enable_pending,
-                                                    include_wip_pacts_since=include_wip_pacts_since,
-                                                    **options)
-        return success, logs
+        return_code, logs = VerifyWrapper().call_verify(
+            *pacts,
+            provider=self.provider,
+            provider_base_url=self.provider_base_url,
+            enable_pending=enable_pending,
+            include_wip_pacts_since=include_wip_pacts_since,
+            **options
+        )
+
+        return return_code, logs
 
     def extract_params(self, **kwargs):
         """Extract params."""

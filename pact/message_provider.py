@@ -115,22 +115,37 @@ class MessageProvider(object):
         return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
-    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_with_broker(
+            self,
+            *pacts,
+            enable_pending=False,
+            include_wip_pacts_since=None,
+            **kwargs
+    ):
         """Use Broker to verify.
 
-        Args:
-            broker_username ([String]): broker username
-            broker_password ([String]): broker password
-            broker_url ([String]): url of broker
-            enable_pending ([Boolean])
-            include_wip_pacts_since ([String])
-            publish_version ([String])
-
+        :param pacts: List of pact to verify. Every pact in that list can be
+            an HTTP URI or a local file.
+        :type pacts: str
+        :param enable_pending: Allow pacts which are in pending state to be
+            verified without causing the overall task to fail.
+        :type enable_pending: bool
+        :param include_wip_pacts_since: Allow pacts that don't match given
+            consumer selectors (or tags) to  be verified, without causing the
+            overall task to fail
+        :type include_wip_pacts_since: str or None
         """
-        verifier = Verifier(provider=self.provider,
-                            provider_base_url=self._proxy_url())
+        verifier = Verifier(
+            provider=self.provider,
+            provider_base_url=self._proxy_url()
+        )
 
-        return_code, _ = verifier.verify_with_broker(enable_pending, include_wip_pacts_since, **kwargs)
+        return_code, _ = verifier.verify_with_broker(
+            *pacts,
+            enable_pending=enable_pending,
+            include_wip_pacts_since=include_wip_pacts_since,
+            **kwargs
+        )
 
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
@@ -147,7 +162,7 @@ class MessageProvider(object):
         Exit a Python context.
 
         Return False to cascade the exception in context manager's body.
-        Otherwise it will be supressed and the test will always pass.
+        Otherwise, it will be suppressed and the test will always pass.
         """
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             if exc_type is not None:
