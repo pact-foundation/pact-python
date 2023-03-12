@@ -407,3 +407,45 @@ class FormatTestCase(TestCase):
                 },
             },
         )
+
+    def test_iso_8601_datetime(self):
+        date = self.formatter.iso_datetime.generate()
+        self.assertEqual(
+            date,
+            {
+                "json_class": "Pact::Term",
+                "json_class": "Pact::Term",
+                "data": {
+                    "matcher": {
+                        "json_class": "Regexp",
+                        "s": self.formatter.Regexes.iso_8601_datetime.value,
+                        "o": 0,
+                    },
+                    "generate": datetime.datetime(
+                        1991, 2, 20, 6, 35, 26,
+                        tzinfo=datetime.timezone.utc
+                    ).isoformat(),
+                },
+            },
+        )
+
+    def test_iso_8601_datetime_mills(self):
+        date = self.formatter.iso_datetime_ms.generate()
+        self.assertEqual(
+            date,
+            {
+                "json_class": "Pact::Term",
+                "json_class": "Pact::Term",
+                "data": {
+                    "matcher": {
+                        "json_class": "Regexp",
+                        "s": self.formatter.Regexes.iso_8601_datetime_ms.value,
+                        "o": 0,
+                    },
+                    "generate": datetime.datetime(
+                        1991, 2, 20, 6, 35, 26, 79043,
+                        tzinfo=datetime.timezone.utc
+                    ).isoformat(),
+                },
+            },
+        )

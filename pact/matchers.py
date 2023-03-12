@@ -264,6 +264,8 @@ class Format:
         self.timestamp = self.timestamp()
         self.date = self.date()
         self.time = self.time()
+        self.iso_datetime = self.iso_8601_datetime()
+        self.iso_datetime_ms = self.iso_8601_datetime(with_ms=True)
 
     def integer_or_identifier(self):
         """
@@ -360,6 +362,52 @@ class Format:
             ).time().isoformat()
         )
 
+    def iso_8601_datetime(self, with_ms=False):
+        """
+        Match a string for a full ISO 8601 Date.
+
+        Does not do any sort of date validation, only checks if the string is
+        according to the ISO 8601 spec.
+
+        This method differs from :func:`~pact.Format.timestamp`,
+        :func:`~pact.Format.date` and :func:`~pact.Format.time` implementations
+        in that it is more stringent and tests the string for exact match to
+        the ISO 8601 dates format.
+
+        Without `with_ms` will match string containing ISO 8601 formatted dates
+        as stated bellow:
+
+        * 2016-12-15T20:16:01
+        * 2010-05-01T01:14:31.876
+        * 2016-05-24T15:54:14.00000Z
+        * 1994-11-05T08:15:30-05:00
+        * 2002-01-31T23:00:00.1234-02:00
+        * 1991-02-20T06:35:26.079043+00:00
+
+        Otherwise, ONLY dates with milliseconds will match the pattern:
+
+        * 2010-05-01T01:14:31.876
+        * 2016-05-24T15:54:14.00000Z
+        * 2002-01-31T23:00:00.1234-02:00
+        * 1991-02-20T06:35:26.079043+00:00
+
+        :param with_ms: Enforcing millisecond precision.
+        :type with_ms: bool
+        :return: a Term object with a date regex.
+        :rtype: Term
+        """
+        date = [1991, 2, 20, 6, 35, 26]
+        if with_ms:
+            matcher = self.Regexes.iso_8601_datetime_ms.value
+            date.append(79043)
+        else:
+            matcher = self.Regexes.iso_8601_datetime.value
+
+        return Term(
+            matcher,
+            datetime.datetime(*date, tzinfo=datetime.timezone.utc).isoformat()
+        )
+
     class Regexes(Enum):
         """Regex Enum for common formats."""
 
@@ -398,3 +446,7 @@ class Format:
             r'0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|' \
             r'[12]\d{2}|3([0-5]\d|6[1-6])))?)'
         time_regex = r'^(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?$'
+        iso_8601_datetime = r'^\d{4}-[01]\d-[0-3]\d\x54[0-2]\d:[0-6]\d:' \
+                            r'[0-6]\d(?:\.\d+)?(?:(?:[+-]\d\d:\d\d)|\x5A)?$'
+        iso_8601_datetime_ms = r'^\d{4}-[01]\d-[0-3]\d\x54[0-2]\d:[0-6]\d:' \
+                               r'[0-6]\d\.\d+(?:(?:[+-]\d\d:\d\d)|\x5A)?$'
