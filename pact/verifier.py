@@ -38,7 +38,8 @@ class Verifier(object):
 
         if not kwargs.get('publish_version'):
             raise Exception('To publish the results of verification to the '
-                            'broker version of the participant is mandatory')
+                            'broker, attribute publish_version (containing '
+                            'the provider version) must be set')
 
     def verify_pacts(
             self,
@@ -53,11 +54,9 @@ class Verifier(object):
 
         >>> from pact import Verifier
         >>>
-        >>> PROVIDER_URL = f'http://127.0.0.1:5001'
-        >>>
         >>> verifier = Verifier(
-        ...   provider='AcmeAPI',
-        ...   provider_base_url=PROVIDER_URL
+        ...   provider='UserService',
+        ...   provider_base_url='http://localhost:5001'
         ... )
         >>>
         >>> result, _ = verifier.verify_pacts(
@@ -67,8 +66,9 @@ class Verifier(object):
         >>>
         >>> assert result == 0
 
-        :param pacts: List of pact to verify. Every pact in that list can be
-            an HTTP URI or a local file.
+        :param pacts: Pacts to verify, passed as multiple comma-separated
+            paths. Every pact in that list can be an HTTP URI, a local file, or
+            a path to a local directory.
         :type pacts: str
         :param enable_pending: Allow pacts which are in pending state to be
             verified without causing the overall task to fail.
@@ -119,11 +119,9 @@ class Verifier(object):
 
         >>> from pact import Verifier
         >>>
-        >>> PROVIDER_URL = f'http://127.0.0.1:5001'
-        >>>
         >>> verifier = Verifier(
-        ...   provider='AcmeAPI',
-        ...   provider_base_url=PROVIDER_URL
+        ...   provider='UserService',
+        ...   provider_base_url='http://localhost:5001'
         ... )
         >>>
         >>> result, _ = verifier.verify_with_broker(
@@ -136,8 +134,9 @@ class Verifier(object):
         >>>
         >>> assert result == 0
 
-        :param pacts: List of pact to verify. Every pact in that list can be
-            an HTTP URI or a local file.
+        :param pacts: Pacts to verify, passed as multiple comma-separated
+            paths. Every pact in that list can be an HTTP URI, a local file, or
+            a path to a local directory.
         :type pacts: str
         :param enable_pending: Allow pacts which are in pending state to be
             verified without causing the overall task to fail.
@@ -153,9 +152,8 @@ class Verifier(object):
             retrieve the pacts.
         :raises Exception: When `publish_verification_results` is set,
             but `publish_version` is not provided.
-        :return: Returns a tuple of two elements. The first indicates the
-            status of the operation, so that 0 means success, and the second
-            contains the logs of the operation.
+        :return: Returns a tuple of the overall result (where 0 indicates
+            success), and logs produced.
         :rtype: tuple
         """
         self.validate_publish(**kwargs)

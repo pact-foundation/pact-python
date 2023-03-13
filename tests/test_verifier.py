@@ -83,7 +83,8 @@ class VerifierPactsTestCase(TestCase):
             )
 
         message = ('To publish the results of verification to the '
-                   'broker version of the participant is mandatory')
+                   'broker, attribute publish_version (containing '
+                   'the provider version) must be set')
         self.assertTrue(message in str(exc.exception))
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
