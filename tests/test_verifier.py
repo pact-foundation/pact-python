@@ -48,7 +48,7 @@ class VerifierPactsTestCase(TestCase):
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.verifier.path_exists', return_value=True)
-    def test_verifier_with_provider_and_files_passes_consumer_selctors(self, mock_path_exists, mock_wrapper):
+    def test_verifier_with_provider_and_files_passes_consumer_selectors(self, mock_path_exists, mock_wrapper):
         mock_wrapper.return_value = (True, 'some logs')
 
         output, _ = self.verifier.verify_pacts(
@@ -76,7 +76,15 @@ class VerifierPactsTestCase(TestCase):
                                                '{"tag": "test", "latest": false}'])
 
     def test_validate_on_publish_results(self):
-        self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
+        with self.assertRaises(Exception) as exc:
+            self.verifier.verify_pacts(
+                'path/to/pact1',
+                publish_verification_results=True,
+            )
+
+        message = ('To publish the results of verification to the '
+                   'broker version of the participant is mandatory')
+        self.assertTrue(message in str(exc.exception))
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.verifier.path_exists', return_value=True)

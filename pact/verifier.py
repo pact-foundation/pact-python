@@ -28,10 +28,17 @@ class Verifier(object):
         return 'Verifier for {} with url {}'.format(self.provider, self.provider_base_url)
 
     def validate_publish(self, **kwargs):
-        """Validate publish has a version."""
-        if (kwargs.get('publish') is not None) and (kwargs.get('publish_version') is None):
-            # do something
-            raise Exception()
+        """Ensure the participant version is provided.
+
+        :raises Exception: When `publish_verification_results` is set,
+            but `publish_version` is not provided.
+        """
+        if not kwargs.get('publish_verification_results'):
+            return
+
+        if not kwargs.get('publish_version'):
+            raise Exception('To publish the results of verification to the '
+                            'broker version of the participant is mandatory')
 
     def verify_pacts(
             self,
@@ -70,6 +77,8 @@ class Verifier(object):
             consumer selectors (or tags) to  be verified, without causing the
             overall task to fail
         :type include_wip_pacts_since: str or None
+        :raises Exception: When `publish_verification_results` is set,
+            but `publish_version` is not provided.
         :return: Returns a tuple of two elements. The first indicates the
             status of the operation, so that 0 means success, and the second
             contains the logs of the operation.
@@ -142,7 +151,8 @@ class Verifier(object):
         :keyword str broker_token: Pact Broker bearer token.
         :keyword str broker_url: Base URL of the Pact Broker from which to
             retrieve the pacts.
-        :raises Exception: [ErrorDescription]
+        :raises Exception: When `publish_verification_results` is set,
+            but `publish_version` is not provided.
         :return: Returns a tuple of two elements. The first indicates the
             status of the operation, so that 0 means success, and the second
             contains the logs of the operation.
