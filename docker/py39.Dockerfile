@@ -1,4 +1,4 @@
-FROM python:3.8-alpine3.17
+FROM python:3.9-alpine3.17
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
@@ -13,4 +13,4 @@ RUN apk update \
     && pip install --progress-bar=off --upgrade psutil \
     && pip install --progress-bar=off --use-pep517 -r requirements_dev.txt
 
-CMD ["tox", "-e", "py38-{test,install}"]
+CMD ["tox", "-e", "py39-{test,install}"]

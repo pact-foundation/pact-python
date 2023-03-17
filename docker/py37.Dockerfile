@@ -1,15 +1,16 @@
-FROM python:3.7.9-alpine3.11
+FROM python:3.7-alpine3.17
+
+ENV PIP_ROOT_USER_ACTION=ignore
 
 WORKDIR /home
 
 COPY requirements_dev.txt .
 
-RUN apk update
-RUN apk upgrade
+RUN apk update \
+    && apk upgrade \
+    && apk add --no-cache --update gcc build-base linux-headers musl-locales \
+    && pip install --progress-bar=off --upgrade pip \
+    && pip install --progress-bar=off --upgrade psutil \
+    && pip install --progress-bar=off --use-pep517 -r requirements_dev.txt
 
-RUN apk add gcc py-pip python-dev libffi-dev openssl-dev gcc libc-dev bash make
-
-RUN python -m pip install psutil
-RUN pip install -r requirements_dev.txt
-
-CMD tox -e py37
+CMD ["tox", "-e", "py37-{test,install}"]
