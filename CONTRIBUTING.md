@@ -56,16 +56,17 @@ There is a pypi package that does similar [commitizen](https://pypi.org/project/
 
 You can run the tests locally with `make test`, this will run the tests with `tox`
 
-You will need `pyenv` to test on different versions `3.6`, `3.7`, `3.8`, `3.9`, `3.10`
+You will need `pyenv` to test on different versions `3.6`, `3.7`, `3.8`, `3.9`,
+`3.10`, `3.11`.
 
 Download and install python versions:
 ```
-pyenv install 3.6.15 3.7.16 3.8.16 3.9.16 3.10.10
+pyenv install 3.6.15 3.7.16 3.8.16 3.9.16 3.10.10 3.11.2
 ```
 
 Set these versions locally for the project:
 ```
-pyenv local 3.6.15 3.7.16 3.8.16 3.9.16 3.10.10
+pyenv local 3.6.15 3.7.16 3.8.16 3.9.16 3.10.10 3.11.2
 ```
 
 Run the tests:
