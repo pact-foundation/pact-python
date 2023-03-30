@@ -218,15 +218,26 @@ def read(filename):
 
 
 dependencies = [
-    'click>=8.1.3',
     'psutil>=5.9.4',
-    'requests>=2.28.0',
     'six>=1.16.0',
     'fastapi>=0.67.0',
     'urllib3>=1.26.12',
-    'uvicorn>=0.19.0',
-    'httpx==0.23.1'
 ]
+
+if sys.version_info < (3, 7):
+    dependencies += [
+        'click<=8.0.4',
+        'httpx==0.22.0',
+        'requests==2.27.1',
+        'uvicorn==0.16.0',
+    ]
+else:
+    dependencies += [
+        'click>=8.1.3',
+        'httpx==0.23.3',
+        'requests>=2.28.0',
+        'uvicorn>=0.19.0',
+    ]
 
 # Classifiers: available ones listed at https://pypi.org/classifiers
 CLASSIFIERS = [
