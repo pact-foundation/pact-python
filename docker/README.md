@@ -11,7 +11,7 @@ To build a container say for Python 3.11 change to the root directory of the
 project and run:
 
 ```bash
-docker build -t pactfoundation:python311 -f docker/py310.Dockerfile .
+docker build -t pactfoundation:python311 -f docker/py311.Dockerfile .
 ```
 
 And then to run you will need:
