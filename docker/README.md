@@ -27,7 +27,7 @@ docker run -it --rm -v "$(pwd)":/home pactfoundation:python311 sh
 ```
 
 This will open a container with a prompt. From the `/home` location in the
-container you can run:
+container you can run the same tests manually:
 
 ```bash
 tox -e py311-{test,install}
