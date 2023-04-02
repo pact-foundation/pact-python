@@ -14,7 +14,7 @@ project and run:
 docker build -t pactfoundation:python311 -f docker/py311.Dockerfile .
 ```
 
-And then to run you will need:
+To then run the tests and exit, you will need:
 
 ```bash
 docker run -it --rm -v "$(pwd)":/home pactfoundation:python311
