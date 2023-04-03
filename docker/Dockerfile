@@ -1,4 +1,6 @@
-FROM python:3.10-alpine3.17
+ARG PY
+ARG ALPINE=3.17
+FROM python:${PY}-alpine${ALPINE}
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
@@ -13,4 +15,7 @@ RUN apk update \
     && pip install --progress-bar=off --upgrade psutil \
     && pip install --progress-bar=off --use-pep517 -r requirements_dev.txt
 
-CMD ["tox", "-e", "py310-{test,install}"]
+# We can't do ENV manipulation to remove the . for tox, so need another var
+ARG TOXPY
+ENV TOXPY="${TOXPY}"
+CMD ["sh", "-c", "tox -e py${TOXPY}-{test,install}"]
