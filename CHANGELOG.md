@@ -1,5 +1,4 @@
 ### 1.7.0
-  * 9c1132e - Merge pull request #325 from pact-foundation/pactflow_camelcase (Yousaf Nabi, Fri Jan 27 12:29:59 2023 +0000)
   * 44cda33 - chore: /s/Pactflow/PactFlow (Yousaf Nabi, Thu Jan 26 16:11:54 2023 +0000)
   * 1bbdd37 - feat: Enhance provider states for pact-message (#322) (nsfrias, Tue Jan 24 17:04:29 2023 +0000)
   * 53ca129 - chore: add workflow to create a jira issue for pactflow team when smartbear-supported label added to github issue (Beth Skurrie, Wed Jan 18 10:51:05 2023 +1100)

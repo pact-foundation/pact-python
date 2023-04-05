@@ -18,7 +18,8 @@ mv tmp-version pact/__version__.py
 
 echo "Releasing $TAG_NAME"
 
-echo -e "`git log --pretty=format:'  * %h - %s (%an, %ad)' $LAST_TAG..HEAD`\n$(cat CHANGELOG.md)" > CHANGELOG.md
+LOG_ENTRIES="$(git log --pretty=format:'  * %h - %s (%an, %ad)' $LAST_TAG..HEAD | grep -v 'Merge pull request')"
+echo -e "${LOG_ENTRIES}\n$(cat CHANGELOG.md)" > CHANGELOG.md
 echo -e "### $VERSION\n$(cat CHANGELOG.md)" > CHANGELOG.md
 
 echo "Appended Changelog to $VERSION"
