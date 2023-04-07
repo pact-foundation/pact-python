@@ -1,14 +1,14 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
 
-import json
+import simplejson as json
 import os
 from subprocess import Popen
 
 from .broker import Broker
 from .constants import MESSAGE_PATH
 from .matchers import from_term
-from .decimal_encoder import DecimalEncoder
+
 
 class MessagePact(Broker):
     """
@@ -172,7 +172,7 @@ class MessagePact(Broker):
         command = [
             MESSAGE_PATH,
             "update",
-            json.dumps(self._messages[0], cls=DecimalEncoder),
+            json.dumps(self._messages[0]),
             "--pact-dir", self.pact_dir,
             f"--pact-specification-version={self.version}",
             "--consumer", f"{self.consumer.name}",
