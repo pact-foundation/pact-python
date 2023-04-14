@@ -214,6 +214,8 @@ class Pact(Broker):
             command.extend(['--sslcert', self.sslcert])
         if self.sslkey:
             command.extend(['--sslkey', self.sslkey])
+        if self.cors:
+            command.extend(['--cors'])
 
         self._process = Popen(command)
         self._wait_for_server_start()
