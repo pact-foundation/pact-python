@@ -15,11 +15,12 @@ from distutils.command.sdist import sdist as sdist_orig
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '1.88.83'
-PACT_STANDALONE_SUFFIXES = ['osx.tar.gz',
+PACT_STANDALONE_VERSION = '3.1.2.2-alpha'
+PACT_STANDALONE_SUFFIXES = ['osx-x86_64.tar.gz',
+                            'osx-arm64.tar.gz',
                             'linux-x86_64.tar.gz',
-                            'linux-x86.tar.gz',
-                            'win32.zip']
+                            'linux-arm64.tar.gz',
+                            'windows-x86_64.zip']
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -131,13 +132,14 @@ def ruby_app_binary():
     target_platform = platform.platform().lower()
 
     binary = ('pact-{version}-{suffix}')
-
-    if 'darwin' in target_platform or 'macos' in target_platform:
-        suffix = 'osx.tar.gz'
-    elif 'linux' in target_platform and IS_64:
-        suffix = 'linux-x86_64.tar.gz'
+    if ("darwin" in target_platform or "macos" in target_platform) and ("aarch64" in platform.machine() or "arm64" in platform.machine()):
+        suffix = 'osx-arm64.tar.gz'
+    elif ("darwin" in target_platform or "macos" in target_platform) and IS_64:
+        suffix = 'osx-x86_64.tar.gz'
+    elif 'linux' in target_platform and IS_64 and "aarch64" in platform.machine():
+        suffix = 'linux-arm64.tar.gz'
     elif 'linux' in target_platform:
-        suffix = 'linux-x86.tar.gz'
+        suffix = 'linux-x86_64.tar.gz'
     elif 'windows' in target_platform:
         suffix = 'win32.zip'
     else:
@@ -157,7 +159,7 @@ def download_ruby_app_binary(path_to_download_to, filename, suffix):
     :param filename: The filename that should be installed.
     :param suffix: The suffix of the standalone app to install.
     """
-    uri = ('https://github.com/pact-foundation/pact-ruby-standalone/releases'
+    uri = ('https://github.com/you54f/pact-ruby-standalone/releases'
            '/download/v{version}/pact-{version}-{suffix}')
 
     if sys.version_info.major == 2:
