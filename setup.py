@@ -20,7 +20,9 @@ PACT_STANDALONE_SUFFIXES = ['osx-x86_64.tar.gz',
                             'osx-arm64.tar.gz',
                             'linux-x86_64.tar.gz',
                             'linux-arm64.tar.gz',
-                            'windows-x86_64.zip']
+                            'windows-x86_64.zip',
+                            'windows-x86.zip',
+                            ]
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -140,8 +142,10 @@ def ruby_app_binary():
         suffix = 'linux-arm64.tar.gz'
     elif 'linux' in target_platform:
         suffix = 'linux-x86_64.tar.gz'
+    elif 'windows' in target_platform and IS_64:
+        suffix = 'windows-x86_64.zip'
     elif 'windows' in target_platform:
-        suffix = 'win32.zip'
+        suffix = 'windows-x86.zip'
     else:
         msg = ('Unfortunately, {} is not a supported platform. Only Linux,'
                ' Windows, and OSX are currently supported.').format(
