@@ -257,23 +257,25 @@ Often times, you find yourself having to re-write regular expressions for common
 ```python
 from pact import Format
 Format().integer  # Matches if the value is an integer
-Format().ip_address  # Matches if the value is a ip address
+Format().ip_address  # Matches if the value is an ip address
 ```
 
 We've created a number of them for you to save you the time:
 
-| matcher          | description                                                                                     |
-|-----------------|-------------------------------------------------------------------------------------------------|
-| `identifier`  | Match an ID (e.g. 42)                                                                           |
-| `integer`     | Match all numbers that are integers (both ints and longs)                                       |
-| `decimal`     | Match all real numbers (floating point and decimal)                                             |
-| `hexadecimal`    | Match all hexadecimal encoded strings                                                           |
-| `date`        | Match string containing basic ISO8601 dates (e.g. 2016-01-01)                                   |
-| `timestamp`   | Match a string containing an RFC3339 formatted timestapm (e.g. Mon, 31 Oct 2016 15:21:41 -0400) |
-| `time`        | Match string containing times in ISO date format (e.g. T22:44:30.652Z)                          |
-| `ip_address` | Match string containing IP4 formatted address                                                   |
-| `ipv6_address` | Match string containing IP6 formatted address                                                   |
-| `uuid`        | Match strings containing UUIDs                                                                  |
+| matcher           | description                                                                                                             |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `identifier`      | Match an ID (e.g. 42)                                                                                                   |
+| `integer`         | Match all numbers that are integers (both ints and longs)                                                               |
+| `decimal`         | Match all real numbers (floating point and decimal)                                                                     |
+| `hexadecimal`     | Match all hexadecimal encoded strings                                                                                   |
+| `date`            | Match string containing basic ISO8601 dates (e.g. 2016-01-01)                                                           |
+| `timestamp`       | Match a string containing an RFC3339 formatted timestamp (e.g. Mon, 31 Oct 2016 15:21:41 -0400)                         |
+| `time`            | Match string containing times in ISO date format (e.g. T22:44:30.652Z)                                                  |
+| `iso_datetime`    | Match string containing ISO 8601 formatted dates (e.g. 2015-08-06T16:53:10+01:00)                                       |
+| `iso_datetime_ms` | Match string containing ISO 8601 formatted dates, enforcing millisecond precision (e.g. 2015-08-06T16:53:10.123+01:00)  |
+| `ip_address`      | Match string containing IP4 formatted address                                                                           |
+| `ipv6_address`    | Match string containing IP6 formatted address                                                                           |
+| `uuid`            | Match strings containing UUIDs                                                                                          |
 
 These can be used to replace other matchers
 
