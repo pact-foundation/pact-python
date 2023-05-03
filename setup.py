@@ -227,7 +227,10 @@ dependencies = [
     'psutil>=5.9.4',
     'six>=1.16.0',
     'fastapi>=0.67.0',
-    'urllib3>=1.26.12',
+    # TODO: sort out with the broken tests before change urllib3 upper version
+    # For the migration guide see:
+    # https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html
+    'urllib3>=1.26.12,<2',
 ]
 
 if sys.version_info < (3, 7):

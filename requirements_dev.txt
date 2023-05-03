@@ -15,7 +15,25 @@ pytest==7.1.3; python_version >= '3.7'
 pytest-cov==2.11.1
 requests==2.27.1; python_version < '3.7'
 requests>=2.28.0; python_version >= '3.7'
-urllib3>=1.26.12
+# TODO: It seems requests-2.30.0 (wich uses urllib3 2.0 by default) broke our
+#       examples. I'll sort out with this a bit later.
+#
+# 1. docker.api.client.APIClient:_retrieve_server_version()
+# 2. docker/api/client.py:version()
+# 3. docker/api/daemon.py:inner()
+# 4. docker/utils/decorators.py:_get()
+# 5. docker/api/client.py:get()
+# 6. requests/sessions.py:request()
+# 7. requests/sessions.py:send()
+# 8. requests/adapters.py:urlopen() <- calls _make_request() with 'chunked' param
+# 9. urllib3/connectionpool.py:_make_request() <- TypeError: request() got an unexpected keyword argument 'chunked'
+#
+# For more see:
+# https://github.com/pact-foundation/pact-python/actions/runs/4874690954/jobs/8696170180?pr=334
+#
+# For the migration guide see:
+# https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html
+urllib3>=1.26.12,<2
 uvicorn==0.16.0; python_version < '3.7'
 uvicorn>=0.19.0; python_version >= '3.7'
 wheel==0.37.1; python_version < '3.7'
