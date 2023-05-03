@@ -485,13 +485,26 @@ assert success == 0
 ```
 
 The parameters for this differ slightly in naming from their CLI equivalents:
-| CLI        |      native Python                      |
+| CLI        |      native Python                      | notes |
 |-----------------|-------------------------------------------------------------------------------------------------|
-| `consumer_tags`  | `consumer-version-tag`                                     |
-| `provider_tags`  | `provider-version-tag`                                     |
-| `custom-provider-header`  | `headers`                                     |
+| `--log-dir`  | `log_dir`                                     ||
+| `--log-level`  | `log_level`                                     ||
+| `--provider-app-version`  | `provider_app_version`                                     ||
+| `--headers`  | `custom_provider_headers`                                     ||
+| `--consumer-version-tag`  | `consumer_tags`                                     ||
+| `--provider-version-tag`  | `provider_tags`                                     ||
+| `--provider-states-setup-url`  | `provider_states_setup_url`                                     ||
+| `--verbose`  | `verbose`                                     ||
+| `--consumer-version-selector`  | `consumer_selectors` | takes an untyped dict of consumer version selectors and converts to json |
+| `--publish-verification-results`  | `publish_verification_results`                                     | recommended only to set in CI |
+| `--provider-version-branch`  | `provider_version_branch`                                     | recommended to set |
 
-You can see more details in the [e2e examples](https://github.com/pact-foundation/pact-python/tree/master/examples/e2e/tests/provider/test_provider.py).
+
+You can see more details in the examples
+
+- [`examples/message/tests/provider/test_message_provider.py`](`examples/message/tests/provider/test_message_provider.py`)
+- [`examples/flask_provider/tests/provider/test_provider.py`](`examples/flask_provider/tests/provider/test_provider.py`)
+- [`examples/fastapi_provider/tests/provider/test_provider.py`](`examples/fastapi_provider/tests/provider/test_provider.py`)
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
