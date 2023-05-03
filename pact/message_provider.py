@@ -125,7 +125,7 @@ class MessageProvider(object):
         """Use Broker to verify.
 
         :param pacts: List of pact to verify. Every pact in that list can be
-            an HTTP URI or a local file.
+            an HTTP URI.
         :type pacts: str
         :param enable_pending: Allow pacts which are in pending state to be
             verified without causing the overall task to fail.
