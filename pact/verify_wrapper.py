@@ -36,6 +36,7 @@ def path_exists(path):
 
     return isfile(path)
 
+
 def sanitize_logs(process, verbose):
     """
     Print the logs from a process while removing Ruby stack traces.
@@ -52,6 +53,7 @@ def sanitize_logs(process, verbose):
             continue
         else:
             sys.stdout.write(line)
+
 
 def expand_directories(paths):
     """
@@ -84,7 +86,6 @@ def rerun_command():
     :rtype: str
     """
     is_windows = 'windows' in platform.platform().lower()
-    command = ''
     if is_windows:
         command = (
             'cmd.exe /v /c "'
@@ -101,6 +102,7 @@ def rerun_command():
     env = os.environ.copy()
     env['PACT_INTERACTION_RERUN_COMMAND'] = command
     return env
+
 
 class PactException(Exception):
     """PactException when input isn't valid.
@@ -122,13 +124,12 @@ class PactException(Exception):
         super().__init__(*args, **kwargs)
         self.message = args[0]
 
+
 class VerifyWrapper(object):
     """A Pact Verifier Wrapper."""
 
     def _broker_present(self, **kwargs):
-        if kwargs.get('broker_url') is None:
-            return False
-        return True
+        return kwargs.get('broker_url') is not None
 
     def _validate_input(self, pacts, **kwargs):
         if len(pacts) == 0 and not self._broker_present(**kwargs):
@@ -163,14 +164,14 @@ class VerifyWrapper(object):
         command.extend(all_pact_urls)
         command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
-        if (provider_app_version):
+        if provider_app_version:
             command.extend(["--provider-app-version",
                             provider_app_version])
 
-        if (kwargs.get('publish_verification_results', False) is True):
+        if kwargs.get('publish_verification_results', False) is True:
             command.extend(['--publish-verification-results'])
 
-        if (kwargs.get('verbose', False) is True):
+        if kwargs.get('verbose', False) is True:
             command.extend(['--verbose'])
 
         if enable_pending:
