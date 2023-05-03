@@ -486,7 +486,7 @@ assert success == 0
 
 The parameters for this differ slightly in naming from their CLI equivalents:
 | CLI        |      native Python                      | notes |
-|-----------------|-------------------------------------------------------------------------------------------------|
+|-----------------|-------------------------------------------------------------------------------------------------|----|
 | `--log-dir`  | `log_dir`                                     ||
 | `--log-level`  | `log_level`                                     ||
 | `--provider-app-version`  | `provider_app_version`                                     ||
@@ -502,9 +502,9 @@ The parameters for this differ slightly in naming from their CLI equivalents:
 
 You can see more details in the examples
 
-- [`examples/message/tests/provider/test_message_provider.py`](`examples/message/tests/provider/test_message_provider.py`)
-- [`examples/flask_provider/tests/provider/test_provider.py`](`examples/flask_provider/tests/provider/test_provider.py`)
-- [`examples/fastapi_provider/tests/provider/test_provider.py`](`examples/fastapi_provider/tests/provider/test_provider.py`)
+- [`examples/message/tests/provider/test_message_provider.py`](examples/message/tests/provider/test_message_provider.py)
+- [`examples/flask_provider/tests/provider/test_provider.py`](examples/flask_provider/tests/provider/test_provider.py)
+- [`examples/fastapi_provider/tests/provider/test_provider.py`](examples/fastapi_provider/tests/provider/test_provider.py)
 
 ### Provider States
 In many cases, your contracts will need very specific data to exist on the provider
