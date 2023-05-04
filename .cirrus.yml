@@ -49,7 +49,3 @@ macosx_arm64_task:
   ## To install rosetta
     # - softwareupdate --install-rosetta --agree-to-license
   << : *BUILD_TEST_TASK_TEMPLATE
-
-
-
-
