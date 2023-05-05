@@ -31,7 +31,7 @@ macosx_arm64_task:
   env:
     PATH: ${HOME}/.pyenv/shims:${PATH}
     matrix:
-      # - PYTHON: 3.6 # This works locally, with cirrus run, but fails in CI
+      - PYTHON: 3.6
       - PYTHON: 3.7
       - PYTHON: 3.8
       - PYTHON: 3.9
