@@ -15,7 +15,7 @@ from distutils.command.sdist import sdist as sdist_orig
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '2.0.0'
+PACT_STANDALONE_VERSION = '3.1.2.2-alpha'
 PACT_STANDALONE_SUFFIXES = ['osx-x86_64.tar.gz',
                             'osx-arm64.tar.gz',
                             'linux-x86_64.tar.gz',
@@ -163,7 +163,7 @@ def download_ruby_app_binary(path_to_download_to, filename, suffix):
     :param filename: The filename that should be installed.
     :param suffix: The suffix of the standalone app to install.
     """
-    uri = ('https://github.com/pact-foundation/pact-ruby-standalone/releases'
+    uri = ('https://github.com/you54f/pact-ruby-standalone/releases'
            '/download/v{version}/pact-{version}-{suffix}')
 
     if sys.version_info.major == 2:
