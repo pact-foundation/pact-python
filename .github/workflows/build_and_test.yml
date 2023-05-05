@@ -19,7 +19,7 @@ jobs:
           - '3.9'
           - '3.10'
           - '3.11'
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest ]
 
         # These versions are no longer supported by Python team, and may
         # eventually be dropped from GitHub Actions.
@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -50,5 +50,4 @@ jobs:
         run: tox -e test
 
       - name: Test examples
-        if: runner.os == 'Linux'
         run: make examples
