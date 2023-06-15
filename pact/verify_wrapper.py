@@ -8,7 +8,24 @@ import platform
 import subprocess
 from os.path import isdir, join, isfile
 from os import listdir
+from urllib.parse import urlparse
 
+
+def is_url(path):
+    """Determine if a string is a valid url.
+
+    Can be provided a URL or local path. URLs always result in a True.
+
+    :param path: The path to check.
+    :type path: str
+    :return: True if url otherwise False.
+    :rtype: bool
+    """
+    try:
+        result = urlparse(path)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
 
 def capture_logs(process, verbose):
     """Capture logs from ruby process."""
@@ -134,7 +151,7 @@ class VerifyWrapper(object):
         if len(pacts) == 0 and not self._broker_present(**kwargs):
             raise PactException('Pact urls or Pact broker required')
 
-    def call_verify(
+    def call_verify( # noqa: max-complexity: 15
             self, *pacts, provider_base_url, provider, enable_pending=False,
             include_wip_pacts_since=None, **kwargs
     ):
@@ -145,6 +162,7 @@ class VerifyWrapper(object):
 
         provider_app_version = kwargs.get('provider_app_version')
         provider_version_branch = kwargs.get('provider_version_branch')
+        publish_verification_results = kwargs.get('publish_verification_results', False)
         options = {
             '--provider-base-url': provider_base_url,
             '--provider': provider,
@@ -159,28 +177,25 @@ class VerifyWrapper(object):
 
         command = [VERIFIER_PATH]
         all_pact_urls = expand_directories(list(pacts))
+        local_file = False
+        for pact_url in all_pact_urls:
+            if not is_url(pact_url):
+                local_file = True
 
         command.extend(all_pact_urls)
         command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
-        if (provider_app_version):
-            command.extend(["--provider-app-version",
-                            provider_app_version])
+        if (publish_verification_results is True) and local_file:
+            raise PactException('Cannot publish verification results for local files')
 
-        if (kwargs.get('publish_verification_results', False) is True):
+        if (provider_app_version):
+            command.extend(["--provider-app-version", provider_app_version])
+
+        if (publish_verification_results is True) and not local_file:
             command.extend(['--publish-verification-results'])
 
         if (kwargs.get('verbose', False) is True):
             command.extend(['--verbose'])
-
-        if enable_pending:
-            command.append('--enable-pending')
-
-        else:
-            command.append('--no-enable-pending')
-
-        if include_wip_pacts_since:
-            command.extend(['--include-wip-pacts-since={}'.format(include_wip_pacts_since)])
 
         if provider_version_branch:
             command.extend(["--provider-version-branch={}".format(provider_version_branch)])
@@ -188,12 +203,20 @@ class VerifyWrapper(object):
         headers = kwargs.get('custom_provider_headers', [])
         for header in headers:
             command.extend(['{}={}'.format('--custom-provider-header', header)])
-        for tag in kwargs.get('consumer_tags', []):
-            command.extend(["--consumer-version-tag={}".format(tag)])
-        for tag in kwargs.get('consumer_selectors', []):
-            command.extend(["--consumer-version-selector={}".format(tag)])
-        for tag in kwargs.get('provider_tags', []):
-            command.extend(["--provider-version-tag={}".format(tag)])
+
+        if not all_pact_urls:
+            if enable_pending:
+                command.append('--enable-pending')
+            else:
+                command.append('--no-enable-pending')
+            if include_wip_pacts_since:
+                command.extend(['--include-wip-pacts-since={}'.format(include_wip_pacts_since)])
+            for tag in kwargs.get('provider_tags', []):
+                command.extend(["--provider-version-tag={}".format(tag)])
+            for tag in kwargs.get('consumer_selectors', []):
+                command.extend(["--consumer-version-selector={}".format(tag)])
+            for tag in kwargs.get('consumer_tags', []):
+                command.extend(["--consumer-version-tag={}".format(tag)])
 
         env = rerun_command()
         result = subprocess.Popen(command, bufsize=1, env=env, stdout=subprocess.PIPE,

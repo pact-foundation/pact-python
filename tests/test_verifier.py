@@ -75,7 +75,8 @@ class VerifierPactsTestCase(TestCase):
                            consumer_selectors=['{"tag": "main", "latest": true}',
                                                '{"tag": "test", "latest": false}'])
 
-    def test_validate_on_publish_results(self):
+    @patch('pact.verifier.path_exists', return_value=True)
+    def test_validate_on_publish_results_without_version(self, mock_path_exists):
         self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
@@ -163,6 +164,7 @@ class VerifierBrokerTestCase(TestCase):
 
         self.assertTrue(output)
         assertVerifyCalled(mock_wrapper,
+                           pacts=None,
                            provider='test_provider',
                            provider_base_url='http://localhost:8888',
                            broker_password=self.broker_password,
@@ -184,6 +186,7 @@ class VerifierBrokerTestCase(TestCase):
 
         self.assertTrue(output)
         assertVerifyCalled(mock_wrapper,
+                           pacts=None,
                            provider='test_provider',
                            provider_base_url='http://localhost:8888',
                            broker_password=self.broker_password,
@@ -213,6 +216,7 @@ class VerifierBrokerTestCase(TestCase):
 
         self.assertTrue(output)
         assertVerifyCalled(mock_wrapper,
+                           pacts=None,
                            provider='test_provider',
                            provider_base_url='http://localhost:8888',
                            broker_password=self.broker_password,
@@ -233,7 +237,9 @@ class VerifierBrokerTestCase(TestCase):
 
         self.verifier.verify_with_broker(publish_version='1.0.0', **self.default_opts)
 
-        assertVerifyCalled(mock_wrapper,
+        assertVerifyCalled(
+                           mock_wrapper,
+                           pacts=None,
                            provider='test_provider',
                            provider_base_url='http://localhost:8888',
                            broker_password=self.broker_password,

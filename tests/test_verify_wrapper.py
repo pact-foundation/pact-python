@@ -38,9 +38,9 @@ class VerifyWrapperTestCase(TestCase):
             verify_wrapper, 'rerun_command', autospec=True).start()
 
         self.default_call = [
-            './pacts/consumer-provider.json',
-            './pacts/consumer-provider2.json',
-            '--no-enable-pending',
+            # './pacts/consumer-provider.json',
+            # './pacts/consumer-provider2.json',
+            # '--no-enable-pending',
             '--provider=test_provider',
             '--provider-base-url=http://localhost']
 
@@ -63,6 +63,7 @@ class VerifyWrapperTestCase(TestCase):
         process_call = self.mock_Popen.mock_calls[0]
 
         actual = process_call[1][0]
+        print(actual)
         self.assertEqual(actual[0], VERIFIER_PATH)
         self.assertEqual(len(actual), len(expected) + 1)
         self.assertEqual(set(actual[1:]), set(expected))
@@ -94,7 +95,7 @@ class VerifyWrapperTestCase(TestCase):
             '--provider=provider',
         ])
 
-    def test_pact_urls_provided(self):
+    def test_pact_files_provided(self):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
@@ -102,6 +103,21 @@ class VerifyWrapperTestCase(TestCase):
                                              './pacts/consumer-provider2.json',
                                              provider='test_provider',
                                              provider_base_url='http://localhost')
+        self.default_call.insert(0, './pacts/consumer-provider.json')
+        self.default_call.insert(1, './pacts/consumer-provider2.json')
+        self.assertProcess(*self.default_call)
+        self.assertEqual(result, 0)
+
+    def test_pact_urls_provided(self):
+        self.mock_Popen.return_value.returncode = 0
+        wrapper = VerifyWrapper()
+
+        result, output = wrapper.call_verify('http://broker.com/pacts/consumer-provider.json',
+                                             'http://broker.com/pacts/consumer-provider2.json',
+                                             provider='test_provider',
+                                             provider_base_url='http://localhost')
+        self.default_call.insert(0, 'http://broker.com/pacts/consumer-provider.json')
+        self.default_call.insert(1, 'http://broker.com/pacts/consumer-provider2.json')
 
         self.assertProcess(*self.default_call)
         self.assertEqual(result, 0)
@@ -140,8 +156,8 @@ class VerifyWrapperTestCase(TestCase):
             '--log-dir=tmp/logs/pact.test.log',
             '--log-level=INFO',
             '--verbose',
-            '--enable-pending',
-            '--include-wip-pacts-since=2018-01-01',
+            # '--enable-pending',
+            # '--include-wip-pacts-since=2018-01-01',
         )
 
     def test_uses_broker_if_no_pacts_and_provider_required(self):
@@ -193,19 +209,35 @@ class VerifyWrapperTestCase(TestCase):
 
     @patch('pact.verify_wrapper.path_exists', return_value=True)
     @patch('pact.verify_wrapper.sanitize_logs')
-    def test_publishing_with_version(self, mock_sanitize_logs, mock_path_exists):
+    def test_publishing_with_local_file(self, mock_sanitize_logs, mock_path_exists):
         self.mock_Popen.return_value.returncode = 0
         wrapper = VerifyWrapper()
 
-        result, output = wrapper.call_verify('./pacts/consumer-provider.json',
-                                             './pacts/consumer-provider2.json',
+        with self.assertRaises(PactException) as context:
+            wrapper.call_verify('./pacts/consumer-provider.json',
+                                './pacts/consumer-provider2.json',
+                                provider='test_provider',
+                                provider_base_url='http://localhost',
+                                provider_app_version='1.2.3',
+                                publish_verification_results=True)
+
+        self.assertTrue('Cannot publish verification results for local files' in context.exception.message)
+
+    @patch('pact.verify_wrapper.sanitize_logs')
+    def test_publishing_with_version(self, mock_sanitize_logs):
+        self.mock_Popen.return_value.returncode = 0
+        wrapper = VerifyWrapper()
+
+        result, output = wrapper.call_verify('http://broker.com/pacts/consumer-provider.json',
+                                             'http://broker.com/pacts/consumer-provider2.json',
                                              provider='test_provider',
                                              provider_base_url='http://localhost',
                                              provider_app_version='1.2.3',
                                              publish_verification_results=True)
 
+        self.default_call.insert(0, 'http://broker.com/pacts/consumer-provider.json')
+        self.default_call.insert(1, 'http://broker.com/pacts/consumer-provider2.json')
         self.default_call.extend(['--provider-app-version', '1.2.3', '--publish-verification-results'])
-
         self.assertProcess(*self.default_call)
         self.assertEqual(result, 0)
 

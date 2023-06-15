@@ -59,7 +59,7 @@ class Verifier(object):
 
         return success, logs
 
-    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_with_broker(self, pacts=None, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
 
         Args:
@@ -69,6 +69,7 @@ class Verifier(object):
             enable_pending ([Boolean])
             include_wip_pacts_since ([String])
             publish_version ([String])
+            pacts ([String])
 
         """
         broker_username = kwargs.get('broker_username', None)
@@ -84,7 +85,8 @@ class Verifier(object):
         }
         options.update(self.extract_params(**kwargs))
 
-        success, logs = VerifyWrapper().call_verify(provider=self.provider,
+        success, logs = VerifyWrapper().call_verify(pacts=pacts,
+                                                    provider=self.provider,
                                                     provider_base_url=self.provider_base_url,
                                                     enable_pending=enable_pending,
                                                     include_wip_pacts_since=include_wip_pacts_since,
