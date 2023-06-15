@@ -1,3 +1,4 @@
+import platform
 import pathlib
 
 import docker
@@ -64,6 +65,9 @@ def publish_existing_pact(broker):
         "PACT_BROKER_USERNAME": "pactbroker",
         "PACT_BROKER_PASSWORD": "pactbroker",
     }
+
+    if platform.platform().lower() != "linux":
+        envs["PACT_BROKER_BASE_URL"] = "http://host.docker.internal:9292"
 
     client = docker.from_env()
 
