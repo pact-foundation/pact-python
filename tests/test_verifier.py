@@ -237,8 +237,7 @@ class VerifierBrokerTestCase(TestCase):
 
         self.verifier.verify_with_broker(publish_version='1.0.0', **self.default_opts)
 
-        assertVerifyCalled(
-                           mock_wrapper,
+        assertVerifyCalled(mock_wrapper,
                            pacts=None,
                            provider='test_provider',
                            provider_base_url='http://localhost:8888',
