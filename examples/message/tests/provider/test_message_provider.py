@@ -75,8 +75,6 @@ def test_verify_from_broker(default_opts):
         },
         provider='ContentProvider',
         consumer='DetectContentLambda',
-        pact_dir='pacts'
-
     )
 
     with provider:

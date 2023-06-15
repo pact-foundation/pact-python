@@ -157,8 +157,8 @@ class VerifyWrapper(object):
     ):
         """Call verify method."""
         verbose = kwargs.get('verbose', False)
-
-        self._validate_input(pacts, **kwargs)
+        # if pacts:
+        #     self._validate_input(pacts, **kwargs)
 
         provider_app_version = kwargs.get('provider_app_version')
         provider_version_branch = kwargs.get('provider_version_branch')
@@ -176,14 +176,20 @@ class VerifyWrapper(object):
         }
 
         command = [VERIFIER_PATH]
-        all_pact_urls = expand_directories(list(pacts))
         local_file = False
-        for pact_url in all_pact_urls:
-            if not is_url(pact_url):
-                local_file = True
+        all_pact_urls = False
+        if pacts:
+            all_pact_urls = expand_directories(list(pacts))
+            for pact_url in all_pact_urls:
+                if not is_url(pact_url):
+                    local_file = True
 
-        command.extend(all_pact_urls)
+            command.extend(all_pact_urls)
+
         command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
+
+        if not all_pact_urls and not kwargs.get('broker_url', None):
+            raise PactException('Pact urls or Pact broker required')
 
         if (publish_verification_results is True) and local_file:
             raise PactException('Cannot publish verification results for local files')

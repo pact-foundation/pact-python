@@ -115,22 +115,22 @@ class MessageProvider(object):
         return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
-    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_with_broker(self, pacts=None, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
 
         Args:
             broker_username ([String]): broker username
             broker_password ([String]): broker password
             broker_url ([String]): url of broker
-            enable_pending ([Boolean])
-            include_wip_pacts_since ([String])
-            publish_version ([String])
-
+            enable_pending ([Boolean]): enable pending pacts
+            include_wip_pacts_since ([String]): include wip pacts since
+            publish_version ([String]): publish version
+            pacts ([String]): pacts to verify
         """
         verifier = Verifier(provider=self.provider,
                             provider_base_url=self._proxy_url())
 
-        return_code, _ = verifier.verify_with_broker(enable_pending, include_wip_pacts_since, **kwargs)
+        return_code, _ = verifier.verify_with_broker(pacts=pacts, enable_pending=enable_pending, include_wip_pacts_since=include_wip_pacts_since, **kwargs)
 
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 

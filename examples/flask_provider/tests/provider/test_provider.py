@@ -82,7 +82,7 @@ def test_user_service_provider_against_pact():
 
     assert output == 0
 
-def test_user_service_provider_against_pact_url():
+def test_user_service_provider_against_pact_url(broker_opts):
     verifier = Verifier(provider="UserService", provider_base_url=PROVIDER_URL)
 
     # Rather than requesting the Pact interactions from the Pact Broker, this
@@ -92,8 +92,8 @@ def test_user_service_provider_against_pact_url():
     # if it has been successful in the past (since this is what the Pact Broker
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
-    output, _ = verifier.verify_pacts(
-        "http://localhost/pacts/userserviceclient-userservice.json",
+    output, _ = verifier.verify_with_broker(
+        "http://localhost/pacts/provider/UserService/consumer/UserServiceClient/latest",
         **broker_opts,
         verbose=False,
         provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
