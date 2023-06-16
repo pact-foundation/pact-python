@@ -24,9 +24,12 @@ class VerifierPactsTestCase(TestCase):
                                  provider_base_url="http://localhost:8888")
 
         self.mock_wrapper = patch.object(
-            VerifyWrapper, 'call_verify').start()
+            VerifyWrapper, 'verify').start()
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    def test_version(self):
+        self.assertEqual(self.verifier.version(), "0.0.0")
+
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch('pact.verifier.path_exists', return_value=True)
     def test_verifier_with_provider_and_files(self, mock_path_exists, mock_wrapper):
         mock_wrapper.return_value = (True, 'some logs')
@@ -46,7 +49,7 @@ class VerifierPactsTestCase(TestCase):
                            enable_pending=False,
                            include_wip_pacts_since=None)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch('pact.verifier.path_exists', return_value=True)
     def test_verifier_with_provider_and_files_passes_consumer_selctors(self, mock_path_exists, mock_wrapper):
         mock_wrapper.return_value = (True, 'some logs')
@@ -79,7 +82,7 @@ class VerifierPactsTestCase(TestCase):
     def test_validate_on_publish_results_without_version(self, mock_path_exists):
         self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch('pact.verifier.path_exists', return_value=True)
     def test_publish_on_success(self, mock_path_exists, mock_wrapper):
         mock_wrapper.return_value = (True, 'some logs')
@@ -104,7 +107,7 @@ class VerifierPactsTestCase(TestCase):
 
         mock_path_exists.assert_called_with('path/to/pact2')
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify", return_value=(0, None))
+    @patch("pact.verify_wrapper.VerifyWrapper.verify", return_value=(0, None))
     @patch('pact.verifier.expand_directories', return_value=['./pacts/pact1', './pacts/pact2'])
     @patch('pact.verifier.path_exists', return_value=True)
     def test_expand_directories_called_for_pacts(self, mock_path_exists, mock_expand_dir, mock_wrapper):
@@ -113,7 +116,7 @@ class VerifierPactsTestCase(TestCase):
 
         mock_expand_dir.assert_called_once()
 
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    @patch('pact.verify_wrapper.VerifyWrapper.verify', return_value=(0, None))
     def test_passes_enable_pending_flag_value(self, mock_wrapper):
         for value in (True, False):
             with self.subTest(value=value):
@@ -124,7 +127,7 @@ class VerifierPactsTestCase(TestCase):
                     mock_wrapper.call_args.kwargs,
                 )
 
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    @patch('pact.verify_wrapper.VerifyWrapper.verify', return_value=(0, None))
     @patch('pact.verifier.path_exists', return_value=True)
     def test_passes_include_wip_pacts_since_value(self, mock_path_exists, mock_wrapper):
         self.verifier.verify_pacts('any.json', include_wip_pacts_since='2018-01-01')
@@ -143,7 +146,7 @@ class VerifierBrokerTestCase(TestCase):
                                  provider_base_url="http://localhost:8888")
 
         self.mock_wrapper = patch.object(
-            VerifyWrapper, 'call_verify').start()
+            VerifyWrapper, 'verify').start()
         self.broker_username = 'broker_username'
         self.broker_password = 'broker_password'
         self.broker_url = 'http://broker'
@@ -155,7 +158,7 @@ class VerifierBrokerTestCase(TestCase):
             'broker_token': 'token'
         }
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     def test_verifier_with_broker(self, mock_wrapper):
 
         mock_wrapper.return_value = (True, 'some value')
@@ -176,7 +179,7 @@ class VerifierBrokerTestCase(TestCase):
                            enable_pending=False,
                            include_wip_pacts_since=None)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     def test_verifier_and_pubish_with_broker(self, mock_wrapper):
 
         mock_wrapper.return_value = (True, 'some value')
@@ -200,7 +203,7 @@ class VerifierBrokerTestCase(TestCase):
                            provider_app_version='1.0.0',
                            )
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     def test_verifier_with_broker_passes_consumer_selctors(self, mock_wrapper):
 
         mock_wrapper.return_value = (True, 'some value')
@@ -230,7 +233,7 @@ class VerifierBrokerTestCase(TestCase):
                            consumer_selectors=['{"tag": "main", "latest": true}',
                                                '{"tag": "test", "latest": false}'])
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
+    @patch("pact.verify_wrapper.VerifyWrapper.verify")
     @patch('pact.verifier.path_exists', return_value=True)
     def test_publish_on_success(self, mock_path_exists, mock_wrapper):
         mock_wrapper.return_value = (True, 'some logs')
@@ -251,7 +254,7 @@ class VerifierBrokerTestCase(TestCase):
                            enable_pending=False,
                            include_wip_pacts_since=None)
 
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    @patch('pact.verify_wrapper.VerifyWrapper.verify', return_value=(0, None))
     def test_passes_enable_pending_flag_value(self, mock_wrapper):
         for value in (True, False):
             with self.subTest(value=value):
@@ -262,7 +265,7 @@ class VerifierBrokerTestCase(TestCase):
                     mock_wrapper.call_args.kwargs,
                 )
 
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
+    @patch('pact.verify_wrapper.VerifyWrapper.verify', return_value=(0, None))
     @patch('pact.verifier.path_exists', return_value=True)
     def test_passes_include_wip_pacts_since_value(self, mock_path_exists, mock_wrapper):
         self.verifier.verify_with_broker(include_wip_pacts_since='2018-01-01')

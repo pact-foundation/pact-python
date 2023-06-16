@@ -17,17 +17,19 @@ Note: As of Version 1.0 deprecates support for python 2.7 to allow us to incorpo
 # How to use pact-python
 
 ## Installation
+
 ```
 pip install pact-python
 ```
 
 ## Getting started
+
 <!-- Absolute link for rendering page in docs.pact.io -->
 A guide follows but if you go to the [examples](https://github.com/pact-foundation/pact-python/tree/master/examples). This has a consumer, provider and pact-broker set of tests for both FastAPI and Flask.
 
 ## Writing a Pact
 
-Creating a complete contract is a two step process:
+Creating a complete contract is a two-step process:
 
 1. Create a test on the consumer side that declares the expectations it has of the provider
 2. Create a provider state that allows the contract to pass when replayed against the provider
@@ -82,7 +84,6 @@ class GetUserInfoContract(unittest.TestCase):
       result = user('UserA')
 
     self.assertEqual(result, expected)
-
 ```
 
 This does a few important things:
@@ -164,11 +165,13 @@ The mock service offers you several important features when building your contra
 - Finally, it will record your contracts as a JSON file that you can store in your repository or publish to a Pact broker.
 
 ## Expecting Variable Content
+
 The above test works great if that user information is always static, but what happens if
 the user has a last updated field that is set to the current time every time the object is
 modified? To handle variable data and make your tests more robust, there are 3 helpful matchers:
 
 ### Term(matcher, generate)
+
 Asserts the value should match the given regular expression. You could use this
 to expect a timestamp with a particular format in the request or response where
 you know you need a particular format, but are unconcerned about the exact date:
@@ -194,6 +197,7 @@ provider, the regex will be used to search the response from the real provider s
 and the test will be considered successful if the regex finds a match in the response.
 
 ### Like(matcher)
+
 Asserts the element's type matches the matcher. For example:
 
 ```python
@@ -202,6 +206,7 @@ Like(123)  # Matches if the value is an integer
 Like('hello world')  # Matches if the value is a string
 Like(3.14)  # Matches if the value is a float
 ```
+
 The argument supplied to `Like` will be what the mock service responds with.
 
 When a dictionary is used as an argument for Like, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
@@ -453,7 +458,8 @@ The provider application version. Required for publishing verification results.
 Publish verification results to the broker.
 
 ### Python API
-You can use the Verifier class. This allows you to write native python code and the test framework of your choice.
+
+You can use the Verifier class. This has all the same parameters as the cli tool but allows you to write native python code and the test framework of your choice.
 
 ```python
 verifier = Verifier(provider='UserService',
@@ -507,6 +513,7 @@ You can see more details in the examples
 - [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/tree/master/examples/fastapi_provider/tests/provider/test_provider.py)
 
 ### Provider States
+
 In many cases, your contracts will need very specific data to exist on the provider
 to pass successfully. If you are fetching a user profile, that user needs to exist,
 if querying a list of records, one or more records needs to exist. To support
@@ -525,18 +532,20 @@ on the provider application or a separate one. Some strategies for managing stat
 For more information about provider states, refer to the [Pact documentation] on [Provider States].
 
 # Development
+
 <!-- Absolute link for rendering page in docs.pact.io -->
 Please read [CONTRIBUTING.md](https://github.com/pact-foundation/pact-python/blob/master/CONTRIBUTING.md)
 
 To setup a development environment:
 
-1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv]
-2. Its recommended to create a Python [virtualenv] for the project
+1. If you want to run tests for all Python versions, install 3.6, 3.7, 3.8, and 3.9 from source or using a tool like [pyenv]
+2. It's recommended to create a Python [virtualenv] for the project.
+3. We are now using FFI bindings. For mac you might want to read these [setup FFI](https://cffi.readthedocs.io/en/latest/installation.html)
 
 To setup the environment, run tests, and package the application, run:
 `make release`
 
-If you are just interested in packaging pact-python so you can install it using pip:
+If you are just interested in packaging pact-python you can install it using pip:
 
 `make package`
 

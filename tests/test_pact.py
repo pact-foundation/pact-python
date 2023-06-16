@@ -488,11 +488,13 @@ class PactVerifyTestCase(PactTestCase):
          .upon_receiving('a specific request to the server')
          .with_request('GET', '/path')
          .will_respond_with(200, body='success'))
+
         self.get_verification_call = call(
             'get', 'http://localhost:1234/interactions/verification',
             headers={'X-Pact-Mock-Service': 'true'},
             verify=False,
-            params=None)
+            params=None,
+            allow_redirects=True)
 
         self.post_publish_pacts_call = call(
             'post', 'http://localhost:1234/pact',
@@ -533,7 +535,6 @@ class PactVerifyTestCase(PactTestCase):
         self.assertEqual(self.mock_requests.call_count, 2)
         self.mock_requests.assert_has_calls([
             self.get_verification_call, self.post_publish_pacts_call])
-
 
 class PactContextManagerTestCase(PactTestCase):
     def setUp(self):

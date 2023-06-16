@@ -1,6 +1,7 @@
 """Wrapper to verify previously created pacts."""
 
 from pact.constants import VERIFIER_PATH
+from pact.pact_exception import PactException
 import sys
 import os
 import platform
@@ -119,26 +120,6 @@ def rerun_command():
     env['PACT_INTERACTION_RERUN_COMMAND'] = command
     return env
 
-class PactException(Exception):
-    """PactException when input isn't valid.
-
-    Args:
-        Exception ([type]): [description]
-
-    Raises:
-        KeyError: [description]
-        Exception: [description]
-
-    Returns:
-        [type]: [description]
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Create wrapper."""
-        super().__init__(*args, **kwargs)
-        self.message = args[0]
-
 class VerifyWrapper(object):
     """A Pact Verifier Wrapper."""
 
@@ -151,7 +132,7 @@ class VerifyWrapper(object):
         if len(pacts) == 0 and not self._broker_present(**kwargs):
             raise PactException('Pact urls or Pact broker required')
 
-    def call_verify( # noqa: max-complexity: 15
+    def verify(
             self, *pacts, provider_base_url, provider, enable_pending=False,
             include_wip_pacts_since=None, **kwargs
     ):
@@ -234,12 +215,6 @@ class VerifyWrapper(object):
 
         return result.returncode, logs
 
-    def publish_results(self, provider_app_version, command):
-        """Publish results to broker."""
-        if not provider_app_version:
-            # todo implement
-            raise Exception('todo')
-
-        command.extend(["--provider-app-version",
-                       provider_app_version,
-                       "--publish-verification-results"])
+    def version(self):
+        """Publish version info."""
+        return '0.0.0'
