@@ -252,7 +252,6 @@ def rust_lib_binary() -> Binary:
 
     return Binary(filename=binary, version=PACT_STANDALONE_VERSION, suffix=None, single_file=True)
 
-
 def download_binary(path_to_download_to, filename, uri):
     """Downloads `filename` into `path_to_download_to`.
 
@@ -262,21 +261,15 @@ def download_binary(path_to_download_to, filename, uri):
     """
     print("-> download_binary({path_to_download_to}, {filename}, {uri})".format(path_to_download_to=path_to_download_to, filename=filename, uri=uri))
 
-    if sys.version_info.major == 2:
-        import urllib
-    else:
-        import urllib.request
+    from urllib3 import Retry, PoolManager
 
     path = os.path.join(path_to_download_to, filename)
-    hdr = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'}
-    req = urllib.request.Request(uri, headers=hdr)
-    try:
-        resp = urllib.request.urlopen(req)
-    except Exception as e:
-        raise RuntimeError("Received error {} when downloading {}".format(e, resp.url))
+    retries = Retry(connect=5, read=2, redirect=5, backoff_factor=0.1)
+    http = PoolManager(retries=retries)
+    resp = http.request('GET', uri)
     with open(path, "wb") as f:
-        if resp.code == 200:
-            f.write(resp.read())
+        if resp.status == 200:
+            f.write(resp.data)
         else:
             raise RuntimeError("Received HTTP {} when downloading {}".format(resp.code, resp.url))
 
