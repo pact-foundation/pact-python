@@ -25,12 +25,12 @@ def cli_options():
             type_choice = click.Choice(opt.possible_values) if opt.possible_values else None
 
             # Let the user know if an ENV can be used here instead
-            _help = f"{opt.help}{f'. Alternatively: ${click.style(opt.env, bold=True)}' if opt.env else ''}"
+            _help = "{}. Alternatively: {} if opt.env else ''".format(opt.help, click.style(opt.env, bold=True))
 
             if opt.short:
                 function = click.option(
-                    f"-{opt.short}",
-                    f"--{opt.long}",
+                    "-{}".format(opt.short),
+                    "--{}".format(opt.long),
                     help=_help,
                     type=type_choice,
                     default=opt.default_value,
@@ -39,7 +39,7 @@ def cli_options():
                 )(function)
             else:
                 function = click.option(
-                    f"--{opt.long}",
+                    "--{}".format(opt.long),
                     help=_help,
                     type=type_choice,
                     default=opt.default_value,
@@ -51,9 +51,9 @@ def cli_options():
         for flag in args.flags:
             # Let the user know if an ENV can be used here instead
             # Note: future proofing, there do not seem to be any as of Pact FFI Library 0.0.2
-            _help = f"{flag.help}{f'. Alternatively: ${click.style(flag.env, bold=True)}' if flag.env else ''}"
+            _help = "{}. Alternatively: {} if flag.env else ''".format(flag.help, click.style(flag.env, bold=True))
 
-            function = click.option(f"--{flag.long}", help=_help, envvar=flag.env, is_flag=True)(function)
+            function = click.option("--{}".format(flag.long), help=_help, envvar=flag.env, is_flag=True)(function)
 
         function = click.option(
             f'{"--debug-click"}',
@@ -95,7 +95,7 @@ def main(**kwargs):
             key for key, value in kwargs.items() if ctx.get_parameter_source(key) == ParameterSource.ENVIRONMENT
         ]
         if arguments_from_envs:
-            click.echo(f"The following arguments are using values provided by ENVs: {arguments_from_envs}")
+            click.echo("The following arguments are using values provided by ENVs: {}".format(arguments_from_envs))
         click.echo("")
 
         click.echo("CLI args to send via FFI:")
@@ -106,8 +106,8 @@ def main(**kwargs):
 
     if kwargs.get("debug_click"):
         click.echo("Result from FFI call to verify:")
-        click.echo(f"{result.return_code=}")
-        click.echo(f"{result.logs=}")
+        click.echo("{}=".format(result.return_code))
+        click.echo("{}=".format(result.logs))
 
     # If the FFI method returned some log output
     if result.logs:

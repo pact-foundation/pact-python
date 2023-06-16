@@ -1,4 +1,5 @@
 """pact-python PyPI Package."""
+
 import gzip
 import os
 import platform
@@ -141,8 +142,8 @@ def get_ruby_uri(suffix) -> str:
 def get_rust_uri(filename) -> str:
     """Determine the full URI to download the Rust binary from."""
     uri = (
-        f"https://github.com/pact-foundation/pact-reference/releases"
-        f"/download/libpact_ffi-v{PACT_FFI_VERSION}/{filename}"
+        "https://github.com/pact-foundation/pact-reference/releases"
+        "/download/libpact_ffi-v{version}/{filename}"
     )
     return uri.format(version=PACT_FFI_VERSION, filename=filename)
 
@@ -154,7 +155,11 @@ def install_binary(package_bin_path, download_bin_path, binary: Binary):
     :param download_bin_path: An optional path containing pre-downloaded pact binaries.
     :param binary: Details of the zipped binary files required
     """
-    print(f"-> install_binary({package_bin_path=}, {download_bin_path=}, {binary=})")
+    print("-> install_binary({package_bin_path}, {download_bin_path}, {binary})".format(
+        package_bin_path=package_bin_path,
+        download_bin_path=download_bin_path,
+        binary=binary
+    ))
 
     if download_bin_path is not None:
         # If a download_bin_path has been provided, but does not contain what we
@@ -256,7 +261,7 @@ def download_binary(path_to_download_to, filename, uri):
     :param filename: The filename that should be installed.
     :param uri: The URI to download the file from.
     """
-    print(f"-> download_binary({path_to_download_to=}, {filename=}, {uri=})")
+    print("-> download_binary({path_to_download_to}, {filename}, {uri})".format(path_to_download_to=path_to_download_to, filename=filename, uri=uri))
 
     if sys.version_info.major == 2:
         from urllib import urlopen
@@ -282,7 +287,7 @@ def extract_ruby_app_binary(source: str, destination: str, binary: str):
     :param destination: The location to unarchive to.
     :param binary: The binary that needs to be unarchived.
     """
-    print(f"-> extract_ruby_app_binary({source=}, {destination=}, {binary=})")
+    print("-> extract_ruby_app_binary({source}, {destination}, {binary})".format(source=source, destination=destination, binary=binary))
 
     path = os.path.join(source, binary)
     if "windows" in platform.platform().lower():
@@ -296,7 +301,7 @@ def extract_ruby_app_binary(source: str, destination: str, binary: str):
 
 
 def extract_gz(source: str, destination: str, binary: str):
-    print(f"-> extract_gz({source=}, {destination=}, {binary=})")
+    print("-> extract_gz({source}, {destination}, {binary})".format(source=source, destination=destination, binary=binary))
 
     path = os.path.join(source, binary)
     dest = os.path.splitext(os.path.join(destination, binary))[0]

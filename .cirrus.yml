@@ -5,15 +5,15 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python --version
     - python -m pip install --upgrade pip
     - python -m pip install -r requirements_dev.txt
-    - python -m flake8
-    - python -m pydocstyle pact
-    - python -m tox -e test
+    - flake8 --show-source
+    - pydocstyle pact
+    - tox -e test
     # - make examples
 
 linux_arm64_task: 
   env:
     matrix:
-      # - IMAGE: python:3.6-slim  # This works locally, with cirrus run, but fails in CI
+      - IMAGE: python:3.6-slim  # This works locally, with cirrus run, but fails in CI
       - IMAGE: python:3.7-slim
       - IMAGE: python:3.8-slim
       - IMAGE: python:3.9-slim
