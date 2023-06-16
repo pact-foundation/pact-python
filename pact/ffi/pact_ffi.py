@@ -1,6 +1,5 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
 import os
-import platform
 import tempfile
 from typing import List
 
@@ -8,6 +7,7 @@ from cffi import FFI
 import threading
 
 from pact.ffi.log import LogToBufferStatus, LogLevel
+from register_ffi import get_ffi_lib
 
 
 class PactFFI(object):
@@ -44,29 +44,9 @@ class PactFFI(object):
                     cls._instance = super(PactFFI, cls).__new__(cls)
                 cls.ffi = FFI()
 
-                # Define all the functions from the various modules, since we
-                # can only load the library once
-                cls.ffi.cdef(
-                    """
-                // root crate
-                char *pactffi_version(void);
-
-                // verifier
-                int pactffi_verify(char *);
-
-                // mock_server
-                void pactffi_free_string(char *);
-
-                // log
-                int pactffi_log_to_file(char *, int);
-                int pactffi_log_to_buffer(int);
-                char * pactffi_fetch_log_buffer(void);
-
-                // experimenting
-                char *pactffi_verifier_cli_args(void);
-                """
-                )
-                cls.lib = cls._load_ffi_library(cls.ffi)
+                # # Define all the functions from the various modules, since we
+                # # can only load the library once
+                cls.lib = get_ffi_lib(cls.ffi)
 
                 # We can setup logs like this, if preferred to buffer:
                 # The output will be stored in a file in this directory, which
@@ -91,36 +71,6 @@ class PactFFI(object):
         """
         result = self.lib.pactffi_version()
         return self.ffi.string(result).decode("utf-8")
-
-    @staticmethod
-    def _load_ffi_library(ffi):
-        """Load the appropriate library for the current platform."""
-        target_platform = platform.platform().lower()
-
-        if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" or "arm64" in platform.machine():
-            # TODO: Untested, can someone with the appropriate architecture verify?
-            libname = os.path.abspath("pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib")
-            # libname = "pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib"
-        elif target_platform in ["darwin", "macos"]:
-            libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
-        elif "linux" in target_platform:
-            libname = "pact/bin/libpact_ffi-linux-x86_64.so"
-        elif "windows" in target_platform:
-            libname = "pact/bin/pact_ffi-windows-x86_64.dll"
-        else:
-            msg = (
-                f"Unfortunately, {platform.platform()} is not a supported "
-                f"platform. Only Linux, Windows, and OSX are currently "
-                f"supported."
-            )
-            raise Exception(msg)
-
-        # If a custom libpact_ffi.so is available in the pact/bin dir, use that instead
-        custom_libpact_ffi = os.path.join("pact/bin", "libpact_ffi.so")
-        if os.path.isfile(custom_libpact_ffi):
-            libname = custom_libpact_ffi
-
-        return ffi.dlopen(libname)
 
     def get_logs(self) -> List[str]:
         """Wrapper to retrieve the contents of the FFI log buffer.

@@ -132,7 +132,7 @@ class VerifyWrapper(object):
         if len(pacts) == 0 and not self._broker_present(**kwargs):
             raise PactException('Pact urls or Pact broker required')
 
-    def verify(
+    def verify( # noqa: max-complexity: 15
             self, *pacts, provider_base_url, provider, enable_pending=False,
             include_wip_pacts_since=None, **kwargs
     ):

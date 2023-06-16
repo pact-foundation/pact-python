@@ -1,8 +1,7 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
 from pact.pact_exception import PactException
 from cffi import FFI
-import platform
-
+from register_ffi import get_ffi_lib
 
 class FFIVerify(object):
     """A Pact Verifier Wrapper."""
@@ -10,10 +9,7 @@ class FFIVerify(object):
     def version(self):
         """Publish version info."""
         ffi = FFI()
-        ffi.cdef("""
-        char *pactffi_version(void);
-        """)
-        lib = self._load_ffi_library(ffi)
+        lib = get_ffi_lib(ffi)
         result = lib.pactffi_version()
         return ffi.string(result).decode('utf-8')
 
@@ -23,33 +19,9 @@ class FFIVerify(object):
         self._validate_input(pacts, **kwargs)
 
         ffi = FFI()
-        ffi.cdef("""
-        char *pactffi_verify(void);
-        """)
-        lib = self._load_ffi_library(ffi)
+        lib = get_ffi_lib(ffi)
         result = lib.pactffi_version()
         return ffi.string(result).decode('utf-8')
-
-    def _load_ffi_library(self, ffi):
-        """Load the right library."""
-        target_platform = platform.platform().lower()
-
-        if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" or "arm64" in platform.machine():
-            # TODO: Untested, can someone with the appropriate architecture verify?
-            libname = "pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib"
-        elif target_platform in ["darwin", "macos"]:
-            libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
-        elif 'linux' in target_platform:
-            libname = "pact/bin/libpact_ffi-linux-x86_64.so"
-        elif 'windows' in target_platform:
-            libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
-        else:
-            msg = ('Unfortunately, {} is not a supported platform. Only Linux,'
-                   ' Windows, and OSX are currently supported.').format(
-                platform.platform())
-            raise Exception(msg)
-
-        return ffi.dlopen(libname)
 
     def _validate_input(self, pacts, **kwargs):
         if len(pacts) == 0 and not self._broker_present(**kwargs):

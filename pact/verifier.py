@@ -90,11 +90,11 @@ class Verifier(object):
         options.update(self.extract_params(**kwargs))
 
         success, logs = VerifyWrapper().verify(pacts=pacts,
-                                                    provider=self.provider,
-                                                    provider_base_url=self.provider_base_url,
-                                                    enable_pending=enable_pending,
-                                                    include_wip_pacts_since=include_wip_pacts_since,
-                                                    **options)
+                                               provider=self.provider,
+                                               provider_base_url=self.provider_base_url,
+                                               enable_pending=enable_pending,
+                                               include_wip_pacts_since=include_wip_pacts_since,
+                                               **options)
         return success, logs
 
     def extract_params(self, **kwargs):

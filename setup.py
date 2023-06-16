@@ -66,6 +66,7 @@ class sdist(sdist_orig):
         # Rust FFI library
         for filename in PACT_FFI_FILENAMES:
             download_binary(package_bin_path, filename, get_rust_uri(filename=filename))
+            download_binary(package_bin_path, 'pact.h', get_rust_uri(filename='pact.h'))
         super().run()
 
 

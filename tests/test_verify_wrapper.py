@@ -103,9 +103,9 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('./pacts/consumer-provider.json',
-                                             './pacts/consumer-provider2.json',
-                                             provider='test_provider',
-                                             provider_base_url='http://localhost')
+                                        './pacts/consumer-provider2.json',
+                                        provider='test_provider',
+                                        provider_base_url='http://localhost')
         self.default_call.insert(0, './pacts/consumer-provider.json')
         self.default_call.insert(1, './pacts/consumer-provider2.json')
         self.assertProcess(*self.default_call)
@@ -116,9 +116,9 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('http://broker.com/pacts/consumer-provider.json',
-                                             'http://broker.com/pacts/consumer-provider2.json',
-                                             provider='test_provider',
-                                             provider_base_url='http://localhost')
+                                        'http://broker.com/pacts/consumer-provider2.json',
+                                        provider='test_provider',
+                                        provider_base_url='http://localhost')
         self.default_call.insert(0, 'http://broker.com/pacts/consumer-provider.json')
         self.default_call.insert(1, 'http://broker.com/pacts/consumer-provider2.json')
 
@@ -218,11 +218,11 @@ class VerifyWrapperTestCase(TestCase):
 
         with self.assertRaises(PactException) as context:
             wrapper.verify('./pacts/consumer-provider.json',
-                                './pacts/consumer-provider2.json',
-                                provider='test_provider',
-                                provider_base_url='http://localhost',
-                                provider_app_version='1.2.3',
-                                publish_verification_results=True)
+                           './pacts/consumer-provider2.json',
+                           provider='test_provider',
+                           provider_base_url='http://localhost',
+                           provider_app_version='1.2.3',
+                           publish_verification_results=True)
 
         self.assertTrue('Cannot publish verification results for local files' in context.exception.message)
 
@@ -232,11 +232,11 @@ class VerifyWrapperTestCase(TestCase):
         wrapper = VerifyWrapper()
 
         result, output = wrapper.verify('http://broker.com/pacts/consumer-provider.json',
-                                             'http://broker.com/pacts/consumer-provider2.json',
-                                             provider='test_provider',
-                                             provider_base_url='http://localhost',
-                                             provider_app_version='1.2.3',
-                                             publish_verification_results=True)
+                                        'http://broker.com/pacts/consumer-provider2.json',
+                                        provider='test_provider',
+                                        provider_base_url='http://localhost',
+                                        provider_app_version='1.2.3',
+                                        publish_verification_results=True)
 
         self.default_call.insert(0, 'http://broker.com/pacts/consumer-provider.json')
         self.default_call.insert(1, 'http://broker.com/pacts/consumer-provider2.json')
