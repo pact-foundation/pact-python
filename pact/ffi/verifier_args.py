@@ -1,3 +1,4 @@
+"""This module contains the dataclass that represents the arguments available to the pact verifier."""
 import typing
 from dataclasses import dataclass, field
 

@@ -7,13 +7,14 @@ from cffi import FFI
 import threading
 
 from pact.ffi.log import LogToBufferStatus, LogLevel
-from register_ffi import get_ffi_lib
+from pact.ffi.register_ffi import RegisterFfi
 
 
 class PactFFI(object):
-    """This interfaces with the Rust crate `pact_ffi`_, which exposes the Pact
-    API via a C Foreign Function Interface. In the case of python, the library
-    is then accessed using `CFFI`_.
+    """This interfaces with the Rust crate `pact_ffi`.
+
+    Interface with the pact_ffi API via a C Foreign Function Interface. In the case of python, the library
+    is then accessed using `CFFI`.
 
     This class will implement the shared library loading, along with a wrapper
     for the functions provided by the base crate. For each of the Rust modules
@@ -37,6 +38,7 @@ class PactFFI(object):
     output_file: str = None
 
     def __new__(cls):
+        """Initiate the ffi."""
         # Make sure we only initialise once, or the log setup will fail
         if not cls._instance:
             with cls._lock:
@@ -46,7 +48,8 @@ class PactFFI(object):
 
                 # # Define all the functions from the various modules, since we
                 # # can only load the library once
-                cls.lib = get_ffi_lib(cls.ffi)
+                # cls.lib = RegisterFfi().get_ffi_lib(cls.ffi)
+                cls.lib = cls._load_ffi_library(cls.ffi)
 
                 # We can setup logs like this, if preferred to buffer:
                 # The output will be stored in a file in this directory, which
@@ -72,12 +75,15 @@ class PactFFI(object):
         result = self.lib.pactffi_version()
         return self.ffi.string(result).decode("utf-8")
 
+    @staticmethod
+    def _load_ffi_library(ffi):
+        return RegisterFfi().get_ffi_lib(ffi)
+
     def get_logs(self) -> List[str]:
-        """Wrapper to retrieve the contents of the FFI log buffer.
+        """Retrieve the contents of the FFI log buffer.
 
         :return: List of log entries, each a line of log output
         """
-
         # Having problems with the buffer output, when running via CLI
         # Reverting to log file output instead
         # result = self.lib.pactffi_fetch_log_buffer()

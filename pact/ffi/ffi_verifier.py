@@ -1,7 +1,7 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
 from pact.pact_exception import PactException
 from cffi import FFI
-from register_ffi import get_ffi_lib
+from pact.ffi.register_ffi import RegisterFfi
 
 class FFIVerify(object):
     """A Pact Verifier Wrapper."""
@@ -9,7 +9,7 @@ class FFIVerify(object):
     def version(self):
         """Publish version info."""
         ffi = FFI()
-        lib = get_ffi_lib(ffi)
+        lib = RegisterFfi().get_ffi_lib(ffi)
         result = lib.pactffi_version()
         return ffi.string(result).decode('utf-8')
 
@@ -19,7 +19,7 @@ class FFIVerify(object):
         self._validate_input(pacts, **kwargs)
 
         ffi = FFI()
-        lib = get_ffi_lib(ffi)
+        lib = RegisterFfi().get_ffi_lib(ffi)
         result = lib.pactffi_version()
         return ffi.string(result).decode('utf-8')
 

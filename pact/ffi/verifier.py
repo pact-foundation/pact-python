@@ -48,6 +48,7 @@ class Argument:
         possible_values: List[str] = None,
         env: str = None,
     ):
+        """Create a new Argument object."""
         self.long = long
         self.short = short
         self.help = help
@@ -64,6 +65,7 @@ class Arguments:
     flags: List[Argument] = []
 
     def __init__(self, options: List[Argument], flags: List[Argument]):
+        """Create a new Arguments object."""
         self.options = [Argument(**option) for option in options]
         self.flags = [Argument(**flags) for flags in flags]
 
@@ -79,11 +81,11 @@ class Verifier(PactFFI):
     """
 
     def __new__(cls):
+        """Create a new instance of the Verifier."""
         return super(Verifier, cls).__new__(cls)
 
     def verify(self, args=None) -> VerifyResult:
         """Call verify method."""
-
         # The FFI library specifically defines "usage" of no args, so we will
         # replicate that here. In reality we will always want args.
         if args:
@@ -100,7 +102,6 @@ class Verifier(PactFFI):
 
         :return: The arguments, in raw dict form
         """
-
         result = self.lib.pactffi_verifier_cli_args()
         arguments = json.loads(self.ffi.string(result).decode("utf-8"))
         print(arguments)
@@ -117,7 +118,7 @@ class Verifier(PactFFI):
 
     @staticmethod
     def args_dict_to_str(cli_args_dict: Dict) -> str:
-        """Convert a dict of arguments to the \n delimited str required to call the FFI function."""
+        """Convert a dict of arguments to the delimited str required to call the FFI function."""
         cli_args = ""
         for key, value in cli_args_dict.items():
             # Special case, don't pass through the debug flag for Click

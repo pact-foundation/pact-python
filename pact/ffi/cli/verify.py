@@ -12,10 +12,10 @@ from pact.ffi.verifier import Verifier, Arguments
 def cli_options():
     """
     Dynamically construct the Click CLI options available to interface with the current version of the FFI library.
+
     This attempts to ensure there cannot be a mismatch between the two, and
     means there doesn't need to be a duplication of logic.
     """
-
     def inner_func(function: Callable) -> Callable:
         verifier = Verifier()
         args: Arguments = verifier.cli_args()

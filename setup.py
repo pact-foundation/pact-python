@@ -15,13 +15,14 @@ from setuptools.command.install import install
 
 IS_64 = sys.maxsize > 2 ** 32
 PACT_STANDALONE_VERSION = '2.0.2'
-PACT_STANDALONE_SUFFIXES = ['osx-x86_64.tar.gz',
-                            'osx-arm64.tar.gz',
-                            'linux-x86_64.tar.gz',
-                            'linux-arm64.tar.gz',
-                            'windows-x86_64.zip',
-                            'windows-x86.zip',
-                            ]
+PACT_STANDALONE_SUFFIXES = [
+    'osx-x86_64.tar.gz',
+    'osx-arm64.tar.gz',
+    'linux-x86_64.tar.gz',
+    'linux-arm64.tar.gz',
+    'windows-x86_64.zip',
+    'windows-x86.zip',
+]
 PACT_FFI_VERSION = "0.4.5"
 PACT_FFI_FILENAMES = [
     "libpact_ffi-linux-aarch64.so.gz",

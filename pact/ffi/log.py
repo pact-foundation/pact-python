@@ -1,7 +1,7 @@
-"""For handling the logging setup and output from the FFI library
+"""For handling the logging setup and output from the FFI library.
+
 As per: https://docs.rs/pact_ffi/0.0.2/pact_ffi/log/index.html
 """
-
 from enum import unique, Enum
 
 
@@ -24,6 +24,8 @@ class LogToBufferStatus(Enum):
 
 @unique
 class LogLevel(Enum):
+    """Log levels which can be used by the Verifier."""
+
     OFF = 0
     ERROR = 1
     WARN = 2
