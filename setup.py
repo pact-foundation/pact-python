@@ -9,7 +9,6 @@ import tarfile
 from distutils.command.sdist import sdist as sdist_orig
 from typing import NamedTuple
 from zipfile import ZipFile
-
 from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.install import install
@@ -264,13 +263,17 @@ def download_binary(path_to_download_to, filename, uri):
     print("-> download_binary({path_to_download_to}, {filename}, {uri})".format(path_to_download_to=path_to_download_to, filename=filename, uri=uri))
 
     if sys.version_info.major == 2:
-        from urllib import urlopen
+        import urllib
     else:
-        from urllib.request import urlopen
+        import urllib.request
 
     path = os.path.join(path_to_download_to, filename)
-
-    resp = urlopen(uri)
+    hdr = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'}
+    req = urllib.request.Request(uri, headers=hdr)
+    try:
+        resp = urllib.request.urlopen(req)
+    except Exception as e:
+        raise RuntimeError("Received error {} when downloading {}".format(e, resp.url))
     with open(path, "wb") as f:
         if resp.code == 200:
             f.write(resp.read())
