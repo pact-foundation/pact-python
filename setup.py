@@ -22,8 +22,9 @@ PACT_STANDALONE_SUFFIXES = ['osx-x86_64.tar.gz',
                             'windows-x86_64.zip',
                             'windows-x86.zip',
                             ]
-PACT_FFI_VERSION = "0.3.14"
+PACT_FFI_VERSION = "0.4.5"
 PACT_FFI_FILENAMES = [
+    "libpact_ffi-linux-aarch64.so.gz",
     "libpact_ffi-linux-x86_64.so.gz",
     "libpact_ffi-osx-aarch64-apple-darwin.dylib.gz",
     "libpact_ffi-osx-x86_64.dylib.gz",
@@ -177,6 +178,7 @@ def install_binary(package_bin_path, download_bin_path, binary: Binary):
             if binary.filename in PACT_FFI_FILENAMES:
                 print(binary.filename)
                 download_binary(package_bin_path, binary.filename, get_rust_uri(filename=binary.filename))
+                download_binary(package_bin_path, 'pact.h', get_rust_uri(filename='pact.h'))
 
         if binary.single_file:
             extract_gz(package_bin_path, package_bin_path, binary.filename)
@@ -222,12 +224,15 @@ def rust_lib_binary() -> Binary:
     :return Details of the binary file required
     """
     target_platform = platform.platform().lower()
+    print(target_platform)
+    print(platform.machine())
 
-    if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" or "arm64" in platform.machine():
-        # TODO: Untested, can someone with the appropriate architecture verify?
+    if ("darwin" in target_platform or "macos" in target_platform) and ("aarch64" in platform.machine() or "arm64" in platform.machine()):
         binary = "libpact_ffi-osx-aarch64-apple-darwin.dylib.gz"
     elif "darwin" in target_platform or "macos" in target_platform:
         binary = "libpact_ffi-osx-x86_64.dylib.gz"
+    elif "linux" in target_platform and IS_64 and ("aarch64" in platform.machine() or "arm64" in platform.machine()):
+        binary = "libpact_ffi-linux-aarch64.so.gz"
     elif "linux" in target_platform and IS_64:
         binary = "libpact_ffi-linux-x86_64.so.gz"
     elif "windows" in target_platform:
@@ -236,7 +241,7 @@ def rust_lib_binary() -> Binary:
         msg = (
             "Unfortunately, {} is not a supported platform. Only Linux x86_64,"
             " Windows, and OSX are currently supported."
-        ).format(platform.platform())
+        ).format(target_platform)
         raise Exception(msg)
 
     return Binary(filename=binary, version=PACT_STANDALONE_VERSION, suffix=None, single_file=True)

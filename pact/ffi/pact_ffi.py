@@ -99,7 +99,8 @@ class PactFFI(object):
 
         if ("darwin" in target_platform or "macos" in target_platform) and "aarch64" or "arm64" in platform.machine():
             # TODO: Untested, can someone with the appropriate architecture verify?
-            libname = "pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib"
+            libname = os.path.abspath("pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib")
+            # libname = "pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib"
         elif target_platform in ["darwin", "macos"]:
             libname = "pact/bin/libpact_ffi-osx-x86_64.dylib"
         elif "linux" in target_platform:

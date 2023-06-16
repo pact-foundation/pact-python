@@ -9,7 +9,6 @@ from pact import verify_wrapper
 
 
 from subprocess import PIPE, Popen
-
 class VerifyWrapperTestCase(TestCase):
     """ use traceback.print_exception(*result.exc_info) to debug """
 

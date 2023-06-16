@@ -4,7 +4,7 @@ from pact.ffi.verifier import Verifier, VerifyStatus
 
 def test_version():
     result = Verifier().version()
-    assert result == "0.3.14"
+    assert result == "0.4.5"
 
 
 def test_verify_no_args():

@@ -39,6 +39,7 @@ def cli_options():
         "consumer-version-selectors",
         "include-wip-pacts-since",
         "request-timeout",
+        "header"
     ]
 
 
