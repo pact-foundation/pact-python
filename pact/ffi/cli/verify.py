@@ -5,7 +5,7 @@ from typing import Callable
 
 import click
 from click.core import ParameterSource
-
+from pact.ffi.ffi_verifier import FFIVerify
 from pact.ffi.verifier import Verifier, Arguments
 
 
@@ -67,6 +67,7 @@ def cli_options():
 
 
 @click.command(name="pact-verifier-ffi", context_settings=dict(max_content_width=120))
+@click.version_option("libpact_ffi-v{}".format(FFIVerify().version()))
 @cli_options()
 def main(**kwargs):
     """

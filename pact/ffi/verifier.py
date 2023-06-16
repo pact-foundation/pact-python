@@ -104,7 +104,7 @@ class Verifier(PactFFI):
         """
         result = self.lib.pactffi_verifier_cli_args()
         arguments = json.loads(self.ffi.string(result).decode("utf-8"))
-        print(arguments)
+        # print(arguments)
         self.lib.pactffi_free_string(result)
         return arguments
 

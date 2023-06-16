@@ -230,8 +230,8 @@ def rust_lib_binary() -> Binary:
     :return Details of the binary file required
     """
     target_platform = platform.platform().lower()
-    print(target_platform)
-    print(platform.machine())
+    # print(target_platform)
+    # print(platform.machine())
 
     if ("darwin" in target_platform or "macos" in target_platform) and ("aarch64" in platform.machine() or "arm64" in platform.machine()):
         binary = "libpact_ffi-osx-aarch64-apple-darwin.dylib.gz"
@@ -250,7 +250,7 @@ def rust_lib_binary() -> Binary:
         ).format(target_platform)
         raise Exception(msg)
 
-    return Binary(filename=binary, version=PACT_STANDALONE_VERSION, suffix=None, single_file=True)
+    return Binary(filename=binary, version=PACT_FFI_VERSION, suffix=None, single_file=True)
 
 def download_binary(path_to_download_to, filename, uri):
     """Downloads `filename` into `path_to_download_to`.

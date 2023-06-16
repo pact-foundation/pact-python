@@ -1,5 +1,6 @@
 """Methods to verify previously created pacts."""
 import sys
+from setup import PACT_STANDALONE_VERSION
 
 from pact.verify_wrapper import path_exists, expand_directories, VerifyWrapper
 
@@ -8,6 +9,7 @@ import click
 
 @click.command()
 @click.argument('pacts', nargs=-1)
+@click.version_option("pact-ruby-standalone-v{}".format(PACT_STANDALONE_VERSION))
 @click.option(
     'base_url', '--provider-base-url',
     help='Base URL of the provider to verify against.',
@@ -129,13 +131,16 @@ def main(pacts, base_url, pact_url, pact_urls, states_url, states_setup_url,
          username, broker_base_url, consumer_version_tag, consumer_version_selector,
          provider_version_tag, password, token, provider, headers, timeout,
          provider_app_version, publish_verification_results, verbose, log_dir,
-         log_level, enable_pending, include_wip_pacts_since, provider_version_branch):
+         log_level, enable_pending, include_wip_pacts_since, provider_version_branch, version):
     """
     Verify one or more contracts against a provider service.
 
     Minimal example:
         pact-verifier --provider-base-url=http://localhost:8080 ./pacts
     """  # NOQA
+    if version:
+        click.echo('fdsfd')
+        sys.exit(1)
     error = click.style('Error:', fg='red')
     warning = click.style('Warning:', fg='yellow')
     all_pact_urls = list(pacts) + list(pact_url)

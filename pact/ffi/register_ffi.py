@@ -37,8 +37,8 @@ class RegisterFfi(object):
     def load_ffi_library(self, ffi):
         """Load the right library."""
         target_platform = platform.platform().lower()
-        print(target_platform)
-        print(platform.machine())
+        # print(target_platform)
+        # print(platform.machine())
 
         if ("darwin" in target_platform or "macos" in target_platform) and ("aarch64" in platform.machine() or "arm64" in platform.machine()):
             # libname = os.path.abspath("pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib")
