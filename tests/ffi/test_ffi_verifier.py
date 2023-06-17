@@ -1,5 +1,6 @@
 import pytest
 import mock
+from pact.ffi.verifier import VerifyStatus
 
 from pact.pact_exception import PactException
 from pact.ffi.ffi_verifier import FFIVerify
@@ -18,17 +19,20 @@ def test_pact_urls_or_broker_required(mock_Popen):
 
     assert 'Pact urls or Pact broker required' in str(e)
 
-def test_pact_files_provided():
-    # mock_Popen.return_value.returncode = 0
+def test_pact_local_file_provided_but_does_not_exist():
     wrapper = FFIVerify()
-
     result = wrapper.verify(
                                     './pacts/consumer-provider.json',
-        #                             './pacts/consumer-provider2.json',
                                     provider='test_provider',
                                     provider_base_url='http://localhost')
-    assert 'foo' in str(result)
-    # self.default_call.insert(0, './pacts/consumer-provider.json')
-    # self.default_call.insert(1, './pacts/consumer-provider2.json')
-    # self.assertProcess(*self.default_call)
-    # self.assertEqual(result, 0)
+    assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
+    assert "Failed to load pact './pacts/consumer-provider.json' - No such file or directory" in "\n".join(result.logs)
+
+def test_pact_url_provided_but_does_not_exist():
+    wrapper = FFIVerify()
+    result = wrapper.verify(
+                                    'http://broker.com/pacts/consumer-provider.json',
+                                    provider='test_provider',
+                                    provider_base_url='http://localhost')
+    assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
+    assert "Failed to load pact 'http://broker.com/pacts/consumer-provider.json' - Request failed with status - 404 Not Found" in "\n".join(result.logs)
