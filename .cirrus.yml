@@ -45,15 +45,9 @@ macos_arm64_task:
       - VERSION: 3.9
       - VERSION: 3.10
   install_script:
-    # Per the pyenv homebrew recommendations.
-    # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-    # - xcode-select --install  # Unnecessary on Cirrus
     - brew update    
-    # - brew install openssl readline sqlite3 xz zlib 
     - brew install pyenv
-    - pyenv install ${PYTHON}
-    - pyenv global ${PYTHON}
+    - pyenv install ${VERSION}
+    - pyenv global ${VERSION}
     - pyenv rehash
-  ## To install rosetta
-    # - softwareupdate --install-rosetta --agree-to-license
   << : *BUILD_TEST_TASK_TEMPLATE
