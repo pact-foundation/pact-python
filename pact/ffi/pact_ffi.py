@@ -86,7 +86,7 @@ class PactFFI(object):
         """
         # Having problems with the buffer output, when running via CLI
         # Reverting to log file output instead
-        # result = self.lib.pactffi_fetch_log_buffer()
+        # result = self.lib.pactffi_fetch_log_buffer(b'NULL')
         # print(f"{result=}")
         # return self.ffi.string(result).decode("utf-8").rstrip().split("\n")
 
