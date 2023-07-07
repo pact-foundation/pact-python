@@ -45,13 +45,13 @@ class RegisterFfi(object):
             libname = os.path.join(self.FFI_LIB_PATH, "libpact_ffi-osx-aarch64-apple-darwin.dylib")
             # libname = os.path.abspath("pact/bin/libpact_ffi-osx-aarch64-apple-darwin.dylib")
         elif "darwin" in target_platform or "macos" in target_platform:
-            libname = os.path.abspath(self.FFI_LIB_PATH, "libpact_ffi-osx-x86_64.dylib")
+            libname = os.path.join(self.FFI_LIB_PATH, "libpact_ffi-osx-x86_64.dylib")
         elif "linux" in target_platform and self.IS_64 and ("aarch64" in platform.machine() or "arm64" in platform.machine()):
-            libname = os.path.abspath(self.FFI_LIB_PATH, "libpact_ffi-linux-aarch64.so")
+            libname = os.path.join(self.FFI_LIB_PATH, "libpact_ffi-linux-aarch64.so")
         elif "linux" in target_platform and self.IS_64:
-            libname = os.path.abspath(self.FFI_LIB_PATH, "libpact_ffi-linux-x86_64.so")
+            libname = os.path.join(self.FFI_LIB_PATH, "libpact_ffi-linux-x86_64.so")
         elif 'windows' in target_platform:
-            libname = os.path.abspath(self.FFI_LIB_PATH, "pact_ffi-windows-x86_64.dll")
+            libname = os.path.join(self.FFI_LIB_PATH, "pact_ffi-windows-x86_64.dll")
         else:
             msg = ('Unfortunately, {} is not a supported platform. Only Linux,'
                    ' Windows, and OSX are currently supported.').format(target_platform)
