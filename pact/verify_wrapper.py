@@ -172,16 +172,16 @@ class VerifyWrapper(object):
         if not all_pact_urls and not kwargs.get('broker_url', None):
             raise PactException('Pact urls or Pact broker required')
 
-        if (publish_verification_results is True) and local_file:
+        if publish_verification_results is True and local_file:
             raise PactException('Cannot publish verification results for local files')
 
         if (provider_app_version):
             command.extend(["--provider-app-version", provider_app_version])
 
-        if (publish_verification_results is True) and not local_file:
+        if publish_verification_results is True and not local_file:
             command.extend(['--publish-verification-results'])
 
-        if (kwargs.get('verbose', False) is True):
+        if verbose:
             command.extend(['--verbose'])
 
         if provider_version_branch:
@@ -200,8 +200,8 @@ class VerifyWrapper(object):
                 command.extend(['--include-wip-pacts-since={}'.format(include_wip_pacts_since)])
             for tag in kwargs.get('provider_tags', []):
                 command.extend(["--provider-version-tag={}".format(tag)])
-            for tag in kwargs.get('consumer_selectors', []):
-                command.extend(["--consumer-version-selector={}".format(tag)])
+            for selector in kwargs.get('consumer_selectors', []):
+                command.extend(["--consumer-version-selector={}".format(selector)])
             for tag in kwargs.get('consumer_tags', []):
                 command.extend(["--consumer-version-tag={}".format(tag)])
 

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package area_calculator;
+
+option php_generic_services = true;
+option go_package = "io.pact/area_calculator";
+
+service Calculator {
+  rpc calculateOne (ShapeMessage) returns (AreaResponse) {}
+  rpc calculateMulti (AreaRequest) returns (AreaResponse) {}
+}
+
+message ShapeMessage {
+  oneof shape {
+    Square square = 1;
+    Rectangle rectangle = 2;
+    Circle circle = 3;
+    Triangle triangle = 4;
+    Parallelogram parallelogram = 5;
+  }
+}
+
+message Square {
+  float edge_length = 1;
+}
+
+message Rectangle {
+  float length = 1;
+  float width = 2;
+}
+
+message Circle {
+  float radius = 1;
+}
+
+message Triangle {
+  float edge_a = 1;
+  float edge_b = 2;
+  float edge_c = 3;
+}
+
+message Parallelogram {
+  float base_length = 1;
+  float height = 2;
+}
+
+message AreaRequest {
+  repeated ShapeMessage shapes = 1;
+}
+
+message AreaResponse {
+  repeated float value = 1;
+}

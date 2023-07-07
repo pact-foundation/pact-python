@@ -1,6 +1,5 @@
 
 from pact.ffi.verifier import Verifier, VerifyStatus
-# from pytest_httpserver import HTTPServer
 
 def test_version():
     result = Verifier().version()
