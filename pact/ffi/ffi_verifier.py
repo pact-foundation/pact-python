@@ -18,7 +18,7 @@ class FFIVerify(object):
         result = lib.pactffi_version()
         return ffi.string(result).decode("utf-8")
 
-    def verify(
+    def verify( # noqa: max-complexity: 15
         self,
         *pacts,
         provider_base_url,
@@ -30,7 +30,7 @@ class FFIVerify(object):
         """Call verify method."""
         self._validate_input(pacts, **kwargs)
 
-        verbose = kwargs.get("verbose", False)
+        # verbose = kwargs.get("verbose", False)
         provider_app_version = kwargs.get("provider_app_version")
         provider_version_branch = kwargs.get("provider_version_branch")
         publish_verification_results = kwargs.get("publish_verification_results", False)
@@ -38,14 +38,14 @@ class FFIVerify(object):
         broker_password = kwargs.get("broker_password", None)
         broker_token = kwargs.get("broker_token", None)
         broker_url = kwargs.get("broker_url", None)
-        provider_states_setup_url = kwargs.get("provider_states_setup_url")
+        # provider_states_setup_url = kwargs.get("provider_states_setup_url")
         log_dir = kwargs.get("log_dir")
         log_level = kwargs.get("log_level", "INFO")
         provider_tags = kwargs.get("provider_tags", [])
         consumer_version_selectors = kwargs.get("consumer_selectors", [])
         consumer_version_tags = kwargs.get("consumer_tags", [])
         request_timeout = kwargs.get("request_timeout", None)
-        ## Additional parameters
+        # Additional parameters
         filter_description = kwargs.get("filter_description", None)
         filter_state = kwargs.get("filter_state", None)
         filter_no_state = kwargs.get("filter_no_state", False)

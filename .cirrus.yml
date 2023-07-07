@@ -5,7 +5,7 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python --version
     - python -m pip install --upgrade pip
     - python -m pip install -r requirements_dev.txt
-    - python -m flake8 --show-source
+    - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py
     - python -m pydocstyle pact
     - python -m tox -e test
     # - make examples

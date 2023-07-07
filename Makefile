@@ -110,7 +110,7 @@ package:
 
 .PHONY: test
 test: deps
-	flake8
+	flake8 --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py
 	pydocstyle pact
 	coverage erase
 	tox

@@ -43,7 +43,7 @@ jobs:
 
       - name: Lint with flake8, pydocstyle
         run: |
-          flake8 --show-source
+          flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py
           pydocstyle pact
 
       - name: Test with pytest
