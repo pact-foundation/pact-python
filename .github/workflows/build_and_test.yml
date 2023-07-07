@@ -48,6 +48,8 @@ jobs:
 
       - name: Test with pytest
         run: tox -e test
+        env:
+          PACT_FFI_PATH: .tox/test/lib/python${{ matrix.python-version }}/site-packages/pact/bin
 
       - name: Test examples
         if: runner.os == 'Linux'

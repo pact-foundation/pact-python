@@ -12,19 +12,20 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
 
 linux_arm64_task: 
   env:
+    PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
       # - IMAGE: python:3.6 # This works locally, with cirrus run, but fails in CI
       # - IMAGE: python:3.7
       # - IMAGE: python:3.8
       # - IMAGE: python:3.9
       # - IMAGE: python:3.10
-      - IMAGE: python:3.6-slim  # This works locally, with cirrus run, but fails in CI
-      - IMAGE: python:3.7-slim
-      - IMAGE: python:3.8-slim
-      - IMAGE: python:3.9-slim
-      - IMAGE: python:3.10-slim
+      - VERSION: 3.6
+      - VERSION: 3.7
+      - VERSION: 3.8
+      - VERSION: 3.9
+      - VERSION: 3.10
   arm_container:
-    image: $IMAGE
+    image: python:$VERSION-slim
   install_script:
     - apt update --yes && apt install --yes gcc make
   << : *BUILD_TEST_TASK_TEMPLATE
@@ -36,12 +37,13 @@ macos_arm64_task:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
     PATH: ${HOME}/.pyenv/shims:${PATH}
+    PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      - PYTHON: 3.6
-      - PYTHON: 3.7
-      - PYTHON: 3.8
-      - PYTHON: 3.9
-      - PYTHON: 3.10
+      - VERSION: 3.6
+      - VERSION: 3.7
+      - VERSION: 3.8
+      - VERSION: 3.9
+      - VERSION: 3.10
   install_script:
     # Per the pyenv homebrew recommendations.
     # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
