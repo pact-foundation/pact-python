@@ -68,15 +68,13 @@ def test_with_broker_url_no_auth_unable_to_load():
 def test_with_authenticated_broker_without_credentials():
     wrapper = FFIVerify()
     result = wrapper.verify(
-        broker_url="http://localhost",
-        # broker_username="pactbroker",
-        # broker_password="pactbroker",
+        broker_url="https://test.pactflow.io",
         provider="Example API",
         provider_base_url="http://localhost",
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
-        "Failed to load pact - \x1b[31mCould not load pacts from the pact broker 'http://localhost'"
+        "Failed to load pact - \x1b[31mCould not load pacts from the pact broker 'https://test.pactflow.io'"
         in "\n".join(result.logs)
     )
 
@@ -89,9 +87,9 @@ def test_with_authenticated_broker_with_credentials_and_logs_to_buffer(httpserve
 
     wrapper = FFIVerify()
     result = wrapper.verify(
-        broker_url="http://localhost",
-        broker_username="pactbroker",
-        broker_password="pactbroker",
+        broker_url="https://test.pactflow.io",
+        broker_username="dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
+        broker_password="O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
         provider="Example API",
         provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
         filter_state="there is an alligator named Mary",
@@ -115,7 +113,7 @@ def test_with_authenticated_broker_with_credentials_and_logs_to_file(httpserver)
         provider="Example API",
         provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
         filter_state="there is an alligator named Mary",
-        log_dir="./logs"
+        # log_dir="./logs"
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
