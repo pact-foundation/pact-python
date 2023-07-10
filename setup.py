@@ -15,7 +15,7 @@ from distutils.command.sdist import sdist as sdist_orig
 
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '2.0.0'
+PACT_STANDALONE_VERSION = '2.0.2'
 PACT_STANDALONE_SUFFIXES = ['osx-x86_64.tar.gz',
                             'osx-arm64.tar.gz',
                             'linux-x86_64.tar.gz',
