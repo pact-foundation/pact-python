@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import pytest
 from pact import MessageProvider
 
@@ -12,9 +13,9 @@ def default_opts():
     return {
         'broker_username': PACT_BROKER_USERNAME,
         'broker_password': PACT_BROKER_PASSWORD,
-        'broker_url': PACT_BROKER_URL,
+        'verbose': True,
         'publish_version': '3',
-        'publish_verification_results': False
+        'publish_verification_results': True
     }
 
 
@@ -67,6 +68,22 @@ def test_verify_failure_when_a_provider_missing():
             provider.verify()
 
 
+def test_verify_from_pact_url(default_opts):
+    provider = MessageProvider(
+        message_providers={
+            'A document created successfully': document_created_handler,
+            'A document deleted successfully': document_deleted_handler
+        },
+        provider='ContentProvider',
+        consumer='DetectContentLambda',
+    )
+
+    with provider:
+        provider.verify(
+            "http://localhost/pacts/provider/ContentProvider/consumer/DetectContentLambda/latest",
+            **default_opts
+        )
+
 def test_verify_from_broker(default_opts):
     provider = MessageProvider(
         message_providers={
@@ -75,9 +92,16 @@ def test_verify_from_broker(default_opts):
         },
         provider='ContentProvider',
         consumer='DetectContentLambda',
-        pact_dir='pacts'
 
     )
 
     with provider:
-        provider.verify_with_broker(**default_opts)
+        provider.verify_with_broker(broker_url=PACT_BROKER_URL,
+                                    **default_opts,
+                                            enable_pending=True,
+                                    include_wip_pacts_since='2018-01-01',
+                                    consumer_version_selectors=[
+                                        OrderedDict([("mainBranch", True)]),
+                                        OrderedDict([("deployedOrReleased", True)]),
+                                    ],
+                                    )

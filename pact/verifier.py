@@ -71,15 +71,9 @@ class Verifier(object):
             publish_version ([String])
 
         """
-        broker_username = kwargs.get('broker_username', None)
-        broker_password = kwargs.get('broker_password', None)
         broker_url = kwargs.get('broker_url', None)
-        broker_token = kwargs.get('broker_token', None)
 
         options = {
-            'broker_password': broker_password,
-            'broker_username': broker_username,
-            'broker_token': broker_token,
             'broker_url': broker_url
         }
         options.update(self.extract_params(**kwargs))
@@ -106,6 +100,9 @@ class Verifier(object):
         raw_consumer_selectors = kwargs.get('consumer_version_selectors', [])
         consumer_selectors = self._build_consumer_selectors(raw_consumer_selectors)
         provider_version_branch = kwargs.get('provider_version_branch')
+        broker_username = kwargs.get('broker_username', None)
+        broker_password = kwargs.get('broker_password', None)
+        broker_token = kwargs.get('broker_token', None)
 
         options = {
             'log_dir': log_dir,
@@ -119,7 +116,10 @@ class Verifier(object):
             'verbose': verbose,
             'consumer_selectors': consumer_selectors,
             'publish_verification_results': publish_verification_results,
-            'provider_version_branch': provider_version_branch
+            'provider_version_branch': provider_version_branch,
+            'broker_password': broker_password,
+            'broker_username': broker_username,
+            'broker_token': broker_token
         }
         return self.filter_empty_options(**options)
 

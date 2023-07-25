@@ -459,29 +459,52 @@ You can use the Verifier class. This allows you to write native python code and 
 verifier = Verifier(provider='UserService',
                     provider_base_url=PACT_URL)
 
-# Using a local pact file
+# Verify by local file
 
 success, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
 assert success == 0
 
-# Using a pact broker
+# Verify using a broker
 
-- For OSS Pact Broker, use broker_username / broker_password
-- For PactFlow Pact Broker, use broker_token
+## Common Options
 
-success, logs = verifier.verify_with_broker(
-    # broker_username=PACT_BROKER_USERNAME,
-    # broker_password=PACT_BROKER_PASSWORD,
-    broker_url=PACT_BROKER_URL,
-    broker_token=PACT_BROKER_TOKEN,
-    publish_version=APPLICATION_VERSION,
-    publish_verification_results=True,
-    verbose=True,
-    provider_version_branch=PROVIDER_BRANCH,
-    enable_pending=True,
+## PACT_BROKER_USERNAME / PACT_BROKER_PASSWORD for Pact Broker
+## PACT_BROKER_TOKEN for PactFlow Broker
+
+broker_opts= {
+    'broker_username': PACT_BROKER_USERNAME,
+    'broker_password': PACT_BROKER_PASSWORD,
+    'broker_token': PACT_BROKER_TOKEN,
+    'verbose': True,
+    'publish_version': '3',
+    'publish_verification_results': True
+}
+
+## 1. Verify by pact Url
+
+success, _ = verifier.verify_pacts(
+    "http://localhost/pacts/provider/UserService/consumer/UserServiceClient/latest",
+    **broker_opts,
+    provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
 )
 assert success == 0
 
+## 2. Verify pacts dynamically fetched from a broker
+from collections import OrderedDict
+
+success, logs = verifier.verify_with_broker(
+    **broker_opts,
+    broker_url=PACT_BROKER_URL,
+    verbose=True,
+    provider_states_setup_url=f"{PROVIDER_URL}/_pact/provider_states",
+    enable_pending=True,
+    include_wip_pacts_since='2018-01-01',
+    consumer_version_selectors=[
+        OrderedDict([("mainBranch", True)]),
+        OrderedDict([("deployedOrReleased", True)]),
+    ],
+)
+assert success == 0 
 ```
 
 The parameters for this differ slightly in naming from their CLI equivalents:

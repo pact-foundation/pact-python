@@ -1,4 +1,5 @@
 """Contract Message Provider."""
+
 import os
 import time
 
@@ -107,12 +108,14 @@ class MessageProvider(object):
         if isinstance(self._process, Process):
             self._wait_for_server_stop()
 
-    def verify(self):
+    def verify(self, *pacts, **kwargs):
         """Verify pact files with executable verifier."""
-        pact_files = f'{self.pact_dir}/{self._pact_file()}'
+        if len(pacts) == 0:
+            pacts = [f'{self.pact_dir}/{self._pact_file()}']
+
         verifier = Verifier(provider=self.provider,
                             provider_base_url=self._proxy_url())
-        return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
+        return_code, _ = verifier.verify_pacts(*pacts, **kwargs)
         assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
 
     def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):

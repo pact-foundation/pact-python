@@ -1,6 +1,7 @@
 """pact test for user service provider"""
 
 import logging
+from collections import OrderedDict
 
 import pytest
 
@@ -29,7 +30,6 @@ def broker_opts():
     return {
         "broker_username": PACT_BROKER_USERNAME,
         "broker_password": PACT_BROKER_PASSWORD,
-        "broker_url": PACT_BROKER_URL,
         "publish_version": "3",
         "publish_verification_results": True,
     }
@@ -43,9 +43,15 @@ def test_user_service_provider_against_broker(broker_opts):
     # PactBroker::Api::Resources::ProviderPactsForVerification -- Fetching pacts for verification by UserService -- {:provider_name=>"UserService", :params=>{}}
     success, logs = verifier.verify_with_broker(
         **broker_opts,
+        broker_url=PACT_BROKER_URL,
         verbose=True,
         provider_states_setup_url=f"{PROVIDER_URL}/_pact/provider_states",
-        enable_pending=False,
+        enable_pending=True,
+        include_wip_pacts_since='2018-01-01',
+        consumer_version_selectors=[
+            OrderedDict([("mainBranch", True)]),
+            OrderedDict([("deployedOrReleased", True)]),
+        ],
     )
     # If publish_verification_results is set to True, the results will be
     # published to the Pact Broker.
@@ -81,3 +87,14 @@ def test_user_service_provider_against_pact():
     )
 
     assert output == 0
+
+def test_user_service_provider_against_pact_url(broker_opts):
+    verifier = Verifier(provider="UserService", provider_base_url=PROVIDER_URL)
+
+    success, _ = verifier.verify_pacts(
+        "http://localhost/pacts/provider/UserService/consumer/UserServiceClient/latest",
+        **broker_opts,
+        provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
+    )
+
+    assert success == 0

@@ -56,7 +56,7 @@ class MessageProviderTestCase(TestCase):
         self.provider.verify()
 
         assert mock_verify_pacts.call_count == 1
-        mock_verify_pacts.assert_called_with(f'{self.provider.pact_dir}/{self.provider._pact_file()}', verbose=False)
+        mock_verify_pacts.assert_called_with(f'{self.provider.pact_dir}/{self.provider._pact_file()}')
 
     @patch('pact.Verifier.verify_with_broker', return_value=(0, 'logs'))
     def test_verify_with_broker(self, mock_verify_pacts):
