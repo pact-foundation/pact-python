@@ -24,4 +24,4 @@ markupsafe==2.0.1; python_version < '3.7'
 markupsafe==2.1.2; python_version >= '3.7'
 httpx==0.22.0; python_version < '3.7'
 httpx==0.23.3; python_version >= '3.7'
-simplejson==3.18.4
+simplejson==3.19.1

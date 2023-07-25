@@ -228,7 +228,7 @@ dependencies = [
     'six>=1.16.0',
     'fastapi>=0.67.0',
     'urllib3>=1.26.12',
-    'simplejson==3.18.4'
+    'simplejson==3.19.1'
 ]
 
 if sys.version_info < (3, 7):
