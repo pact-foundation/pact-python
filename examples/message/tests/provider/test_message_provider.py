@@ -98,7 +98,7 @@ def test_verify_from_broker(default_opts):
     with provider:
         provider.verify_with_broker(broker_url=PACT_BROKER_URL,
                                     **default_opts,
-                                            enable_pending=True,
+                                    enable_pending=True,
                                     include_wip_pacts_since='2018-01-01',
                                     consumer_version_selectors=[
                                         OrderedDict([("mainBranch", True)]),
