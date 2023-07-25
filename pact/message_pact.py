@@ -1,7 +1,7 @@
 """API for creating a contract and configuring the mock service."""
 from __future__ import unicode_literals
 
-import json
+import simplejson as json
 import os
 from subprocess import Popen
 
