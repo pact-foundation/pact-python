@@ -1,10 +1,9 @@
 """Classes for defining request and response data that is variable."""
+from decimal import Decimal
 import six
 import datetime
 
 from enum import Enum
-from decimal import Decimal
-
 
 class Matcher(object):
     """Base class for defining complex contract expectations."""
@@ -214,7 +213,7 @@ def get_generated_values(input):
     """
     if input is None:
         return input
-    if isinstance(input, (six.string_types, int, float, bool)):
+    if isinstance(input, (six.string_types, int, float, bool, Decimal)):
         return input
     if isinstance(input, dict):
         return {k: get_generated_values(v) for k, v in input.items()}

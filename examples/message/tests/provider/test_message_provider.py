@@ -1,3 +1,4 @@
+from decimal import Decimal
 import pytest
 from pact import MessageProvider
 
@@ -22,7 +23,8 @@ def document_created_handler():
     return {
         "event": "ObjectCreated:Put",
         "documentName": "document.doc",
-        "creator": "TP",
+        "creator": "PF",
+        "decimal-data": Decimal(0.1),
         "documentType": "microsoft-word"
     }
 
