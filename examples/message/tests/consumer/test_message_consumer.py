@@ -106,7 +106,7 @@ def test_put_file(pact_no_publish):
 
     expected_event = {
         "event": "ObjectCreated:Put",
-        "documentName": Term("^.*\\.(doc|docx)$",'document.doc'),
+        "documentName": Term("^.*\\.(doc|docx)$", 'document.doc'),
         "creator": Like("TP"),
         "documentType": "microsoft-word",
     }
@@ -138,7 +138,7 @@ def test_publish_to_broker(pact):
 
     expected_event = {
         "event": "ObjectCreated:Delete",
-        "documentName": Term("^.*\\.(doc|docx)$",'document.doc'),
+        "documentName": Term("^.*\\.(doc|docx)$", 'document.doc'),
         "creator": Like("TP"),
         "documentType": "microsoft-word",
     }
@@ -152,9 +152,6 @@ def test_publish_to_broker(pact):
      }))
 
     with pact:
-        # call matchers.get_generated_values(expected_event) to
-        # reify/strip the expected_event of the matchers used
-        # for Pact
         MessageHandler(matchers.get_generated_values(expected_event))
 
     progressive_delay(f"{PACT_FILE}")

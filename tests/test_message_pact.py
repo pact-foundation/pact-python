@@ -158,11 +158,12 @@ class MessagePactTestCase(TestCase):
 
         self.assertEqual(
             target._messages[0]['contents'],
-            {'name': 'John', 'document_name': 'sample_document.doc', 'document_style': {'data': {'generate': 'prose',
-                                     'matcher': {'json_class': 'Regexp',
-                                                 'o': 0,
-                                                 's': 'prose|docs'}},
-                            'json_class': 'Pact::Term'}})
+            {'name': 'John', 'document_name': 'sample_document.doc', 'document_style':
+                {'data': {'generate': 'prose',
+                          'matcher': {'json_class': 'Regexp',
+                                      'o': 0,
+                                      's': 'prose|docs'}},
+                    'json_class': 'Pact::Term'}})
 
         self.assertTrue({'contentType': 'application/json', 'source': 'legacy_api'}.items()
                         <= target._messages[0]['metaData'].items())

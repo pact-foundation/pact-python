@@ -7,7 +7,7 @@ from subprocess import Popen
 
 from .broker import Broker
 from .constants import MESSAGE_PATH
-from .matchers import Term, from_term, get_generated_values
+from .matchers import from_term
 
 
 class MessagePact(Broker):
