@@ -7,7 +7,7 @@ from subprocess import Popen
 
 from .broker import Broker
 from .constants import MESSAGE_PATH
-from .matchers import from_term
+from .matchers import Term, from_term, get_generated_values
 
 
 class MessagePact(Broker):
@@ -146,7 +146,10 @@ class MessagePact(Broker):
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        self._messages[0]['contents'] = from_term(contents)
+        if any(isinstance(value, Term) for value in contents.values()):
+            self._messages[0]['contents'] = get_generated_values(contents)
+        else:
+            self._messages[0]['contents'] = from_term(contents)
         return self
 
     def expects_to_receive(self, description):
