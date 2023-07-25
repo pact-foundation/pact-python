@@ -48,9 +48,9 @@ def test_generate_new_pact_file(pact):
     cleanup_json(PACT_FILE)
 
     expected_event = {
-        'documentName': 'document.doc',
-        'creator': 'TP',
-        'documentType': 'microsoft-word'
+        "documentName": Term("^.*\\.(doc|docx)$",'document.doc'),
+        "creator": Like("TP"),
+        "documentType": "microsoft-word",
     }
 
     (pact
@@ -63,7 +63,9 @@ def test_generate_new_pact_file(pact):
 
     with pact:
         # handler needs 'documentType' == 'microsoft-word'
-        MessageHandler(expected_event)
+        # call matchers.get_generated_values(expected_event) to
+        # reify/strip the expected_event of the matchers used
+        MessageHandler(matchers.get_generated_values(expected_event))
 
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 1
@@ -90,8 +92,8 @@ def test_throw_exception_handler(pact):
 
     with pytest.raises(CustomError):
         with pact:
-            # handler needs 'documentType' == 'microsoft-word'
-            MessageHandler(wrong_event)
+            # handler needs 'documentType' == 'microsoft-word
+            MessageHandler(matchers.get_generated_values(wrong_event))
 
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 0

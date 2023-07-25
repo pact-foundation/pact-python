@@ -8,6 +8,8 @@ from os import remove
 from os.path import isfile
 
 from pact import MessageConsumer, Provider
+from pact import matchers
+from pact.matchers import Like, Term
 from src.message_handler import MessageHandler, CustomError
 
 log = logging.getLogger(__name__)
@@ -93,7 +95,7 @@ def test_throw_exception_handler(pact_no_publish):
     with pytest.raises(CustomError):
         with pact_no_publish:
             # handler needs "documentType" == "microsoft-word"
-            MessageHandler(wrong_event)
+            MessageHandler(matchers.get_generated_values(wrong_event))
 
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 0
@@ -104,9 +106,9 @@ def test_put_file(pact_no_publish):
 
     expected_event = {
         "event": "ObjectCreated:Put",
-        "documentName": "document.doc",
-        "creator": "TP",
-        "documentType": "microsoft-word"
+        "documentName": Term("^.*\\.(doc|docx)$",'document.doc'),
+        "creator": Like("TP"),
+        "documentType": "microsoft-word",
     }
 
     (pact_no_publish
@@ -118,7 +120,7 @@ def test_put_file(pact_no_publish):
      }))
 
     with pact_no_publish:
-        MessageHandler(expected_event)
+        MessageHandler(matchers.get_generated_values(expected_event))
 
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 1
@@ -136,9 +138,9 @@ def test_publish_to_broker(pact):
 
     expected_event = {
         "event": "ObjectCreated:Delete",
-        "documentName": "document.doc",
-        "creator": "TP",
-        "documentType": "microsoft-word"
+        "documentName": Term("^.*\\.(doc|docx)$",'document.doc'),
+        "creator": Like("TP"),
+        "documentType": "microsoft-word",
     }
 
     (pact
@@ -150,7 +152,10 @@ def test_publish_to_broker(pact):
      }))
 
     with pact:
-        MessageHandler(expected_event)
+        # call matchers.get_generated_values(expected_event) to
+        # reify/strip the expected_event of the matchers used
+        # for Pact
+        MessageHandler(matchers.get_generated_values(expected_event))
 
     progressive_delay(f"{PACT_FILE}")
     assert isfile(f"{PACT_FILE}") == 1

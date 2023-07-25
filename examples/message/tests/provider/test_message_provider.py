@@ -22,7 +22,7 @@ def document_created_handler():
     return {
         "event": "ObjectCreated:Put",
         "documentName": "document.doc",
-        "creator": "TP",
+        "creator": "PF",
         "documentType": "microsoft-word"
     }
 

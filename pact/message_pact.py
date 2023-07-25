@@ -146,10 +146,7 @@ class MessagePact(Broker):
         :rtype: Pact
         """
         self._insert_message_if_complete()
-        if any(isinstance(value, Term) for value in contents.values()):
-            self._messages[0]['contents'] = get_generated_values(contents)
-        else:
-            self._messages[0]['contents'] = from_term(contents)
+        self._messages[0]['contents'] = from_term(contents)
         return self
 
     def expects_to_receive(self, description):
