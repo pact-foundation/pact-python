@@ -126,7 +126,7 @@ class PactPythonInstallCommand(install):
         install_binary(package_bin_path, self.bin_path, binary=ruby_app_binary())
 
         # Rust
-        install_binary(package_bin_path, download_bin_path=None, binary=rust_lib_binary())
+        install_binary(package_bin_path, self.bin_path, binary=rust_lib_binary())
 
 
 def get_ruby_uri(suffix) -> str:

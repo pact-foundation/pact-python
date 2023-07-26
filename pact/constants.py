@@ -46,3 +46,6 @@ MOCK_SERVICE_PATH = normpath(join(
 
 VERIFIER_PATH = normpath(join(
     dirname(__file__), 'bin', 'pact', 'bin', provider_verifier_exe()))
+
+FFI_LIB_PATH = normpath(join(
+    dirname(__file__), 'bin'))

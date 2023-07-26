@@ -12,18 +12,14 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
 
 linux_arm64_task: 
   env:
-    PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
+    # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      # - IMAGE: python:3.6 # This works locally, with cirrus run, but fails in CI
-      # - IMAGE: python:3.7
-      # - IMAGE: python:3.8
-      # - IMAGE: python:3.9
-      # - IMAGE: python:3.10
       - VERSION: 3.6
       - VERSION: 3.7
       - VERSION: 3.8
       - VERSION: 3.9
       - VERSION: 3.10
+      - VERSION: 3.11
   arm_container:
     image: python:$VERSION-slim
   install_script:
@@ -37,13 +33,14 @@ macos_arm64_task:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
     PATH: ${HOME}/.pyenv/shims:${PATH}
-    PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
+    # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
       - VERSION: 3.6
       - VERSION: 3.7
       - VERSION: 3.8
       - VERSION: 3.9
       - VERSION: 3.10
+      - VERSION: 3.11
   install_script:
     - brew update    
     - brew install pyenv
