@@ -2,7 +2,7 @@
 
 VERSION=$1
 
-if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]*$ ]]; then
+if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+[A-z01]*$ ]]; then
   echo "Updating version $VERSION."
 else
   echo "Invalid version number $VERSION"
