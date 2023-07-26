@@ -14,7 +14,7 @@ from setuptools.command.develop import develop
 from setuptools.command.install import install
 
 IS_64 = sys.maxsize > 2 ** 32
-PACT_STANDALONE_VERSION = '2.0.2'
+PACT_STANDALONE_VERSION = '2.0.3'
 PACT_STANDALONE_SUFFIXES = [
     'osx-x86_64.tar.gz',
     'osx-arm64.tar.gz',

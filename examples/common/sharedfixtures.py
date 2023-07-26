@@ -69,7 +69,7 @@ def publish_existing_pact(broker):
     target_platform = platform.platform().lower()
 
     if 'macos' in target_platform or 'windows' in target_platform:
-        envs["PACT_BROKER_BASE_URL"] = "http://host.docker.internal"
+        envs["PACT_BROKER_BASE_URL"] = "http://host.docker.internal:80"
 
     client = docker.from_env()
 
