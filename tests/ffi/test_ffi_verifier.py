@@ -26,13 +26,13 @@ def test_pact_urls_or_broker_required(mock_Popen):
 def test_pact_local_file_provided_but_does_not_exist():
     wrapper = FFIVerify()
     result = wrapper.verify(
-        "./pacts/consumer-provider.json",
+        "consumer-provider.json",
         provider="test_provider",
         provider_base_url="http://localhost",
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
-        "Failed to load pact './pacts/consumer-provider.json' - No such file or directory"
+        "Failed to load pact 'consumer-provider.json' - No such file or directory"
         in "\n".join(result.logs)
     )
 
