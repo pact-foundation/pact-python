@@ -38,7 +38,9 @@ class FFIVerify(object):
         broker_password = kwargs.get("broker_password", None)
         broker_token = kwargs.get("broker_token", None)
         broker_url = kwargs.get("broker_url", None)
-        # provider_states_setup_url = kwargs.get("provider_states_setup_url")
+        provider_states_setup_url = kwargs.get("provider_states_setup_url")
+        state_change_as_query = kwargs.get("state_change_as_query", True)
+        state_change_teardown = kwargs.get("state_change_teardown", False)
         log_dir = kwargs.get("log_dir")
         log_level = kwargs.get("log_level", "INFO")
         provider_tags = kwargs.get("provider_tags", [])
@@ -116,6 +118,9 @@ class FFIVerify(object):
             )
 
         lib.pactffi_verifier_set_verification_options(verifier, False, 5000)
+
+        if provider_states_setup_url is not None:
+            lib.pactffi_verifier_set_provider_state(verifier, safe_encode(provider_states_setup_url), state_change_teardown, state_change_as_query)
 
         local_file = False
         all_pact_urls = False
