@@ -48,10 +48,11 @@ def test_verify_success():
 
     )
     with provider:
-        provider.verify()
+        success, logs = provider.verify()
+        assert success == 0
 
 
-def test_verify_failure_when_a_provider_missing():
+def test_verify_failure_when_a_handler_missing():
     provider = MessageProvider(
         message_providers={
             'A document created successfully': document_created_handler,
@@ -62,9 +63,9 @@ def test_verify_failure_when_a_provider_missing():
 
     )
 
-    with pytest.raises(AssertionError):
-        with provider:
-            provider.verify()
+    with provider:
+        success, logs = provider.verify()
+        assert success == 1
 
 
 def test_verify_from_broker(default_opts):
@@ -78,4 +79,5 @@ def test_verify_from_broker(default_opts):
     )
 
     with provider:
-        provider.verify_with_broker(**default_opts)
+        success, logs = provider.verify_with_broker(**default_opts)
+        assert success == 0
