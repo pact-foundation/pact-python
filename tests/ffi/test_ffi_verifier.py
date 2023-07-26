@@ -1,4 +1,6 @@
 import platform
+from os.path import join, dirname
+import subprocess
 import pytest
 import mock
 from pact.ffi.verifier import VerifyStatus
@@ -126,24 +128,21 @@ def test_with_authenticated_broker_with_credentials_and_logs_to_file(httpserver)
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
-# def test_grpc_local_pact():
-#     wrapper = FFIVerify()
-#     result = wrapper.verify(
-#         "./examples/pacts/v4-grpc.json",
-#         provider="area-calculator-provider",
-#         provider_base_url="tcp://127.0.0.1:37757",
-#         # provider_base_url="tcp://127.0.0.1:{}".format(httpserver.port),
-#         request_timeout=10,
-#         log_level="TRACE",
-#         # plugin_name="protobuf",
-#         provider_transport="protobuf"
-#         # scheme="grpc",
-#         # host="localhost",
-#         # port=37757,
-#         # path="/",
-#     )
-#     assert VerifyStatus(result.return_code) == VerifyStatus.NULL_POINTER
-#     assert (
-#         "Failed to load pact - \x1b[31mCould not load pacts from the pact broker 'http://localhost.com'"
-#         in "\n".join(result.logs)
-#     )
+def test_grpc_local_pact():
+
+    grpc_server_process = subprocess.Popen(['python', 'area_calculator_server.py'],
+                                           cwd=join(dirname(__file__), '..', '..', 'examples', 'area_calculator'))
+
+    wrapper = FFIVerify()
+    result = wrapper.verify(
+        "./examples/pacts/v4-grpc.json",
+        provider="area-calculator-provider",
+        provider_base_url="tcp://127.0.0.1:37757",
+        request_timeout=10,
+        log_level="INFO",
+        plugin_name="protobuf",
+        provider_transport="protobuf"
+    )
+    assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
+    # TODO - Plugin success or failure not returned in logs
+    grpc_server_process.terminate()

@@ -2,10 +2,11 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
   arch_check_script:
     - uname -am
   test_script:
+    - script/install_plugins.sh
     - python --version
     - python -m pip install --upgrade pip
     - python -m pip install -r requirements_dev.txt
-    - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py
+    - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
     - python -m pydocstyle pact
     - python -m tox -e test
     # - make examples
@@ -23,7 +24,7 @@ linux_arm64_task:
   arm_container:
     image: python:$VERSION-slim
   install_script:
-    - apt update --yes && apt install --yes gcc make
+    - apt update --yes && apt install --yes gcc make curl
   << : *BUILD_TEST_TASK_TEMPLATE
 
 
@@ -47,4 +48,5 @@ macos_arm64_task:
     - pyenv install ${VERSION}
     - pyenv global ${VERSION}
     - pyenv rehash
+    - chmod +x script/install_plugins.sh
   << : *BUILD_TEST_TASK_TEMPLATE

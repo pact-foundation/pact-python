@@ -42,6 +42,9 @@ class FFIVerify(object):
         state_change_as_query = kwargs.get("state_change_as_query", True)
         state_change_teardown = kwargs.get("state_change_teardown", False)
         log_dir = kwargs.get("log_dir")
+        # TODO - log_level is applied globally
+        # doesnt seem to be a way to set a new log level
+        # during a test run
         log_level = kwargs.get("log_level", "INFO")
         provider_tags = kwargs.get("provider_tags", [])
         consumer_version_selectors = kwargs.get("consumer_selectors", [])
@@ -96,7 +99,7 @@ class FFIVerify(object):
             lib.pactffi_log_to_file(safe_encode(os.path.join(log_dir, "pact.log")), 5)
         else:
             lib.pactffi_log_to_buffer(LOG_LEVEL_MAPPING[log_level])
-            # lib.pactffi_log_to_stdout(LOG_LEVEL_MAPPING[log_level])
+            # lib.pactffi_log_to_stderr(LOG_LEVEL_MAPPING[log_level])
 
         verifier = lib.pactffi_verifier_new_for_application(b"pact-python", b"1.0.0")
 

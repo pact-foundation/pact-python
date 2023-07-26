@@ -26,5 +26,5 @@ httpx==0.22.0; python_version < '3.7'
 httpx==0.23.3; python_version >= '3.7'
 cffi>=1.14.6
 pytest-httpserver==1.0.1
-# grpcio==1.54.2
-# grpcio-tools==1.54.2
+grpcio==1.54.2
+grpcio-tools==1.54.2
