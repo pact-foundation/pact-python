@@ -14,7 +14,7 @@ linux_arm64_task:
   env:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      - VERSION: 3.6
+      # - VERSION: 3.6
       - VERSION: 3.7
       - VERSION: 3.8
       - VERSION: 3.9
@@ -35,7 +35,7 @@ macos_arm64_task:
     PATH: ${HOME}/.pyenv/shims:${PATH}
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      - VERSION: 3.6
+      # - VERSION: 3.6
       - VERSION: 3.7
       - VERSION: 3.8
       - VERSION: 3.9
