@@ -51,26 +51,29 @@ class MessageProviderTestCase(TestCase):
         self.assertEqual(self.provider.proxy_host, 'localhost')
         self.assertEqual(self.provider.proxy_port, '1234')
 
-    @patch('pact.Verifier.verify_pacts', return_value=(0, 'logs'))
-    def test_verify(self, mock_verify_pacts):
+    @patch('pact.ffi.ffi_verifier.FFIVerify.verify', return_value=(0, 'logs'))
+    def test_verify(self, mock_verify):
         self.provider.verify()
 
-        assert mock_verify_pacts.call_count == 1
-        mock_verify_pacts.assert_called_with(f'{self.provider.pact_dir}/{self.provider._pact_file()}', verbose=False)
+        assert mock_verify.call_count == 1
+        mock_verify.assert_called_with(f'{self.provider.pact_dir}/{self.provider._pact_file()}',
+                                       provider='DocumentService', provider_base_url='http://localhost:1234',
+                                       verbose=False)
 
-    @patch('pact.Verifier.verify_with_broker', return_value=(0, 'logs'))
-    def test_verify_with_broker(self, mock_verify_pacts):
+    @patch('pact.ffi.ffi_verifier.FFIVerify.verify', return_value=(0, 'logs'))
+    def test_verify_with_broker(self, mock_verify):
         self.provider.verify_with_broker(**self.options)
 
-        assert mock_verify_pacts.call_count == 1
-        mock_verify_pacts.assert_called_with(pacts=None,
-                                             enable_pending=False,
-                                             include_wip_pacts_since=None,
-                                             broker_username="test",
-                                             broker_password="test",
-                                             broker_url="http://localhost",
-                                             publish_version='3',
-                                             publish_verification_results=False)
+        assert mock_verify.call_count == 1
+        mock_verify.assert_called_with(enable_pending=False,
+                                       provider='DocumentService',
+                                       provider_base_url='http://localhost:1234',
+                                       include_wip_pacts_since=None,
+                                       broker_username="test",
+                                       broker_password="test",
+                                       broker_url="http://localhost",
+                                       publish_version='3',
+                                       publish_verification_results=False)
 
 
 class MessageProviderContextManagerTestCase(MessageProviderTestCase):

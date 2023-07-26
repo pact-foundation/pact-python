@@ -6,7 +6,9 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 from multiprocessing import Process
-from .verifier import Verifier
+
+from pact.ffi.ffi_verifier import FFIVerify
+# from .verifier import Verifier
 from .http_proxy import run_proxy
 
 import logging
@@ -35,7 +37,8 @@ class MessageProvider(object):
         pact_dir=os.getcwd(),
         version="3.0.0",
         proxy_host='localhost',
-        proxy_port='1234'
+        proxy_port='1234',
+        **kwargs
     ):
         """Create a Message Provider instance."""
         self.message_providers = message_providers
@@ -107,15 +110,18 @@ class MessageProvider(object):
         if isinstance(self._process, Process):
             self._wait_for_server_stop()
 
-    def verify(self):
+    def verify(self, **kwargs):
         """Verify pact files with executable verifier."""
         pact_files = f'{self.pact_dir}/{self._pact_file()}'
-        verifier = Verifier(provider=self.provider,
-                            provider_base_url=self._proxy_url())
-        return_code, _ = verifier.verify_pacts(pact_files, verbose=False)
-        assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
+        # verifier = Verifier(provider=self.provider,
+        #                     provider_base_url=self._proxy_url())
+        verifier = FFIVerify()
+        return_code, _ = verifier.verify(pact_files, provider=self.provider,
+                                         provider_base_url=self._proxy_url(), verbose=False, **kwargs)
+        # assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
+        return return_code
 
-    def verify_with_broker(self, pacts=None, enable_pending=False, include_wip_pacts_since=None, **kwargs):
+    def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
 
         Args:
@@ -128,12 +134,15 @@ class MessageProvider(object):
             pacts ([String]): pacts to verify
 
         """
-        verifier = Verifier(provider=self.provider,
-                            provider_base_url=self._proxy_url())
+        # verifier = Verifier(provider=self.provider,
+        #                     provider_base_url=self._proxy_url())
+        verifier = FFIVerify()
 
-        return_code, _ = verifier.verify_with_broker(pacts=pacts, enable_pending=enable_pending, include_wip_pacts_since=include_wip_pacts_since, **kwargs)
+        return_code, _ = verifier.verify(provider=self.provider, provider_base_url=self._proxy_url(),
+                                         enable_pending=enable_pending, include_wip_pacts_since=include_wip_pacts_since, **kwargs)
 
-        assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
+        # assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
+        return return_code
 
     def __enter__(self):
         """

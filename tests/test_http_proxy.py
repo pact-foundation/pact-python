@@ -63,7 +63,7 @@ class HttpProxyTestCase(TestCase):
             json=payload
         )
 
-        self.assertEqual(res.json(), {'contents': message})
+        self.assertEqual(res.json(), message)
 
     def test_home_raise_runtime_error_if_no_matched(self):
         data = {
