@@ -1,3 +1,4 @@
+import platform
 import pytest
 import mock
 from pact.ffi.verifier import VerifyStatus
@@ -31,10 +32,18 @@ def test_pact_local_file_provided_but_does_not_exist():
         provider_base_url="http://localhost",
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
-    assert (
-        "Failed to load pact 'consumer-provider.json' - No such file or directory"
-        in "\n".join(result.logs)
-    )
+    target_platform = platform.platform().lower()
+
+    if 'windows' in target_platform:
+        assert (
+            "Failed to load pact 'consumer-provider.json' - The system cannot find the file specified."
+            in "\n".join(result.logs)
+        )
+    else:
+        assert (
+            "Failed to load pact 'consumer-provider.json' - No such file or directory"
+            in "\n".join(result.logs)
+        )
 
 
 def test_pact_url_provided_but_does_not_exist():
