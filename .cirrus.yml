@@ -11,7 +11,8 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python -m tox -e test
     # - make examples
 
-linux_arm64_task: 
+linux_arm64_task:
+  only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   env:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
@@ -29,7 +30,7 @@ linux_arm64_task:
 
 
 macos_arm64_task:
-  # only_if: $CIRRUS_CHANGE_TITLE =~ 'ci\(macos\).*'
+  only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
