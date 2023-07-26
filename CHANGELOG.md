@@ -1,3 +1,7 @@
+### 2.0.1
+  * d3397b7 - chore(examples): update docker setup for non linux os (Yousaf Nabi, Tue Jul 25 14:55:42 2023 +0100)
+  * ef12e56 - feat: update standalone to 2.0.3 (Yousaf Nabi, Tue Jul 25 14:00:38 2023 +0100)
+  * 1429d2f - chore: update MANIFEST file to note 2.0.2 standalone (Yousaf Nabi, Tue Jul 25 13:56:08 2023 +0100)
 ### 2.0.0
   * 2a244ea - chore: update to 2.0.2 pact-ruby-standalone (Yousaf Nabi, Sat Jul 8 14:12:18 2023 +0100)
   * 819f0a7 - test: v2.0.1 (pact-2.0.1) - pact-ruby-standalone (Yousaf Nabi, Thu May 18 23:30:30 2023 +0100)
