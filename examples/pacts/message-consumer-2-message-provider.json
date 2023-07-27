@@ -1,0 +1,46 @@
+{
+  "consumer": {
+    "name": "message-consumer-2"
+  },
+  "messages": [
+    {
+      "contents": {
+        "uuid": "fb5a885f-f7e8-4a50-950f-c1a64a94d500"
+      },
+      "description": "Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message",
+      "matchingRules": {
+        "body": {
+          "$.uuid": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "contentType": "application/json"
+      },
+      "providerStates": [
+        {
+          "name": "A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "pactRust": {
+      "ffi": "0.4.5",
+      "models": "1.1.2"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "message-provider"
+  }
+}

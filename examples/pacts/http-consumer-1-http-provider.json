@@ -1,0 +1,154 @@
+{
+  "consumer": {
+    "name": "http-consumer-1"
+  },
+  "interactions": [
+    {
+      "description": "A POST request to create book",
+      "providerStates": [
+        {
+          "name": "No book fixtures required"
+        }
+      ],
+      "request": {
+        "body": {
+          "author": "Margaret Atwood",
+          "description": "Brilliantly conceived and executed, this powerful evocation of twenty-first century America gives full rein to Margaret Atwood's devastating irony, wit and astute perception.",
+          "isbn": "0099740915",
+          "publicationDate": "1985-07-31T00:00:00+00:00",
+          "title": "The Handmaid's Tale"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.author": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.isbn": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.publicationDate": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z)$"
+                }
+              ]
+            },
+            "$.title": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "method": "POST",
+        "path": "/api/books"
+      },
+      "response": {
+        "body": {
+          "@context": "/api/contexts/Book",
+          "@id": "/api/books/0114b2a8-3347-49d8-ad99-0e792c5a30e6",
+          "@type": "Book",
+          "author": "Melisa Kassulke",
+          "description": "Quaerat odit quia nisi accusantium natus voluptatem. Explicabo corporis eligendi ut ut sapiente ut qui quidem. Optio amet velit aut delectus. Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in.",
+          "publicationDate": "1999-02-13T00:00:00+07:00",
+          "reviews": [],
+          "title": "Voluptas et tempora repellat corporis excepturi."
+        },
+        "headers": {
+          "Content-Type": "application/ld+json; charset=utf-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.author": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.description": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.publicationDate": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z)$"
+                }
+              ]
+            },
+            "$.title": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$['@id']": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^\\/api\\/books\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-python": {
+      "ffi": "0.4.5"
+    },
+    "pactRust": {
+      "ffi": "0.4.5",
+      "mockserver": "1.1.1",
+      "models": "1.1.2"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "http-provider"
+  }
+}
