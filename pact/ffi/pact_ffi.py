@@ -1,5 +1,4 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
-import os
 import tempfile
 from typing import List
 

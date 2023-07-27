@@ -83,7 +83,7 @@ def test_authed_broker_without_credentials():
         in "\n".join(result.logs)
     )
 
-def test_broker_http_pact_with_filter_state(httpserver):
+def test_broker_http_v2_pact_with_filter_state(httpserver):
     body = {"name": "Mary"}
     endpoint = "/alligators/Mary"
     httpserver.expect_request(endpoint).respond_with_json(
@@ -101,8 +101,8 @@ def test_broker_http_pact_with_filter_state(httpserver):
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
-def test_local_http_pact_with_filter_state(httpserver):
-    body = {"name": "Mary"}
+def test_local_http_v2_pact_with_filter_state(httpserver):
+    body = {"name": "testing matchers - string"}
     endpoint = "/alligators/Mary"
     httpserver.expect_request(endpoint).respond_with_json(
         body, content_type="application/json;charset=utf-8"
@@ -115,6 +115,32 @@ def test_local_http_pact_with_filter_state(httpserver):
         provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
         request_timeout=10,
         filter_state="there is an alligator named Mary",
+    )
+    assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
+
+def test_local_http_v3_pact(httpserver):
+    body = {
+        "@context": "/api/contexts/Book",
+        "@id": "/api/books/0114b2a8-3347-49d8-ad99-0e792c5a31e6",
+        "@type": "Book",
+        "author": "testing matchers - using regex for id and pub date",
+        "description": "testing matchers - string",
+        "publicationDate": "2023-02-13T00:00:00+07:00",
+        "reviews": [],
+        "title": "testing matchers - string"
+    }
+    endpoint = "/api/books"
+    httpserver.expect_request(endpoint).respond_with_json(
+        body, content_type="application/ld+json;charset=utf-8"
+    )
+
+    wrapper = FFIVerify()
+    result = wrapper.verify(
+        "./examples/pacts/v3-http.json",
+        provider="Example API",
+        provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+        request_timeout=10,
+        # filter_state="there is an alligator named Mary",
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
