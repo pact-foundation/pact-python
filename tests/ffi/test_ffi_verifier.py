@@ -14,10 +14,8 @@ from pact.ffi.ffi_verifier import FFIVerify
 def test_version():
     assert FFIVerify().version() == "0.4.5"
 
-
 @mock.patch("os.listdir")
 def test_pact_urls_or_broker_required(mock_Popen):
-    # mock_Popen.return_value.returncode = 2
     verifier = FFIVerify()
 
     with pytest.raises(PactException) as e:
@@ -25,8 +23,7 @@ def test_pact_urls_or_broker_required(mock_Popen):
 
     assert "Pact urls or Pact broker required" in str(e)
 
-
-def test_pact_local_file_provided_but_does_not_exist():
+def test_pact_file_does_not_exist():
     wrapper = FFIVerify()
     result = wrapper.verify(
         "consumer-provider.json",
@@ -47,8 +44,7 @@ def test_pact_local_file_provided_but_does_not_exist():
             in "\n".join(result.logs)
         )
 
-
-def test_pact_url_provided_but_does_not_exist():
+def test_pact_url_does_not_exist():
     wrapper = FFIVerify()
     result = wrapper.verify(
         "http://broker.com/pacts/consumer-provider.json",
@@ -61,8 +57,7 @@ def test_pact_url_provided_but_does_not_exist():
         in "\n".join(result.logs)
     )
 
-
-def test_with_broker_url_no_auth_unable_to_load():
+def test_broker_url_does_not_exist():
     wrapper = FFIVerify()
     result = wrapper.verify(
         broker_url="http://broker.com/",
@@ -75,8 +70,7 @@ def test_with_broker_url_no_auth_unable_to_load():
         in "\n".join(result.logs)
     )
 
-
-def test_with_authenticated_broker_without_credentials():
+def test_authed_broker_without_credentials():
     wrapper = FFIVerify()
     result = wrapper.verify(
         broker_url="https://test.pactflow.io",
@@ -89,7 +83,7 @@ def test_with_authenticated_broker_without_credentials():
         in "\n".join(result.logs)
     )
 
-def test_with_authenticated_broker_with_credentials_and_logs_to_buffer(httpserver):
+def test_broker_http_pact_with_filter_state(httpserver):
     body = {"name": "Mary"}
     endpoint = "/alligators/Mary"
     httpserver.expect_request(endpoint).respond_with_json(
@@ -107,7 +101,7 @@ def test_with_authenticated_broker_with_credentials_and_logs_to_buffer(httpserve
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
-def test_with_authenticated_broker_with_credentials_and_logs_to_file(httpserver):
+def test_local_http_pact_with_filter_state(httpserver):
     body = {"name": "Mary"}
     endpoint = "/alligators/Mary"
     httpserver.expect_request(endpoint).respond_with_json(
@@ -116,15 +110,11 @@ def test_with_authenticated_broker_with_credentials_and_logs_to_file(httpserver)
 
     wrapper = FFIVerify()
     result = wrapper.verify(
-        # broker_url="http://localhost",
-        broker_url="https://test.pactflow.io",
-        broker_username="dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
-        broker_password="O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
-        # broker_token="129cCdfCWhMzcC9pFwb4bw",
+        "./examples/pacts/v2-http.json",
         provider="Example API",
         provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+        request_timeout=10,
         filter_state="there is an alligator named Mary",
-        # log_dir="./logs"
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
@@ -140,7 +130,6 @@ def test_grpc_local_pact():
         provider_base_url="tcp://127.0.0.1:37757",
         request_timeout=10,
         log_level="INFO",
-        plugin_name="protobuf",
         provider_transport="protobuf"
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
