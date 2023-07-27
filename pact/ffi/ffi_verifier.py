@@ -49,7 +49,7 @@ class FFIVerify(object):
         provider_tags = kwargs.get("provider_tags", [])
         consumer_version_selectors = kwargs.get("consumer_selectors", [])
         consumer_version_tags = kwargs.get("consumer_tags", [])
-        request_timeout = kwargs.get("request_timeout", None)
+        request_timeout = kwargs.get("request_timeout", 10)
         # Additional parameters
         filter_description = kwargs.get("filter_description", None)
         filter_state = kwargs.get("filter_state", None)
@@ -213,14 +213,13 @@ class FFIVerify(object):
                 1 if filter_no_state else 0,
             )
 
-        if request_timeout is not None or disable_ssl_verification is not False:
-            lib.pactffi_verifier_set_verification_options(
-                verifier, 1 if disable_ssl_verification else 0, request_timeout
-            )
+        lib.pactffi_verifier_set_verification_options(
+            verifier, 1 if disable_ssl_verification else 0, request_timeout
+        )
         result = lib.pactffi_verifier_execute(verifier)
+        lib.pactffi_verifier_shutdown(verifier)
         get_logs = lib.pactffi_verifier_logs(verifier)
 
-        lib.pactffi_verifier_shutdown(verifier)
         logs = ffi.string(get_logs).decode("utf-8").rstrip().split("\n")
         # print(logs)
         return VerifyResult(result, logs)
