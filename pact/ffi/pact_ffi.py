@@ -88,7 +88,8 @@ class PactFFI(object):
         # Reverting to log file output instead
         # result = self.lib.pactffi_fetch_log_buffer(b'NULL')
         # print(f"{result=}")
-        # return self.ffi.string(result).decode("utf-8").rstrip().split("\n")
+        # logs = self.ffi.string(result).decode("utf-8").rstrip().split("\n")
+        # pactffi_string_delete(result)
 
         # If using log to file, retrieve like this:
         lines = open(PactFFI.output_file).readlines()

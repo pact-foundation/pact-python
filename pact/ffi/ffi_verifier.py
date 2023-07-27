@@ -217,10 +217,11 @@ class FFIVerify(object):
             verifier, 1 if disable_ssl_verification else 0, request_timeout
         )
         result = lib.pactffi_verifier_execute(verifier)
-        lib.pactffi_verifier_shutdown(verifier)
         get_logs = lib.pactffi_verifier_logs(verifier)
+        lib.pactffi_verifier_shutdown(verifier)
 
         logs = ffi.string(get_logs).decode("utf-8").rstrip().split("\n")
+        lib.pactffi_string_delete(get_logs)
         # print(logs)
         return VerifyResult(result, logs)
 
