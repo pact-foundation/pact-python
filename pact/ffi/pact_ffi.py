@@ -56,15 +56,15 @@ class PactFFI(object):
                 # will be cleaned up automatically at the end
                 PactFFI.output_dir = tempfile.TemporaryDirectory()
                 # Setup logging to a file in the output_dir
-                PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
-                output_c = cls.ffi.new("char[]", bytes(cls.output_file, "utf-8"))
-                result = cls.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
-                assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
+                # PactFFI.output_file = os.path.join(PactFFI.output_dir.name, "output")
+                # output_c = cls.ffi.new("char[]", bytes(cls.output_file, "utf-8"))
+                # result = cls.lib.pactffi_log_to_file(output_c, LogLevel.INFO.value)
+                # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
 
                 # Having problems with the buffer output, when running via CLI
                 # Reverting to log file output instead
-                # result = cls.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
-                # assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
+                result = cls.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
+                assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
         return cls._instance
 
     def version(self) -> str:
@@ -86,12 +86,13 @@ class PactFFI(object):
         """
         # Having problems with the buffer output, when running via CLI
         # Reverting to log file output instead
-        # result = self.lib.pactffi_fetch_log_buffer(b'NULL')
-        # print(f"{result=}")
-        # logs = self.ffi.string(result).decode("utf-8").rstrip().split("\n")
-        # pactffi_string_delete(result)
+        result = self.lib.pactffi_fetch_log_buffer(b'NULL')
+        logs = self.ffi.string(result).decode("utf-8").rstrip().split("\n")
+        print(f"{logs=}")
+        self.lib.pactffi_string_delete(result)
+        return logs
 
-        # If using log to file, retrieve like this:
-        lines = open(PactFFI.output_file).readlines()
-        open(PactFFI.output_file, "w").close()
-        return [line.lstrip("\x00") for line in lines]
+        # # If using log to file, retrieve like this:
+        # lines = open(PactFFI.output_file).readlines()
+        # open(PactFFI.output_file, "w").close()
+        # return [line.lstrip("\x00") for line in lines]
