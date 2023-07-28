@@ -1,22 +1,21 @@
+import json
 import os
-from subprocess import Popen
-from os.path import join, dirname
+from pact.ffi.pact_consumer import MockServer, MockServerStatus
+from sys import path
+path.insert(0, './examples/area_calculator')
+from area_calculator_client import get_rectangle_area  # noqa: E402
 
-# import examples.area_calculator.area_calculator_pb2 as area_calculator_pb2
 # from examples.area_calculator.area_calculator_client import get_rectangle_area
-from pact.ffi.pact_consumer import *
-import sys
-sys.path.insert(0, './examples/area_calculator')
-from area_calculator_client import get_rectangle_area
 
+m = MockServer()
 PACT_FILE_DIR = './examples/pacts'
 
 def test_ffi_grpc_consumer():
     # Setup pact for testing
-    pact = new_pact('grpc-consumer-python', 'area-calculator-provider')
-    message_pact = new_sync_message_interaction(pact, 'A gRPC calculateMulti request')
-    with_specification(pact, 5)
-    using_plugin(pact, 'protobuf', '0.3.4')
+    pact = m.new_pact('grpc-consumer-python', 'area-calculator-provider')
+    message_pact = m.new_sync_message_interaction(pact, 'A gRPC calculateMulti request')
+    m.with_specification(pact, 5)
+    m.using_plugin(pact, 'protobuf', '0.3.4')
 
     # our interaction contents
     contents = {
@@ -35,8 +34,8 @@ def test_ffi_grpc_consumer():
     }
 
     # Start mock server
-    interaction_contents(message_pact, "res", 'application/grpc', json.dumps(contents))
-    mock_server_port = start_mock_server(pact, '0.0.0.0', 0, 'grpc', None)
+    m.interaction_contents(message_pact, "res", 'application/grpc', json.dumps(contents))
+    mock_server_port = m.start_mock_server(pact, '0.0.0.0', 0, 'grpc', None)
 
     # Make our client call
     expected_response = 12.0
@@ -45,4 +44,5 @@ def test_ffi_grpc_consumer():
     print(f"Client response - matched expected: {response == expected_response}")
 
     # Check our result and write pact to file
-    verify(mock_server_port, pact, PACT_FILE_DIR)
+    result = m.verify(mock_server_port, pact, PACT_FILE_DIR)
+    assert MockServerStatus(result.return_code) == MockServerStatus.SUCCESS

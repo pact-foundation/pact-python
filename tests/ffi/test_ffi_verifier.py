@@ -154,10 +154,10 @@ def test_grpc_local_pact():
         "./examples/pacts/v4-grpc.json",
         provider="area-calculator-provider",
         provider_base_url="tcp://127.0.0.1:37757",
-        request_timeout=10,
+        request_timeout=30,
         log_level="INFO",
         provider_transport="protobuf"
     )
+    grpc_server_process.terminate()
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
     # TODO - Plugin success or failure not returned in logs
-    grpc_server_process.terminate()

@@ -28,6 +28,6 @@ def get_rectangle_area(address):
 if __name__ == '__main__':
     logging.basicConfig()
     parser = argparse.ArgumentParser(description='Description of your program')
-    parser.add_argument('-p','--port', help='Port_number', required=False, default=37757)
+    parser.add_argument('-p', '--port', help='Port_number', required=False, default=37757)
     args = vars(parser.parse_args())
-    run(port=args['port']) 
+    run(port=args['port'])

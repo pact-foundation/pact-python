@@ -1,22 +1,23 @@
 import json
 import requests
 
-from pact.ffi.pact_consumer import *
+from pact.ffi.pact_consumer import MockServer, MockServerStatus
 
+m = MockServer()
 PACT_FILE_DIR = './examples/pacts'
 
 def test_ffi_message_consumer():
     # Setup http pact for testing
-    pact = new_pact('http-consumer-2', 'http-provider')
-    interaction = new_interaction(pact, 'A PUT request to generate book cover')
+    pact = m.new_pact('http-consumer-2', 'http-provider')
+    interaction = m.new_interaction(pact, 'A PUT request to generate book cover')
     # setup interaction request
-    upon_receiving(interaction, 'A PUT request to generate book cover')
-    given(interaction, 'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
-    with_request(interaction, 'PUT', '/api/books/fb5a885f-f7e8-4a50-950f-c1a64a94d500/generate-cover')
-    with_request_header(interaction, 'Content-Type', 0, 'application/json')
-    with_request_body(interaction, 'application/json', [])
+    m.given(interaction, 'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
+    m.upon_receiving(interaction, 'A PUT request to generate book cover')
+    m.with_request(interaction, 'PUT', '/api/books/fb5a885f-f7e8-4a50-950f-c1a64a94d500/generate-cover')
+    m.with_request_header(interaction, 'Content-Type', 0, 'application/json')
+    m.with_request_body(interaction, 'application/json', [])
     # setup interaction response
-    response_status(interaction, 204)
+    m.response_status(interaction, 204)
     # Setup message pact for testing
     contents = {
         "uuid": {
@@ -25,17 +26,17 @@ def test_ffi_message_consumer():
             "value": 'fb5a885f-f7e8-4a50-950f-c1a64a94d500'
         }
     }
-    message_pact = new_pact('message-consumer-2', 'message-provider')
-    message = new_message(message_pact, 'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
-    message_expects_to_receive(message, 'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
-    message_given(message, 'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
-    message_with_contents(message, 'application/json', contents)
-    
+    message_pact = m.new_pact('message-consumer-2', 'message-provider')
+    message = m.new_message(message_pact, 'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
+    m.message_given(message, 'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
+    m.message_expects_to_receive(message, 'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
+    m.message_with_contents(message, 'application/json', contents)
+
     # Start mock server
-    mock_server_port = start_mock_server(pact, '0.0.0.0', 0, 'http', None)
-    reified = message_reify(message)
+    mock_server_port = m.start_mock_server(pact, '0.0.0.0', 0, 'http', None)
+    reified = m.message_reify(message)
     uuid = json.loads(reified)['contents']['uuid']
-    
+
     # Make our client call
     body = []
     try:
@@ -51,4 +52,5 @@ def test_ffi_message_consumer():
         print(f'Client request - Other error occurred: {err}')  # Python 3.6
 
     # verify and write pact if success
-    verify(mock_server_port, pact, PACT_FILE_DIR, message_pact)
+    result = m.verify(mock_server_port, pact, PACT_FILE_DIR, message_pact)
+    assert MockServerStatus(result.return_code) == MockServerStatus.SUCCESS
