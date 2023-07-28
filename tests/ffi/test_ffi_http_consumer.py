@@ -1,11 +1,8 @@
 import json
 import requests
 
-from pact.ffi.pact_ffi import PactFFI
-from tests.ffi.test_ffi_grpc_consumer import check_results, se
-from pact.__version__ import __version__
+from pact.ffi.pact_consumer import *
 
-pactlib = PactFFI()
 PACT_FILE_DIR = './examples/pacts'
 
 def test_ffi_http_consumer():
@@ -20,8 +17,7 @@ def test_ffi_http_consumer():
         },
         "description": {
             "pact:matcher:type": "type",
-            "value": "Brilliantly conceived and executed, this powerful evocation of twenty-first\
-                century America gives full rein to Margaret Atwood\'s devastating irony, wit and astute perception."
+            "value": "Brilliantly conceived and executed, this powerful evocation of twenty-first century America gives full rein to Margaret Atwood\'s devastating irony, wit and astute perception."
         },
         "author": {
             "pact:matcher:type": "type",
@@ -48,9 +44,7 @@ def test_ffi_http_consumer():
         },
         "description": {
             "pact:matcher:type": "type",
-            "value": "Quaerat odit quia nisi accusantium natus voluptatem. Explicabo \
-                corporis eligendi ut ut sapiente ut qui quidem. Optio amet velit aut delectus. \
-                    Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in."
+            "value": "Quaerat odit quia nisi accusantium natus voluptatem. Explicabo corporis eligendi ut ut sapiente ut qui quidem. Optio amet velit aut delectus. Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in."
         },
         "author": {
             "pact:matcher:type": "type",
@@ -65,43 +59,35 @@ def test_ffi_http_consumer():
         ]
     }
     # Setup pact for testing
-    pact_handle = pactlib.lib.pactffi_new_pact(b'http-consumer-1', b'http-provider')
-    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'version', se(__version__))
-    interaction = pactlib.lib.pactffi_new_interaction(pact_handle, b'A POST request to create book')
-
+    pact = new_pact('http-consumer-1', 'http-provider')
+    interaction = new_interaction(pact, 'A POST request to create book')
     # setup interaction request
-    pactlib.lib.pactffi_upon_receiving(interaction, b'A POST request to create book')
-    pactlib.lib.pactffi_given(interaction, b'No book fixtures required')
-    pactlib.lib.pactffi_with_request(interaction, b'POST', b'/api/books')
-    pactlib.lib.pactffi_with_header_v2(interaction, 0, b'Content-Type', 0, b'application/json')
-    pactlib.lib.pactffi_with_body(interaction, 0, b'application/json', pactlib.ffi.new("char[]", json.dumps(request_interaction_body).encode('ascii')))
+    upon_receiving(interaction, 'A POST request to create book')
+    given(interaction, 'No book fixtures required')
+    with_request(interaction, 'POST', '/api/books')
+    with_request_header(interaction, 'Content-Type', 0, 'application/json')
+    with_request_body(interaction, 'application/json', request_interaction_body)
     # setup interaction response
-    pactlib.lib.pactffi_response_status(interaction, 200)
-    pactlib.lib.pactffi_with_header_v2(interaction, 1, b'Content-Type', 0, b'application/ld+json; charset=utf-8')
-    pactlib.lib.pactffi_with_body(interaction, 1, b'application/ld+json; charset=utf-8',
-                                  pactlib.ffi.new("char[]", json.dumps(response_interaction_body).encode('ascii')))
-
+    response_status(interaction, 200)
+    with_response_header(interaction, 'Content-Type', 0, 'application/ld+json; charset=utf-8')
+    with_response_body(interaction, 'application/json', response_interaction_body)
     # Start mock server
-    mock_server_port = pactlib.lib.pactffi_create_mock_server_for_transport(pact_handle, b'0.0.0.0', 0, b'http', pactlib.ffi.cast("void *", 0))
-    print(f"Mock server started: {mock_server_port}")
+    mock_server_port = start_mock_server(pact, '0.0.0.0', 0, 'http', None)
 
     # Make our client call
     body = {
         "isbn": '0099740915',
         "title": "The Handmaid's Tale",
-        "description": 'Brilliantly conceived and executed, this powerful evocation of twenty-first century \
-            America gives full rein to Margaret Atwood\'s devastating irony, wit and astute perception.',
+        "description": 'Brilliantly conceived and executed, this powerful evocation of twenty-first century America gives full rein to Margaret Atwood\'s devastating irony, wit and astute perception.',
         "author": 'Margaret Atwood',
         "publicationDate": '1985-07-31T00:00:00+00:00'
     }
-    expected_response = '{"@context":"/api/contexts/Book","@id":"/api/books/0114b2a8-3347-49d8-ad99-0e792c5a30e6","@type":"Book","author":"Melisa Kassulke",\
-                        "description":"Quaerat odit quia nisi accusantium natus voluptatem. Explicabo corporis eligendi ut ut sapiente ut qui quidem. \
-                         Optio amet velit aut delectus. Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in.",\
-                        "publicationDate":"1999-02-13T00:00:00+07:00","reviews":[],"title":"Voluptas et tempora repellat corporis excepturi."}'
+    expected_response = '{"@context":"/api/contexts/Book","@id":"/api/books/0114b2a8-3347-49d8-ad99-0e792c5a30e6","@type":"Book","author":"Melisa Kassulke","description":"Quaerat odit quia nisi accusantium natus voluptatem. Explicabo corporis eligendi ut ut sapiente ut qui quidem. Optio amet velit aut delectus. Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in.","publicationDate":"1999-02-13T00:00:00+07:00","reviews":[],"title":"Voluptas et tempora repellat corporis excepturi."}'
     try:
         response = requests.post(f"http://127.0.0.1:{mock_server_port}/api/books", data=json.dumps(body),
                                  headers={'Content-Type': 'application/json'})
-        print(f"Client response - matched: {response.text}")
+        print(f"Client response: {response.text}")
+        print(f"expected_response: {expected_response}")
         print(f"Client response - matched: {response.text == expected_response}")
         response.raise_for_status()
     except requests.HTTPError as http_err:
@@ -109,4 +95,4 @@ def test_ffi_http_consumer():
     except Exception as err:
         print(f'Client request - Other error occurred: {err}')  # Python 3.6
 
-    check_results(pactlib, mock_server_port, pact_handle, PACT_FILE_DIR)
+    verify(mock_server_port, pact, PACT_FILE_DIR)

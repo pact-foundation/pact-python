@@ -1,29 +1,23 @@
 import json
 import requests
 
-from pact.ffi.pact_ffi import PactFFI
-from tests.ffi.utils import check_results, se
-from pact.__version__ import __version__
+from pact.ffi.pact_consumer import *
 
-pactlib = PactFFI()
 PACT_FILE_DIR = './examples/pacts'
 
 def test_ffi_message_consumer():
-    # Setup pact for testing
-    pact_handle = pactlib.lib.pactffi_new_pact(b'http-consumer-2', b'http-provider')
-    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'version', se(__version__))
-    interaction = pactlib.lib.pactffi_new_interaction(pact_handle, b'A PUT request to generate book cover')
-    message_pact = pactlib.lib.pactffi_new_pact(b'message-consumer-2', b'message-provider')
-    message = pactlib.lib.pactffi_new_message(message_pact, b'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
-
+    # Setup http pact for testing
+    pact = new_pact('http-consumer-2', 'http-provider')
+    interaction = new_interaction(pact, 'A PUT request to generate book cover')
     # setup interaction request
-    pactlib.lib.pactffi_upon_receiving(interaction, b'A PUT request to generate book cover')
-    pactlib.lib.pactffi_given(interaction, b'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
-    pactlib.lib.pactffi_with_request(interaction, b'PUT', b'/api/books/fb5a885f-f7e8-4a50-950f-c1a64a94d500/generate-cover')
-    pactlib.lib.pactffi_with_header_v2(interaction, 0, b'Content-Type', 0, b'application/json')
-    pactlib.lib.pactffi_with_body(interaction, 0, b'application/json', b'[]')
+    upon_receiving(interaction, 'A PUT request to generate book cover')
+    given(interaction, 'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
+    with_request(interaction, 'PUT', '/api/books/fb5a885f-f7e8-4a50-950f-c1a64a94d500/generate-cover')
+    with_request_header(interaction, 'Content-Type', 0, 'application/json')
+    with_request_body(interaction, 'application/json', [])
     # setup interaction response
-    pactlib.lib.pactffi_response_status(interaction, 204)
+    response_status(interaction, 204)
+    # Setup message pact for testing
     contents = {
         "uuid": {
             "pact:matcher:type": 'regex',
@@ -31,17 +25,17 @@ def test_ffi_message_consumer():
             "value": 'fb5a885f-f7e8-4a50-950f-c1a64a94d500'
         }
     }
-    length = len(json.dumps(contents))
-    size = length + 1
-    pactlib.lib.pactffi_message_expects_to_receive(message, b'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
-    pactlib.lib.pactffi_message_given(message, b'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
-    pactlib.lib.pactffi_message_with_contents(message, b'application/json', pactlib.ffi.new("char[]", json.dumps(contents).encode('ascii')), size)
+    message_pact = new_pact('message-consumer-2', 'message-provider')
+    message = new_message(message_pact, 'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
+    message_expects_to_receive(message, 'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')
+    message_given(message, 'A book with id fb5a885f-f7e8-4a50-950f-c1a64a94d500 is required')
+    message_with_contents(message, 'application/json', contents)
+    
     # Start mock server
-    mock_server_port = pactlib.lib.pactffi_create_mock_server_for_transport(pact_handle, b'0.0.0.0', 0, b'http', pactlib.ffi.cast("void *", 0))
-    print(f"Mock server started: {mock_server_port}")
-    reified = pactlib.lib.pactffi_message_reify(message)
-    uuid = json.loads(pactlib.ffi.string(reified).decode('utf-8'))['contents']['uuid']
-
+    mock_server_port = start_mock_server(pact, '0.0.0.0', 0, 'http', None)
+    reified = message_reify(message)
+    uuid = json.loads(reified)['contents']['uuid']
+    
     # Make our client call
     body = []
     try:
@@ -56,4 +50,5 @@ def test_ffi_message_consumer():
     except Exception as err:
         print(f'Client request - Other error occurred: {err}')  # Python 3.6
 
-    check_results(pactlib, mock_server_port, pact_handle, PACT_FILE_DIR, message_pact)
+    # verify and write pact if success
+    verify(mock_server_port, pact, PACT_FILE_DIR, message_pact)

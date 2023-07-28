@@ -32,6 +32,9 @@
     }
   ],
   "metadata": {
+    "pact-python": {
+      "version": "2.0.1"
+    },
     "pactRust": {
       "ffi": "0.4.5",
       "models": "1.1.2"

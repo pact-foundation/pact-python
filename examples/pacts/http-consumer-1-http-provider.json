@@ -13,7 +13,7 @@
       "request": {
         "body": {
           "author": "Margaret Atwood",
-          "description": "Brilliantly conceived and executed, this powerful evocation of twenty-first                century America gives full rein to Margaret Atwood's devastating irony, wit and astute perception.",
+          "description": "Brilliantly conceived and executed, this powerful evocation of twenty-first century America gives full rein to Margaret Atwood's devastating irony, wit and astute perception.",
           "isbn": "0099740915",
           "publicationDate": "1985-07-31T00:00:00+00:00",
           "title": "The Handmaid's Tale"
@@ -76,7 +76,7 @@
           "@id": "/api/books/0114b2a8-3347-49d8-ad99-0e792c5a30e6",
           "@type": "Book",
           "author": "Melisa Kassulke",
-          "description": "Quaerat odit quia nisi accusantium natus voluptatem. Explicabo                 corporis eligendi ut ut sapiente ut qui quidem. Optio amet velit aut delectus.                     Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in.",
+          "description": "Quaerat odit quia nisi accusantium natus voluptatem. Explicabo corporis eligendi ut ut sapiente ut qui quidem. Optio amet velit aut delectus. Sed alias asperiores perspiciatis deserunt omnis. Mollitia unde id in.",
           "publicationDate": "1999-02-13T00:00:00+07:00",
           "reviews": [],
           "title": "Voluptas et tempora repellat corporis excepturi."
