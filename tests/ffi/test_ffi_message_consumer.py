@@ -3,6 +3,7 @@ import requests
 
 from pact.ffi.pact_ffi import PactFFI
 from tests.ffi.utils import check_results, se
+from pact.__version__ import __version__
 
 pactlib = PactFFI()
 PACT_FILE_DIR = './examples/pacts'
@@ -10,7 +11,7 @@ PACT_FILE_DIR = './examples/pacts'
 def test_ffi_message_consumer():
     # Setup pact for testing
     pact_handle = pactlib.lib.pactffi_new_pact(b'http-consumer-2', b'http-provider')
-    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'ffi', se(pactlib.version()))
+    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'version', se(__version__))
     interaction = pactlib.lib.pactffi_new_interaction(pact_handle, b'A PUT request to generate book cover')
     message_pact = pactlib.lib.pactffi_new_pact(b'message-consumer-2', b'message-provider')
     message = pactlib.lib.pactffi_new_message(message_pact, b'Book (id fb5a885f-f7e8-4a50-950f-c1a64a94d500) created message')

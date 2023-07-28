@@ -3,6 +3,7 @@ import requests
 
 from pact.ffi.pact_ffi import PactFFI
 from tests.ffi.test_ffi_grpc_consumer import check_results, se
+from pact.__version__ import __version__
 
 pactlib = PactFFI()
 PACT_FILE_DIR = './examples/pacts'
@@ -65,7 +66,7 @@ def test_ffi_http_consumer():
     }
     # Setup pact for testing
     pact_handle = pactlib.lib.pactffi_new_pact(b'http-consumer-1', b'http-provider')
-    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'ffi', se(pactlib.version()))
+    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'version', se(__version__))
     interaction = pactlib.lib.pactffi_new_interaction(pact_handle, b'A POST request to create book')
 
     # setup interaction request

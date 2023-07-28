@@ -1,10 +1,13 @@
 import os
 import json
+# import examples.area_calculator.area_calculator_pb2 as area_calculator_pb2
+# from examples.area_calculator.area_calculator_client import get_rectangle_area
 from tests.ffi.utils import check_results, se
 from pact.ffi.pact_ffi import PactFFI
-from area_calculator_client import get_rectangle_area
 import sys
 sys.path.insert(0, './examples/area_calculator')
+from area_calculator_client import get_rectangle_area
+from pact.__version__ import __version__
 
 pactlib = PactFFI()
 PACT_FILE_DIR = './examples/pacts'
@@ -12,7 +15,7 @@ PACT_FILE_DIR = './examples/pacts'
 def test_ffi_grpc_consumer():
     # Setup pact for testing
     pact_handle = pactlib.lib.pactffi_new_pact(b'grpc-consumer-python', b'area-calculator-provider')
-    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'ffi', se(pactlib.version()))
+    pactlib.lib.pactffi_with_pact_metadata(pact_handle, b'pact-python', b'version', se(__version__))
     message_pact = pactlib.lib.pactffi_new_sync_message_interaction(pact_handle, b'A gRPC calculateMulti request')
     pactlib.lib.pactffi_with_specification(pact_handle, 5)
 

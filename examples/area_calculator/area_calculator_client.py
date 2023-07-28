@@ -8,7 +8,6 @@ import grpc
 import area_calculator_pb2
 import area_calculator_pb2_grpc
 
-
 def run():
     get_rectangle_area('localhost:37757')
 
