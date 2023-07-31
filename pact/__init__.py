@@ -8,9 +8,11 @@ from .message_provider import MessageProvider
 from .pact import Pact
 from .provider import Provider
 from .verifier import Verifier
+from .pact_v3 import PactV3
+from .verifier_v3 import VerifierV3
 
 from .__version__ import __version__  # noqa: F401
 
-__all__ = ('Broker', 'Consumer', 'EachLike', 'Like',
-           'MessageConsumer', 'MessagePact', 'MessageProvider',
-           'Pact', 'Provider', 'SomethingLike', 'Term', 'Format', 'Verifier')
+__all__ = ('Broker', 'Consumer', 'EachLike', 'Like', 'MessageConsumer', 'MessagePact',
+           'Pact', 'Provider', 'SomethingLike', 'Term', 'Format', 'Verifier', 'PactV3',
+           'VerifierV3')

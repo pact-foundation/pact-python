@@ -91,6 +91,7 @@ celerybeat-schedule
 venv/
 .venv/
 ENV/
+.venv/
 
 # Spyder project settings
 .spyderproject
@@ -107,3 +108,5 @@ ENV/
 
 # MacOS stuff
 .DS_Store
+# Generated pact directories
+pacts/
