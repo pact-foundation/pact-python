@@ -52,28 +52,27 @@ class MessageProviderTestCase(TestCase):
         self.assertEqual(self.provider.proxy_port, '1234')
 
     @patch('pact.verifier_v3.VerifierV3.verify_pacts', return_value=(0, 'logs'))
-    def test_verify(self, mock_verify):
+    def test_verify(self, mock_verify_pacts):
         self.provider.verify()
 
-        assert mock_verify.call_count == 1
-        mock_verify.assert_called_with(sources=[f'{self.provider.pact_dir}/{self.provider._pact_file()}'],
-                                       provider='DocumentService', provider_base_url='http://localhost:1234',
-                                       verbose=False)
+        assert mock_verify_pacts.call_count == 1
+        mock_verify_pacts.assert_called_with(sources=[f'{self.provider.pact_dir}/{self.provider._pact_file()}'],
+                                             )
 
     @patch('pact.verifier_v3.VerifierV3.verify_pacts', return_value=(0, 'logs'))
-    def test_verify_with_broker(self, mock_verify):
+    def test_verify_with_broker(self, mock_verify_pacts):
         self.provider.verify_with_broker(**self.options)
 
-        assert mock_verify.call_count == 1
-        mock_verify.assert_called_with(enable_pending=False,
-                                       provider='DocumentService',
-                                       provider_base_url='http://localhost:1234',
-                                       include_wip_pacts_since=None,
-                                       broker_username="test",
-                                       broker_password="test",
-                                       broker_url="http://localhost",
-                                       publish_version='3',
-                                       publish_verification_results=False)
+        assert mock_verify_pacts.call_count == 1
+        mock_verify_pacts.assert_called_with(
+            enable_pending=False,
+            include_wip_pacts_since=None,
+            broker_username="test",
+            broker_password="test",
+            broker_url="http://localhost",
+            publish_version='3',
+            publish_verification_results=False
+        )
 
 
 class MessageProviderContextManagerTestCase(MessageProviderTestCase):

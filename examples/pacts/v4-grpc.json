@@ -1,6 +1,6 @@
 {
     "consumer": {
-      "name": "grpc-consumer-python"
+      "name": "grpc-consumer-python-example"
     },
     "interactions": [
       {
@@ -97,6 +97,6 @@
       ]
     },
     "provider": {
-      "name": "area-calculator-provider"
+      "name": "area-calculator-provider-example"
     }
   }

@@ -7,7 +7,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 from multiprocessing import Process
 
-from pact.ffi.native_verifier import VerifyStatus
+from pact.ffi.native_verifier import VerifyResult
 from pact.verifier_v3 import VerifierV3
 from .http_proxy import run_proxy
 
@@ -118,7 +118,7 @@ class MessageProvider(object):
                               )
         return_code, logs = verifier.verify_pacts(sources=[pact_files],
                                                   **kwargs)
-        return VerifyStatus(return_code, logs)
+        return VerifyResult(return_code, logs)
 
     def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
@@ -137,7 +137,7 @@ class MessageProvider(object):
                               provider_base_url=self._proxy_url(),
                               )
         return_code, logs = verifier.verify_pacts(enable_pending=enable_pending,
-                                                  include_wip_pacts_since=include_wip_pacts_since
+                                                  include_wip_pacts_since=include_wip_pacts_since,
                                                   **kwargs)
 
         return VerifyResult(return_code, logs)
