@@ -130,7 +130,7 @@ class VerifyWrapper(object):
 
     def _validate_input(self, pacts, **kwargs):
         if len(pacts) == 0 and not self._broker_present(**kwargs):
-            raise PactException('Pact urls or Pact broker required')
+            raise PactException('Pact sources or pact_broker_url required')
 
     def verify( # noqa: max-complexity: 15
             self, *pacts, provider_base_url, provider, enable_pending=False,
@@ -170,7 +170,7 @@ class VerifyWrapper(object):
         command.extend(['{}={}'.format(k, v) for k, v in options.items() if v])
 
         if not all_pact_urls and not kwargs.get('broker_url', None):
-            raise PactException('Pact urls or Pact broker required')
+            raise PactException('Pact sources or pact_broker_url required')
 
         if publish_verification_results is True and local_file:
             raise PactException('Cannot publish verification results for local files')

@@ -1,34 +1,25 @@
+import pytest
+from pact import VerifierV3
+from pact.ffi.native_verifier import VerifyStatus
 import platform
 from os.path import join, dirname
 import subprocess
-import pytest
-import mock
-from pact.ffi.verifier import VerifyStatus
-
 from pact.pact_exception import PactException
-from pact.ffi.ffi_verifier import FFIVerify
-# import sys
-# sys.path.insert(0, './examples/area_calculator')
-# from area_calculator_server import serve
 
-def test_version():
-    assert FFIVerify().version() == "0.4.5"
 
-@mock.patch("os.listdir")
-def test_pact_urls_or_broker_required(mock_Popen):
-    verifier = FFIVerify()
-
+def test_pact_urls_or_broker_required():
+    verifier = VerifierV3(provider="provider", provider_base_url="http://localhost")
     with pytest.raises(PactException) as e:
-        verifier.verify(provider="provider", provider_base_url="http://localhost")
+        verifier.verify_pacts()
 
-    assert "Pact urls or Pact broker required" in str(e)
+    assert "Pact sources or pact_broker_url required" in str(e)
 
 def test_pact_file_does_not_exist():
-    wrapper = FFIVerify()
-    result = wrapper.verify(
-        "consumer-provider.json",
-        provider="test_provider",
-        provider_base_url="http://localhost",
+    verifier = VerifierV3(provider="test_provider",
+                          provider_base_url="http://localhost",
+                          )
+    result = verifier.verify_pacts(
+        sources=["consumer-provider.json"],
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     target_platform = platform.platform().lower()
@@ -45,11 +36,12 @@ def test_pact_file_does_not_exist():
         )
 
 def test_pact_url_does_not_exist():
-    wrapper = FFIVerify()
-    result = wrapper.verify(
-        "http://broker.com/pacts/consumer-provider.json",
-        provider="test_provider",
-        provider_base_url="http://localhost",
+
+    verifier = VerifierV3(provider="test_provider",
+                          provider_base_url="http://localhost",
+                          )
+    result = verifier.verify_pacts(
+        sources=["http://broker.com/pacts/consumer-provider.json"],
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
@@ -58,11 +50,12 @@ def test_pact_url_does_not_exist():
     )
 
 def test_broker_url_does_not_exist():
-    wrapper = FFIVerify()
-    result = wrapper.verify(
+
+    verifier = VerifierV3(provider="Example API",
+                          provider_base_url="http://localhost",
+                          )
+    result = verifier.verify_pacts(
         broker_url="http://broker.com/",
-        provider="test_provider",
-        provider_base_url="http://localhost",
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
@@ -71,17 +64,44 @@ def test_broker_url_does_not_exist():
     )
 
 def test_authed_broker_without_credentials():
-    wrapper = FFIVerify()
-    result = wrapper.verify(
+    verifier = VerifierV3(provider="Example API",
+                          provider_base_url="http://localhost",
+                          )
+    result = verifier.verify_pacts(
         broker_url="https://test.pactflow.io",
-        provider="Example API",
-        provider_base_url="http://localhost",
+
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
         "Failed to load pact - \x1b[31mCould not load pacts from the pact broker 'https://test.pactflow.io'"
         in "\n".join(result.logs)
     )
+
+
+def test_local_http_v2_pact_with_filter_state_and_consumer_filters(httpserver):
+    body = {"name": "testing matchers - string"}
+    endpoint = "/alligators/Mary"
+    httpserver.expect_request(endpoint).respond_with_json(
+        body, content_type="application/json;charset=utf-8"
+    )
+
+    verifier = VerifierV3(provider='Example API',
+                          provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+                          )
+
+    result = verifier.verify_pacts(
+        sources=['./examples/pacts'],
+        broker_username='foo',
+        filter_state="there is an alligator named Mary",
+        no_pacts_is_error=True,
+        add_custom_header=[
+            {'name': 'custom_header',
+             'value': 'test'}
+        ],
+        consumer_filters=['Example App']
+    )
+
+    assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
 def test_broker_http_v2_pact_with_filter_state(httpserver):
     body = {"name": "Mary"}
@@ -90,8 +110,15 @@ def test_broker_http_v2_pact_with_filter_state(httpserver):
         body, content_type="application/json;charset=utf-8"
     )
 
-    wrapper = FFIVerify()
-    result = wrapper.verify(
+    verifier = VerifierV3(provider='Example API',
+                          provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+                          )
+
+    result = verifier.verify_pacts(
+        # broker_url="http://0.0.0.0",
+        # broker_username="pactbroker",
+        # broker_password="pactbroker",
+        no_pacts_is_error=True,
         broker_url="https://test.pactflow.io",
         broker_username="dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
         broker_password="O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
@@ -101,19 +128,24 @@ def test_broker_http_v2_pact_with_filter_state(httpserver):
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
-def test_local_http_v2_pact_with_filter_state(httpserver):
-    body = {"name": "testing matchers - string"}
+def test_pact_via_url_http_v2_pact_with_filter_state(httpserver):
+    body = {"name": "Mary"}
     endpoint = "/alligators/Mary"
     httpserver.expect_request(endpoint).respond_with_json(
         body, content_type="application/json;charset=utf-8"
     )
 
-    wrapper = FFIVerify()
-    result = wrapper.verify(
-        "./examples/pacts/v2-http.json",
-        provider="Example API",
+    verifier = VerifierV3(provider='Example API',
+                          provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+                          )
+
+    result = verifier.verify_pacts(
+        sources=[
+            'https://test.pactflow.io/pacts/provider/Example%20API/consumer/Example%20App/latest'
+        ],
+        broker_username="dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
+        broker_password="O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
         provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
-        request_timeout=10,
         filter_state="there is an alligator named Mary",
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
@@ -134,13 +166,11 @@ def test_local_http_v3_pact(httpserver):
         body, content_type="application/ld+json;charset=utf-8"
     )
 
-    wrapper = FFIVerify()
-    result = wrapper.verify(
-        "./examples/pacts/v3-http.json",
-        provider="Example API",
-        provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
-        request_timeout=10,
-        # filter_state="there is an alligator named Mary",
+    verifier = VerifierV3(provider='http-provider',
+                          provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+                          )
+    result = verifier.verify_pacts(
+        sources=["./examples/pacts/v3-http.json"],
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
@@ -149,14 +179,11 @@ def test_grpc_local_pact():
     grpc_server_process = subprocess.Popen(['python', 'area_calculator_server.py'],
                                            cwd=join(dirname(__file__), '..', '..', 'examples', 'area_calculator'))
 
-    wrapper = FFIVerify()
-    result = wrapper.verify(
-        "./examples/pacts/v4-grpc.json",
-        provider="area-calculator-provider",
-        provider_base_url="tcp://127.0.0.1:37757",
-        request_timeout=30,
-        log_level="INFO",
-        provider_transport="protobuf"
+    verifier = VerifierV3(provider="area-calculator-provider",
+                          provider_base_url="tcp://127.0.0.1:37757",
+                          )
+    result = verifier.verify_pacts(
+        sources=["./examples/pacts/v4-grpc.json"],
     )
     grpc_server_process.terminate()
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS

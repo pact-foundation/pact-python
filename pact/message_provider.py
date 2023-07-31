@@ -7,9 +7,8 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 from multiprocessing import Process
 
-from pact.ffi.ffi_verifier import FFIVerify
-from pact.ffi.verifier import VerifyResult
-# from .verifier import Verifier
+from pact.ffi.native_verifier import VerifyStatus
+from pact.verifier_v3 import VerifierV3
 from .http_proxy import run_proxy
 
 import logging
@@ -114,13 +113,12 @@ class MessageProvider(object):
     def verify(self, **kwargs):
         """Verify pact files with executable verifier."""
         pact_files = f'{self.pact_dir}/{self._pact_file()}'
-        # verifier = Verifier(provider=self.provider,
-        #                     provider_base_url=self._proxy_url())
-        verifier = FFIVerify()
-        return_code, logs = verifier.verify(pact_files, provider=self.provider,
-                                            provider_base_url=self._proxy_url(), verbose=False, **kwargs)
-        # assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
-        return VerifyResult(return_code, logs)
+        verifier = VerifierV3(provider=self.provider,
+                              provider_base_url=self._proxy_url(),
+                              )
+        return_code, logs = verifier.verify_pacts(sources=[pact_files],
+                                                  **kwargs)
+        return VerifyStatus(return_code, logs)
 
     def verify_with_broker(self, enable_pending=False, include_wip_pacts_since=None, **kwargs):
         """Use Broker to verify.
@@ -135,14 +133,13 @@ class MessageProvider(object):
             pacts ([String]): pacts to verify
 
         """
-        # verifier = Verifier(provider=self.provider,
-        #                     provider_base_url=self._proxy_url())
-        verifier = FFIVerify()
+        verifier = VerifierV3(provider=self.provider,
+                              provider_base_url=self._proxy_url(),
+                              )
+        return_code, logs = verifier.verify_pacts(enable_pending=enable_pending,
+                                                  include_wip_pacts_since=include_wip_pacts_since
+                                                  **kwargs)
 
-        return_code, logs = verifier.verify(provider=self.provider, provider_base_url=self._proxy_url(),
-                                            enable_pending=enable_pending, include_wip_pacts_since=include_wip_pacts_since, **kwargs)
-
-        # assert (return_code == 0), f'Expected returned_code = 0, actual = {return_code}'
         return VerifyResult(return_code, logs)
 
     def __enter__(self):

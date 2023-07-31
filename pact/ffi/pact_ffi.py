@@ -1,4 +1,5 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
+import os
 import tempfile
 from typing import List
 
@@ -7,6 +8,7 @@ import threading
 
 from pact.ffi.log import LogToBufferStatus, LogLevel
 from pact.ffi.register_ffi import RegisterFfi
+from pact.ffi.utils import se
 
 
 class PactFFI(object):
@@ -62,9 +64,27 @@ class PactFFI(object):
 
                 # Having problems with the buffer output, when running via CLI
                 # Reverting to log file output instead
-                result = cls.lib.pactffi_log_to_buffer(LogLevel.INFO.value)
-                assert LogToBufferStatus(result) == LogToBufferStatus.SUCCESS
+                log_level = os.getenv('PACT_LOG_LEVEL', 'INFO')
+                log_output = os.getenv('PACT_LOG_OUTPUT', 'BUFFER')
+                log_file = os.getenv('PACT_LOG_FILE', './log/pact.log')
+                LOG_LEVEL_MAPPING = {
+                    "NONE": 0,
+                    "ERROR": 1,
+                    "WARN": 2,
+                    "INFO": 3,
+                    "DEBUG": 4,
+                    "TRACE": 5,
+                }
+                if log_output == 'STDOUT':
+                    result = cls.lib.pactffi_log_to_stdout(LOG_LEVEL_MAPPING[log_level])
+                elif log_output == 'FILE':
+                    result = cls.lib.pactffi_log_to_file(se(log_file),LOG_LEVEL_MAPPING[log_level])
+                else:
+                    result = cls.lib.pactffi_log_to_buffer(LOG_LEVEL_MAPPING[log_level])
+                
+                assert LogToBufferStatus(result) in [LogToBufferStatus.SUCCESS,LogToBufferStatus.CANT_SET_LOGGER_OR_LOGGER_SET]
         return cls._instance
+        
 
     def version(self) -> str:
         """Get the current library version.

@@ -13,7 +13,7 @@ class LogToBufferStatus(Enum):
     """
 
     SUCCESS = 0  # Operation succeeded
-    CANT_SET_LOGGER = -1  # Can't set the logger
+    CANT_SET_LOGGER_OR_LOGGER_SET = -1  # Can't set logger (applying the logger failed, perhaps because one is applied already).
     NO_LOGGER = -2  # No logger has been initialized
     SPECIFIER_NOT_UTF8 = -3  # The sink specifier was not UTF-8 encoded
     UNKNOWN_SINK_TYPE = -4  # The sink type specified is not a known type

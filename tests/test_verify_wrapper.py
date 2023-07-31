@@ -83,7 +83,7 @@ class VerifyWrapperTestCase(TestCase):
         with self.assertRaises(PactException) as context:
             wrapper.verify(provider='provider', provider_base_url='http://localhost')
 
-        self.assertTrue('Pact urls or Pact broker required' in context.exception.message)
+        self.assertTrue('Pact sources or pact_broker_url required' in context.exception.message)
 
     def test_broker_without_authentication_can_be_used(self):
         self.mock_Popen.return_value.returncode = 0
