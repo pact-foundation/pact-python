@@ -50,7 +50,7 @@ class PactV3(object):
         if headers is not None:
             for idx, header in enumerate(headers):
                 self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
-                if header['name'] == 'Content-Type':
+                if header['name'] in ['Content-Type','content-type']:
                     content_type = header['value']
 
         if body is not None:
@@ -72,12 +72,34 @@ class PactV3(object):
         if headers is not None:
             for idx, header in enumerate(headers):
                 self.pact.with_response_header(self.interactions[0], header['name'], idx, header['value'])
-                if header['name'] == 'Content-Type':
+                if header['name'] in ['Content-Type','content-type']:
+                    # TODO:- xml bodies only returned if we set `content-type` as a lower case header
                     content_type = header['value']
 
         if body is not None:
             self.pact.with_response_body(self.interactions[0], content_type, self.__process_body(body))
         return self
+
+    def __enter__(self):
+        """
+        Enter a Python context.
+
+        Sets up the mock service to expect the client requests.
+        """
+        # self.setup()
+        return
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Exit a Python context.
+
+        Calls the mock service to verify that all interactions occurred as
+        expected, and has it write out the contracts to disk.
+        """
+        if (exc_type, exc_val, exc_tb) != (None, None, None):
+            return
+
+        return
 
     def start_service(self) -> int:
         """

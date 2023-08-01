@@ -1,12 +1,15 @@
 """pact test for user service client"""
 
-import atexit
+# import atexit
 import logging
 import os
 
 import pytest
 
-from pact import Consumer, Like, Provider, Term, Format
+# from pact import Consumer, Like, Provider, Term, Format
+# from pact.matchers import Format
+from pact import PactV3
+from pact.matchers_v3 import Like, Regex, Format
 from src.consumer import UserConsumer
 
 log = logging.getLogger(__name__)
@@ -41,45 +44,53 @@ def pact(request):
     # When publishing a Pact to the Pact Broker, a version number of the Consumer
     # is required, to be able to construct the compatability matrix between the
     # Consumer versions and Provider versions
-    version = request.config.getoption("--publish-pact")
-    publish = True if version else False
+    # version = request.config.getoption("--publish-pact")
+    # publish = True if version else False
 
-    pact = Consumer("UserServiceClient", version=version).has_pact_with(
-        Provider("UserService"),
-        host_name=PACT_MOCK_HOST,
-        port=PACT_MOCK_PORT,
-        pact_dir=PACT_DIR,
-        publish_to_broker=publish,
-        broker_base_url=PACT_BROKER_URL,
-        broker_username=PACT_BROKER_USERNAME,
-        broker_password=PACT_BROKER_PASSWORD,
-    )
+    pact = PactV3('UserServiceClient', 'UserService',
+                  hostname=PACT_MOCK_HOST,
+                  port=PACT_MOCK_PORT,
+                  pact_dir=PACT_DIR,
+                  # version=version
+                  )
+    return pact
 
-    pact.start_service()
+    # pact = Consumer("UserServiceClient", version=version).has_pact_with(
+    #     Provider("UserService"),
+    #     host_name=PACT_MOCK_HOST,
+    #     port=PACT_MOCK_PORT,
+    #     pact_dir=PACT_DIR,
+    #     publish_to_broker=publish,
+    #     broker_base_url=PACT_BROKER_URL,
+    #     broker_username=PACT_BROKER_USERNAME,
+    #     broker_password=PACT_BROKER_PASSWORD,
+    # )
+
+    # pact.start_service()
 
     # Make sure the Pact mocked provider is stopped when we finish, otherwise
     # port 1234 may become blocked
-    atexit.register(pact.stop_service)
+    # atexit.register(pact.stop_service)
 
-    yield pact
+    # yield pact
 
     # This will stop the Pact mock server, and if publish is True, submit Pacts
     # to the Pact Broker
-    pact.stop_service()
+    # pact.stop_service()
 
     # Given we have cleanly stopped the service, we do not want to re-submit the
     # Pacts to the Pact Broker again atexit, since the Broker may no longer be
     # available if it has been started using the --run-broker option, as it will
     # have been torn down at that point
-    pact.publish_to_broker = False
+    # pact.publish_to_broker = False
 
 
-def test_get_user_non_admin(pact, consumer):
+def test_get_user_non_admin(pact: PactV3, consumer):
     # Define the Matcher; the expected structure and content of the response
     expected = {
         "name": "UserA",
         "id": Format().uuid,
-        "created_on": Term(r"\d+-\d+-\d+T\d+:\d+:\d+", "2016-12-15T20:16:01"),
+        "created_on": Regex(r"\d+-\d+-\d+T\d+:\d+:\d+", "2016-12-15T20:16:01"),
         "ip_address": Format().ip_address,
         "admin": False,
     }
@@ -90,13 +101,17 @@ def test_get_user_non_admin(pact, consumer):
     # return the EXACT content where defined, e.g. UserA for name, and SOME
     # appropriate content e.g. for ip_address.
     (
-        pact.given("UserA exists and is not an administrator")
+        pact
+        .new_http_interaction('same_as_upon_receiving')
+        .given("UserA exists and is not an administrator")
         .upon_receiving("a request for UserA")
         .with_request("get", "/users/UserA")
-        .will_respond_with(200, body=Like(expected))
+        .will_respond_with(200,
+                           headers=[{"name": "Content-Type", "value": 'application/json'}],
+                           body=Like(expected))
     )
-
     with pact:
+        pact.start_service()
         # Perform the actual request
         user = consumer.get_user("UserA")
 
@@ -107,17 +122,20 @@ def test_get_user_non_admin(pact, consumer):
         pact.verify()
 
 
-def test_get_non_existing_user(pact, consumer):
+def test_get_non_existing_user(pact: PactV3, consumer):
     # Define the expected behaviour of the Provider. This determines how the
     # Pact mock provider will behave. In this case, we expect a 404
     (
-        pact.given("UserA does not exist")
+        pact
+        .new_http_interaction('same_as_upon_receiving')
+        .given("UserA does not exist")
         .upon_receiving("a request for UserA")
         .with_request("get", "/users/UserA")
         .will_respond_with(404)
     )
 
     with pact:
+        pact.start_service()
         # Perform the actual request
         user = consumer.get_user("UserA")
 
