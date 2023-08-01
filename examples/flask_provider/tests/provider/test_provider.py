@@ -4,8 +4,7 @@ import logging
 
 import pytest
 
-# from pact import Verifier
-from pact.ffi.ffi_verifier import FFIVerify
+from pact import VerifierV3
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -37,19 +36,19 @@ def broker_opts():
 
 
 def test_user_service_provider_against_broker(broker_opts):
-    verifier = FFIVerify()
-    # verifier = Verifier(provider="UserService", provider_base_url=PROVIDER_URL)
+    verifier = VerifierV3(provider="UserService", provider_base_url=PROVIDER_URL)
 
     # Request all Pact(s) from the Pact Broker to verify this Provider against.
     # In the Pact Broker logs, this corresponds to the following entry:
     # PactBroker::Api::Resources::ProviderPactsForVerification -- Fetching pacts for verification by UserService -- {:provider_name=>"UserService", :params=>{}}
-    success, logs = verifier.verify(
+    success, logs = verifier.verify_pacts(
         **broker_opts,
         provider="UserService",
         provider_base_url=PROVIDER_URL,
         verbose=True,
         provider_states_setup_url=f"{PROVIDER_URL}/_pact/provider_states",
         enable_pending=False,
+        state_change_as_query=True
     )
     # If publish_verification_results is set to True, the results will be
     # published to the Pact Broker.
@@ -69,8 +68,7 @@ def test_user_service_provider_against_broker(broker_opts):
 
 
 def test_user_service_provider_against_pact():
-    verifier = FFIVerify()
-    # verifier = Verifier(provider="UserService", provider_base_url=PROVIDER_URL)
+    verifier = VerifierV3(provider="UserService", provider_base_url=PROVIDER_URL)
 
     # Rather than requesting the Pact interactions from the Pact Broker, this
     # will perform the verification based on the Pact file locally.
@@ -79,19 +77,19 @@ def test_user_service_provider_against_pact():
     # if it has been successful in the past (since this is what the Pact Broker
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
-    output, _ = verifier.verify(
-        "../pacts/userserviceclient-userservice.json",
+    success, _ = verifier.verify_pacts(
+        sources=["../pacts/userserviceclient-userservice.json"],
         provider="UserService",
         provider_base_url=PROVIDER_URL,
         verbose=False,
         provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
+        state_change_as_query=True
     )
 
-    assert output == 0
+    assert success == 0
 
 def test_user_service_provider_against_pact_url(broker_opts):
-    verifier = FFIVerify()
-    # verifier = Verifier(provider="UserService", provider_base_url=PROVIDER_URL)
+    verifier = VerifierV3(provider="UserService", provider_base_url=PROVIDER_URL)
 
     # Rather than requesting the Pact interactions from the Pact Broker, this
     # will perform the verification based on the Pact file locally.
@@ -100,13 +98,14 @@ def test_user_service_provider_against_pact_url(broker_opts):
     # if it has been successful in the past (since this is what the Pact Broker
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
-    output, _ = verifier.verify(
-        "http://localhost/pacts/provider/UserService/consumer/UserServiceClient/latest",
+    success, _ = verifier.verify_pacts(
+        sources=["http://localhost/pacts/provider/UserService/consumer/UserServiceClient/latest"],
         **broker_opts,
         provider="UserService",
         provider_base_url=PROVIDER_URL,
         log_level='DEBUG',
         provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
+        state_change_as_query=True
     )
 
-    assert output == 0
+    assert success == 0

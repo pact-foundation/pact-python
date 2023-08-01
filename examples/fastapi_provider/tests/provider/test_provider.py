@@ -3,8 +3,7 @@ import logging
 
 import pytest
 
-# from pact import Verifier
-from pact.ffi.ffi_verifier import FFIVerify
+from pact import VerifierV3
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -41,15 +40,14 @@ def broker_opts():
 
 
 def test_user_service_provider_against_broker(server, broker_opts):
-    verifier = FFIVerify()
+    verifier = VerifierV3(provider="UserService",
+                          provider_base_url=PROVIDER_URL)
 
     # Request all Pact(s) from the Pact Broker to verify this Provider against.
     # In the Pact Broker logs, this corresponds to the following entry:
     # PactBroker::Api::Resources::ProviderPactsForVerification -- Fetching pacts for verification by UserService -- {:provider_name=>"UserService", :params=>{}}
     success, logs = verifier.verify(
         **broker_opts,
-        provider="UserService",
-        provider_base_url=PROVIDER_URL,
         verbose=True,
         provider_states_setup_url=f"{PROVIDER_URL}/_pact/provider_states",
         enable_pending=False,
@@ -72,8 +70,8 @@ def test_user_service_provider_against_broker(server, broker_opts):
 
 
 def test_user_service_provider_against_pact(server):
-    verifier = FFIVerify()
-
+    verifier = VerifierV3(provider="UserService",
+                          provider_base_url=PROVIDER_URL)
     # Rather than requesting the Pact interactions from the Pact Broker, this
     # will perform the verification based on the Pact file locally.
     #
@@ -82,9 +80,7 @@ def test_user_service_provider_against_pact(server):
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
     output, _ = verifier.verify(
-        "../pacts/userserviceclient-userservice.json",
-        provider="UserService",
-        provider_base_url=PROVIDER_URL,
+        sources=["../pacts/userserviceclient-userservice.json"],
         verbose=False,
         provider_states_setup_url="{}/_pact/provider_states".format(PROVIDER_URL),
     )
