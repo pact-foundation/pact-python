@@ -1,5 +1,5 @@
 """Classes for defining request and response data that is variable for the V3 Pact Spec."""
-from pact_python_v3 import generate_datetime_string
+# from pact_python_v3 import generate_datetime_string
 
 
 class V3Matcher(object):
@@ -129,38 +129,86 @@ class Integer(V3Matcher):
                 "value": 101
             }
 
+class Regex(V3Matcher):
+    """
+    Expect the response to match a specified regular expression.
 
-class DateTime(V3Matcher):
-    """String value that must match the provided datetime format string."""
+    Example:
+    >>> from pact import Consumer, Provider
+    >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
+    >>> (pact.given('the current user is logged in as `tester`')
+    ...  .upon_receiving('a request for the user profile')
+    ...  .with_request('get', '/profile')
+    ...  .will_respond_with(200, body={
+    ...    'name': 'tester',
+    ...    'theme': Regex('light|dark|legacy', 'dark')
+    ...  }))
 
-    def __init__(self, format, *args):
+    Would expect the response body to be a JSON object, containing the key
+    `name`, which will contain the value `tester`, and `theme` which must be
+    one of the values: light, dark, or legacy. When the consumer runs this
+    contract, the value `dark` will be returned by the mock service.
+
+    """
+
+    def __init__(self, matcher, generate):
         """
-        Define a new datetime matcher.
+        Create a new Regex.
 
-        :param format: Datetime format string. See [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-        :type format: str
-        :param example: Example value to use. If omitted a value using the current system date and time will be generated.
-        :type example: str
+        :param matcher: A regular expression to find.
+        :type matcher: basestring
+        :param generate: A value to be returned by the mock service when
+            generating the response to the consumer.
+        :type generate: basestring
         """
-        self.format = format
-        if len(args) > 0:
-            self.example = args[0]
-        else:
-            self.example = None
+        self.matcher = matcher
+        self._generate = generate
 
     def generate(self):
-        """Generate the object."""
-        if self.example is not None:
-            return {
-                "pact:generator:type": "DateTime",
-                "pact:matcher:type": "timestamp",
-                "format": self.format,
-                "value": self.example
+        """
+        Return the value that should be used in the request/response.
+
+        :return: A dict containing the information about what the contents of
+            the response should be, and what should match for the requests.
+        :rtype: dict
+        """
+        return {
+                "pact:matcher:type": "regex",
+                "regex": self.matcher,
+                "value": self._generate
             }
-        else:
-            return {
-                "pact:generator:type": "DateTime",
-                "pact:matcher:type": "timestamp",
-                "format": self.format,
-                "value": generate_datetime_string(self.format),
-            }
+
+# class DateTime(V3Matcher):
+#     """String value that must match the provided datetime format string."""
+
+#     def __init__(self, format, *args):
+#         """
+#         Define a new datetime matcher.
+
+#         :param format: Datetime format string. See [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+#         :type format: str
+#         :param example: Example value to use. If omitted a value using the current system date and time will be generated.
+#         :type example: str
+#         """
+#         self.format = format
+#         if len(args) > 0:
+#             self.example = args[0]
+#         else:
+#             self.example = None
+
+#     def generate(self):
+#         """Generate the object."""
+#         if self.example is not None:
+#             return {
+#                 "pact:generator:type": "DateTime",
+#                 "pact:matcher:type": "timestamp",
+#                 "format": self.format,
+#                 "value": self.example
+#             }
+#         else:
+#             return {
+#                 "pact:generator:type": "DateTime",
+#                 "pact:matcher:type": "timestamp",
+#                 "format": self.format,
+#                 "value": generate_datetime_string(self.format),
+#             }

@@ -250,6 +250,7 @@ class MockServer(PactFFI):
          already started) or an error has occurred.
         """
         if 'json' in content_type:
+            print(body)
             encoded_body = se(json.dumps(body))
         else:
             encoded_body = se(body)
