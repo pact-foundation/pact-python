@@ -2,8 +2,8 @@ import json
 import requests
 
 from pact import PactV3
-from pact.ffi.native_mock_server import MockServerStatus
 from pact.matchers_v3 import Like, Regex
+from pact.ffi.native_mock_server import MockServerStatus
 
 def test_ffi_http_consumer():
     request_interaction_body = {

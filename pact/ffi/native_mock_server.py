@@ -250,10 +250,13 @@ class MockServer(PactFFI):
          already started) or an error has occurred.
         """
         if 'json' in content_type:
-            # print(body)
             encoded_body = se(json.dumps(body))
         else:
             encoded_body = se(body)
+        # print('testing pactffi_with_body')
+        # print(req_or_res)
+        # print(content_type)
+        # print(encoded_body)
         return self.lib.pactffi_with_body(interaction_handle, 0 if req_or_res == 'req' else 1, se(content_type), encoded_body)
 
     def with_request_body(self, interaction_handle, content_type=str, body=str):
@@ -371,10 +374,10 @@ class MockServer(PactFFI):
                                                  const char *transport_config);
 
         """
-        print(hostname)
-        print(port)
-        print(transport)
-        print(transport_config)
+        # print(hostname)
+        # print(port)
+        # print(transport)
+        # print(transport_config)
         mock_server_port = self.lib.pactffi_create_mock_server_for_transport(pact_handle, se(hostname), port, se(
             transport), se('{}') if transport_config is None else se(transport_config))
         assert mock_server_port not in ['-1', '-2', '-3', '-4', '-5']
