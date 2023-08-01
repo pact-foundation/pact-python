@@ -192,3 +192,81 @@ def test_grpc_local_pact():
     grpc_server_process.terminate()
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
     # TODO - Plugin success or failure not returned in logs
+
+def test_broker_consumer_version_selectors_http_v2_pact(httpserver):
+    body = {"name": "Mary"}
+    endpoint = "/alligators/Mary"
+    httpserver.expect_request(endpoint).respond_with_json(
+        body, content_type="application/json;charset=utf-8"
+    )
+
+    verifier = VerifierV3(provider='Example API',
+                          provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+                          )
+
+    result = verifier.verify_pacts(
+        # broker_url="http://0.0.0.0",
+        # broker_username="pactbroker",
+        # broker_password="pactbroker",
+        no_pacts_is_error=True,
+        broker_url="https://test.pactflow.io",
+        broker_username="dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
+        broker_password="O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
+        provider="Example API",
+        provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+        filter_state="there is an alligator named Mary",
+        provider_branch='main',
+        consumer_version_selectors=[
+            {"mainBranch": True},  # (recommended) - Returns the pacts for consumers configured mainBranch property
+            {"deployedOrReleased": True},  # (recommended) - Returns the pacts for all versions of the consumer that are currently deployed or
+            # released and currently supported in any environment.
+            {"matchingBranch": True},
+            {"deployed": "test"},  # Normally, this would not be needed, Any versions currently deployed to the specified environment.
+            {"deployed": "production"},  # Normally, this would not be needed, Any versions currently deployed to the specified environment.
+            # Normally, this would not be needed, Any versions currently deployed or released and supported in the specified environment.
+            {"environment": "test"},
+            # Normally, this would not be needed, Any versions currently deployed or released and supported in the specified environment.
+            {"environment": "production"},
+        ]
+    )
+    assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
+
+def test_broker_publish_http_v2_pact(httpserver):
+    body = {"name": "Mary"}
+    endpoint = "/alligators/Mary"
+    httpserver.expect_request(endpoint).respond_with_json(
+        body, content_type="application/json;charset=utf-8"
+    )
+
+    verifier = VerifierV3(provider='Example API',
+                          provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+                          )
+
+    result = verifier.verify_pacts(
+        # broker_url="http://0.0.0.0",
+        # broker_username="pactbroker",
+        # broker_password="pactbroker",
+        no_pacts_is_error=True,
+        broker_url="https://test.pactflow.io",
+        broker_username="dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
+        broker_password="O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
+        provider="Example API",
+        provider_base_url="http://127.0.0.1:{}".format(httpserver.port),
+        filter_state="there is an alligator named Mary",
+        provider_branch='main',
+        consumer_version_selectors=[
+            {"mainBranch": True},  # (recommended) - Returns the pacts for consumers configured mainBranch property
+            {"deployedOrReleased": True},  # (recommended) - Returns the pacts for all versions of the consumer that are currently deployed or
+            # released and currently supported in any environment.
+            {"matchingBranch": True},
+            {"deployed": "test"},  # Normally, this would not be needed, Any versions currently deployed to the specified environment.
+            {"deployed": "production"},  # Normally, this would not be needed, Any versions currently deployed to the specified environment.
+            # Normally, this would not be needed, Any versions currently deployed or released and supported in the specified environment.
+            {"environment": "test"},
+            # Normally, this would not be needed, Any versions currently deployed or released and supported in the specified environment.
+            {"environment": "production"},
+        ],
+        publish_verification_results=True,
+        provider_app_version='1.0.0'  # TODO:- defaults to NULL, should error if not set and publish_verification_results=True
+    )
+    assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS

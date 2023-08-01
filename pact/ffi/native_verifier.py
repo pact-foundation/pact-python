@@ -233,14 +233,17 @@ class NativeVerifier(PactFFI):
                                                  unsigned short provider_tags_len,
                                                  const char *provider_branch);
         """
+        if provider_tags is not None:
+            c_provider_tag_array = []
+            for provider_tag in provider_tags:
+                c_provider_tag_array.append(self.ffi.new("char []", se(json.dumps(provider_tag))))
+            c_provider_tags = self.ffi.new("char *[]", c_provider_tag_array)
         return self.lib.pactffi_verifier_set_publish_options(
             verifier_handle,
             se(provider_version),
             se(build_url),
-            self.ffi.new("char[]", json.dumps(provider_tags).encode("ascii"))
-            if provider_tags
-            else self.ffi.cast("void *", 0),
-            provider_tags.len() if provider_tags else 0,
+            c_provider_tags if provider_tags is not None else self.ffi.cast("void *", 0),
+            len(provider_tags) if provider_tags else 0,
             se(provider_branch)
             if provider_branch
             else ne(),
@@ -260,12 +263,13 @@ class NativeVerifier(PactFFI):
                                                    const char *const *consumer_filters,
                                                    unsigned short consumer_filters_len);
         """
+        c_consumer_filter_array = []
         for consumer_filter in consumer_filters:
-            c_item = self.ffi.new("char[]", se(consumer_filter))
-        c_arr = self.ffi.new("char **", c_item)
+            c_consumer_filter_array.append(self.ffi.new("char []", se(json.dumps(consumer_filter))))
+        c_consumer_filters = self.ffi.new("char *[]", c_consumer_filter_array)
 
         self.lib.pactffi_verifier_set_consumer_filters(verifier_handle,
-                                                       c_arr,
+                                                       c_consumer_filters,
                                                        len(consumer_filters)
                                                        )
 
@@ -411,6 +415,24 @@ class NativeVerifier(PactFFI):
                                                            unsigned short consumer_version_tags_len);
 
         """
+        if consumer_version_selectors is not None:
+            c_consumer_version_selector_array = []
+            for consumer_version_selector in consumer_version_selectors:
+                c_consumer_version_selector_array.append(self.ffi.new("char []", se(json.dumps(consumer_version_selector))))
+            c_consumer_version_selectors = self.ffi.new("char *[]", c_consumer_version_selector_array)
+
+        if consumer_version_tags is not None:
+            c_consumer_version_tag_array = []
+            for consumer_version_tag in consumer_version_tags:
+                c_consumer_version_tag_array.append(self.ffi.new("char []", se(json.dumps(consumer_version_tag))))
+            c_consumer_version_tags = self.ffi.new("char *[]", c_consumer_version_tag_array)
+
+        if provider_tags is not None:
+            c_provider_tag_array = []
+            for provider_tag in provider_tags:
+                c_provider_tag_array.append(self.ffi.new("char []", se(json.dumps(provider_tag))))
+            c_provider_tags = self.ffi.new("char *[]", c_provider_tag_array)
+
         self.lib.pactffi_verifier_broker_source_with_selectors(
             verifier_handle,
             se(url),
@@ -418,27 +440,18 @@ class NativeVerifier(PactFFI):
             se(password),
             se(token),
             enable_pending,
-            # 1 if enable_pending else 0,
             se(include_wip_pacts_since)
             if include_wip_pacts_since
             else se(""),
-            self.ffi.new("char[]", json.dumps(provider_tags).encode("ascii"))
-            if provider_tags
-            else self.ffi.cast("void *", 0),
-            provider_tags.len() if provider_tags else 0,
+            c_provider_tags if provider_tags is not None else self.ffi.cast("void *", 0),
+            len(provider_tags) if provider_tags else 0,
             se(provider_branch)
             if provider_branch
             else ne(),
-            self.ffi.new(
-                "char[]", json.dumps(consumer_version_selectors).encode("ascii")
-            )
-            if consumer_version_selectors
-            else self.ffi.cast("void *", 0),
-            consumer_version_selectors.len() if consumer_version_selectors else 0,
-            self.ffi.new("char[]", json.dumps(consumer_version_tags).encode("ascii"))
-            if consumer_version_tags
-            else self.ffi.cast("void *", 0),
-            consumer_version_tags.len() if consumer_version_tags else 0,
+            c_consumer_version_selectors if consumer_version_selectors is not None else self.ffi.cast("void *", 0),
+            len(consumer_version_selectors) if consumer_version_selectors else 0,
+            c_consumer_version_tags if consumer_version_tags is not None else self.ffi.cast("void *", 0),
+            len(consumer_version_tags) if consumer_version_tags else 0,
         )
 
     def logs(self, verifier_handle: VerifierHandle) -> str:
