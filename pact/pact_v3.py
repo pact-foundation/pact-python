@@ -50,7 +50,7 @@ class PactV3(object):
         if headers is not None:
             for idx, header in enumerate(headers):
                 self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
-                if header['name'] in ['Content-Type','content-type']:
+                if header['name'] in ['Content-Type', 'content-type']:
                     content_type = header['value']
 
         if body is not None:
@@ -72,7 +72,7 @@ class PactV3(object):
         if headers is not None:
             for idx, header in enumerate(headers):
                 self.pact.with_response_header(self.interactions[0], header['name'], idx, header['value'])
-                if header['name'] in ['Content-Type','content-type']:
+                if header['name'] in ['Content-Type', 'content-type']:
                     # TODO:- xml bodies only returned if we set `content-type` as a lower case header
                     content_type = header['value']
 
