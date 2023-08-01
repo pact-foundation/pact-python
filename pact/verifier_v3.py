@@ -2,13 +2,16 @@
 
 import os
 from typing import TypedDict
-from pact.ffi.native_verifier import NativeVerifier, VerifyResult
+from pact.ffi.native_verifier import NativeVerifier
 from urllib.parse import urlparse
+from pact.ffi.verifier import VerifyResult
 from pact.pact_exception import PactException
 
 from pact.verify_wrapper import is_url
 
 class CustomHeader(TypedDict):
+    """Custom header to send in the Pact Verifier request."""
+
     name: str
     value: str
 
@@ -37,7 +40,7 @@ class VerifierV3(object):
         """
         return 'V3 Verifier for {} with url {}'.format(self.provider, self.provider_base_url)
 
-    def verify_pacts(self,
+    def verify_pacts(self,  # noqa: max-complexity: 18
                      provider_app_version: str or None = None,
                      provider_branch: str or None = None,
                      broker_username: str or None = None,
@@ -50,7 +53,7 @@ class VerifierV3(object):
                      provider_tags: [str] or None = None,
                      consumer_version_selectors: [str] or None = None,
                      consumer_version_tags: [str] or None = None,
-                     request_timeout: int = 10,
+                     request_timeout: int = 300,
                      filter_description: str or None = None,
                      filter_state: str or None = None,
                      filter_no_state: bool or None = False,
@@ -75,11 +78,11 @@ class VerifierV3(object):
             include_wip_pacts_since ([String]): include wip pacts since
             publish_version ([String]): publish version
             pacts ([String]): pacts to verify
+
         Returns:
           success: True if no failures
 
         """
-
         if not sources and not broker_url:
             raise PactException('Pact sources or pact_broker_url required')
 
@@ -119,10 +122,9 @@ class VerifierV3(object):
         self.native_verifier.set_no_pacts_is_error(self.verifier_handle, no_pacts_is_error)
 
         if consumer_filters is not None:
-            self.native_verifier.set_consumer_filters(self.verifier_handle,consumer_filters)
+            self.native_verifier.set_consumer_filters(self.verifier_handle, consumer_filters)
 
         # Processing pact sources
-
 
         if broker_url is not None and sources is None and (consumer_version_selectors is None
                                                            and consumer_version_tags is None
@@ -140,20 +142,20 @@ class VerifierV3(object):
                 broker_token,
             )
         elif sources is None:
-                print('Fetch pacts dynamically from broker')
-                self.native_verifier.broker_source_with_selectors(
-                    self.verifier_handle,
-                    broker_url,
-                    broker_username,
-                    broker_password,
-                    broker_token,
-                    enable_pending,
-                    include_wip_pacts_since,
-                    provider_tags,
-                    provider_branch,
-                    consumer_version_selectors,
-                    consumer_version_tags,
-                )
+            print('Fetch pacts dynamically from broker')
+            self.native_verifier.broker_source_with_selectors(
+                self.verifier_handle,
+                broker_url,
+                broker_username,
+                broker_password,
+                broker_token,
+                enable_pending,
+                include_wip_pacts_since,
+                provider_tags,
+                provider_branch,
+                consumer_version_selectors,
+                consumer_version_tags,
+            )
         # Add a file, directory or url source (and include broker creds if provided)
         if sources is not None:
             for source in sources:
@@ -164,17 +166,14 @@ class VerifierV3(object):
                 else:
                     self.native_verifier.add_file_source(self.verifier_handle, source)
 
-
         self.native_verifier.set_verification_options(self.verifier_handle, disable_ssl_verification, request_timeout)
 
         if provider_states_setup_url is not None:
             self.native_verifier.set_provider_state(self.verifier_handle, provider_states_setup_url, state_change_teardown, state_change_as_query)
 
-
         if add_custom_header is not None:
             for header in add_custom_header:
                 self.native_verifier.add_custom_header(self.verifier_handle, header['name'], header['value'])
-
 
         result = self.native_verifier.execute(self.verifier_handle)
         logs = self.native_verifier.logs(self.verifier_handle)

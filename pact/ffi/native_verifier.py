@@ -1,40 +1,13 @@
 """Wrapper to pact reference dynamic libraries using FFI."""
 import json
-import os
 from pact.ffi.utils import ne, se
-from pact.ffi.verifier import VerifyResult
-from pact.pact_exception import PactException
-from cffi import FFI
-from pact.ffi.register_ffi import RegisterFfi
-from pact.verify_wrapper import expand_directories, is_url
-from enum import Enum, unique
-from typing import Dict, NamedTuple, List
+from typing import List
 from pact.__version__ import __version__
-
 from pact.ffi.pact_ffi import PactFFI
-import json
-
-@unique
-class VerifyStatus(Enum):
-    """Return codes from a verify request.
-
-    As per: https://docs.rs/pact_ffi/0.0.2/pact_ffi/verifier/fn.pactffi_verify.html
-    """
-
-    SUCCESS = 0  # Operation succeeded
-    VERIFIER_FAILED = 1  # The verification process failed, see output for errors
-    NULL_POINTER = 2  # A null pointer was received
-    PANIC = 3  # The method panicked
-    INVALID_ARGS = 4  # Invalid arguments were provided to the verification process
-
-
-class VerifyResult(NamedTuple):
-    """Wrap up the return code, and log output."""
-
-    return_code: VerifyStatus
-    logs: List[str]
 
 class VerifierHandle(int):
+    """A typedef for the VerifierHandler opaque pointer."""
+
     handle = int
 
 class NativeVerifier(PactFFI):
@@ -53,7 +26,7 @@ class NativeVerifier(PactFFI):
 
     def execute(self, verifier_handle: VerifierHandle) -> int:
         """
-        Runs the verification.
+        Run the verification.
 
         # Error Handling
 
@@ -92,8 +65,7 @@ class NativeVerifier(PactFFI):
 
     def set_provider_info(self, verifier_handle: VerifierHandle, name=str, scheme=str, host=str, port=int, path=str):
         """
-        Set the provider details for the Pact verifier. 
-
+        Set the provider details for the Pact verifier.
 
         Set the provider details for the Pact verifier. Passing a NULL for any field will
         use the default value for that field.
@@ -113,8 +85,8 @@ class NativeVerifier(PactFFI):
         self.lib.pactffi_verifier_set_provider_info(verifier_handle, se(name), se(scheme), se(host), port, se(path))
 
     def add_provider_transport(self, verifier_handle: VerifierHandle, protocol=str, port=int, path=str, scheme=str):
-        """ 
-        Add a new transport for the given provider. 
+        """
+        Add a new transport for the given provider.
 
         Passing a NULL for any field will use the default value for that field.
 
@@ -139,7 +111,6 @@ class NativeVerifier(PactFFI):
 
     def set_filter_info(self, verifier_handle: VerifierHandle, filter_description=str, filter_state=str, filter_no_state=bool):
         """
-
         Set the filters for the Pact verifier.
 
         If `filter_description` is not empty, it needs to be as a regular expression.
@@ -187,8 +158,7 @@ class NativeVerifier(PactFFI):
 
     def set_verification_options(self, verifier_handle: VerifierHandle, disable_ssl_verification: bool, request_timeout: int) -> int:
         """
-
-        Set the options used by the verifier when calling the provider
+        Set the options used by the verifier when calling the provider.
 
         `disable_ssl_verification` is a boolean value. Set it to greater than zero to turn the option on.
 
@@ -206,9 +176,9 @@ class NativeVerifier(PactFFI):
 
     def set_coloured_output(self, verifier_handle: VerifierHandle, coloured_output: bool) -> int:
         """
+        Enable or disable coloured output using ANSI escape codes in the verifier output.
 
-        Enables or disables coloured output using ANSI escape codes in the verifier output. By default,
-        coloured output is enabled.
+        By default, coloured output is enabled.
 
         `coloured_output` is a boolean value. Set it to greater than zero to turn the option on.
 
@@ -218,13 +188,12 @@ class NativeVerifier(PactFFI):
 
 
         int pactffi_verifier_set_coloured_output(struct VerifierHandle *handle,
-                                                 unsigned char coloured_output);     
+                                                 unsigned char coloured_output);
         """
         return self.lib.pactffi_verifier_set_coloured_output(verifier_handle, coloured_output)
 
     def set_no_pacts_is_error(self, verifier_handle: VerifierHandle, is_error: bool) -> int:
         """
-
         Enable or disable if no pacts are found to verify results in an error.
 
         `is_error` is a boolean value. Set it to greater than zero to enable an error when no pacts
@@ -240,8 +209,7 @@ class NativeVerifier(PactFFI):
 
     def set_publish_options(self, verifier_handle: VerifierHandle, provider_version=str, build_url=str, provider_tags=List[str], provider_branch=str) -> int:
         """
-
-        Set the options used when publishing verification results to the Pact Broker
+        Set the options used when publishing verification results to the Pact Broker.
 
         # Args
 
@@ -281,7 +249,6 @@ class NativeVerifier(PactFFI):
 
     def set_consumer_filters(self, verifier_handle: VerifierHandle, consumer_filters=List[str]):
         """
-
         Set the consumer filters for the Pact verifier.
 
         ### Safety
@@ -293,7 +260,6 @@ class NativeVerifier(PactFFI):
                                                    const char *const *consumer_filters,
                                                    unsigned short consumer_filters_len);
         """
-
         for consumer_filter in consumer_filters:
             c_item = self.ffi.new("char[]", se(consumer_filter))
         c_arr = self.ffi.new("char **", c_item)
@@ -306,7 +272,7 @@ class NativeVerifier(PactFFI):
     def add_custom_header(self, verifier_handle: VerifierHandle, header_name: str, header_value: str):
         """
 
-        Adds a custom header to be added to the requests made to the provider.
+        Add a custom header to be added to the requests made to the provider.
 
         ### Safety
 
@@ -322,7 +288,7 @@ class NativeVerifier(PactFFI):
     def add_file_source(self, verifier_handle: VerifierHandle, file=str):
         """
 
-        Adds a Pact file as a source to verify.
+        Add a Pact file as a source to verify.
 
         ### Safety
 
@@ -336,16 +302,16 @@ class NativeVerifier(PactFFI):
 
     def add_directory_source(self, verifier_handle: VerifierHandle, directory: str):
         """
+        Add a Pact directory as a source to verify.
 
-        Adds a Pact directory as a source to verify. All pacts from the directory that match the
-        provider name will be verified.
+        All pacts from the directory that match the provider name will be verified.
 
         ### Safety
 
         All string fields must contain valid UTF-8. Invalid UTF-8
         will be replaced with U+FFFD REPLACEMENT CHARACTER.
 
-        # void pactffi_verifier_add_directory_source(struct VerifierHandle *handle, const char *directory);
+        void pactffi_verifier_add_directory_source(struct VerifierHandle *handle, const char *directory);
 
         """
         self.lib.pactffi_verifier_add_directory_source(verifier_handle, se(directory))
@@ -353,7 +319,7 @@ class NativeVerifier(PactFFI):
     def url_source(self, verifier_handle: VerifierHandle, url: str, username: str, password: str, token: str):
         """
 
-        Adds a URL as a source to verify. The Pact file will be fetched from the URL.
+        Add a URL as a source to verify. The Pact file will be fetched from the URL.
 
         If a username and password is given, then basic authentication will be used when fetching
         the pact file. If a token is provided, then bearer token authentication will be used.
@@ -374,9 +340,9 @@ class NativeVerifier(PactFFI):
 
     def broker_source(self, verifier_handle: VerifierHandle, url: str, username: str, password: str, token: str):
         """
+        Add a Pact broker as a source to verify.
 
-        Adds a Pact broker as a source to verify. This will fetch all the pact files from the broker
-        that match the provider name.
+        This will fetch all the pact files from the broker that match the provider name.
 
         If a username and password is given, then basic authentication will be used when fetching
         the pact file. If a token is provided, then bearer token authentication will be used.
@@ -408,9 +374,9 @@ class NativeVerifier(PactFFI):
                                      consumer_version_tags: List[str],
                                      ):
         """
+        Add a Pact broker as a source to verify.
 
-        Adds a Pact broker as a source to verify. This will fetch all the pact files from the broker
-        that match the provider name and the consumer version selectors
+        This will fetch all the pact files from the broker that match the provider name and the consumer version selectors
         (See `https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/`).
 
         The consumer version selectors must be passed in in JSON format.
@@ -442,7 +408,7 @@ class NativeVerifier(PactFFI):
                                                            const char *const *consumer_version_selectors,
                                                            unsigned short consumer_version_selectors_len,
                                                            const char *const *consumer_version_tags,
-                                                           unsigned short consumer_version_tags_len);        
+                                                           unsigned short consumer_version_tags_len);
 
         """
         self.lib.pactffi_verifier_broker_source_with_selectors(
@@ -477,14 +443,14 @@ class NativeVerifier(PactFFI):
 
     def logs(self, verifier_handle: VerifierHandle) -> str:
         """
-        Extract the logs for the verification run. 
+        Extract the logs for the verification run.
 
-        This needs the memory buffer log sink to be setup before the verification is executed. 
+        This needs the memory buffer log sink to be setup before the verification is executed.
         The returned string will need to be freed with the `free_string` function call to avoid leaking memory.
 
         Will return a NULL pointer if the logs for the verification can not be retrieved.
 
-        const char *pactffi_verifier_logs(const struct VerifierHandle *handle);        
+        const char *pactffi_verifier_logs(const struct VerifierHandle *handle);
         """
         native_logs = self.lib.pactffi_verifier_logs(verifier_handle)
         logs = self.ffi.string(native_logs).decode("utf-8").rstrip().split("\n")
@@ -493,13 +459,13 @@ class NativeVerifier(PactFFI):
 
     def logs_for_provider(self, provider_name: str):
         """
-        Extract the logs for the verification run. 
+        Extract the logs for the verification run.
 
-        This needs the memory buffer log sink to be setup before the verification is executed. 
+        This needs the memory buffer log sink to be setup before the verification is executed.
         The returned string will need to be freed with the `free_string` function call to avoid leaking memory.
 
         Will return a NULL pointer if the logs for the verification can not be retrieved.
-        const char *pactffi_verifier_logs_for_provider(const char *provider_name);    
+        const char *pactffi_verifier_logs_for_provider(const char *provider_name);
         """
         native_logs = self.lib.pactffi_verifier_logs_for_provider(provider_name)
         logs = self.ffi.string(native_logs).decode("utf-8").rstrip().split("\n")
@@ -508,16 +474,16 @@ class NativeVerifier(PactFFI):
 
     def output(self, verifier_handle: VerifierHandle, strip_ansi: bool) -> str:
         """
+        Extract the standard output for the verification run.
 
-        Extracts the standard output for the verification run. The returned string will need to be
-        freed with the `free_string` function call to avoid leaking memory.
+        The returned string will need to be freed with the `free_string` function call to avoid leaking memory.
 
         * `strip_ansi` - This parameter controls ANSI escape codes. Setting it to a non-zero value
         will cause the ANSI control codes to be stripped from the output.
 
         Will return a NULL pointer if the handle is invalid.
 
-        const char *pactffi_verifier_output(const struct VerifierHandle *handle, unsigned char strip_ansi);      
+        const char *pactffi_verifier_output(const struct VerifierHandle *handle, unsigned char strip_ansi);
         """
         native_logs = self.lib.pactffi_verifier_output(verifier_handle, strip_ansi)
         logs = self.ffi.string(native_logs).decode("utf-8").rstrip().split("\n")
@@ -526,13 +492,13 @@ class NativeVerifier(PactFFI):
 
     def json(self, verifier_handle: VerifierHandle) -> str:
         """
-        Extract the verification result as a JSON document. 
+        Extract the verification result as a JSON document.
 
         The returned string will need to be freed with the `free_string` function call to avoid leaking memory.
 
         Will return a NULL pointer if the handle is invalid.
 
-        const char *pactffi_verifier_json(const struct VerifierHandle *handle);    
+        const char *pactffi_verifier_json(const struct VerifierHandle *handle);
         """
         native_logs = self.lib.pactffi_verifier_json(verifier_handle)
         logs = self.ffi.string(native_logs).decode("utf-8").rstrip().split("\n")

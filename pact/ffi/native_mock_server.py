@@ -345,7 +345,6 @@ class MockServer(PactFFI):
                         in which case http will be used.
         * `transport_config` - (OPTIONAL) Configuration for the transport as a valid JSON string. Set to NULL or empty if not required.
 
-
         The port of the mock server is returned.
 
         # Safety
@@ -364,9 +363,16 @@ class MockServer(PactFFI):
         | -4 | The method panicked |
         | -5 | The address is not valid |
 
+        int32_t pactffi_create_mock_server_for_transport(PactHandle pact,
+                                                 const char *addr,
+                                                 uint16_t port,
+                                                 const char *transport,
+                                                 const char *transport_config);
+
         """
         mock_server_port = self.lib.pactffi_create_mock_server_for_transport(pact_handle, se(hostname), port, se(
-            transport), self.ffi.cast("void *", 0) if transport_config is None else se(transport_config))
+            transport), se('{}') if transport_config is None else se(transport_config))
+        assert mock_server_port not in ['-1', '-2', '-3', '-4', '-5']
         print(f"Mock server started: {mock_server_port}")
         return mock_server_port
 

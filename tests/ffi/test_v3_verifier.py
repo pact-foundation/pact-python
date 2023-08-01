@@ -1,9 +1,10 @@
+from time import sleep
 import pytest
 from pact import VerifierV3
-from pact.ffi.native_verifier import VerifyStatus
 import platform
 from os.path import join, dirname
 import subprocess
+from pact.ffi.verifier import VerifyStatus
 from pact.pact_exception import PactException
 
 
@@ -177,9 +178,12 @@ def test_local_http_v3_pact(httpserver):
 def test_grpc_local_pact():
 
     grpc_server_process = subprocess.Popen(['python', 'area_calculator_server.py'],
-                                           cwd=join(dirname(__file__), '..', '..', 'examples', 'area_calculator'))
+                                           cwd=join(dirname(__file__), '..', '..', 'examples', 'area_calculator'),
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT, universal_newlines=True)
+    sleep(3)
 
-    verifier = VerifierV3(provider="area-calculator-provider",
+    verifier = VerifierV3(provider="area-calculator-provider-example",
                           provider_base_url="tcp://127.0.0.1:37757",
                           )
     result = verifier.verify_pacts(

@@ -13,8 +13,8 @@ from .verifier_v3 import VerifierV3
 
 from .__version__ import __version__  # noqa: F401
 
-__all__ = ('Broker', 'Consumer', 'EachLike', 'Like', 'MessageConsumer', 'MessagePact',
-        #    'Pact', 'Provider', 'SomethingLike', 'Term', 'Format', 'Verifier', 
-        #    'PactV3',
+__all__ = ('Broker', 'Consumer', 'EachLike', 'Like', 'MessageConsumer', 'MessagePact', "MessageProvider",
+           'Pact', 'Provider', 'SomethingLike', 'Term', 'Format', 'Verifier',
+           #    'PactV3',
            'VerifierV3'
            )

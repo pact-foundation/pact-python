@@ -6,8 +6,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 from multiprocessing import Process
-
-from pact.ffi.native_verifier import VerifyResult
+from pact.ffi.verifier import VerifyResult
 from pact.verifier_v3 import VerifierV3
 from .http_proxy import run_proxy
 

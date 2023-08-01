@@ -1,7 +1,7 @@
 import json
 import requests
 
-from pact.ffi.pact_consumer import MockServer, MockServerStatus
+from pact.ffi.native_mock_server import MockServer, MockServerStatus
 
 m = MockServer()
 PACT_FILE_DIR = './examples/pacts'

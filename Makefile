@@ -16,6 +16,7 @@ help:
 	@echo "  fastapi    to run the example FastApi provider tests"
 	@echo "  flask      to run the example Flask provider tests"
 	@echo "  messaging  to run the example messaging e2e tests"
+	@echo "  todo		to run the example v3 todo tests"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
@@ -78,6 +79,15 @@ define MESSAGING
 endef
 export MESSAGING
 
+define TODO
+	echo "messaging todo"
+	cd examples/v3/todo
+	pip install -q -r requirements.txt
+	pip install -e ../../../
+	./run_pytest.sh
+endef
+export TODO
+
 
 .PHONY: consumer
 consumer:
@@ -98,9 +108,13 @@ fastapi:
 messaging:
 	bash -c "$$MESSAGING"
 
+.PHONY: todo
+todo:
+	bash -c "$$TODO"
+
 
 .PHONY: examples
-examples: consumer flask fastapi messaging
+examples: consumer flask fastapi messaging todo
 
 
 .PHONY: package

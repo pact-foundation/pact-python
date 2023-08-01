@@ -1,6 +1,6 @@
 import json
 import os
-from pact.ffi.pact_consumer import MockServer, MockServerStatus
+from pact.ffi.native_mock_server import MockServer, MockServerStatus
 from sys import path
 path.insert(0, './examples/area_calculator')
 from area_calculator_client import get_rectangle_area  # noqa: E402

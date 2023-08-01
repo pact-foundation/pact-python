@@ -6,7 +6,7 @@ from typing import List
 from cffi import FFI
 import threading
 
-from pact.ffi.log import LogToBufferStatus, LogLevel
+from pact.ffi.log import LogToBufferStatus
 from pact.ffi.register_ffi import RegisterFfi
 from pact.ffi.utils import se
 
@@ -78,13 +78,12 @@ class PactFFI(object):
                 if log_output == 'STDOUT':
                     result = cls.lib.pactffi_log_to_stdout(LOG_LEVEL_MAPPING[log_level])
                 elif log_output == 'FILE':
-                    result = cls.lib.pactffi_log_to_file(se(log_file),LOG_LEVEL_MAPPING[log_level])
+                    result = cls.lib.pactffi_log_to_file(se(log_file), LOG_LEVEL_MAPPING[log_level])
                 else:
                     result = cls.lib.pactffi_log_to_buffer(LOG_LEVEL_MAPPING[log_level])
-                
-                assert LogToBufferStatus(result) in [LogToBufferStatus.SUCCESS,LogToBufferStatus.CANT_SET_LOGGER_OR_LOGGER_SET]
+
+                assert LogToBufferStatus(result) in [LogToBufferStatus.SUCCESS, LogToBufferStatus.CANT_SET_LOGGER_OR_LOGGER_SET]
         return cls._instance
-        
 
     def version(self) -> str:
         """Get the current library version.
