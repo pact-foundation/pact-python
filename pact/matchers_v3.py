@@ -173,10 +173,10 @@ class Regex(V3Matcher):
         :rtype: dict
         """
         return {
-                "pact:matcher:type": "regex",
-                "regex": self.matcher,
-                "value": self._generate
-            }
+            "pact:matcher:type": "regex",
+            "regex": self.matcher,
+            "value": self._generate
+        }
 
 # class DateTime(V3Matcher):
 #     """String value that must match the provided datetime format string."""

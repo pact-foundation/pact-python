@@ -1,12 +1,9 @@
 """V3 API for creating a contract and configuring the mock service."""
 import os
 import os.path
-# from pact_python_v3 import init, PactNative
-from pact.ffi.native_mock_server import MockServer, MockServerStatus
+from pact.ffi.native_mock_server import MockServer
 from pact.matchers import Matcher
 from pact.matchers_v3 import V3Matcher
-from pact.__version__ import __version__
-
 
 class PactV3(object):
     """
@@ -16,7 +13,7 @@ class PactV3(object):
     perform tests on a Python consumer.
     """
 
-    def __init__(self, consumer_name, provider_name, hostname=None, port=None,transport=None, pact_dir=None, log_level=None):
+    def __init__(self, consumer_name, provider_name, hostname=None, port=None, transport=None, pact_dir=None, log_level=None):
         """Create a Pact V3 instance."""
         self.consumer_name = consumer_name
         self.provider_name = provider_name
@@ -30,8 +27,9 @@ class PactV3(object):
         self.port = port or 0
         self.transport = transport or 'http'
 
-    def new_http_interaction(self,description):
-        self.interactions.append(self.pact.new_interaction(self.pact_handle,description))
+    def new_http_interaction(self, description):
+        """Create a new http interaction."""
+        self.interactions.append(self.pact.new_interaction(self.pact_handle, description))
         return self
 
     def given(self, provider_state, params={}):
@@ -48,12 +46,12 @@ class PactV3(object):
 
     def with_request(self, method='GET', path='/', query=None, headers=None, body=None):
         """Define the request that the client is expected to perform."""
-        self.pact.with_request(self.interactions[0],method, path)
+        self.pact.with_request(self.interactions[0], method, path)
         if headers is not None:
             for idx, header in enumerate(headers):
-                self.pact.with_request_header(self.interactions[0],header['name'],idx,header['value'])
+                self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
 
-        if body is not None:   
+        if body is not None:
             content_type = 'application/json'  # TODO:- dont hardcode
             self.pact.with_request_body(self.interactions[0], content_type, self.__process_body(body))
         # TODO Add query header
@@ -69,11 +67,11 @@ class PactV3(object):
         """Define the response the server is expected to create."""
         # self.pact.will_respond_with(status, headers, self.__process_body(body))
 
-        self.pact.response_status(self.interactions[0],status)
+        self.pact.response_status(self.interactions[0], status)
         if headers is not None:
             for idx, header in enumerate(headers):
-                self.pact.with_request_header(self.interactions[0],header['name'],idx,header['value'])
-        if body is not None:   
+                self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
+        if body is not None:
             content_type = 'application/json'  # TODO:- dont hardcode
             self.pact.with_response_body(self.interactions[0], content_type, self.__process_body(body))
         return self
@@ -88,14 +86,14 @@ class PactV3(object):
         return self.mock_server
 
     def __exit__(self):
-    # def __exit__(self, exc_type, exc_val, exc_tb):
+        # def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Exit a Python context.
 
         Calls the mock service to verify that all interactions occurred as
         expected, and has it write out the contracts to disk.
         """
-        return self.pact.verify(self.mock_server,self.pact_handle,self.pact_dir)
+        return self.pact.verify(self.mock_server, self.pact_handle, self.pact_dir)
         # test_results = self.mock_server.get_test_result()
         # print("--> EXIT", exc_type, test_results)
         # if exc_type is not None or test_results is not None:
