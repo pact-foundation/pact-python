@@ -11,38 +11,38 @@ def provider():
     return PactV3('TodoApp', 'TodoServiceV3')
 
 
-# def test_get_projects_as_json(provider: PactV3):
-#     (provider
-#      .new_http_interaction('same_as_upon_receiving')
-#      .given('i have a list of projects')
-#         .upon_receiving('a request for projects')
-#         .with_request(method="GET", path="/projects", query=None, headers=[{"name": 'Accept', "value": "application/json"}])
-#         # .with_request(method="GET", path="/projects", query={'from': "today"}, headers=[{"name": 'Accept', "value": "application/json"}])
-#         .will_respond_with(
-#          headers=[{"name": 'Content-Type', "value": "application/json"}],
-#          body=EachLike({
-#              'id': Integer(1),
-#              'name': Like("Project 1"),
-#              # 'due': DateTime("yyyy-MM-dd'T'HH:mm:ss.SSSX", "2016-02-11T09:46:56.023Z"),
-#              'tasks': AtLeastOneLike({
-#                  'id': Integer(),
-#                  'name': Like("Do the laundry"),
-#                  'done': Like(True)
-#              }, examples=4)
-#          })))
+def test_get_projects_as_json(provider: PactV3):
+    (provider
+     .new_http_interaction('same_as_upon_receiving')
+     .given('i have a list of projects')
+        .upon_receiving('a request for projects')
+        .with_request(method="GET", path="/projects", query=None, headers=[{"name": 'Accept', "value": "application/json"}])
+        # .with_request(method="GET", path="/projects", query={'from': "today"}, headers=[{"name": 'Accept', "value": "application/json"}])
+        .will_respond_with(
+         headers=[{"name": 'Content-Type', "value": "application/json"}],
+         body=EachLike({
+             'id': Integer(1),
+             'name': Like("Project 1"),
+             # 'due': DateTime("yyyy-MM-dd'T'HH:mm:ss.SSSX", "2016-02-11T09:46:56.023Z"),
+             'tasks': AtLeastOneLike({
+                 'id': Integer(),
+                 'name': Like("Do the laundry"),
+                 'done': Like(True)
+             }, examples=4)
+         })))
 
-#     with provider:
-#         provider.start_service()
-#         print(f"Mock server is running at {provider.mock_server_port}")
+    with provider:
+        provider.start_service()
+        print(f"Mock server is running at {provider.mock_server_port}")
 
-#         todo = TodoConsumer(f"http://127.0.0.1:{provider.mock_server_port}")
-#         projects = todo.get_projects()
+        todo = TodoConsumer(f"http://127.0.0.1:{provider.mock_server_port}")
+        projects = todo.get_projects()
 
-#         assert len(projects) == 1
-#         assert projects[0]['id'] == 1
-#         assert len(projects[0]['tasks']) == 4
-#         assert projects[0]['tasks'][0]['id'] != 101
-#         provider.verify()
+        assert len(projects) == 1
+        assert projects[0]['id'] == 1
+        assert len(projects[0]['tasks']) == 4
+        assert projects[0]['tasks'][0]['id'] != 101
+        provider.verify()
 
 
 # TODO:- This test in unreliable, sometimes xml is not returned from the mock provider

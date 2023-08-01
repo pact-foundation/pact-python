@@ -47,7 +47,7 @@ class PactV3(object):
     def with_request(self, method='GET', path='/', query=None, headers=None, body=None):
         """Define the request that the client is expected to perform."""
         self.pact.with_request(self.interactions[0], method, path)
-        # index = 0 
+        # index = 0
         if headers is not None:
             for header in headers:
                 print(header['name'])
@@ -73,7 +73,7 @@ class PactV3(object):
         # self.pact.will_respond_with(status, headers, self.__process_body(body))
 
         self.pact.response_status(self.interactions[0], status)
-        index = 0 
+        index = 0
         if headers is not None:
             for header in headers:
                 print(header['name'])
