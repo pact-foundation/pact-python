@@ -109,4 +109,4 @@ ENV/
 # MacOS stuff
 .DS_Store
 # Generated pact directories
-# pacts/
+/pacts/

@@ -140,9 +140,9 @@
       "version": "2.0.1b0"
     },
     "pactRust": {
-      "ffi": "0.4.5",
-      "mockserver": "1.1.1",
-      "models": "1.1.2"
+      "ffi": "0.4.7",
+      "mockserver": "1.2.3",
+      "models": "1.1.9"
     },
     "pactSpecification": {
       "version": "3.0.0"

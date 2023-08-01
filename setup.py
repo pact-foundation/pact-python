@@ -23,7 +23,7 @@ PACT_STANDALONE_SUFFIXES = [
     'windows-x86_64.zip',
     'windows-x86.zip',
 ]
-PACT_FFI_VERSION = "0.4.5"
+PACT_FFI_VERSION = "0.4.7"
 PACT_FFI_FILENAMES = [
     "libpact_ffi-linux-aarch64.so.gz",
     "libpact_ffi-linux-x86_64.so.gz",

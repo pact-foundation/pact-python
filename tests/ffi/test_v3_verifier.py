@@ -60,7 +60,7 @@ def test_broker_url_does_not_exist():
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
-        "Failed to load pact - \x1b[31mCould not load pacts from the pact broker 'http://broker.com/'"
+        "Failed to load pact - \x1b[31mCould not load pacts from pact broker 'http://broker.com/'"
         in "\n".join(result.logs)
     )
 
@@ -74,7 +74,7 @@ def test_authed_broker_without_credentials():
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.VERIFIER_FAILED
     assert (
-        "Failed to load pact - \x1b[31mCould not load pacts from the pact broker 'https://test.pactflow.io'"
+        "Failed to load pact - \x1b[31mCould not load pacts from pact broker 'https://test.pactflow.io'"
         in "\n".join(result.logs)
     )
 
