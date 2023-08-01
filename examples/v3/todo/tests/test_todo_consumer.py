@@ -1,4 +1,3 @@
-import json
 import pytest
 from ..src.todo_consumer import TodoConsumer
 from pact import PactV3
@@ -128,8 +127,6 @@ def test_with_xml_requests(provider: PactV3):
 #         todo = TodoConsumer(f"http://127.0.0.1/{provider.mock_server_port}")
 #         todo.post_image(1001, 'tests/example.jpg')
 #         provider.verify()
-
-
 
 
 # TODO XML Builder
