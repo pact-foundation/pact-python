@@ -10,7 +10,6 @@ from pact.ffi.log import LogToBufferStatus
 from pact.ffi.register_ffi import RegisterFfi
 from pact.ffi.utils import se
 
-
 class PactFFI(object):
     """This interfaces with the Rust crate `pact_ffi`.
 
@@ -106,7 +105,6 @@ class PactFFI(object):
         # Reverting to log file output instead
         result = self.lib.pactffi_fetch_log_buffer(b'NULL')
         logs = self.ffi.string(result).decode("utf-8").rstrip().split("\n")
-        print(f"{logs=}")
         self.lib.pactffi_string_delete(result)
         return logs
 
