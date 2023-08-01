@@ -47,9 +47,13 @@ class PactV3(object):
     def with_request(self, method='GET', path='/', query=None, headers=None, body=None):
         """Define the request that the client is expected to perform."""
         self.pact.with_request(self.interactions[0], method, path)
+        # index = 0 
         if headers is not None:
-            for idx, header in enumerate(headers):
-                self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
+            for header in headers:
+                print(header['name'])
+                print(header['value'])
+                self.pact.with_request_header(self.interactions[0], header['name'], 0, header['value'])
+                # index += 1
                 if header['name'] in ['Content-Type', 'content-type']:
                     content_type = header['value']
 
@@ -69,14 +73,26 @@ class PactV3(object):
         # self.pact.will_respond_with(status, headers, self.__process_body(body))
 
         self.pact.response_status(self.interactions[0], status)
+        index = 0 
         if headers is not None:
-            for idx, header in enumerate(headers):
-                self.pact.with_response_header(self.interactions[0], header['name'], idx, header['value'])
+            for header in headers:
+                print(header['name'])
+                print(header['value'])
+                print(index)
+                # # TODO:- deal with single header name which has multiple values, that is why we move the index
+                # if header['name'] in ['Content-Type', 'content-type']:
+                #     content_type = header['value']
+                #     self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
+                # else:
+                #     self.pact.with_response_header(self.interactions[0], header['name'], index, header['value'])
+                self.pact.with_response_header(self.interactions[0], header['name'], index, header['value'])
+                index += 1
                 if header['name'] in ['Content-Type', 'content-type']:
                     # TODO:- xml bodies only returned if we set `content-type` as a lower case header
                     content_type = header['value']
 
         if body is not None:
+            # self.pact.with_response_body(self.interactions[0], content_type, self.__process_body(body))
             self.pact.with_response_body(self.interactions[0], content_type, self.__process_body(body))
         return self
 
