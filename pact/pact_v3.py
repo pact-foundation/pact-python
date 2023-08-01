@@ -1,9 +1,9 @@
 """V3 API for creating a contract and configuring the mock service."""
 import os
 import os.path
-from pact.ffi.native_mock_server import MockServer
-from pact.matchers import Matcher
+from pact.ffi.native_mock_server import MockServer, MockServerResult
 from pact.matchers_v3 import V3Matcher
+from pact.verifier_v3 import CustomHeader
 
 class PactV3(object):
     """
@@ -23,7 +23,7 @@ class PactV3(object):
         self.pact = MockServer()
         self.pact_handle = MockServer().new_pact(consumer_name, provider_name)
         self.interactions = []
-        self.hostname = hostname or 'localhost'
+        self.hostname = hostname or '127.0.0.1'
         self.port = port or 0
         self.transport = transport or 'http'
 
@@ -50,9 +50,10 @@ class PactV3(object):
         if headers is not None:
             for idx, header in enumerate(headers):
                 self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
+                if header['name'] == 'Content-Type':
+                    content_type = header['value']
 
         if body is not None:
-            content_type = 'application/json'  # TODO:- dont hardcode
             self.pact.with_request_body(self.interactions[0], content_type, self.__process_body(body))
         # TODO Add query header
         # self.pact.with_request(method, path, query, headers, self.__process_body(body))
@@ -63,67 +64,40 @@ class PactV3(object):
     #     self.pact.add_request_binary_file(content_type, file, method, path, query, headers)
     #     return self
 
-    def will_respond_with(self, status=200, headers=None, body=None):
+    def will_respond_with(self, status=200, headers: [CustomHeader] = None, body=None):
         """Define the response the server is expected to create."""
         # self.pact.will_respond_with(status, headers, self.__process_body(body))
 
         self.pact.response_status(self.interactions[0], status)
         if headers is not None:
             for idx, header in enumerate(headers):
-                self.pact.with_request_header(self.interactions[0], header['name'], idx, header['value'])
+                self.pact.with_response_header(self.interactions[0], header['name'], idx, header['value'])
+                if header['name'] == 'Content-Type':
+                    content_type = header['value']
+
         if body is not None:
-            content_type = 'application/json'  # TODO:- dont hardcode
             self.pact.with_response_body(self.interactions[0], content_type, self.__process_body(body))
         return self
 
-    def __enter__(self):
+    def start_service(self) -> int:
         """
-        Enter a Python context.
+        Start the external Mock Service.
 
-        Sets up the mock service to expect the client requests.
+        :raises RuntimeError: if there is a problem starting the mock service.
         """
-        self.mock_server = self.pact.start_mock_server(self.pact_handle, self.hostname, self.port, self.transport, None)
-        return self.mock_server
+        self.mock_server_port = self.pact.start_mock_server(self.pact_handle, self.hostname, self.port, self.transport, None)
+        return self.mock_server_port
 
-    def __exit__(self):
-        # def __exit__(self, exc_type, exc_val, exc_tb):
+    def verify(self) -> MockServerResult:
         """
-        Exit a Python context.
+        Have the mock service verify all interactions occurred.
 
         Calls the mock service to verify that all interactions occurred as
         expected, and has it write out the contracts to disk.
+
+        :raises AssertionError: When not all interactions are found.
         """
-        return self.pact.verify(self.mock_server, self.pact_handle, self.pact_dir)
-        # test_results = self.mock_server.get_test_result()
-        # print("--> EXIT", exc_type, test_results)
-        # if exc_type is not None or test_results is not None:
-        #     error = "Test failed for the following reasons:"
-        #     if exc_type is not None:
-        #         error += "\n\n\tTest code failed with an error: " + getattr(exc_val, 'message', repr(exc_val))
-        #     if test_results is not None:
-        #         error += "\n\n\tMock server failed with the following: "
-        #         i = 1
-        #         for result in test_results:
-        #             error += "\n\t  {}) {} {}".format(i, result["method"], result["path"])
-
-        #             if 'mismatches' in result:
-        #                 j = 1
-        #                 for mismatch in result['mismatches']:
-        #                     error += "\n\t    {}) {} {}".format(j, mismatch["type"], mismatch["mismatch"])
-
-        #             if result['type'] == "request-not-found":
-        #                 error += "\n    The following request was not expected: {}".format(result["request"])
-
-        #             if result['type'] == "missing-request":
-        #                 error += "\n    The following request was expected but not received: {}" \
-        #                     .format(result["request"])
-
-        #             i += 1
-
-        #     raise RuntimeError(error)
-        # else:
-        #     self.mock_server.write_pact_file(self.pact_dir, False)
-        #     self.mock_server.shutdown()
+        return self.pact.verify(self.mock_server_port, self.pact_handle, self.pact_dir)
 
     def __process_body(self, body):
         if isinstance(body, dict):
@@ -131,8 +105,6 @@ class PactV3(object):
         elif isinstance(body, list):
             return [self.__process_body(value) for value in body]
         elif isinstance(body, V3Matcher):
-            return self.__process_body(body.generate())
-        elif isinstance(body, Matcher):
             return self.__process_body(body.generate())
         else:
             return body

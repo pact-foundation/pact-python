@@ -250,7 +250,7 @@ class MockServer(PactFFI):
          already started) or an error has occurred.
         """
         if 'json' in content_type:
-            print(body)
+            # print(body)
             encoded_body = se(json.dumps(body))
         else:
             encoded_body = se(body)
@@ -371,6 +371,10 @@ class MockServer(PactFFI):
                                                  const char *transport_config);
 
         """
+        print(hostname)
+        print(port)
+        print(transport)
+        print(transport_config)
         mock_server_port = self.lib.pactffi_create_mock_server_for_transport(pact_handle, se(hostname), port, se(
             transport), se('{}') if transport_config is None else se(transport_config))
         assert mock_server_port not in ['-1', '-2', '-3', '-4', '-5']
@@ -538,39 +542,34 @@ class MockServer(PactFFI):
                 self.write_message_pact_file(message_pact, PACT_FILE_DIR, False)
             logs = ["success"]
         else:
-            print('pactffi_mock_server_matched did not match')
-            mismatches = self.lib.pactffi_mock_server_mismatches(mock_server_port)
-            if mismatches:
-                logs = json.loads(self.ffi.string(mismatches))
-                print(json.dumps(result, indent=4))
+            logs = self.mock_server_mismatches(mock_server_port)
 
         # Cleanup
         self.lib.pactffi_cleanup_mock_server(mock_server_port)
         self.lib.pactffi_cleanup_plugins(pact_handle)
         return MockServerResult(result, logs)
 
-def mock_server_mismatches(self, mock_server_port=int):
-    """
-    External interface to get all the mismatches from a mock server.
+    def mock_server_mismatches(self, mock_server_port=int):
+        """
+        External interface to get all the mismatches from a mock server.
 
-    The port number of the mock
-    server is passed in, and a pointer to a C string with the mismatches in JSON format is
-    returned.
+        The port number of the mock
+        server is passed in, and a pointer to a C string with the mismatches in JSON format is
+        returned.
 
-    **NOTE:** The JSON string for the result is allocated on the heap, and will have to be freed
-    once the code using the mock server is complete. The [`cleanup_mock_server`](fn.cleanup_mock_server.html) function is
-    provided for this purpose.
+        **NOTE:** The JSON string for the result is allocated on the heap, and will have to be freed
+        once the code using the mock server is complete. The [`cleanup_mock_server`](fn.cleanup_mock_server.html) function is
+        provided for this purpose.
 
-    # Errors
+        # Errors
 
-    If there is no mock server with the provided port number, or the function panics, a NULL
-    pointer will be returned. Don't try to dereference it, it will not end well for you.
-    """
-    mismatches = self.lib.pactffi_mock_server_mismatches(mock_server_port)
-    if mismatches:
-        result = json.loads(self.ffi.string(mismatches))
-        print(json.dumps(result, indent=4))
-        self.lib.pactffi_string_delete(result)
-        return result
-    else:
-        return []
+        If there is no mock server with the provided port number, or the function panics, a NULL
+        pointer will be returned. Don't try to dereference it, it will not end well for you.
+        """
+        mismatches = self.lib.pactffi_mock_server_mismatches(mock_server_port)
+        if mismatches:
+            result = json.loads(self.ffi.string(mismatches))
+            print(json.dumps(result, indent=4))
+            return result
+        else:
+            return []

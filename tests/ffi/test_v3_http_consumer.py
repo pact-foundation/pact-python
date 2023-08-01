@@ -8,7 +8,7 @@ from pact.matchers_v3 import Like, Regex
 def test_ffi_http_consumer():
     request_interaction_body = {
         "isbn": Like("0099740915"),
-        "title": Like("The Handmaid's Tale"),
+        "title": Like("The Handmaid\'s Tale"),
         "description": Like("Brilliantly conceived and executed, this powerful evocation of twenty-first"
                             " century America gives full rein to Margaret Atwood\'s devastating irony, wit and astute perception."),
         "author": Like("Margaret Atwood"),
@@ -34,6 +34,7 @@ def test_ffi_http_consumer():
         "reviews": [
         ]
     }
+
     # Setup pact for testing
     provider = PactV3('http-consumer-1', 'http-provider')
     (provider
@@ -43,20 +44,19 @@ def test_ffi_http_consumer():
      .with_request(
          'POST',
          '/api/books',
-         headers=[],
-         #  headers=[{"name": "Content-Type", "value": 'application/json'}],
+         headers=[{"name": "Content-Type", "value": 'application/json'}],
          body=request_interaction_body
      )
      .will_respond_with(
          200,
-         headers=[],
-         #  headers=[{"name": "Content-Type", "value": 'application/json'}],
+         headers=[{"name": "Content-Type", "value": 'application/ld+json; charset=utf-8'}],
          body=response_interaction_body,
      )
      )
 
-    # Start mock server
-    mock_server_port = provider.__enter__()
+    # Start mock server (the port is also available via provider.mock_server_port)
+    # mock_server_port = provider.start_service()
+    mock_server_port = provider.start_service()
 
     # Make our client call
     body = {
@@ -80,7 +80,6 @@ def test_ffi_http_consumer():
     try:
         response = requests.post(f"http://127.0.0.1:{mock_server_port}/api/books", data=json.dumps(body),
                                  headers={'Content-Type': 'application/json'})
-        print(f"{json.loads(response.text)}")
         print(f"{expected_response}")
         print(f"Client response - matched: {json.loads(response.text) == expected_response}")
         response.raise_for_status()
@@ -89,5 +88,5 @@ def test_ffi_http_consumer():
     except Exception as err:
         print(f'Client request - Other error occurred: {err}')  # Python 3.6
 
-    result = provider.__exit__()
+    result = provider.verify()
     assert MockServerStatus(result.return_code) == MockServerStatus.SUCCESS
