@@ -1,7 +1,7 @@
 """Classes and methods to verify Contracts (V3 implementation)."""
 
 import os
-from typing import TypedDict
+from typing import NamedTuple
 from pact.ffi.native_verifier import NativeVerifier
 from urllib.parse import urlparse
 from pact.ffi.verifier import VerifyResult
@@ -9,7 +9,7 @@ from pact.pact_exception import PactException
 
 from pact.verify_wrapper import is_url
 
-class CustomHeader(TypedDict):
+class CustomHeader(NamedTuple):
     """Custom header to send in the Pact Verifier request."""
 
     name: str
