@@ -11,6 +11,11 @@ target_platform = platform.platform().lower()
 def app():
     if 'macos' in target_platform:
         multiprocessing.set_start_method("fork")  # Issue on MacOS - https://github.com/pytest-dev/pytest-flask/issues/104
+    if 'windows' in target_platform:
+        pass
+        # Also an issue on windows - using fork or using spawn
+        # see https://github.com/jarus/flask-testing/issues/44
+        # and https://github.com/uqfoundation/dill/issues/245
     return create_app()
 
 

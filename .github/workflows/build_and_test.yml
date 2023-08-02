@@ -20,9 +20,9 @@ jobs:
           - '3.10'
           - '3.11'
         os: [ 
-            # ubuntu-latest, 
+            ubuntu-latest, 
             windows-latest, 
-            # macos-latest 
+            macos-latest 
           ]
 
         # # These versions are no longer supported by Python team, and may

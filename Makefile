@@ -80,7 +80,7 @@ endef
 export MESSAGING
 
 define TODO
-	echo "messaging todo"
+	echo "todo make"
 	cd examples/v3/todo
 	pip install -q -r requirements.txt
 	pip install -e ../../../
@@ -114,8 +114,7 @@ todo:
 
 
 .PHONY: examples
-examples: consumer fastapi todo
-# examples: consumer flask fastapi messaging todo
+examples: consumer flask fastapi messaging todo
 
 
 .PHONY: package
