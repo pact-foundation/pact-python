@@ -12,13 +12,13 @@ logging.basicConfig(level=logging.INFO)
 
 # For the purposes of this example, the broker is started up as a fixture defined
 # in conftest.py. For normal usage this would be self-hosted or using PactFlow.
-use_pactflow = int(os.etenv('USE_PACTFLOW', '0'))
+use_pactflow = int(os.getenv('USE_HOSTED_PACT_BROKER', '0'))
 if use_pactflow == 1:
     PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "https://test.pactflow.io")
     PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "dXfltyFMgNOFZAxr8io9wJ37iUpY42M")
     PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1")
 else:
-    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "localhost")
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "http://localhost")
     PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "pactbroker")
     PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "pactbroker")
 

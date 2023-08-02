@@ -67,8 +67,8 @@ def publish_existing_pact(broker):
     source = str(pathlib.Path.cwd().joinpath("..", "pacts").resolve())
     pacts = [f"{source}:/pacts"]
 
-    use_pactflow = int(getenv('USE_PACTFLOW', '0'))
-    if use_pactflow == 1:
+    use_hosted_pact_broker = int(getenv('USE_HOSTED_PACT_BROKER', '0'))
+    if use_hosted_pact_broker == 1:
         envs = {
             "PACT_BROKER_BASE_URL": "https://test.pactflow.io",
             "PACT_BROKER_USERNAME": "dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
@@ -83,24 +83,31 @@ def publish_existing_pact(broker):
 
     target_platform = platform.platform().lower()
 
-    if ('macos' in target_platform or 'windows' in target_platform) and use_pactflow != 1:
+    if ('macos' in target_platform or 'windows' in target_platform) and use_hosted_pact_broker != 1:
         envs["PACT_BROKER_BASE_URL"] = "http://host.docker.internal:80"
 
     print("Publishing existing Pact")
-    use_standalone = int(getenv('USE_STANDALONE', '1'))
+    use_standalone = int(getenv('USE_STANDALONE', '0'))
     if use_standalone == 1:
-        # pb = subprocess.Popen(['pact-broker', 'pacts --consumer-app-version 1'],
-        #                                     cwd=join(dirname(__file__), '..', '..', 'pact', 'bin','pact','bin'))
+        if use_hosted_pact_broker != 1:
+            envs["PACT_BROKER_BASE_URL"] = "http://localhost"
         result = subprocess.run([join(dirname(__file__), '..', '..', 'pact', 'bin', 'pact', 'bin', 'pact-broker'),
-                                'publish', 'pacts', '--consumer-app-version', '1'], shell=True, capture_output=True, text=True)
-
+                                 'publish',
+                                 '../pacts',
+                                 '--consumer-app-version', '1',
+                                 '--broker-base-url', envs["PACT_BROKER_BASE_URL"],
+                                 '--broker-username', envs["PACT_BROKER_USERNAME"],
+                                 '--broker-password', envs["PACT_BROKER_PASSWORD"]
+                                 ], capture_output=True, text=True)
         print(result.stdout)
+        print(result.stderr)
+
     else:
         client = docker.from_env()
 
         client.containers.run(
             remove=True,
-            # network="broker_default",
+            network="broker_default" if use_hosted_pact_broker == 0 else None,
             volumes=pacts,
             image="pactfoundation/pact-cli:latest-multi",
             environment=envs,

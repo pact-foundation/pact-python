@@ -58,3 +58,12 @@ jobs:
       - name: Test examples
         if: runner.os == 'Linux'
         run: make examples
+
+      - name: Test examples
+      # no docker so we use a hosted pact broker and pact-ruby-standalone for publishing
+        if: runner.os != 'Linux'
+        run: make examples
+        env:
+          RUN_BROKER: 0
+          USE_HOSTED_PACT_BROKER: 1
+          USE_STANDALONE: 1        

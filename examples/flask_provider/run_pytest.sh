@@ -18,7 +18,7 @@ sleep 1
 
 # Now run the tests
 if [ "$RUN_BROKER" == '0' ]; then
-    pytest tests
+    pytest tests -rP
 else
     pytest tests --run-broker True --publish-pact 1
 fi

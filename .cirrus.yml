@@ -11,11 +11,14 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python -m tox -e test
     - make examples
 
+env:
+  RUN_BROKER: 0
+  USE_HOSTED_PACT_BROKER: 1
+  USE_STANDALONE: 1
+
 linux_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   env:
-    RUN_BROKER: 0
-    USE_PACTFLOW: 1
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
       # - VERSION: 3.6
@@ -36,8 +39,6 @@ macos_arm64_task:
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
-    RUN_BROKER: "0"
-    USE_PACTFLOW: "1"
     PATH: ${HOME}/.pyenv/shims:${PATH}
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:

@@ -2,7 +2,7 @@ import os
 import pytest
 from pact import MessageProvider
 
-use_pactflow = int(os.getenv('USE_PACTFLOW', '0'))
+use_pactflow = int(os.getenv('USE_HOSTED_PACT_BROKER', '0'))
 if use_pactflow == 1:
     PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "https://test.pactflow.io")
     PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "dXfltyFMgNOFZAxr8io9wJ37iUpY42M")
