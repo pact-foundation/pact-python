@@ -70,4 +70,6 @@ jobs:
         env:
           RUN_BROKER: 0
           USE_HOSTED_PACT_BROKER: 1
-          USE_STANDALONE: 1        
+          USE_STANDALONE: 1
+          PACT_LOG_LEVEL: TRACE   
+          PACT_LOG_OUTPUT: STDOUT

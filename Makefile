@@ -114,7 +114,8 @@ todo:
 
 
 .PHONY: examples
-examples: consumer flask fastapi messaging todo
+examples: consumer fastapi messaging todo
+# examples: consumer flask fastapi messaging todo
 
 
 .PHONY: package
