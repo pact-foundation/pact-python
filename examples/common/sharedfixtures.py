@@ -89,6 +89,10 @@ def publish_existing_pact(broker):
     print("Publishing existing Pact")
     use_standalone = int(getenv('USE_STANDALONE', '0'))
     if use_standalone == 1:
+        executable = 'pact-broker'
+        if ('windows' in target_platform) and use_hosted_pact_broker != 1:
+            executable = executable + ".bat"
+
         if use_hosted_pact_broker != 1:
             envs["PACT_BROKER_BASE_URL"] = "http://localhost"
         result = subprocess.run([join(dirname(__file__), '..', '..', 'pact', 'bin', 'pact', 'bin', 'pact-broker'),
