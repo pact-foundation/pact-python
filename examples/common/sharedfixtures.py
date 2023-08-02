@@ -95,7 +95,7 @@ def publish_existing_pact(broker):
 
         if use_hosted_pact_broker != 1:
             envs["PACT_BROKER_BASE_URL"] = "http://localhost"
-        result = subprocess.run([join(dirname(__file__), '..', '..', 'pact', 'bin', 'pact', 'bin', 'pact-broker'),
+        result = subprocess.run([join(dirname(__file__), '..', '..', 'pact', 'bin', 'pact', 'bin', executable),
                                  'publish',
                                  '../pacts',
                                  '--consumer-app-version', '1',
