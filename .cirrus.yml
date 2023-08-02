@@ -9,11 +9,13 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
     - python -m pydocstyle pact
     - python -m tox -e test
-    # - make examples
+    - make examples
 
 linux_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   env:
+    RUN_BROKER: 0
+    USE_PACTFLOW: 1
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
       # - VERSION: 3.6
@@ -34,6 +36,8 @@ macos_arm64_task:
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
+    RUN_BROKER: "0"
+    USE_PACTFLOW: "1"
     PATH: ${HOME}/.pyenv/shims:${PATH}
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
@@ -45,9 +49,10 @@ macos_arm64_task:
       - VERSION: 3.11
   install_script:
     - brew update    
-    - brew install pyenv
+    - brew install pyenv protobuf # protobuf only needed if using grpc plugins
     - pyenv install ${VERSION}
     - pyenv global ${VERSION}
     - pyenv rehash
     - chmod +x script/install_plugins.sh
+    - find examples -name '*.sh' -exec chmod +x {} \;
   << : *BUILD_TEST_TASK_TEMPLATE

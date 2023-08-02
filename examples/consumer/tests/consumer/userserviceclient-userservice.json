@@ -1,0 +1,184 @@
+{
+  "consumer": {
+    "name": "UserServiceClient"
+  },
+  "interactions": [
+    {
+      "description": "a request for UserA",
+      "providerStates": [
+        {
+          "name": "UserA does not exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/users/UserA"
+      },
+      "response": {
+        "status": 404
+      }
+    },
+    {
+      "description": "a request for UserA",
+      "providerStates": [
+        {
+          "name": "UserA exists and is not an administrator"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/users/UserA"
+      },
+      "response": {
+        "body": {
+          "admin": false,
+          "created_on": "2016-12-15T20:16:01",
+          "id": "fc763eba-0905-41c5-a27f-3934ab26786c",
+          "ip_address": "127.0.0.1",
+          "name": "UserA"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.created_on": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "\\d+-\\d+-\\d+T\\d+:\\d+:\\d+"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.ip_address": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "(\\d{1,3}\\.)+\\d{1,3}"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request for UserA",
+      "providerStates": [
+        {
+          "name": "UserA does not exist"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/users/UserA"
+      },
+      "response": {
+        "headers": {},
+        "status": 404
+      }
+    },
+    {
+      "description": "new-http-interaction",
+      "providerStates": [
+        {
+          "name": "UserA exists and is not an administrator"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/users/UserA"
+      },
+      "response": {
+        "body": {
+          "admin": false,
+          "created_on": "2016-12-15T20:16:01",
+          "id": "fc763eba-0905-41c5-a27f-3934ab26786c",
+          "ip_address": "127.0.0.1",
+          "name": "UserA"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.created_on": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "\\d+-\\d+-\\d+T\\d+:\\d+:\\d+"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                }
+              ]
+            },
+            "$.ip_address": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "(\\d{1,3}\\.)+\\d{1,3}"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-python": {
+      "version": "2.0.1b0"
+    },
+    "pactRust": {
+      "ffi": "0.4.7",
+      "mockserver": "1.2.3",
+      "models": "1.1.9"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "UserService"
+  }
+}

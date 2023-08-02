@@ -18,9 +18,15 @@ logging.basicConfig(level=logging.INFO)
 # If publishing the Pact(s), they will be submitted to the Pact Broker here.
 # For the purposes of this example, the broker is started up as a fixture defined
 # in conftest.py. For normal usage this would be self-hosted or using PactFlow.
-PACT_BROKER_URL = "http://localhost"
-PACT_BROKER_USERNAME = "pactbroker"
-PACT_BROKER_PASSWORD = "pactbroker"
+use_pactflow = int(os.getenv('USE_PACTFLOW', '0'))
+if use_pactflow == 1:
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "https://test.pactflow.io")
+    PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "dXfltyFMgNOFZAxr8io9wJ37iUpY42M")
+    PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1")
+else:
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "http://localhost")
+    PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "pactbroker")
+    PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "pactbroker")
 
 # Define where to run the mock server, for the consumer to connect to. These
 # are the defaults so may be omitted
@@ -102,7 +108,7 @@ def test_get_user_non_admin(pact: PactV3, consumer):
     # appropriate content e.g. for ip_address.
     (
         pact
-        .new_http_interaction('same_as_upon_receiving')
+        .new_http_interaction('a request for UserA')
         .given("UserA exists and is not an administrator")
         .upon_receiving("a request for UserA")
         .with_request("get", "/users/UserA")
@@ -127,7 +133,7 @@ def test_get_non_existing_user(pact: PactV3, consumer):
     # Pact mock provider will behave. In this case, we expect a 404
     (
         pact
-        .new_http_interaction('same_as_upon_receiving')
+        .new_http_interaction('a request for UserA')
         .given("UserA does not exist")
         .upon_receiving("a request for UserA")
         .with_request("get", "/users/UserA")

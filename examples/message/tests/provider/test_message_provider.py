@@ -1,9 +1,16 @@
+import os
 import pytest
 from pact import MessageProvider
 
-PACT_BROKER_URL = "http://localhost"
-PACT_BROKER_USERNAME = "pactbroker"
-PACT_BROKER_PASSWORD = "pactbroker"
+use_pactflow = int(os.getenv('USE_PACTFLOW', '0'))
+if use_pactflow == 1:
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "https://test.pactflow.io")
+    PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "dXfltyFMgNOFZAxr8io9wJ37iUpY42M")
+    PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1")
+else:
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "http://localhost")
+    PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "pactbroker")
+    PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "pactbroker")
 PACT_DIR = "pacts"
 
 
@@ -14,7 +21,7 @@ def default_opts():
         'broker_password': PACT_BROKER_PASSWORD,
         'broker_url': PACT_BROKER_URL,
         'publish_version': '3',
-        'publish_verification_results': False
+        'publish_verification_results': True
     }
 
 

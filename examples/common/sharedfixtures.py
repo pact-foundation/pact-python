@@ -1,5 +1,8 @@
+from os.path import join, dirname
+from os import getenv
 import platform
 import pathlib
+import subprocess
 
 import docker
 import pytest
@@ -58,30 +61,52 @@ def publish_existing_pact(broker):
       :revision_number=>nil, :consumer_version_number=>"1", :pact_version_sha=>nil, \
       :consumer_name_in_pact=>"UserServiceClient", :provider_name_in_pact=>"UserService"}
     """
+    if int(getenv('SKIP_PUBLISH', '1')) == 0:
+        return
+
     source = str(pathlib.Path.cwd().joinpath("..", "pacts").resolve())
     pacts = [f"{source}:/pacts"]
-    envs = {
-        "PACT_BROKER_BASE_URL": "http://broker_app:9292",
-        "PACT_BROKER_USERNAME": "pactbroker",
-        "PACT_BROKER_PASSWORD": "pactbroker",
-    }
+
+    use_pactflow = int(getenv('USE_PACTFLOW', '0'))
+    if use_pactflow == 1:
+        envs = {
+            "PACT_BROKER_BASE_URL": "https://test.pactflow.io",
+            "PACT_BROKER_USERNAME": "dXfltyFMgNOFZAxr8io9wJ37iUpY42M",
+            "PACT_BROKER_PASSWORD": "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1",
+        }
+    else:
+        envs = {
+            "PACT_BROKER_BASE_URL": "http://broker_app:9292",
+            "PACT_BROKER_USERNAME": "pactbroker",
+            "PACT_BROKER_PASSWORD": "pactbroker",
+        }
 
     target_platform = platform.platform().lower()
 
-    if 'macos' in target_platform or 'windows' in target_platform:
+    if ('macos' in target_platform or 'windows' in target_platform) and use_pactflow != 1:
         envs["PACT_BROKER_BASE_URL"] = "http://host.docker.internal:80"
 
-    client = docker.from_env()
-
     print("Publishing existing Pact")
-    client.containers.run(
-        remove=True,
-        network="broker_default",
-        volumes=pacts,
-        image="pactfoundation/pact-cli:latest-multi",
-        environment=envs,
-        command="publish /pacts --consumer-app-version 1",
-    )
+    use_standalone = int(getenv('USE_STANDALONE', '1'))
+    if use_standalone == 1:
+        # pb = subprocess.Popen(['pact-broker', 'pacts --consumer-app-version 1'],
+        #                                     cwd=join(dirname(__file__), '..', '..', 'pact', 'bin','pact','bin'))
+        result = subprocess.run([join(dirname(__file__), '..', '..', 'pact', 'bin', 'pact', 'bin', 'pact-broker'),
+                                'publish', 'pacts', '--consumer-app-version', '1'], shell=True, capture_output=True, text=True)
+
+        print(result.stdout)
+    else:
+        client = docker.from_env()
+
+        client.containers.run(
+            remove=True,
+            # network="broker_default",
+            volumes=pacts,
+            image="pactfoundation/pact-cli:latest-multi",
+            environment=envs,
+            command="publish /pacts --consumer-app-version 1",
+        )
+
     print("Finished publishing")
 
 

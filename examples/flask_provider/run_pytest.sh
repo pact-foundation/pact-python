@@ -17,4 +17,8 @@ trap teardown EXIT
 sleep 1
 
 # Now run the tests
-pytest tests --run-broker True --publish-pact 1
+if [ "$RUN_BROKER" == '0' ]; then
+    pytest tests
+else
+    pytest tests --run-broker True --publish-pact 1
+fi

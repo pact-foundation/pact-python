@@ -1,6 +1,7 @@
 """pact test for user service provider"""
 
 import logging
+import os
 
 import pytest
 
@@ -11,9 +12,15 @@ logging.basicConfig(level=logging.INFO)
 
 # For the purposes of this example, the broker is started up as a fixture defined
 # in conftest.py. For normal usage this would be self-hosted or using PactFlow.
-PACT_BROKER_URL = "http://localhost"
-PACT_BROKER_USERNAME = "pactbroker"
-PACT_BROKER_PASSWORD = "pactbroker"
+use_pactflow = int(os.getenv('USE_PACTFLOW', '0'))
+if use_pactflow == 1:
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "https://test.pactflow.io")
+    PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "dXfltyFMgNOFZAxr8io9wJ37iUpY42M")
+    PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1")
+else:
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "localhost")
+    PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "pactbroker")
+    PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "pactbroker")
 
 # For the purposes of this example, the Flask provider will be started up as part
 # of run_pytest.sh when running the tests. Alternatives could be, for example
@@ -78,7 +85,7 @@ def test_user_service_provider_against_pact():
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
     success, _ = verifier.verify_pacts(
-        sources=["../pacts/userserviceclient-userservice.json"],
+        sources=[os.path.abspath("../pacts/userserviceclient-userservice.json")],
         provider="UserService",
         provider_base_url=PROVIDER_URL,
         verbose=False,
@@ -99,7 +106,7 @@ def test_user_service_provider_against_pact_url(broker_opts):
     # is for), if the verification of an interaction fails then the success
     # result will be != 0, and so the test will FAIL.
     success, _ = verifier.verify_pacts(
-        sources=["http://localhost/pacts/provider/UserService/consumer/UserServiceClient/latest"],
+        sources=[f"{PACT_BROKER_URL}/pacts/provider/UserService/consumer/UserServiceClient/latest"],
         **broker_opts,
         provider="UserService",
         provider_base_url=PROVIDER_URL,

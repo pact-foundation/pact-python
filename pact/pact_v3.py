@@ -21,7 +21,7 @@ class PactV3(object):
         self.pact_dir = pact_dir or os.path.join(os.getcwd(), 'pacts')
         # init(log_level=log_level)
         self.pact = MockServer()
-        self.pact_handle = MockServer().new_pact(consumer_name, provider_name)
+        self.pact_handle = None
         self.interactions = []
         self.hostname = hostname or '127.0.0.1'
         self.port = port or 0
@@ -29,7 +29,8 @@ class PactV3(object):
 
     def new_http_interaction(self, description):
         """Create a new http interaction."""
-        self.interactions.append(self.pact.new_interaction(self.pact_handle, description))
+        self.pact_handle = MockServer().new_pact(self.consumer_name, self.provider_name)
+        self.interactions = [self.pact.new_interaction(self.pact_handle, description)]
         return self
 
     def given(self, provider_state, params={}):
@@ -135,6 +136,7 @@ class PactV3(object):
 
         :raises AssertionError: When not all interactions are found.
         """
+        # self.interactions = []
         return self.pact.verify(self.mock_server_port, self.pact_handle, self.pact_dir)
 
     def __process_body(self, body):

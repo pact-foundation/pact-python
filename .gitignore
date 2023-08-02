@@ -1,7 +1,7 @@
 # pact-python specific ignores
 e2e/pacts
-userserviceclient-userservice.json
-detectcontentlambda-contentprovider.json
+# userserviceclient-userservice.json # unexcluded for cirrus ci locally
+# detectcontentlambda-contentprovider.json # unexcluded for cirrus ci locally
 pact/bin
 
 # Byte-compiled / optimized / DLL files
@@ -109,4 +109,4 @@ ENV/
 # MacOS stuff
 .DS_Store
 # Generated pact directories
-/pacts/
+# /pacts/
