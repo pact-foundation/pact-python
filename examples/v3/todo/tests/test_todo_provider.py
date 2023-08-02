@@ -3,11 +3,14 @@ import pytest
 from ..src.todo_provider import create_app
 from pact import VerifierV3
 from flask import url_for
+import platform
 
+target_platform = platform.platform().lower()
 
 @pytest.fixture(scope='session')
 def app():
-    multiprocessing.set_start_method("fork")  # Issue on MacOS - https://github.com/pytest-dev/pytest-flask/issues/104
+    if 'macos' in target_platform:
+        multiprocessing.set_start_method("fork")  # Issue on MacOS - https://github.com/pytest-dev/pytest-flask/issues/104
     return create_app()
 
 
