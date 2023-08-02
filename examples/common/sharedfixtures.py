@@ -90,7 +90,7 @@ def publish_existing_pact(broker):
     use_standalone = int(getenv('USE_STANDALONE', '0'))
     if use_standalone == 1:
         executable = 'pact-broker'
-        if ('windows' in target_platform) and use_hosted_pact_broker != 1:
+        if 'windows' in target_platform:
             executable = executable + ".bat"
 
         if use_hosted_pact_broker != 1:

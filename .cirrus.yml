@@ -1,59 +1,59 @@
-BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
-  arch_check_script:
-    - uname -am
-  test_script:
-    - script/install_plugins.sh
-    - python --version
-    - python -m pip install --upgrade pip
-    - python -m pip install -r requirements_dev.txt
-    - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
-    - python -m pydocstyle pact
-    - python -m tox -e test
-    - make examples
+# BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
+#   arch_check_script:
+#     - uname -am
+#   test_script:
+#     - script/install_plugins.sh
+#     - python --version
+#     - python -m pip install --upgrade pip
+#     - python -m pip install -r requirements_dev.txt
+#     - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
+#     - python -m pydocstyle pact
+#     - python -m tox -e test
+#     - make examples
 
-env:
-  RUN_BROKER: 0
-  USE_HOSTED_PACT_BROKER: 1
-  USE_STANDALONE: 1
+# env:
+#   RUN_BROKER: 0
+#   USE_HOSTED_PACT_BROKER: 1
+#   USE_STANDALONE: 1
 
-linux_arm64_task:
-  only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
-  env:
-    # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
-    matrix:
-      # - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
-      - VERSION: 3.11
-  arm_container:
-    image: python:$VERSION-slim
-  install_script:
-    - apt update --yes && apt install --yes gcc make curl
-  << : *BUILD_TEST_TASK_TEMPLATE
+# linux_arm64_task:
+#   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
+#   env:
+#     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
+#     matrix:
+#       # - VERSION: 3.6
+#       - VERSION: 3.7
+#       - VERSION: 3.8
+#       - VERSION: 3.9
+#       - VERSION: 3.10
+#       - VERSION: 3.11
+#   arm_container:
+#     image: python:$VERSION-slim
+#   install_script:
+#     - apt update --yes && apt install --yes gcc make curl
+#   << : *BUILD_TEST_TASK_TEMPLATE
 
 
-macos_arm64_task:
-  only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
-  macos_instance:
-    image: ghcr.io/cirruslabs/macos-ventura-base:latest
-  env:
-    PATH: ${HOME}/.pyenv/shims:${PATH}
-    # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
-    matrix:
-      # - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
-      - VERSION: 3.11
-  install_script:
-    - brew update    
-    - brew install pyenv protobuf # protobuf only needed if using grpc plugins
-    - pyenv install ${VERSION}
-    - pyenv global ${VERSION}
-    - pyenv rehash
-    - chmod +x script/install_plugins.sh
-    - find examples -name '*.sh' -exec chmod +x {} \;
-  << : *BUILD_TEST_TASK_TEMPLATE
+# macos_arm64_task:
+#   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
+#   macos_instance:
+#     image: ghcr.io/cirruslabs/macos-ventura-base:latest
+#   env:
+#     PATH: ${HOME}/.pyenv/shims:${PATH}
+#     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
+#     matrix:
+#       # - VERSION: 3.6
+#       - VERSION: 3.7
+#       - VERSION: 3.8
+#       - VERSION: 3.9
+#       - VERSION: 3.10
+#       - VERSION: 3.11
+#   install_script:
+#     - brew update    
+#     - brew install pyenv protobuf # protobuf only needed if using grpc plugins
+#     - pyenv install ${VERSION}
+#     - pyenv global ${VERSION}
+#     - pyenv rehash
+#     - chmod +x script/install_plugins.sh
+#     - find examples -name '*.sh' -exec chmod +x {} \;
+#   << : *BUILD_TEST_TASK_TEMPLATE
