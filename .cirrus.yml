@@ -9,7 +9,7 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
     - python -m pydocstyle pact
     - python -m tox -e test
-    - make flask
+    - make messaging
 
 env:
   RUN_BROKER: 0
