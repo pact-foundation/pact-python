@@ -2,15 +2,14 @@ from pact.ffi.native_mock_server import MockServer, MockServerStatus
 import json
 import os
 import pytest
-from sys import path, version_info
-path.insert(0, './examples/area_calculator')
+from sys import version_info
 if version_info < (3, 7):
     try:
-        from area_calculator_client import get_rectangle_area  # noqa: E402
+        from examples.grpc.area_calculator_client import get_rectangle_area
     except ImportError:
         print("Skipping import for Python 3.6 due to protobuf error")
 else:
-    from area_calculator_client import get_rectangle_area  # noqa: E402
+    from examples.grpc.area_calculator_client import get_rectangle_area
 
 @pytest.mark.skipif(
     version_info < (3, 7),
@@ -18,7 +17,7 @@ else:
 def test_ffi_grpc_consumer():
     # Setup pact for testing
     m = MockServer()
-    PACT_FILE_DIR = './examples/pacts'
+    PACT_FILE_DIR = '../pacts'
     pact = m.new_pact('grpc-consumer-python', 'area-calculator-provider')
     message_pact = m.new_sync_message_interaction(pact, 'A gRPC calculateMulti request')
     m.with_specification(pact, 5)
@@ -26,7 +25,7 @@ def test_ffi_grpc_consumer():
 
     # our interaction contents
     contents = {
-        "pact:proto": os.path.abspath('./examples/proto/area_calculator.proto'),
+        "pact:proto": os.path.abspath('../proto/area_calculator.proto'),
         "pact:proto-service": 'Calculator/calculateOne',
         "pact:content-type": 'application/protobuf',
         "request": {

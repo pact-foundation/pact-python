@@ -4,7 +4,6 @@ import grpc
 
 import area_calculator_pb2 as area__calculator__pb2
 
-
 class CalculatorStub(object):
     """Missing associated documentation comment in .proto file."""
 

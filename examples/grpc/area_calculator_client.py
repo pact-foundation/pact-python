@@ -2,9 +2,7 @@
 
 from __future__ import print_function
 import argparse
-
 import logging
-
 import grpc
 import area_calculator_pb2
 import area_calculator_pb2_grpc

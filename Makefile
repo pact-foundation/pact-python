@@ -16,7 +16,8 @@ help:
 	@echo "  fastapi    to run the example FastApi provider tests"
 	@echo "  flask      to run the example Flask provider tests"
 	@echo "  messaging  to run the example messaging e2e tests"
-	@echo "  todo		to run the example v3 todo tests"
+	@echo "  grpc       to run the example grpc e2e tests"
+	@echo "  todo		to run the example todo tests"
 	@echo "  package    to create a distribution package in /dist/"
 	@echo "  release    to perform a release build, including deps, test, and package targets"
 	@echo "  test       to run all tests"
@@ -79,11 +80,20 @@ define MESSAGING
 endef
 export MESSAGING
 
+define GRPC
+	echo "grpc make"
+	cd examples/grpc
+	pip install -q -r requirements.txt
+	pip install -e ../../
+	./run_pytest.sh
+endef
+export GRPC
+
 define TODO
 	echo "todo make"
-	cd examples/v3/todo
+	cd examples/todo
 	pip install -q -r requirements.txt
-	pip install -e ../../../
+	pip install -e ../../
 	./run_pytest.sh
 endef
 export TODO
@@ -108,13 +118,17 @@ fastapi:
 messaging:
 	bash -c "$$MESSAGING"
 
+.PHONY: grpc
+grpc:
+	bash -c "$$GRPC"
+
 .PHONY: todo
 todo:
 	bash -c "$$TODO"
 
 
 .PHONY: examples
-examples: consumer flask fastapi messaging
+examples: consumer flask fastapi messaging grpc
 # examples: consumer flask fastapi messaging todo
 
 
