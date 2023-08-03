@@ -26,7 +26,7 @@ else:
 # of run_pytest.sh when running the tests. Alternatives could be, for example
 # running a Docker container with a database of test data configured.
 # This is the "real" provider to verify against.
-PROVIDER_HOST = "localhost"
+PROVIDER_HOST = "127.0.0.1"
 PROVIDER_PORT = 5001
 PROVIDER_URL = f"http://{PROVIDER_HOST}:{PROVIDER_PORT}"
 

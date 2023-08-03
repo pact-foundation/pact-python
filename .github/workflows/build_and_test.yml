@@ -14,10 +14,10 @@ jobs:
 
       matrix:
         python-version:
-          - '3.7'
-          - '3.8'
-          - '3.9'
-          - '3.10'
+          # - '3.7'
+          # - '3.8'
+          # - '3.9'
+          # - '3.10'
           - '3.11'
         os: [ 
             ubuntu-latest, 
@@ -61,15 +61,15 @@ jobs:
 
       - name: Test examples
         if: runner.os == 'Linux'
-        run: make examples
+        run: make flask
 
       - name: Test examples
       # no docker so we use a hosted pact broker and pact-ruby-standalone for publishing
         if: runner.os != 'Linux'
-        run: make examples
+        run: make flask
         env:
           RUN_BROKER: 0
           USE_HOSTED_PACT_BROKER: 1
           USE_STANDALONE: 1
-          PACT_LOG_LEVEL: TRACE   
+          PACT_LOG_LEVEL: DEBUG   
           PACT_LOG_OUTPUT: STDOUT

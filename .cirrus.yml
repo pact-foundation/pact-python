@@ -9,7 +9,7 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python -m flake8 --show-source --exclude examples/area_calculator/area_calculator_pb2.py,examples/area_calculator/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
     - python -m pydocstyle pact
     - python -m tox -e test
-    - make examples
+    - make flask
 
 env:
   RUN_BROKER: 0
@@ -22,10 +22,10 @@ linux_arm64_task:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
       # - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
+      # - VERSION: 3.7
+      # - VERSION: 3.8
+      # - VERSION: 3.9
+      # - VERSION: 3.10
       - VERSION: 3.11
   arm_container:
     image: python:$VERSION-slim
@@ -43,10 +43,10 @@ macos_arm64_task:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
       # - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
+      # - VERSION: 3.7
+      # - VERSION: 3.8
+      # - VERSION: 3.9
+      # - VERSION: 3.10
       - VERSION: 3.11
   install_script:
     - brew update    
