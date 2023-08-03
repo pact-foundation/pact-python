@@ -1,2 +1,4 @@
-grpcio==1.50.0
-grpcio-tools==1.50.0
+grpcio==1.48.2; python_version < '3.7'
+grpcio==1.56.2; python_version >= '3.7'
+grpcio-tools==1.48.2; python_version < '3.7'
+grpcio-tools==1.56.2; python_version >= '3.7

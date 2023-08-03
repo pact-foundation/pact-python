@@ -20,6 +20,7 @@ linux_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   env:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
+    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
     matrix:
       - VERSION: 3.6
       - VERSION: 3.7
@@ -42,11 +43,11 @@ macos_arm64_task:
     PATH: ${HOME}/.pyenv/shims:${PATH}
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      # - VERSION: 3.6
-      # - VERSION: 3.7
-      # - VERSION: 3.8
-      # - VERSION: 3.9
-      # - VERSION: 3.10
+      - VERSION: 3.6
+      - VERSION: 3.7
+      - VERSION: 3.8
+      - VERSION: 3.9
+      - VERSION: 3.10
       - VERSION: 3.11
   install_script:
     - brew update    

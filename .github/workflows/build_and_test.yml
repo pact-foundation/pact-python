@@ -25,11 +25,11 @@ jobs:
             macos-latest 
           ]
 
-        # # These versions are no longer supported by Python team, and may
-        # # eventually be dropped from GitHub Actions.
-        # include:
-        #   - python-version: '3.6'
-        #     os: ubuntu-20.04
+        # These versions are no longer supported by Python team, and may
+        # eventually be dropped from GitHub Actions.
+        include:
+          - python-version: '3.6'
+            os: ubuntu-20.04
 
     steps:
       - name: Check out code

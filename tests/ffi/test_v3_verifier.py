@@ -1,3 +1,4 @@
+from sys import version_info
 from time import sleep
 import pytest
 from pact import VerifierV3
@@ -175,6 +176,9 @@ def test_local_http_v3_pact(httpserver):
     )
     assert VerifyStatus(result.return_code) == VerifyStatus.SUCCESS
 
+@pytest.mark.skipif(
+    version_info < (3, 7),
+    reason="https://stackoverflow.com/questions/71759248/importerror-cannot-import-name-builder-from-google-protobuf-internal")
 def test_grpc_local_pact():
 
     grpc_server_process = subprocess.Popen(['python', 'area_calculator_server.py'],

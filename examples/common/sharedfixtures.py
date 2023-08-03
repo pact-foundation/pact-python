@@ -102,7 +102,8 @@ def publish_existing_pact(broker):
                                  '--broker-base-url', envs["PACT_BROKER_BASE_URL"],
                                  '--broker-username', envs["PACT_BROKER_USERNAME"],
                                  '--broker-password', envs["PACT_BROKER_PASSWORD"]
-                                 ], capture_output=True, text=True)
+                                 ],
+                                )
         print(result.stdout)
         print(result.stderr)
 
