@@ -8,7 +8,7 @@ if use_pactflow == 1:
     PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "dXfltyFMgNOFZAxr8io9wJ37iUpY42M")
     PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "O5AIZWxelWbLvqMd8PkAVycBJh2Psyg1")
 else:
-    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "http://localhost")
+    PACT_BROKER_URL = os.getenv("PACT_BROKER_URL", "http://127.0.0.1")
     PACT_BROKER_USERNAME = os.getenv("PACT_BROKER_USERNAME", "pactbroker")
     PACT_BROKER_PASSWORD = os.getenv("PACT_BROKER_PASSWORD", "pactbroker")
 PACT_DIR = "pacts"
