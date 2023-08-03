@@ -35,7 +35,7 @@ class MessageProvider(object):
         consumer,
         pact_dir=os.getcwd(),
         version="3.0.0",
-        proxy_host='localhost',
+        proxy_host='127.0.0.1',
         proxy_port='1234',
         **kwargs
     ):
