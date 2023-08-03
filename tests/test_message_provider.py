@@ -48,7 +48,7 @@ class MessageProviderTestCase(TestCase):
         self.assertEqual(self.provider.consumer, 'DetectContentLambda')
         self.assertEqual(self.provider.pact_dir, os.getcwd())
         self.assertEqual(self.provider.version, '3.0.0')
-        self.assertEqual(self.provider.proxy_host, 'localhost')
+        self.assertEqual(self.provider.proxy_host, '127.0.0.1')
         self.assertEqual(self.provider.proxy_port, '1234')
 
     @patch('pact.verifier_v3.VerifierV3.verify_pacts', return_value=(0, 'logs'))
