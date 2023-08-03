@@ -100,6 +100,10 @@ For different schemes or base paths for your provider, use `provider_base_url`
 
 ## Message Provider
 
+Default `proxy_host` now changes from `localhost` to `127.0.0.1`
+
+- `localhost` appears to work for macos/linux but not windows.
+
 Now utilises `VerifierV3` rather than the old ruby implementation.
 
 No changes to interface.
@@ -129,11 +133,11 @@ from pact import PactV3
 from pact.matchers_v3 import Like, Regex, Format
 ```
 
-* lifecyle changes
-  * start_provider moves to inside test, after interaction setup
-  * stop_provider no longer called
-  * verify moves to inside test, after client has issued request
-    * can be pre or post unit test assertions.
+- lifecyle changes
+  - start_provider moves to inside test, after interaction setup
+  - stop_provider no longer called
+  - verify moves to inside test, after client has issued request
+    - can be pre or post unit test assertions.
 
 ## Message Consumer
 
