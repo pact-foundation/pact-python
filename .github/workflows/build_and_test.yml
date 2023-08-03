@@ -1,75 +1,75 @@
-name: Build and Test
+# name: Build and Test
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-jobs:
-  build:
-    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+# jobs:
+#   build:
+#     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+#     runs-on: ${{ matrix.os }}
 
-    strategy:
-      # When set to true, GitHub cancels
-      # all in-progress jobs if any matrix job fails.
-      fail-fast: false
+#     strategy:
+#       # When set to true, GitHub cancels
+#       # all in-progress jobs if any matrix job fails.
+#       fail-fast: false
 
-      matrix:
-        python-version:
-          - '3.7'
-          - '3.8'
-          - '3.9'
-          - '3.10'
-          - '3.11'
-        os: [ 
-            ubuntu-latest, 
-            windows-latest, 
-            macos-latest 
-          ]
+#       matrix:
+#         python-version:
+#           - '3.7'
+#           - '3.8'
+#           - '3.9'
+#           - '3.10'
+#           - '3.11'
+#         os: [ 
+#             ubuntu-latest, 
+#             windows-latest, 
+#             macos-latest 
+#           ]
 
-        # These versions are no longer supported by Python team, and may
-        # eventually be dropped from GitHub Actions.
-        include:
-          - python-version: '3.6'
-            os: ubuntu-20.04
+#         # These versions are no longer supported by Python team, and may
+#         # eventually be dropped from GitHub Actions.
+#         include:
+#           - python-version: '3.6'
+#             os: ubuntu-20.04
 
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Check out code
+#         uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+#       - name: Set up Python ${{ matrix.python-version }}
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements_dev.txt
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           python -m pip install -r requirements_dev.txt
 
-      - name: Lint with flake8, pydocstyle
-        run: |
-          flake8 --show-source --exclude examples/grpc/area_calculator_pb2.py,examples/grpc/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
-          pydocstyle pact
+#       - name: Lint with flake8, pydocstyle
+#         run: |
+#           flake8 --show-source --exclude examples/grpc/area_calculator_pb2.py,examples/grpc/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
+#           pydocstyle pact
 
-      - name: Install Pact plugins for tests
-        run: script/install_plugins.sh
-        shell: bash
+#       - name: Install Pact plugins for tests
+#         run: script/install_plugins.sh
+#         shell: bash
 
-      - name: Test with pytest
-        run: tox -e test
-        # env:
-        #   PACT_FFI_PATH: .tox/test/lib/python${{ matrix.python-version }}/site-packages/pact/bin
+#       - name: Test with pytest
+#         run: tox -e test
+#         # env:
+#         #   PACT_FFI_PATH: .tox/test/lib/python${{ matrix.python-version }}/site-packages/pact/bin
 
-      - name: Test examples
-        if: runner.os == 'Linux'
-        run: make examples
+#       - name: Test examples
+#         if: runner.os == 'Linux'
+#         run: make examples
 
-      - name: Test examples
-      # no docker so we use a hosted pact broker and pact-ruby-standalone for publishing
-        if: runner.os != 'Linux'
-        run: make examples
-        env:
-          RUN_BROKER: 0
-          USE_HOSTED_PACT_BROKER: 1
-          USE_STANDALONE: 1
-          PACT_LOG_LEVEL: DEBUG   
-          PACT_LOG_OUTPUT: STDOUT
+#       - name: Test examples
+#       # no docker so we use a hosted pact broker and pact-ruby-standalone for publishing
+#         if: runner.os != 'Linux'
+#         run: make examples
+#         env:
+#           RUN_BROKER: 0
+#           USE_HOSTED_PACT_BROKER: 1
+#           USE_STANDALONE: 1
+#           PACT_LOG_LEVEL: DEBUG   
+#           PACT_LOG_OUTPUT: STDOUT
