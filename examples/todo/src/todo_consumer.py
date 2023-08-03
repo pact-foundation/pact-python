@@ -25,6 +25,8 @@ class TodoConsumer(object):
 
     def post_image(self, id, file_path):
         """Store an image against a project"""
+        print(id)
+        print(file_path)
         uri = self.base_uri + '/projects/' + str(id) + '/images'
         response = requests.post(uri, data=open(file_path, 'rb'), headers={'Content-Type': 'application/octet-stream'})
         response.raise_for_status()

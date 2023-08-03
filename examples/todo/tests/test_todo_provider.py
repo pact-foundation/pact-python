@@ -20,11 +20,34 @@ def app():
 
 
 @pytest.mark.usefixtures('live_server')
-def test_pact_verification():
+def test_pact_json():
     verifier = VerifierV3(provider='TodoServiceV3',
                           provider_base_url=url_for('index', _external=True))
     result, logs = verifier.verify_pacts(
-        sources=['./pacts/TodoApp-TodoServiceV3.json']
+        sources=['./pacts/TodoApp-TodoServiceV3.json'],
+        filter_description='"a request for projects"'
+        # Note filter_description takes a regex, so it also matches a request for projects in XML
+        # unless wrapped in quotes.
+    )
+    assert result == 0
+    # TODO:- Ideally this should pass, but having issues with xml content types headers
+@pytest.mark.usefixtures('live_server')
+def test_pact_image():
+    verifier = VerifierV3(provider='TodoServiceV3',
+                          provider_base_url=url_for('index', _external=True))
+    result, logs = verifier.verify_pacts(
+        sources=['./pacts/TodoApp-TodoServiceV3.json'],
+        filter_description='a request to store an image against the project'
+    )
+    assert result == 0
+    # TODO:- Ideally this should pass, but having issues with xml content types headers
+@pytest.mark.usefixtures('live_server')
+def test_pact_xml():
+    verifier = VerifierV3(provider='TodoServiceV3',
+                          provider_base_url=url_for('index', _external=True))
+    result, logs = verifier.verify_pacts(
+        sources=['./pacts/TodoApp-TodoServiceV3.json'],
+        filter_description='a request for projects in XML',
     )
     assert result == 1
     # TODO:- Ideally this should pass, but having issues with xml content types headers
