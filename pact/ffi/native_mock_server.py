@@ -261,7 +261,7 @@ class MockServer(PactFFI):
 
     def with_binary_file(self, interaction_handle, req_or_res="res" or "req", content_type=str, body=str):
         """
-        Adds a binary file as the body with the expected content type and example contents.
+        Add a binary file as the body with the expected content type and example contents.
 
         Will use a mime type matcher to match the body.
 
