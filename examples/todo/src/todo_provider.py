@@ -47,8 +47,7 @@ def create_app():
         ]
         if request.headers['accept'] == 'application/xml':
             print("todo_response")
-            print(readfromstring(json.dumps(todo_response)))
-            print(json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects').to_xml())
+            print(json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects', pretty=True).to_xml())
             return Response(json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects').to_xml(), mimetype='application/xml')
         else:
             return jsonify(todo_response)

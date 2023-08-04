@@ -30,7 +30,7 @@ def test_pact_json():
         # unless wrapped in quotes.
     )
     assert result == 0
-    # TODO:- Ideally this should pass, but having issues with xml content types headers
+
 @pytest.mark.usefixtures('live_server')
 def test_pact_image():
     verifier = VerifierV3(provider='TodoServiceV3',
@@ -40,7 +40,7 @@ def test_pact_image():
         filter_description='a request to store an image against the project'
     )
     assert result == 0
-    # TODO:- Ideally this should pass, but having issues with xml content types headers
+
 @pytest.mark.usefixtures('live_server')
 def test_pact_xml():
     verifier = VerifierV3(provider='TodoServiceV3',
@@ -51,3 +51,4 @@ def test_pact_xml():
     )
     assert result == 1
     # TODO:- Ideally this should pass, but having issues with xml content types headers
+    # see https://github.com/pact-foundation/pact-reference/issues/305

@@ -51,7 +51,7 @@ jobs:
 
       - name: Lint with flake8, pydocstyle
         run: |
-          flake8 --show-source --exclude examples/grpc/area_calculator_pb2.py,examples/grpc/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
+          flake8 --show-source --exclude '*pb2*',.git,__pycache__,build,dist,.tox
           pydocstyle pact
 
       - name: Install Pact plugins for tests

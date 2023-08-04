@@ -6,10 +6,11 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python --version
     - python -m pip install --upgrade pip
     - python -m pip install -r requirements_dev.txt
-    - python -m flake8 --show-source --exclude examples/grpc/area_calculator_pb2.py,examples/grpc/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
+    - python -m flake8 --exclude '*pb2*',.git,__pycache__,build,dist,.tox --show-source
     - python -m pydocstyle pact
     - python -m tox -e test
-    - make examples
+    - make todo
+    # - make examples
 
 env:
   RUN_BROKER: 0

@@ -92,7 +92,7 @@ export GRPC
 define TODO
 	echo "todo make"
 	cd examples/todo
-	pip install -q -r requirements.txt
+	pip install -r requirements.txt
 	pip install -e ../../
 	./run_pytest.sh
 endef
