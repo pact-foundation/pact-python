@@ -41,6 +41,9 @@ def test_pact_image():
     )
     assert result == 0
 
+@pytest.mark.skipif(
+    True,
+    reason="https://github.com/pact-foundation/pact-reference/issues/305")
 @pytest.mark.usefixtures('live_server')
 def test_pact_xml():
     verifier = VerifierV3(provider='TodoServiceV3',
@@ -49,6 +52,6 @@ def test_pact_xml():
         sources=['./pacts/TodoApp-TodoServiceV3.json'],
         filter_description='a request for projects in XML',
     )
-    assert result == 1
+    assert result == 0
     # TODO:- Ideally this should pass, but having issues with xml content types headers
     # see https://github.com/pact-foundation/pact-reference/issues/305

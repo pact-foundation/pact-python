@@ -17,6 +17,14 @@ env:
   USE_HOSTED_PACT_BROKER: 1
   USE_STANDALONE: 1
 
+PYTHON_VERSION_MATRIX: &PYTHON_VERSION_MATRIX
+  - VERSION: 3.6
+  - VERSION: 3.7
+  - VERSION: 3.8
+  - VERSION: 3.9
+  - VERSION: 3.10
+  - VERSION: 3.11
+
 linux_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   env:
@@ -24,12 +32,7 @@ linux_arm64_task:
     LANG: C.UTF-8 # required for python 3.6 docker image
     PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
     matrix:
-      - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
-      - VERSION: 3.11
+      <<: *PYTHON_VERSION_MATRIX
   arm_container:
     image: python:$VERSION-slim
   install_script:
@@ -44,12 +47,7 @@ macos_arm64_task:
     PATH: ${HOME}/.pyenv/shims:${PATH}
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
-      - VERSION: 3.11
+      <<: *PYTHON_VERSION_MATRIX
   install_script:
     - brew update    
     - brew install pyenv protobuf # protobuf only needed if using grpc plugins

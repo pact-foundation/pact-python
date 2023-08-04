@@ -45,7 +45,9 @@ def test_get_projects_as_json(provider: PactV3):
         assert projects[0]['tasks'][0]['id'] != 101
         provider.verify()
 
-
+@pytest.mark.skipif(
+    True,
+    reason="https://github.com/pact-foundation/pact-reference/issues/305")
 # TODO:- This test in unreliable, sometimes xml is not returned from the mock provider
 def test_with_xml_requests(provider: PactV3):
     (provider
