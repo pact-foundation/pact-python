@@ -123,6 +123,7 @@ def test_with_image_upload(provider: PactV3):
         .upon_receiving('a request to store an image against the project')
         .with_request_with_binary_file(
          #  headers=[{"name": 'content-type', "value": "application/octet-stream"}],
+         #  headers=[{"name": 'content-type', "value": "application/octet-stream"}],
          headers=[{"name": 'content-type', "value": "image/jpeg"}],
          file=binary_file_path,
          path="/projects/1001/images")

@@ -28,5 +28,5 @@ class TodoConsumer(object):
         print(id)
         print(file_path)
         uri = self.base_uri + '/projects/' + str(id) + '/images'
-        response = requests.post(uri, data=open(file_path, 'rb'), headers={'Content-Type': 'application/octet-stream'})
+        response = requests.post(uri, data=open(file_path, 'rb'), headers={'Content-Type': 'image/jpeg'})
         response.raise_for_status()
