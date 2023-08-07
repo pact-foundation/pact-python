@@ -4,21 +4,23 @@ from ..src.todo_provider import create_app
 from pact import VerifierV3
 from flask import url_for
 import platform
-
 target_platform = platform.platform().lower()
 
+@pytest.mark.skipif(
+    'windows' in target_platform,
+    reason="https://github.com/jarus/flask-testing/issues/44")
 @pytest.fixture(scope='session')
 def app():
     if 'macos' in target_platform:
         multiprocessing.set_start_method("fork")  # Issue on MacOS - https://github.com/pytest-dev/pytest-flask/issues/104
-    if 'windows' in target_platform:
-        pass
         # Also an issue on windows - using fork or using spawn
         # see https://github.com/jarus/flask-testing/issues/44
         # and https://github.com/uqfoundation/dill/issues/245
     return create_app()
 
-
+@pytest.mark.skipif(
+    'windows' in target_platform,
+    reason="https://github.com/jarus/flask-testing/issues/44")
 @pytest.mark.usefixtures('live_server')
 def test_pact_json():
     verifier = VerifierV3(provider='TodoServiceV3',
@@ -31,6 +33,9 @@ def test_pact_json():
     )
     assert result == 0
 
+@pytest.mark.skipif(
+    'windows' in target_platform,
+    reason="https://github.com/jarus/flask-testing/issues/44")
 @pytest.mark.usefixtures('live_server')
 def test_pact_image():
     verifier = VerifierV3(provider='TodoServiceV3',
@@ -42,7 +47,7 @@ def test_pact_image():
     assert result == 0
 
 @pytest.mark.skipif(
-    True,
+    'windows' in target_platform,
     reason="https://github.com/pact-foundation/pact-reference/issues/305")
 @pytest.mark.usefixtures('live_server')
 def test_pact_xml():
@@ -53,5 +58,3 @@ def test_pact_xml():
         filter_description='a request for projects in XML',
     )
     assert result == 0
-    # TODO:- Ideally this should pass, but having issues with xml content types headers
-    # see https://github.com/pact-foundation/pact-reference/issues/305

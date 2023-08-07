@@ -17,12 +17,12 @@ env:
   USE_STANDALONE: 1
 
 PYTHON_VERSION_MATRIX: &PYTHON_VERSION_MATRIX
+  - VERSION: 3.11
   # - VERSION: 3.6
   # - VERSION: 3.7
   # - VERSION: 3.8
   # - VERSION: 3.9
   # - VERSION: 3.10
-  - VERSION: 3.11
 
 linux_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
@@ -48,7 +48,7 @@ macos_arm64_task:
       <<: *PYTHON_VERSION_MATRIX
   install_script:
     - brew update    
-    - brew install pyenv protobuf # protobuf only needed if using grpc plugins
+    - brew install pyenv protobuf shared-mime-info # protobuf only needed if using grpc plugins
     - pyenv install ${VERSION}
     - pyenv global ${VERSION}
     - pyenv rehash

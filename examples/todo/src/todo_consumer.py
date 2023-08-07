@@ -1,6 +1,10 @@
+import os
 import requests
 import xml.etree.ElementTree as ET
-
+import platform
+target_platform = platform.platform().lower()
+mime_type = 'image/jpeg' if ('macos' or 'linux' in target_platform) and (os.getenv("ACT")
+                                                                         == "true" or os.getenv("GITHUB_ACTIONS") == "true") else 'application/octet-stream'
 
 class TodoConsumer(object):
     def __init__(self, base_uri):
@@ -28,5 +32,5 @@ class TodoConsumer(object):
         print(id)
         print(file_path)
         uri = self.base_uri + '/projects/' + str(id) + '/images'
-        response = requests.post(uri, data=open(file_path, 'rb'), headers={'Content-Type': 'image/jpeg'})
+        response = requests.post(uri, data=open(file_path, 'rb'), headers={'Content-Type': mime_type})
         response.raise_for_status()

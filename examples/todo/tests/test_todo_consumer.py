@@ -5,8 +5,11 @@ from pact import PactV3
 from pact.matchers_v3 import EachLike, Integer, Like, AtLeastOneLike
 # from pact.matchers_v3 import EachLike, Integer, Like, DateTime, AtLeastOneLike
 # import xml.etree.ElementTree as ET
+import platform
+target_platform = platform.platform().lower()
 
-
+mime_type = 'image/jpeg' if ('macos' or 'linux' in target_platform) and (os.getenv("ACT")
+                                                                         == "true" or os.getenv("GITHUB_ACTIONS") == "true") else 'application/octet-stream'
 @pytest.fixture
 def provider():
     return PactV3('TodoApp', 'TodoServiceV3')
@@ -117,14 +120,16 @@ def test_with_xml_requests(provider: PactV3):
 
 
 def test_with_image_upload(provider: PactV3):
+    print("os.getenv(ACT)")
+    print(os.getenv("ACT"))
+    print(target_platform)
+    print(mime_type)
     binary_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'example.jpg'))
     (provider
      .new_http_interaction('same_as_upon_receiving').given('i have a project', {'id': 1001, 'name': 'Home Chores'})
         .upon_receiving('a request to store an image against the project')
         .with_request_with_binary_file(
-         #  headers=[{"name": 'content-type', "value": "application/octet-stream"}],
-         #  headers=[{"name": 'content-type', "value": "application/octet-stream"}],
-         headers=[{"name": 'content-type', "value": "image/jpeg"}],
+         headers=[{"name": 'content-type', "value": mime_type}],
          file=binary_file_path,
          path="/projects/1001/images")
         .will_respond_with(status=201))
