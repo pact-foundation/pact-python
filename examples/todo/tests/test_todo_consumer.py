@@ -7,9 +7,9 @@ from pact.matchers_v3 import EachLike, Integer, Like, AtLeastOneLike
 # import xml.etree.ElementTree as ET
 import platform
 target_platform = platform.platform().lower()
-
-mime_type = 'image/jpeg' if ('macos' or 'linux' in target_platform) and (os.getenv("ACT")
-                                                                         == "true" or os.getenv("GITHUB_ACTIONS") == "true") else 'application/octet-stream'
+is_not_win = any(substring in target_platform for substring in ['linux', 'macos'])
+is_gha = os.getenv("ACT") == "true" or os.getenv("GITHUB_ACTIONS") == "true"
+mime_type = 'image/jpeg' if is_not_win and is_gha else 'application/octet-stream'
 @pytest.fixture
 def provider():
     return PactV3('TodoApp', 'TodoServiceV3')
@@ -120,10 +120,6 @@ def test_with_xml_requests(provider: PactV3):
 
 
 def test_with_image_upload(provider: PactV3):
-    print("os.getenv(ACT)")
-    print(os.getenv("ACT"))
-    print(target_platform)
-    print(mime_type)
     binary_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'example.jpg'))
     (provider
      .new_http_interaction('same_as_upon_receiving').given('i have a project', {'id': 1001, 'name': 'Home Chores'})
