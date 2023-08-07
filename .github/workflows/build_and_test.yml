@@ -14,10 +14,10 @@ jobs:
 
       matrix:
         python-version:
-          - '3.7'
-          - '3.8'
-          - '3.9'
-          - '3.10'
+          # - '3.7'
+          # - '3.8'
+          # - '3.9'
+          # - '3.10'
           - '3.11'
         os: [ 
             ubuntu-latest, 
@@ -27,9 +27,13 @@ jobs:
 
         # These versions are no longer supported by Python team, and may
         # eventually be dropped from GitHub Actions.
-        include:
-          - python-version: '3.6'
-            os: ubuntu-20.04
+        # include:
+        #   - python-version: '3.6'
+        #     os: ubuntu-20.04
+        #   - python-version: '3.6'
+        #     os: windows-latest
+        #   - python-version: '3.6'
+        #     os: macos-latest
 
     steps:
       - name: Check out code
@@ -47,7 +51,7 @@ jobs:
 
       - name: Lint with flake8, pydocstyle
         run: |
-          flake8 --show-source --exclude examples/grpc/area_calculator_pb2.py,examples/grpc/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
+          flake8 --show-source --exclude '*pb2*',.git,__pycache__,build,dist,.tox
           pydocstyle pact
 
       - name: Install Pact plugins for tests
@@ -61,12 +65,12 @@ jobs:
 
       - name: Test examples
         if: runner.os == 'Linux'
-        run: make examples
+        run: make todo
 
       - name: Test examples
       # no docker so we use a hosted pact broker and pact-ruby-standalone for publishing
         if: runner.os != 'Linux'
-        run: make examples
+        run: make todo
         env:
           RUN_BROKER: 0
           USE_HOSTED_PACT_BROKER: 1

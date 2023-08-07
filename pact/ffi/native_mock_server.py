@@ -259,6 +259,55 @@ class MockServer(PactFFI):
         # print(encoded_body)
         return self.lib.pactffi_with_body(interaction_handle, 0 if req_or_res == 'req' else 1, se(content_type), encoded_body)
 
+    def with_binary_file(self, interaction_handle, req_or_res="res" or "req", content_type=str, body=str):
+        """
+        Add a binary file as the body with the expected content type and example contents.
+
+        Will use a mime type matcher to match the body.
+
+        Returns false if the interaction or Pact can't be modified (i.e. the mock server for it has already started)
+
+        * `interaction` - Interaction handle to set the body for.
+        * `part` - Request or response part.
+        * `content_type` - Expected content type.
+        * `body` - example body contents in bytes
+        * `size` - number of bytes in the body
+        """
+        length = len(body)
+        size = length + 1
+        print(length)
+        print(size)
+        body_ptr = self.ffi.new("char[]", body)
+        return self.lib.pactffi_with_binary_file(interaction_handle, 0 if req_or_res == 'req' else 1, se(content_type), body_ptr, size)
+
+    def with_request_with_binary_file(self, interaction_handle, content_type=str, body=str):
+        """
+        Add a binary file as the request body with the expected content type and example contents.
+
+        Will use a mime type matcher to match the body.
+
+        Returns false if the interaction or Pact can't be modified (i.e. the mock server for it has already started)
+
+        * `interaction` - Interaction handle to set the body for.
+        * `content_type` - Expected content type.
+        * `body` - example body contents in bytes
+        """
+        return self.lib.with_binary_file(interaction_handle, 0, content_type, body)
+
+    def with_response_with_binary_file(self, interaction_handle, content_type=str, body=str):
+        """
+        Add a binary file as the response body with the expected content type and example contents.
+
+        Will use a mime type matcher to match the body.
+
+        Returns false if the interaction or Pact can't be modified (i.e. the mock server for it has already started)
+
+        * `interaction` - Interaction handle to set the body for.
+        * `content_type` - Expected content type.
+        * `body` - example body contents in bytes
+        """
+        return self.lib.with_binary_file(interaction_handle, 1, content_type, body)
+
     def with_request_body(self, interaction_handle, content_type=str, body=str):
         """
         Add the request body for the interaction.

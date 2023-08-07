@@ -92,7 +92,7 @@ export GRPC
 define TODO
 	echo "todo make"
 	cd examples/todo
-	pip install -q -r requirements.txt
+	pip install -r requirements.txt
 	pip install -e ../../
 	./run_pytest.sh
 endef
@@ -128,7 +128,7 @@ todo:
 
 
 .PHONY: examples
-examples: consumer flask fastapi messaging grpc
+examples: consumer flask fastapi messaging grpc todo
 # examples: consumer flask fastapi messaging todo
 
 

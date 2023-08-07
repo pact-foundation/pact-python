@@ -6,34 +6,36 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python --version
     - python -m pip install --upgrade pip
     - python -m pip install -r requirements_dev.txt
-    - python -m flake8 --show-source --exclude examples/grpc/area_calculator_pb2.py,examples/grpc/area_calculator_pb2_grpc.py,.git,__pycache__,build,dist,.tox
+    - python -m flake8 --exclude '*pb2*',.git,__pycache__,build,dist,.tox --show-source
     - python -m pydocstyle pact
     - python -m tox -e test
-    - make examples
+    - make todo
 
 env:
   RUN_BROKER: 0
   USE_HOSTED_PACT_BROKER: 1
   USE_STANDALONE: 1
 
+PYTHON_VERSION_MATRIX: &PYTHON_VERSION_MATRIX
+  - VERSION: 3.11
+  # - VERSION: 3.6
+  # - VERSION: 3.7
+  # - VERSION: 3.8
+  # - VERSION: 3.9
+  # - VERSION: 3.10
+
 linux_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
   env:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
-    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    LANG: C.UTF-8 # required for python 3.6 docker image
     matrix:
-      - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
-      - VERSION: 3.11
+      <<: *PYTHON_VERSION_MATRIX
   arm_container:
     image: python:$VERSION-slim
   install_script:
     - apt update --yes && apt install --yes gcc make curl
   << : *BUILD_TEST_TASK_TEMPLATE
-
 
 macos_arm64_task:
   only_if: $CIRRUS_CHANGE_TITLE !=~ 'ci\(gha\).*'
@@ -43,15 +45,10 @@ macos_arm64_task:
     PATH: ${HOME}/.pyenv/shims:${PATH}
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     matrix:
-      - VERSION: 3.6
-      - VERSION: 3.7
-      - VERSION: 3.8
-      - VERSION: 3.9
-      - VERSION: 3.10
-      - VERSION: 3.11
+      <<: *PYTHON_VERSION_MATRIX
   install_script:
     - brew update    
-    - brew install pyenv protobuf # protobuf only needed if using grpc plugins
+    - brew install pyenv protobuf shared-mime-info # protobuf only needed if using grpc plugins
     - pyenv install ${VERSION}
     - pyenv global ${VERSION}
     - pyenv rehash

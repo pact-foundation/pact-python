@@ -105,8 +105,8 @@ class VerifierV3(object):
         if filter_state is not None or filter_description is not None:
             self.native_verifier.set_filter_info(
                 self.verifier_handle,
-                filter_description,
-                filter_state,
+                filter_description if filter_description is not None else '',
+                filter_state if filter_state is not None else '',
                 filter_no_state,
             )
 

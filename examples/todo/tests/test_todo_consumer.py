@@ -1,11 +1,15 @@
+import os
 import pytest
 from ..src.todo_consumer import TodoConsumer
 from pact import PactV3
 from pact.matchers_v3 import EachLike, Integer, Like, AtLeastOneLike
 # from pact.matchers_v3 import EachLike, Integer, Like, DateTime, AtLeastOneLike
 # import xml.etree.ElementTree as ET
-
-
+import platform
+target_platform = platform.platform().lower()
+is_not_win = any(substring in target_platform for substring in ['linux', 'macos'])
+is_gha = os.getenv("ACT") == "true" or os.getenv("GITHUB_ACTIONS") == "true"
+mime_type = 'image/jpeg' if is_not_win and is_gha else 'application/octet-stream'
 @pytest.fixture
 def provider():
     return PactV3('TodoApp', 'TodoServiceV3')
@@ -44,7 +48,9 @@ def test_get_projects_as_json(provider: PactV3):
         assert projects[0]['tasks'][0]['id'] != 101
         provider.verify()
 
-
+@pytest.mark.skipif(
+    True,
+    reason="https://github.com/pact-foundation/pact-reference/issues/305")
 # TODO:- This test in unreliable, sometimes xml is not returned from the mock provider
 def test_with_xml_requests(provider: PactV3):
     (provider
@@ -113,20 +119,24 @@ def test_with_xml_requests(provider: PactV3):
         provider.verify()
 
 
-# def test_with_image_upload(provider:PactV3):
-#     (provider
-#           .new_http_interaction('same_as_upon_receiving').given('i have a project', {'id': 1001, 'name': 'Home Chores'})
-#         .upon_receiving('a request to store an image against the project')
-#         .with_request_with_binary_file('image/jpeg', 'tests/example.jpg', path="/projects/1001/images")
-#         .will_respond_with(status=201))
+def test_with_image_upload(provider: PactV3):
+    binary_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'example.jpg'))
+    (provider
+     .new_http_interaction('same_as_upon_receiving').given('i have a project', {'id': 1001, 'name': 'Home Chores'})
+        .upon_receiving('a request to store an image against the project')
+        .with_request_with_binary_file(
+         headers=[{"name": 'content-type', "value": mime_type}],
+         file=binary_file_path,
+         path="/projects/1001/images")
+        .will_respond_with(status=201))
 
-#     with provider:
-        # provider.start_service()
-#         print("Mock server is running at " + provider.mock_server_port)
+    with provider:
+        provider.start_service()
+        print(f"Mock server is running at {provider.mock_server_port}")
 
-#         todo = TodoConsumer(f"http://127.0.0.1/{provider.mock_server_port}")
-#         todo.post_image(1001, 'tests/example.jpg')
-#         provider.verify()
+        todo = TodoConsumer(f"http://127.0.0.1:{provider.mock_server_port}")
+        todo.post_image(1001, binary_file_path)
+        provider.verify()
 
 
 # TODO Create XMLBuilder which supports matchers.

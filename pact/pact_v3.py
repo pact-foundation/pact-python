@@ -53,7 +53,8 @@ class PactV3(object):
             for header in headers:
                 print(header['name'])
                 print(header['value'])
-                self.pact.with_request_header(self.interactions[0], header['name'], 0, header['value'])
+                # TODO:- deal with multi-value headers and increment the header value appropriately
+                self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
                 # index += 1
                 if header['name'] in ['Content-Type', 'content-type']:
                     content_type = header['value']
@@ -64,10 +65,26 @@ class PactV3(object):
         # self.pact.with_request(method, path, query, headers, self.__process_body(body))
         return self
 
-    # def with_request_with_binary_file(self, content_type, file, method='POST', path='/', query=None, headers=None):
-    #     """Define the request that the client is expected to perform with a binary body."""
-    #     self.pact.add_request_binary_file(content_type, file, method, path, query, headers)
-    #     return self
+    def with_request_with_binary_file(self, method='POST', path='/', query=None, headers=None, file=None):
+        """Define the request that the client is expected to perform."""
+        self.pact.with_request(self.interactions[0], method, path)
+        # index = 0
+        if headers is not None:
+            for header in headers:
+                print(header['name'])
+                print(header['value'])
+                self.pact.with_request_header(self.interactions[0], header['name'], 0, header['value'])
+                # index += 1
+                if header['name'] in ['Content-Type', 'content-type']:
+                    content_type = header['value']
+
+        if file is not None:
+            with open(file, 'rb') as f:
+                file_content = f.read()  # Read whole file in the file_content string
+            self.pact.with_binary_file(self.interactions[0], "req", content_type, self.__process_body(file_content))
+        # TODO Add query header
+        # self.pact.with_request(method, path, query, headers, self.__process_body(body))
+        return self
 
     def will_respond_with(self, status=200, headers: [CustomHeader] = None, body=None):
         """Define the response the server is expected to create."""
@@ -80,16 +97,10 @@ class PactV3(object):
                 print(header['name'])
                 print(header['value'])
                 print(index)
-                # # TODO:- deal with single header name which has multiple values, that is why we move the index
-                # if header['name'] in ['Content-Type', 'content-type']:
-                #     content_type = header['value']
-                #     self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
-                # else:
-                #     self.pact.with_response_header(self.interactions[0], header['name'], index, header['value'])
-                self.pact.with_response_header(self.interactions[0], header['name'], index, header['value'])
+                # TODO:- deal with multi-value headers and increment the header value appropriately
+                self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
                 index += 1
                 if header['name'] in ['Content-Type', 'content-type']:
-                    # TODO:- xml bodies only returned if we set `content-type` as a lower case header
                     content_type = header['value']
 
         if body is not None:

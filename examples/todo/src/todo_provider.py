@@ -13,6 +13,8 @@ def create_app():
 
     @app.route('/projects')
     def projects():
+        # TODO:- Updated response to matche consumer req for xml
+        # should use provider states here or matchers
         todo_response = [
             {
                 'id': 1,
@@ -23,33 +25,37 @@ def create_app():
                     {
                         'done': True,
                         'id': 1,
-                        'name': "Task 1",
+                        'name': "Do the laundry",
                     },
                     {
-                        'done': True,
+                        'done': False,
                         'id': 2,
-                        'name': "Task 2",
+                        'name': "Do the dishes",
                     },
                     {
-                        'done': True,
+                        'done': False,
                         'id': 3,
-                        'name': "Task 3",
+                        'name': "Do the backyard",
                     },
                     {
-                        'done': True,
+                        'done': False,
                         'id': 4,
-                        'name': "Task 4",
+                        'name': "Do nothing",
                     },
                 ]
             }
         ]
         if request.headers['accept'] == 'application/xml':
             print("todo_response")
-            print(readfromstring(json.dumps(todo_response)))
-            print(json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects').to_xml())
+            print(json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects', pretty=True).to_xml())
             return Response(json2xml.Json2xml(readfromstring(json.dumps(todo_response)), wrapper='projects').to_xml(), mimetype='application/xml')
         else:
             return jsonify(todo_response)
+
+    @app.route('/projects/<id>/images', methods=['POST'])
+    def images(id):
+        # TODO:- do something with the binary that has been uploaded
+        return Response(status=201)
 
     return app
 
