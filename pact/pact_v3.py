@@ -53,7 +53,8 @@ class PactV3(object):
             for header in headers:
                 print(header['name'])
                 print(header['value'])
-                self.pact.with_request_header(self.interactions[0], header['name'], 0, header['value'])
+                # TODO:- deal with multi-value headers and increment the header value appropriately
+                self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
                 # index += 1
                 if header['name'] in ['Content-Type', 'content-type']:
                     content_type = header['value']
@@ -96,16 +97,10 @@ class PactV3(object):
                 print(header['name'])
                 print(header['value'])
                 print(index)
-                # # TODO:- deal with single header name which has multiple values, that is why we move the index
-                # if header['name'] in ['Content-Type', 'content-type']:
-                #     content_type = header['value']
-                #     self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
-                # else:
-                #     self.pact.with_response_header(self.interactions[0], header['name'], index, header['value'])
-                self.pact.with_response_header(self.interactions[0], header['name'], index, header['value'])
+                # TODO:- deal with multi-value headers and increment the header value appropriately
+                self.pact.with_response_header(self.interactions[0], header['name'], 0, header['value'])
                 index += 1
                 if header['name'] in ['Content-Type', 'content-type']:
-                    # TODO:- xml bodies only returned if we set `content-type` as a lower case header
                     content_type = header['value']
 
         if body is not None:

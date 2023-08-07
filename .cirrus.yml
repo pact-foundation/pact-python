@@ -10,7 +10,6 @@ BUILD_TEST_TASK_TEMPLATE: &BUILD_TEST_TASK_TEMPLATE
     - python -m pydocstyle pact
     - python -m tox -e test
     - make todo
-    # - make examples
 
 env:
   RUN_BROKER: 0
@@ -30,7 +29,6 @@ linux_arm64_task:
   env:
     # PACT_FFI_PATH: .tox/test/lib/python$VERSION/site-packages/pact/bin
     LANG: C.UTF-8 # required for python 3.6 docker image
-    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
     matrix:
       <<: *PYTHON_VERSION_MATRIX
   arm_container:

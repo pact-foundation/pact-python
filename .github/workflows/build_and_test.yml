@@ -27,13 +27,13 @@ jobs:
 
         # These versions are no longer supported by Python team, and may
         # eventually be dropped from GitHub Actions.
-        include:
-          - python-version: '3.6'
-            os: ubuntu-20.04
-          - python-version: '3.6'
-            os: windows-latest
-          - python-version: '3.6'
-            os: macos-latest
+        # include:
+        #   - python-version: '3.6'
+        #     os: ubuntu-20.04
+        #   - python-version: '3.6'
+        #     os: windows-latest
+        #   - python-version: '3.6'
+        #     os: macos-latest
 
     steps:
       - name: Check out code
@@ -65,13 +65,11 @@ jobs:
 
       - name: Test examples
         if: runner.os == 'Linux'
-        # run: make examples
         run: make todo
 
       - name: Test examples
       # no docker so we use a hosted pact broker and pact-ruby-standalone for publishing
         if: runner.os != 'Linux'
-        # run: make examples
         run: make todo
         env:
           RUN_BROKER: 0
