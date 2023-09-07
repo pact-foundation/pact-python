@@ -1,4 +1,4 @@
-import platform
+# import platform
 import pathlib
 
 import docker
@@ -66,7 +66,7 @@ def publish_existing_pact(broker):
         "PACT_BROKER_PASSWORD": "pactbroker",
     }
 
-    target_platform = platform.platform().lower()
+    # target_platform = platform.platform().lower()
 
     # PODMAN:- Can't bind to port <1024
     # if 'macos' in target_platform or 'windows' in target_platform:
