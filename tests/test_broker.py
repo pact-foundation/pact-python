@@ -31,7 +31,7 @@ class BrokerTestCase(TestCase):
 
     def test_publish_fails(self):
         self.mock_Popen.return_value.returncode = 1
-        broker = Broker(broker_base_url="http://localhost",
+        broker = Broker(broker_base_url="http://localhost:9292",
                         broker_username="username",
                         broker_password="password",
                         broker_token="token")
@@ -72,7 +72,7 @@ class BrokerTestCase(TestCase):
         del os.environ["PACT_BROKER_BASE_URL"]
 
     def test_basic_authenticated_publish(self):
-        broker = Broker(broker_base_url="http://localhost",
+        broker = Broker(broker_base_url="http://localhost:9292",
                         broker_username="username",
                         broker_password="password")
 
@@ -89,7 +89,7 @@ class BrokerTestCase(TestCase):
             './TestConsumer-TestProvider.json'])
 
     def test_token_authenticated_publish(self):
-        broker = Broker(broker_base_url="http://localhost",
+        broker = Broker(broker_base_url="http://localhost:9292",
                         broker_username="username",
                         broker_password="password",
                         broker_token="token")
@@ -108,7 +108,7 @@ class BrokerTestCase(TestCase):
             './TestConsumer-TestProvider.json'])
 
     def test_git_tagged_publish(self):
-        broker = Broker(broker_base_url="http://localhost")
+        broker = Broker(broker_base_url="http://localhost:9292")
 
         broker.publish("TestConsumer",
                        "2.0.1",
@@ -123,7 +123,7 @@ class BrokerTestCase(TestCase):
             '--tag-with-git-branch'])
 
     def test_manual_tagged_publish(self):
-        broker = Broker(broker_base_url="http://localhost")
+        broker = Broker(broker_base_url="http://localhost:9292")
 
         broker.publish("TestConsumer",
                        "2.0.1",
@@ -139,7 +139,7 @@ class BrokerTestCase(TestCase):
             '-t', 'tag2'])
 
     def test_branch_publish(self):
-        broker = Broker(broker_base_url="http://localhost")
+        broker = Broker(broker_base_url="http://localhost:9292")
 
         broker.publish("TestConsumer",
                        "2.0.1",
@@ -154,7 +154,7 @@ class BrokerTestCase(TestCase):
             '--branch=consumer-branch'])
 
     def test_build_url_publish(self):
-        broker = Broker(broker_base_url="http://localhost")
+        broker = Broker(broker_base_url="http://localhost:9292")
 
         broker.publish("TestConsumer",
                        "2.0.1",
@@ -169,7 +169,7 @@ class BrokerTestCase(TestCase):
             '--build-url=http://ci'])
 
     def test_auto_detect_version_properties_publish(self):
-        broker = Broker(broker_base_url="http://localhost")
+        broker = Broker(broker_base_url="http://localhost:9292")
 
         broker.publish("TestConsumer",
                        "2.0.1",

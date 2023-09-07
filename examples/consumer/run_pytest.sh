@@ -1,4 +1,5 @@
 #!/bin/bash
 set -o pipefail
 
-pytest tests --run-broker True --publish-pact 1
+# PODMAN:- Log verbosely when failing tests to work out whats going on!
+pytest tests --run-broker True --publish-pact 1 -rP

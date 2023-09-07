@@ -37,7 +37,7 @@ class MessageProviderTestCase(TestCase):
         self.options = {
             'broker_username': "test",
             'broker_password': "test",
-            'broker_url': "http://localhost",
+            'broker_url': "http://localhost:9292",
             'publish_version': '3',
             'publish_verification_results': False
         }
@@ -65,7 +65,7 @@ class MessageProviderTestCase(TestCase):
         assert mock_verify_pacts.call_count == 1
         mock_verify_pacts.assert_called_with(False, None, broker_username="test",
                                              broker_password="test",
-                                             broker_url="http://localhost",
+                                             broker_url="http://localhost:9292",
                                              publish_version='3',
                                              publish_verification_results=False)
 

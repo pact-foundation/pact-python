@@ -13,7 +13,7 @@ from src.message_handler import MessageHandler, CustomError
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-PACT_BROKER_URL = "http://localhost"
+PACT_BROKER_URL = "http://localhost:9292"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
 PACT_DIR = "pacts"

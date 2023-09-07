@@ -1,7 +1,7 @@
 import pytest
 from pact import MessageProvider
 
-PACT_BROKER_URL = "http://localhost"
+PACT_BROKER_URL = "http://localhost:9292"
 PACT_BROKER_USERNAME = "pactbroker"
 PACT_BROKER_PASSWORD = "pactbroker"
 PACT_DIR = "pacts"

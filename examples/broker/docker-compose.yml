@@ -21,12 +21,14 @@ services:
     # As well as changing the image, the destination port will need to be changed
     # from 9292 below, and in the nginx.conf proxy_pass section
     image: pactfoundation/pact-broker:latest-multi
+# PODMAN:- Error response from daemon: rootlessport cannot expose privileged port 80, you can add 'net.ipv4.ip_unprivileged_port_start=80' to /etc/sysctl.conf (currently 1024), or choose a larger port number (>= 1024): listen tcp 0.0.0.0:80: bind: permission denied
     ports:
-      - "80:9292"
+      - "9292:9292"
     depends_on:
       - postgres
-    links:
-      - postgres
+# PODMAN:- Error response from daemon: bad parameter: link is not supported
+    # links:
+    #   - postgres
     environment:
       PACT_BROKER_DATABASE_USERNAME: postgres
       PACT_BROKER_DATABASE_PASSWORD: password
@@ -47,8 +49,9 @@ services:
   # terminate with SSL
   nginx:
     image: nginx:alpine
-    links:
-      - broker_app:broker
+# PODMAN:- Error response from daemon: bad parameter: link is not supported
+    # links:
+    #   - broker_app:broker
     volumes:
       - ./ssl/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./ssl:/etc/nginx/ssl

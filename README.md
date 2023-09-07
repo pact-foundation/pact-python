@@ -318,7 +318,7 @@ pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version
 ### Python API
 
 ```python
-broker = Broker(broker_base_url="http://localhost")
+broker = Broker(broker_base_url="http://localhost:9292")
 broker.publish("TestConsumer",
                        "2.0.1",
                        branch='consumer-branch',
