@@ -44,7 +44,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             '--broker-username=username',
             '--broker-password=password',
             '--broker-token=token',
@@ -83,7 +83,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             '--broker-username=username',
             '--broker-password=password',
             './TestConsumer-TestProvider.json'])
@@ -101,7 +101,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             '--broker-username=username',
             '--broker-password=password',
             '--broker-token=token',
@@ -118,7 +118,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             './TestConsumer-TestProvider.json',
             '--tag-with-git-branch'])
 
@@ -133,7 +133,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             './TestConsumer-TestProvider.json',
             '-t', 'tag1',
             '-t', 'tag2'])
@@ -149,7 +149,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             './TestConsumer-TestProvider.json',
             '--branch=consumer-branch'])
 
@@ -164,7 +164,7 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             './TestConsumer-TestProvider.json',
             '--build-url=http://ci'])
 
@@ -179,6 +179,6 @@ class BrokerTestCase(TestCase):
         self.mock_Popen.assert_called_once_with([
             BROKER_CLIENT_PATH, 'publish',
             '--consumer-app-version=2.0.1',
-            '--broker-base-url=http://localhost',
+            '--broker-base-url=http://localhost:9292',
             './TestConsumer-TestProvider.json',
             '--auto-detect-version-properties'])
