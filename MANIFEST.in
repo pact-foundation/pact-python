@@ -1,6 +1,0 @@
-include LICENSE
-include *.txt
-include *.md
-include pact/bin/*
-prune pact/test
-prune e2e

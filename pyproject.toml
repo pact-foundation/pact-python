@@ -1,0 +1,157 @@
+[project]
+name        = "pact-python"
+description = "Tool for creating and verifying consumer-driven contracts using the Pact framework."
+dynamic     = ["version"]
+
+authors     = [{ name = "Matthew Balvanz", email = "matthew.balvanz@workiva.com" }]
+maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
+
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["pact", "contract-testing", "testing"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Testing",
+]
+
+requires-python = ">=3.8,<4.0"
+dependencies = [
+  "click      ~= 8.1",
+  "fastapi    ~= 0.103",
+  "psutil     ~= 5.9",
+  "requests   ~= 2.31",
+  "six        ~= 1.16",
+  "uvicorn    ~= 0.13",
+]
+
+[project.urls]
+"Homepage"      = "https://pact.io"
+"Repository"    = "https://github.com/pact-foundation-pact-python"
+"Documentation" = "https://docs.pact.io"
+"Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
+"Changelog"     = "https://github.com/pact-foundation/pact-python/blob/master/CHANGELOG.md"
+
+[project.scripts]
+pact-verifier = "pact.cli.verify:main"
+
+[project.optional-dependencies]
+types = ["mypy ~= 1.1", "types-requests ~= 2.31"]
+test = [
+  "coverage[toml] ~= 7.3",
+  "httpx          ~= 0.24",
+  "mock           ~= 5.1",
+  "pytest         ~= 7.4",
+  "pytest-cov     ~= 4.1",
+  "testcontainers ~= 3.7",
+]
+dev = [
+  "pact-python[types]",
+  "pact-python[test]",
+  "black          ~= 23.7",
+  "flask          ~= 2.3",
+  "ruff           ~= 0.0",
+]
+
+################################################################################
+## Hatch Build Configuration
+################################################################################
+
+[build-system]
+requires      = ["hatchling", "packaging", "requests"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "pact/__version__.py"
+
+[tool.hatch.build]
+include   = ["pact/**/*.py", "*.md", "LICENSE"]
+artifacts = ["pact/bin/*", "pact/data/*"]
+
+[tool.hatch.build.targets.sdist]
+# Ignore binaries in the source distribution, but include the data files
+# so that they can be installed from the source distribution.
+exclude = ["pact/bin/*"]
+
+[tool.hatch.build.targets.wheel]
+# Ignore the data files in the wheel as their contents are already included
+# in the package.
+exclude = ["pact/data/*"]
+
+[tool.hatch.build.targets.wheel.hooks.custom]
+
+################################################################################
+## Hatch Environment Configuration
+################################################################################
+
+# Install dev dependencies in the default environment to simplify the developer
+# workflow.
+[tool.hatch.envs.default]
+features           = ["dev"]
+extra-dependencies = ["hatchling", "packaging", "requests"]
+
+[tool.hatch.envs.default.scripts]
+lint = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
+test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
+# TODO: Adapt the examples to work in Hatch
+all = ["lint", "tests"]
+
+# Test environment for running unit tests. This automatically tests against all
+# supported Python versions.
+[tool.hatch.envs.test]
+features = ["test"]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11"]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
+# TODO: Adapt the examples to work in Hatch
+all = ["tests"]
+
+################################################################################
+## PyTest Configuration
+################################################################################
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+
+################################################################################
+## Coverage
+################################################################################
+
+[tool.coverage.report]
+exclude_lines = [
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "pragma: no cover",
+]
+
+################################################################################
+## Ruff Configuration
+################################################################################
+
+[tool.ruff]
+target-version = "py38"
+select         = ["ALL"]
+
+ignore = [
+  "D203",   # Require blank line before class docstring
+  "D212",   # Multi-line docstring summary must start at the first line
+  "ANN101", # `self` must be typed
+  "ANN102", # `cls` must be typed
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
