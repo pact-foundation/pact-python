@@ -3,6 +3,8 @@ e2e/pacts
 userserviceclient-userservice.json
 detectcontentlambda-contentprovider.json
 pact/bin
+pact/lib
+pact/data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -104,4 +106,3 @@ ENV/
 
 
 .noseids
-
