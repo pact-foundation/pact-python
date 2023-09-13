@@ -1,0 +1,171 @@
+name: build
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  STABLE_PYTHON_VERSION: "3.11"
+  CIBW_BUILD_FRONTEND: build
+  CIBW_TEST_COMMAND: >
+    python -c
+    "from pact import EachLike;
+    assert EachLike(1).generate() == {'json_class': 'Pact::ArrayLike', 'contents': 1, 'min': 1}
+    "
+
+jobs:
+  build-x86_64:
+    name: Build wheels on ${{ matrix.os }} (x86, 64-bit)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            archs: x86_64
+          - os: macos-latest
+            archs: x86_64
+          - os: windows-latest
+            archs: AMD64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all tags
+          fetch-depth: 0
+
+      - name: Create wheels
+        uses: pypa/cibuildwheel@v2.15.0
+        env:
+          CIBW_ARCHS: ${{ matrix.archs }}
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  build-x86:
+    name: Build wheels on ${{ matrix.os }} (x86, 32-bit)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            archs: x86
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all tags
+          fetch-depth: 0
+
+      - name: Create wheels
+        uses: pypa/cibuildwheel@v2.15.0
+        env:
+          CIBW_ARCHS: ${{ matrix.archs }}
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  build-arm64:
+    name: Build wheels on ${{ matrix.os }} (arm64)
+    runs-on: ${{ matrix.os }}
+    # As this requires emulation, it's not worth running on PRs
+    if: >-
+      github.event_name == 'push' &&
+      startsWith(github.event.ref, 'refs/tags')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            archs: aarch64
+            build: "*manylinux*"
+          - os: macos-latest
+            archs: arm64
+            build: "*"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all tags
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        if: matrix.os == 'ubuntu-latest'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Create wheels
+        uses: pypa/cibuildwheel@v2.15.0
+        env:
+          CIBW_ARCHS: ${{ matrix.archs }}
+          CIBW_BUILD: ${{ matrix.build }}
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  check:
+    name: Check wheels
+    needs:
+      - build-x86_64
+      - build-x86
+      - build-arm64
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: wheels
+          path: wheelhouse
+
+      - run: |
+          pipx run twine check --strict wheelhouse/*
+
+  publish:
+    name: Publish wheels
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    needs: [check]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+          path: wheelhouse
+
+      - name: Push build artifacts to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.10
+        with:
+          skip_existing: true
+          user: ${{ secrets.PYPI_USERNAME }}
+          password: ${{ secrets.PYPI_PASSWORD }}
+          packages-dir: wheelhouse
