@@ -1,4 +1,55 @@
+default_install_hook_types:
+  - commit-msg
+  - pre-commit
+  - pre-push
+
 repos:
+  # Generic hooks that apply to a lot of files
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+      # The following only check that the files are parseable and does _not_
+      # modify the formatting.
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+
+  - repo: https://gitlab.com/bmares/check-json5
+    rev: v1.0.0
+    hooks:
+      # As above, this only checks for valid JSON files. This implementation
+      # allows for comments within JSON files.
+      - id: check-json5
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        stages: [pre-push]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.289
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        stages: [pre-push]
+
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        stages: [pre-push]
+
   - repo: https://github.com/commitizen-tools/commitizen
     rev: master
     hooks:
