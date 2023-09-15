@@ -55,6 +55,7 @@ test = [
   "pytest         ~= 7.4",
   "pytest-cov     ~= 4.1",
   "testcontainers ~= 3.7",
+  "yarl           ~= 1.9",
 ]
 dev = [
   "pact-python[types]",
@@ -104,7 +105,7 @@ extra-dependencies = ["hatchling", "packaging", "requests"]
 [tool.hatch.envs.default.scripts]
 lint = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
 test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
-# TODO: Adapt the examples to work in Hatch
+example = "PYTHONPATH=examples pytest examples/ {args}"
 all = ["lint", "tests"]
 
 # Test environment for running unit tests. This automatically tests against all
