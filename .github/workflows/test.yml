@@ -52,10 +52,9 @@ jobs:
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && runner.os == 'Linux'
         run: echo hatch run lint
 
-      - # TODO: Implement the examples to work in hatch
-        name: Examples
+      - name: Examples
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && runner.os == 'Linux'
-        run: echo hatch run example
+        run: hatch run example --color=yes --capture=no
 
       - name: Run tests and track code coverage
         run: hatch run test
