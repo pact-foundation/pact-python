@@ -240,7 +240,7 @@ if sys.version_info < (3, 7):
 else:
     dependencies += [
         'click>=8.1.3',
-        'httpx==0.23.3',
+        'httpx>=0.23.3',
         'requests>=2.28.0',
         'uvicorn>=0.19.0',
     ]
