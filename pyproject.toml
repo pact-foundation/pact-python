@@ -50,6 +50,7 @@ pact-verifier = "pact.cli.verify:main"
 types = ["mypy ~= 1.1", "types-requests ~= 2.31"]
 test = [
   "coverage[toml] ~= 7.3",
+  "flask[async]   ~= 2.3",
   "httpx          ~= 0.24",
   "mock           ~= 5.1",
   "pytest         ~= 7.4",
@@ -61,7 +62,6 @@ dev = [
   "pact-python[types]",
   "pact-python[test]",
   "black          ~= 23.7",
-  "flask          ~= 2.3",
   "ruff           ~= 0.0",
 ]
 
