@@ -1,220 +1,162 @@
 # Examples
 
-## Table of Contents
+This directory contains an end-to-end example of using Pact in Python. While
+this document and the documentation within the examples themselves are intended
+to be mostly self-contained, it is highly recommended that you read the [Pact
+Documentation](https://docs.pact.io/) as well.
 
-  * [Overview](#overview)
-  * [broker](#broker)
-  * [common](#common)
-  * [consumer](#consumer)
-  * [flask_provider](#flask_provider)
-  * [fastapi_provider](#fastapi_provider)
-  * [message](#message)
-  * [pacts](#pacts)
+Assuming you have [hatch](https://hatch.pypa.io/latest/) installed, the example
+suite can be executed with:
+
+```sh
+hatch run example
+```
+
+The code within the examples is intended to be well documented and you are
+encouraged to look through the code as well (or submit a PR if anything is
+unclear!).
 
 ## Overview
 
-Here you can find examples of how to use Pact using the python language. You can find more of an overview on Pact in the
-[Pact Introduction].
+Pact is a contract testing tool. Contract testing is a way to ensure that
+services (such as an API provider and a client) can communicate with each other.
+This example focuses on HTTP interactions, but Pact can be used to test more
+general interactions as well such as through message queues.
 
-Examples are given of both the [Consumer] and [Provider], this does not mean however that you must use python for both.
-Different languages can be mixed and matched as required.
+An interaction between a HTTP client (the _consumer_) and a server (the
+_provider_) would typically look like this:
 
-In these examples, `1` is just used to meet the need of having *some* [Consumer] or [Provider] version. In reality, you
-will generally want to use something more complicated and automated. Guidelines and best practices are available in the
-[Versioning in the Pact Broker]
+<div align="center">
 
-## broker
-
-The [Pact Broker] stores [Pact file]s and [Pact verification] results. It is used here for the [consumer](#consumer),
-[flask_provider](#flask-provider) and [message](#message) tests.
-
-### Running
-
-These examples run the [Pact Broker] as part of the tests when specified. It can be run outside the tests as well by
-performing the following command from a separate terminal in the `examples/broker` folder:
-```bash
-docker-compose up
+```mermaid
+sequenceDiagram
+    participant Consumer
+    participant Provider
+    Consumer ->> Provider: GET /users/123
+    Provider ->> Consumer: 200 OK
+    Consumer ->> Provider: GET /users/999
+    Provider ->> Consumer: 404 Not Found
 ```
 
-You should then be able to open a browser and navigate to http://localhost where you will initially be able to see the
-default Example App/Example API Pact.
+</div>
 
-Running the [Pact Broker] outside the tests will mean you are able to then see the [Pact file]s submitted to the
-[Pact Broker] as the various tests are performed.
+To test this interaction naively would require both the consumer and provider to
+be running at the same time. While this is straightforward in the above example,
+this quickly becomes impractical as the number of interactions grows between
+many microservices. Pact solves this by allowing the consumer and provider to be
+tested independently.
 
-## common
+Pact achieves this be mocking the other side of the interaction:
 
-To avoid needing to duplicate certain fixtures, such as starting up a docker based Pact broker (to demonstrate how the
-test process could work), the shared fixtures used by the pytests have all been placed into a single location.]
-This means it is easier to see the relevant code for the example without having to go through the boilerplate fixtures.
-See [Requiring/Loading plugins in a test module or conftest file] for further details of this approach.
+<div align="center">
 
-## consumer
+```mermaid
+sequenceDiagram
+    box Consumer Side
+        participant Consumer
+        participant P1 as Pact
+    end
+    box Provider Side
+        participant P2 as Pact
+        participant Provider
+    end
+    Consumer->>P1: GET /users/123
+    P1->>Consumer: 200 OK
+    Consumer->>P1: GET /users/999
+    P1->>Consumer: 404 Not Found
 
-Pact is consumer-driven, which means first the contracts are created. These Pact contracts are generated during
-execution of the consumer tests.
+    P1--)P2: Pact Broker
 
-### Running
-
-When the tests are run, the "minimum" is to generate the Pact contract JSON, additional options are available. The
-following commands can be run from the `examples/consumer` folder:
-
-- Install any necessary dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-- To startup the broker, run the tests, and publish the results to the broker:
-    ```bash
-    pytest --run-broker True --publish-pact 1 
-    ```
-- Alternatively the same can be performed with the following command, which is called from a `make consumer`:
-    ```bash
-    ./run_pytest.sh
-    ```
-- To run the tests, and publish the results to the broker which is already running:
-    ```bash
-    pytest --publish-pact 1
-    ```
-- To just run the tests:
-    ```bash
-    pytest
-    ```
-
-### Output
-
-The following file(s) will be created when the tests are run:
-
-| Filename                                    | Contents  |
-|---------------------------------------------| ----------|
-| consumer/pact-mock-service.log              | All interactions with the mock provider such as expected interactions, requests, and interaction verifications. |
-| consumer/userserviceclient-userservice.json | This contains the Pact interactions between the `UserServiceClient` and `UserService`, as defined in the tests. The naming being derived from the named Pacticipants: `Consumer("UserServiceClient")` and `Provider("UserService")` |
-
-## flask_provider
-
-The Flask [Provider] example consists of a basic Flask app, with a single endpoint route.
-This implements the service expected by the [consumer](#consumer).
-
-Functionally, this provides the same service and tests as the [fastapi_provider](#fastapi_provider). Both are included to
-demonstrate how Pact can be used in different environments with different technology stacks and approaches.
-
-The [Provider] side is responsible for performing the tests to verify if it is compliant with the [Pact file] contracts
-associated with it.
-
-As such, the tests use the pact-python Verifier to perform this verification. Two approaches are demonstrated:
-- Testing against the [Pact broker]. Generally this is the preferred approach, see information on [Sharing Pacts].
-- Testing against the [Pact file] directly. If no [Pact broker] is available you can verify against a static [Pact file].
-
-### Running
-
-To avoid package version conflicts with different applications, it is recommended to run these tests from a
-[Virtual Environment]
-
-The following commands can be run from within your [Virtual Environment], in the `examples/flask_provider`.
-
-To perform the python tests:
-```bash
-pip install -r requirements.txt # Install the dependencies for the Flask example
-pip install -e ../../           # Using setup.py in the pact-python root, install any pact dependencies and pact-python
-./run_pytest.sh                 # Wrapper script to first run Flask, and then run the tests
+    P2->>Provider: GET /users/123
+    Provider->>P2: 200 OK
+    P2->>Provider: GET /users/999
+    Provider->>P2: 404 Not Found
 ```
 
-To perform verification using CLI to verify the [Pact file] against the Flask [Provider] instead of the python tests:
-```bash
-pip install -r requirements.txt # Install the dependencies for the Flask example
-./verify_pact.sh                # Wrapper script to first run Flask, and then use `pact-verifier` to verify locally
+</div>
+
+In the first stage, the consumer defines a number of interactions in the form
+below. Pact sets up a mock server that will respond to the requests as defined
+by the consumer. All these interactions, containing both the request and
+expected response, are all sent to the Pact Broker.
+
+> Given {provider state} \
+> Upon receiving {description} \
+> With {request} \
+> Will respond with {response}
+
+In the second stage, the provider retrieves the interactions from the Pact
+Broker. It then sets up a mock client that will make the requests as defined by
+the consumer. Pact then verifies that the responses from the provider match the
+expected responses defined by the consumer.
+
+In this way, Pact is consumer driven and can ensure that the provider is
+compatible with the consumer. While this example showcases both sides in Python,
+this is absolutely not required. The provider could be written in any language,
+and satisfy contracts from a number of consumers all written in different
+languages.
+
+### Consumer
+
+The consumer in this example is a simple Python script that makes a HTTP GET
+request to a server. It is defined in [`src/consumer.py`](src/consumer.py). The
+tests for the consumer are defined in
+[`tests/test_00_consumer.py`](tests/test_00_consumer.py). Each interaction is
+defined using the format mentioned above. Programmatically, this looks like:
+
+```py
+expected: dict[str, Any] = {
+    "id": Format().integer,
+    "name": "Verna Hampton",
+    "created_on": Format().iso_8601_datetime(),
+}
+(
+    pact.given("user 123 exists")
+    .upon_receiving("a request for user 123")
+    .with_request("get", "/users/123")
+    .will_respond_with(200, body=Like(expected))
+)
+# Code that makes the request to the server
 ```
 
-To perform verification using CLI, but verifying the [Pact file] previously provided by a [Consumer], and publish the
-results. This example requires that the [Pact broker] is already running, and the [Consumer] tests have been published
-already, described in the [consumer](#consumer) section above.
-```bash
-pip install -r requirements.txt # Install the dependencies for the Flask example
-./verify_pact.sh 1              # Wrapper script to first run Flask, and then use `pact-verifier` to verify and publish
+### Provider
+
+This example showcases to different providers, one written in Flask and one
+written in FastAPI. Both are simple Python web servers that respond to a HTTP
+GET request. The Flask provider is defined in [`src/flask.py`](src/flask.py) and
+the FastAPI provider is defined in [`src/fastapi.py`](src/fastapi.py). The
+tests for the providers are defined in
+[`tests/test_01_provider_flask.py`](tests/test_01_provider_flask.py) and
+[`tests/test_01_provider_fastapi.py`](tests/test_01_provider_fastapi.py).
+
+Unlike the consumer side, the provider side is responsible to responding to the
+interactions defined by the consumers. In this regard, the provider testing
+is rather simple:
+
+```py
+code, _ = verifier.verify_with_broker(
+    broker_url=str(broker),
+    published_verification_results=True,
+    provider_states_setup_url=str(PROVIDER_URL / "_pact" / "provider_states"),
+)
+assert code == 0
 ```
 
-These examples demonstrate by first launching Flask via a `python -m flask run`, you may prefer to start Flask using an
-`app.run()` call in the python code instead, see [How to Run a Flask Application]. Additionally for tests, you may want
-to manage starting and stopping Flask as part of a fixture setup. Any approach can be chosen here, in line with your
-existing Flask testing practices.
+The complication comes from the fact that the provider needs to know what state
+to be in before responding to the request. In order to achieve this, a testing
+endpoint is defined that sets the state of the provider as defined in the
+`provider_states_setup_url` above. For example, the consumer requests has _Given
+user 123 exists_ as the provider state, and the provider will need to ensure
+that this state is satisfied. This would typically entail setting up a database
+with the correct data, but it is advisable to achieve the equivalent state by
+mocking the appropriate calls. This has been showcased in both provider
+examples.
 
-### Output
+### Broker
 
-The following file(s) will be created when the tests are run
-
-| Filename                    | Contents  |
-|-----------------------------| ----------|
-| flask_provider/log/pact.log | All Pact interactions with the Flask Provider. Every interaction example retrieved from the Pact Broker will be performed during the Verification test; the request/response logged here. | 
-
-## fastapi_provider
-
-The FastAPI [Provider] example consists of a basic FastAPI app, with a single endpoint route.
-This implements the service expected by the [consumer](#consumer).
-
-Functionally, this provides the same service and tests as the [flask_provider](#flask_provider). Both are included to
-demonstrate how Pact can be used in different environments with different technology stacks and approaches.
-
-The [Provider] side is responsible for performing the tests to verify if it is compliant with the [Pact file] contracts
-associated with it.
-
-As such, the tests use the pact-python Verifier to perform this verification. Two approaches are demonstrated:
-- Testing against the [Pact broker]. Generally this is the preferred approach, see information on [Sharing Pacts].
-- Testing against the [Pact file] directly. If no [Pact broker] is available you can verify against a static [Pact file].
-- 
-### Running
-
-To avoid package version conflicts with different applications, it is recommended to run these tests from a
-[Virtual Environment]
-
-The following commands can be run from within your [Virtual Environment], in the `examples/fastapi_provider`.
-
-To perform the python tests:
-```bash
-pip install -r requirements.txt # Install the dependencies for the FastAPI example
-pip install -e ../../           # Using setup.py in the pact-python root, install any pact dependencies and pact-python
-./run_pytest.sh                 # Wrapper script to first run FastAPI, and then run the tests
-```
-
-To perform verification using CLI to verify the [Pact file] against the FastAPI [Provider] instead of the python tests:
-```bash
-pip install -r requirements.txt # Install the dependencies for the FastAPI example
-./verify_pact.sh                # Wrapper script to first run FastAPI, and then use `pact-verifier` to verify locally
-```
-
-To perform verification using CLI, but verifying the [Pact file] previously provided by a [Consumer], and publish the
-results. This example requires that the [Pact broker] is already running, and the [Consumer] tests have been published
-already, described in the [consumer](#consumer) section above.
-```bash
-pip install -r requirements.txt # Install the dependencies for the FastAPI example
-./verify_pact.sh 1              # Wrapper script to first run FastAPI, and then use `pact-verifier` to verify and publish
-```
-
-### Output
-
-The following file(s) will be created when the tests are run
-
-| Filename                      | Contents  |
-|-------------------------------| ----------|
-| fastapi_provider/log/pact.log | All Pact interactions with the FastAPI Provider. Every interaction example retrieved from the Pact Broker will be performed during the Verification test; the request/response logged here. | 
-
-
-## message
-
-TODO
-
-## pacts
-
-Both the Flask and the FastAPI [Provider] examples implement the same service the [Consumer] example interacts with.
-This folder contains the generated [Pact file] for reference, which is also used when running the [Provider] tests
-without a [Pact Broker].
-
-[Pact Broker]: https://docs.pact.io/pact_broker
-[Pact Introduction]: https://docs.pact.io/
-[Consumer]: https://docs.pact.io/getting_started/terminology#service-consumer
-[Provider]: https://docs.pact.io/getting_started/terminology#service-provider
-[Versioning in the Pact Broker]: https://docs.pact.io/getting_started/versioning_in_the_pact_broker/
-[Pact file]: https://docs.pact.io/getting_started/terminology#pact-file
-[Pact verification]: https://docs.pact.io/getting_started/terminology#pact-verification]
-[Virtual Environment]: https://docs.python.org/3/tutorial/venv.html
-[Sharing Pacts]: https://docs.pact.io/getting_started/sharing_pacts/]
-[How to Run a Flask Application]: https://www.twilio.com/blog/how-run-flask-application
-[Requiring/Loading plugins in a test module or conftest file]: https://docs.pytest.org/en/6.2.x/writing_plugins.html#requiring-loading-plugins-in-a-test-module-or-conftest-file
+The broker acts as the intermediary between these test suites. It stores the
+interactions defined by the consumer and makes them available to the provider.
+Once the provider has verified that it satisfies all interactions, the broker
+also stores the verification results. The example here runs the open source
+broker within a Docker container. An alternative is to use the hosted [Pactflow
+service](https://pactflow.io).
