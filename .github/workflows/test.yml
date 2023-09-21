@@ -14,12 +14,12 @@ concurrency:
 
 env:
   STABLE_PYTHON_VERSION: "3.11"
+  PYTEST_ADDOPTS: --color=yes
 
 jobs:
-  run:
+  test:
     name: >-
-      Python ${{ matrix.python-version }}
-      on ${{ matrix.os }}
+      Tests py${{ matrix.python-version }} on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
@@ -47,14 +47,76 @@ jobs:
       - name: Install Hatch
         run: pip install --upgrade hatch
 
-      - # TODO: Fix lints before enabling this
-        name: Lint
-        if: matrix.python-version == env.STABLE_PYTHON_VERSION && runner.os == 'Linux'
-        run: echo hatch run lint
+      - name: Run tests
+        run: hatch run test
+
+      - name: Upload coverage
+        # TODO: Configure code coverage monitoring
+        if: false && matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  example:
+    name: Example
+
+    runs-on: ubuntu-latest
+    services:
+      broker:
+        image: pactfoundation/pact-broker:latest
+        ports:
+          - "9292:9292"
+        env:
+          # Basic auth credentials for the Broker
+          PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+          PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
+          PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+          # Database
+          PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
+
+      - name: Ensure broker is live
+        run: |
+          i=0
+          until curl -sSf http://localhost:9292/diagnostic/status/heartbeat; do
+            i=$((i+1))
+            if [ $i -gt 120 ]; then
+              echo "Broker failed to start"
+              exit 1
+            fi
+            sleep 1
+          done
 
       - name: Examples
-        if: matrix.python-version == env.STABLE_PYTHON_VERSION && runner.os == 'Linux'
-        run: hatch run example --color=yes --capture=no
+        run: >
+          hatch run example --broker-url=http://pactbroker:pactbroker@localhost:9292
 
-      - name: Run tests and track code coverage
-        run: hatch run test
+  # TODO: Fix lints before enabling this
+  # lint:
+  #   name: Lint
+
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: ${{ env.STABLE_PYTHON_VERSION }}
+
+  #     - name: Install Hatch
+  #       run: pip install --upgrade hatch
+
+  #     - name: Lint
+  #       run: hatch run lint
