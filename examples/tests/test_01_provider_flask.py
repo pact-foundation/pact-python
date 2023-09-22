@@ -26,11 +26,10 @@ from typing import Any, Generator
 from unittest.mock import MagicMock
 
 import pytest
+from examples.src.flask import app
 from flask import request
 from pact import Verifier
 from yarl import URL
-
-from src.flask import app
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -84,10 +83,10 @@ def verifier() -> Generator[Verifier, Any, None]:
 
 def mock_user_123_doesnt_exist() -> None:
     """Mock the database for the user 123 doesn't exist state."""
-    import src.flask
+    import examples.src.flask
 
-    src.flask.FAKE_DB = MagicMock()
-    src.flask.FAKE_DB.get.return_value = None
+    examples.src.flask.FAKE_DB = MagicMock()
+    examples.src.flask.FAKE_DB.get.return_value = None
 
 
 def mock_user_123_exists() -> None:
@@ -101,10 +100,10 @@ def mock_user_123_exists() -> None:
     By using consumer-driven contracts and testing the provider against the
     consumer's contract, we can ensure that the provider is only providing what
     """
-    import src.flask
+    import examples.src.flask
 
-    src.flask.FAKE_DB = MagicMock()
-    src.flask.FAKE_DB.get.return_value = {
+    examples.src.flask.FAKE_DB = MagicMock()
+    examples.src.flask.FAKE_DB.get.return_value = {
         "id": 123,
         "name": "Verna Hampton",
         "created_on": "2016-12-15T20:16:01",

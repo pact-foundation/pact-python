@@ -17,10 +17,9 @@ from typing import TYPE_CHECKING, Any, Generator
 
 import pytest
 import requests
+from examples.src.consumer import User, UserConsumer
 from pact import Consumer, Format, Like, Provider
 from yarl import URL
-
-from src.consumer import User, UserConsumer
 
 if TYPE_CHECKING:
     from pathlib import Path

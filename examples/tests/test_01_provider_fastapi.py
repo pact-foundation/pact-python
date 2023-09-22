@@ -26,11 +26,10 @@ from unittest.mock import MagicMock
 
 import pytest
 import uvicorn
+from examples.src.fastapi import app
 from pact import Verifier
 from pydantic import BaseModel
 from yarl import URL
-
-from src.fastapi import app
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -91,10 +90,10 @@ def verifier() -> Generator[Verifier, Any, None]:
 
 def mock_user_123_doesnt_exist() -> None:
     """Mock the database for the user 123 doesn't exist state."""
-    import src.fastapi
+    import examples.src.fastapi
 
-    src.fastapi.FAKE_DB = MagicMock()
-    src.fastapi.FAKE_DB.get.return_value = None
+    examples.src.fastapi.FAKE_DB = MagicMock()
+    examples.src.fastapi.FAKE_DB.get.return_value = None
 
 
 def mock_user_123_exists() -> None:
@@ -108,10 +107,10 @@ def mock_user_123_exists() -> None:
     By using consumer-driven contracts and testing the provider against the
     consumer's contract, we can ensure that the provider is only providing what
     """
-    import src.fastapi
+    import examples.src.fastapi
 
-    src.fastapi.FAKE_DB = MagicMock()
-    src.fastapi.FAKE_DB.get.return_value = {
+    examples.src.fastapi.FAKE_DB = MagicMock()
+    examples.src.fastapi.FAKE_DB.get.return_value = {
         "id": 123,
         "name": "Verna Hampton",
         "created_on": "2016-12-15T20:16:01",

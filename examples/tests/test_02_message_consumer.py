@@ -28,9 +28,8 @@ from typing import TYPE_CHECKING, Any, Generator
 from unittest.mock import MagicMock
 
 import pytest
+from examples.src.message import Handler
 from pact import MessageConsumer, MessagePact, Provider
-
-from src.message import Handler
 
 if TYPE_CHECKING:
     from pathlib import Path
