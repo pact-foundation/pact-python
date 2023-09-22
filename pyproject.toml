@@ -105,7 +105,7 @@ extra-dependencies = ["hatchling", "packaging", "requests"]
 [tool.hatch.envs.default.scripts]
 lint = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
 test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
-example = "PYTHONPATH=examples pytest examples/ {args}"
+example = "pytest examples/ {args}"
 all = ["lint", "tests"]
 
 # Test environment for running unit tests. This automatically tests against all
