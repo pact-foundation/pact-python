@@ -6,6 +6,7 @@ The [Open Source Guides](https://opensource.guide/) website has a collection of 
 
 -   [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
 -   [Building Welcoming Communities](https://opensource.guide/building-community/)
+-   [Contributing to Pact](https://docs.pact.io/contributing)
 
 ## Get Involved
 
@@ -18,9 +19,11 @@ There are many ways to contribute to Pact Python and the broader Pact ecosystem.
 
 Contributions are very welcome. If you think you need help planning your contribution, please ping us on [Slack](https://slack.pact.io) and let us know you are looking for a bit of help.
 
-### Join our Slack
+### Join our Community
 
-We have a [Slack](https://slack.pact.io) to discuss all things about Pact and its development. Feel free to ask questions about Pact Python specifically in the [`#pact-python`](https://pact-foundation.slack.com/archives/C9VECUP6E) channel, or broader questions about the Pact ecosystem over in the [`#general`](https://pact-foundation.slack.com/archives/C5F4KFKR8) channel.
+We have a [Slack](https://slack.pact.io) to discuss all things about Pact and its development. Feel free to ask questions about Pact Python specifically in the [`#pact-python`](https://pact-foundation.slack.com/archives/C9VECUP6E) channel, or broader questions about the Pact ecosystem over in the [`#general`](https://pact-foundation.slack.com/archives/C5F4KFKR8) channel. We store a searchable archive of our Slack channels on [linen.dev](https://linen.dev/s/pact-foundation).
+
+Questions have also been asked over on StackOverflow, under the [`pact`](https://stackoverflow.com/questions/tagged/pact) tag. This is a great place to ask more general usage questions for pact, and discover existing answers.
 
 ### Triaging Issues and Pull Requests
 
@@ -39,14 +42,12 @@ All pull requests will be checked by the continuous integration system, GitHub a
 
 ### Branch Organization
 
-Pact Python has one primary branch `master` and we use feature branches to deliver new features with pull requests. We use the following naming convention for branches:
+Pact Python has one primary branch `master` and we use feature branches to deliver new features with pull requests. Typically, we scope the branch according to the [conventional commit](#conventional-commit-messages) categories. The more common ones are:
 
 -   `feature/<name>` or `feat/<name>` for new features
 -   `fix/<name>` for bug fixes
 -   `chore/<name>` for chores
 -   `docs/<name>` for documentation changes
-
-These generally follow the [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) categories.
 
 ## Issues
 
@@ -77,11 +78,15 @@ If you want to work on any of these issues, just drop a message saying "I'd like
 
 Alternatively, when opening an issue, you can also click the "self service" checkbox to indicate that you'd like to work on the issue yourself, which will also make us see the issue as "claimed".
 
+Once an issue is claimed, we hope to see a pull request; however we understand that life happens and you may not be able to complete the issue. If you are unable to complete the issue, please let us know so we can unassign the issue and make it available for others to work on.
+
+The claiming process is there to help ensure effort is wasted. Even if you are not sure whether you can complete the issue, claiming it will help us know that someone is working on it. If you are not sure how to proceed, feel free to ask for help.
+
 ## Development
 
 ### Online one-click setup for contributing
 
-You can also try using the new [github.dev](https://github.dev/pact-foundation/pact-python) feature. While you are browsing any file, changing the domain name from `github.com` to `github.dev` will turn your browser into an online editor. You can start making changes and send pull requests right away.
+You can also try using the new [github.dev](https://github.dev/pact-foundation/pact-python) feature. While you are browsing any file, changing the domain name from `github.com` to `github.dev` will turn your browser into an online editor. You can start making changes and send pull requests right away. This is a great way to get started quickly, but it does not offer the full development environment and you won't be able to run tests.
 
 ### Installation
 
@@ -116,7 +121,9 @@ pre-commit install
 
 ## Pull Requests
 
-So you have decided to contribute code back to upstream by opening a pull request. You've invested a good chunk of time, and we appreciate it. We will do our best to work with you and get the PR looked at.
+So you are considering contributing to Pact Python's code? Great! We'd love to have you. First off, please make sure it is related to an existing issue. If not, please open a new issue to discuss the problem you are trying to solve before investing a lot of time into a pull request. While we do accept PRs that are not related to an issue (especially if the PR is very simple), it is best to discuss it first to avoid wasting your time.
+
+Once you have opened a PR, we will do our best to work with you and get the PR looked at.
 
 Working on your first Pull Request? You can learn how from this free video series:
 
@@ -130,7 +137,7 @@ Please make sure the following is done when submitting a pull request:
 
 All pull requests should be opened against the `master` branch.
 
-We have a lot of integration systems that run automated tests to guard against mistakes. The maintainers will also review your code and fix obvious issues for you. These systems' duty is to make you worry as little about the chores as possible. Your code contributions are more important than sticking to any procedures, although completing the checklist will surely save everyone's time.
+We have a lot of integration systems that run automated tests to guard against mistakes. The maintainers will also review your code and may fix obvious issues for you. These systems' duty is to make you worry as little about the chores as possible. Your code contributions are more important than sticking to any procedures, although completing the checklist will surely save everyone's time.
 
 ### Conventional Commit Messages
 
