@@ -9,11 +9,12 @@ body:
 
         Before filing your issue, ask yourself:
 
+        - Has this bug already been reported?
         - Is this clearly a Pact Python bug?
         - Do I have basic ideas about where it goes wrong?
-        - Could it be because of my own mistakes?
+        - Could it be because of something on my end?
 
-        **The GitHub issue tracker is not a support forum**. If you are not sure whether it could be your mistakes, ask on [Slack](https://slack.pact.io).
+        **The GitHub issue tracker is not a support forum**. If you are not sure whether it could be on your end or within Pact Python, ask on [Slack](https://slack.pact.io).
 
         Make the bug obvious. Ideally, we should be able to understand it without running any code.
 
@@ -100,7 +101,9 @@ body:
       description: Include as many relevant details about the environment you experienced the bug in.
       value: |
         - Public source code:
+        - Is this a consumer or provider issue? Do you have information about the other side?
         - Pact Python version used: `pip list | grep pact`
+        - Information about your Pact broker (version, hosted where, pactflow, ...)
         - Operating system and version (e.g. Ubuntu 20.04.2 LTS, macOS Ventura):
 
   - type: checkboxes
