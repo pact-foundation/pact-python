@@ -1,0 +1,6 @@
+extend = "../pyproject.toml"
+ignore = [
+  "D103",    # Require docstrings on public functions
+  "S101",    # Disable assert
+  "PLR2004", # Forbid magic numbers
+]
