@@ -1,38 +1,60 @@
-"""Constant values for the pact-python package."""
+"""
+Constant values for the pact-python package.
+
+This will default to the bundled Pact binaries bundled with the package, but
+should these be unavailable or the environment variable `PACT_USE_SYSTEM_BINS` is
+set to `TRUE` or `YES`, the system Pact binaries will be used instead.
+"""
 import os
+import shutil
+import warnings
 from pathlib import Path
 
-
-def broker_client_exe() -> str:
-    """Get the appropriate executable name for this platform."""
-    if os.name == "nt":
-        return "pact-broker.bat"
-    return "pact-broker"
-
-
-def message_exe() -> str:
-    """Get the appropriate executable name for this platform."""
-    if os.name == "nt":
-        return "pact-message.bat"
-    return "pact-message"
+__all__ = [
+    "BROKER_CLIENT_PATH",
+    "MESSAGE_PATH",
+    "MOCK_SERVICE_PATH",
+    "VERIFIER_PATH",
+]
 
 
-def mock_service_exe() -> str:
-    """Get the appropriate executable name for this platform."""
-    if os.name == "nt":
-        return "pact-mock-service.bat"
-    return "pact-mock-service"
+_USE_SYSTEM_BINS = os.getenv("PACT_USE_SYSTEM_BINS", "").upper() in ("TRUE", "YES")
+_BIN_DIR = Path(__file__).parent.resolve() / "bin"
 
 
-def provider_verifier_exe() -> str:
-    """Get the appropriate provider executable name for this platform."""
-    if os.name == "nt":
-        return "pact-provider-verifier.bat"
-    return "pact-provider-verifier"
+def _find_executable(executable: str) -> str:
+    """
+    Find the path to an executable.
+
+    This inspects the environment variable `PACT_USE_SYSTEM_BINS` to determine
+    whether to use the bundled Pact binaries or the system ones. Note that if
+    the local executables are not found, this will fall back to the system
+    executables (if found).
+
+    Args:
+        executable:
+            The name of the executable to find without the extension.  Python
+            will automatically append the correct extension for the current
+            platform.
+
+    Returns:
+        The absolute path to the executable.
+
+    Warns:
+        RuntimeWarning:
+            If the executable cannot be found in the system path.
+    """
+    if _USE_SYSTEM_BINS:
+        bin_path = shutil.which(executable)
+    else:
+        bin_path = shutil.which(executable, path=_BIN_DIR) or shutil.which(executable)
+    if bin_path is None:
+        msg = f"Unable to find {executable} binary executable."
+        warnings.warn(msg, RuntimeWarning, stacklevel=2)
+    return bin_path or ""
 
 
-ROOT_DIR = Path(__file__).parent.resolve()
-BROKER_CLIENT_PATH = ROOT_DIR / "bin" / broker_client_exe()
-MESSAGE_PATH = ROOT_DIR / "bin" / message_exe()
-MOCK_SERVICE_PATH = ROOT_DIR / "bin" / mock_service_exe()
-VERIFIER_PATH = ROOT_DIR / "bin" / provider_verifier_exe()
+BROKER_CLIENT_PATH = _find_executable("pact-broker")
+MESSAGE_PATH = _find_executable("pact-message")
+MOCK_SERVICE_PATH = _find_executable("pact-mock-service")
+VERIFIER_PATH = _find_executable("pact-provider-verifier")
