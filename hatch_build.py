@@ -12,7 +12,7 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
 
 ROOT_DIR = Path(__file__).parent.resolve()
-PACT_VERSION = "2.0.3"
+PACT_VERSION = "2.0.7"
 PACT_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 PACT_DISTRIBUTIONS: list[tuple[str, str, str]] = [
     ("linux", "arm64", "tar.gz"),
