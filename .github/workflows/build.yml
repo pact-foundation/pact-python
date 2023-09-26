@@ -58,36 +58,6 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
-  build-x86:
-    name: Build wheels on ${{ matrix.os }} (x86, 32-bit)
-
-    if: github.event_name == 'push' || ! github.event.pull_request.draft
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            archs: x86
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Fetch all tags
-          fetch-depth: 0
-
-      - name: Create wheels
-        uses: pypa/cibuildwheel@v2.15.0
-        env:
-          CIBW_ARCHS: ${{ matrix.archs }}
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./wheelhouse/*.whl
-          if-no-files-found: error
-
   build-arm64:
     name: Build wheels on ${{ matrix.os }} (arm64)
 
@@ -102,10 +72,8 @@ jobs:
         include:
           - os: ubuntu-latest
             archs: aarch64
-            build: "*manylinux*"
           - os: macos-latest
             archs: arm64
-            build: "*"
 
     steps:
       - uses: actions/checkout@v4
@@ -123,7 +91,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.15.0
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
-          CIBW_BUILD: ${{ matrix.build }}
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -139,7 +106,6 @@ jobs:
 
     needs:
       - build-x86_64
-      - build-x86
       - build-arm64
 
     steps:
