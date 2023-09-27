@@ -1,4 +1,5 @@
 """Classes for defining request and response data that is variable."""
+import warnings
 import six
 import datetime
 
@@ -50,6 +51,12 @@ class EachLike(Matcher):
             Must be greater than or equal to 1.
         :type minimum: int
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.matcher = matcher
         assert minimum >= 1, 'Minimum must be greater than or equal to 1'
         self.minimum = minimum
@@ -100,6 +107,12 @@ class Like(Matcher):
             ignored.
         :type matcher: None, list, dict, int, float, str, unicode, Matcher
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         valid_types = (
             type(None), list, dict, int, float, six.string_types, Matcher)
 
@@ -158,6 +171,12 @@ class Term(Matcher):
             generating the response to the consumer.
         :type generate: basestring
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.matcher = matcher
         self._generate = generate
 
@@ -188,6 +207,12 @@ def from_term(term):
     :return: The JSON representation for this term.
     :rtype: dict, list, str
     """
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     if term is None:
         return term
     elif isinstance(term, (six.string_types, six.binary_type, int, float)):
@@ -211,6 +236,12 @@ def get_generated_values(input):
     :return: The input resolved to its generated value(s)
     :rtype: None, list, dict, int, float, bool, str, unicode, Matcher
     """
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     if input is None:
         return input
     if isinstance(input, (six.string_types, int, float, bool)):
@@ -254,6 +285,12 @@ class Format:
 
     def __init__(self):
         """Create a new Formatter."""
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.identifier = self.integer_or_identifier()
         self.integer = self.integer_or_identifier()
         self.decimal = self.decimal()

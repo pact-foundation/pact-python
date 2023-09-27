@@ -1,5 +1,6 @@
 """Classes and methods to verify Contracts."""
 import json
+import warnings
 
 from pact.verify_wrapper import VerifyWrapper, path_exists, expand_directories
 
@@ -15,6 +16,12 @@ class Verifier(object):
             provider_base_url ([String]): provider url
 
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.provider = provider
         self.provider_base_url = provider_base_url
 

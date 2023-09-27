@@ -1,4 +1,5 @@
 """Classes and methods to describe contract Consumers."""
+import warnings
 from .pact import Pact
 from .provider import Provider
 
@@ -47,6 +48,12 @@ class Consumer(object):
             Defaults to False.
         :type auto_detect_version_properties: bool
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.name = name
         self.service_cls = service_cls
         self.tags = tags

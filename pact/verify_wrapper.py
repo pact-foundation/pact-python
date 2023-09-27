@@ -1,5 +1,6 @@
 """Wrapper to verify previously created pacts."""
 
+import warnings
 from pact.constants import VERIFIER_PATH
 import sys
 import os
@@ -12,6 +13,12 @@ from os import listdir
 
 def capture_logs(process, verbose):
     """Capture logs from ruby process."""
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     result = ''
     for line in process.stdout:
         result = result + line + '\n'
@@ -31,6 +38,12 @@ def path_exists(path):
     :return: True if the path exists and is a file, otherwise False.
     :rtype: bool
     """
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     if path.startswith('http://') or path.startswith('https://'):
         return True
 
@@ -46,6 +59,12 @@ def sanitize_logs(process, verbose):
     :type verbose: bool
     :rtype: None
     """
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     for line in process.stdout:
         if (not verbose and line.lstrip().startswith('#')
                 and ('vendor/ruby' in line or 'pact-provider-verifier.rb' in line)):
@@ -63,6 +82,12 @@ def expand_directories(paths):
         JSON files in those directories.
     :rtype: list
     """
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     paths_ = []
     for path in paths:
         if path.startswith('http://') or path.startswith('https://'):
@@ -83,6 +108,12 @@ def rerun_command():
 
     :rtype: str
     """
+    warnings.warn(
+        "This function will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     is_windows = 'windows' in platform.platform().lower()
     command = ''
     if is_windows:
@@ -119,11 +150,25 @@ class PactException(Exception):
 
     def __init__(self, *args, **kwargs):
         """Create wrapper."""
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(*args, **kwargs)
         self.message = args[0]
 
 class VerifyWrapper(object):
     """A Pact Verifier Wrapper."""
+
+    def __init__(self):
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
 
     def _broker_present(self, **kwargs):
         if kwargs.get('broker_url') is None:

@@ -1,4 +1,5 @@
 """Http Proxy to be used as provider url in verifier."""
+import warnings
 from fastapi import FastAPI, status, Request, HTTPException
 import uvicorn as uvicorn
 import logging
@@ -55,4 +56,10 @@ async def setup(request: Request):
 
 def run_proxy():
     """Rub HTTP Proxy."""
+    warnings.warn(
+        "This class will be deprecated Pact Python v3 "
+        "(see pact-foundation/pact-python#396)",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     uvicorn.run("pact.http_proxy:app", port=PROXY_PORT, log_level=UVICORN_LOGGING_LEVEL)
