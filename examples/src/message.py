@@ -9,7 +9,7 @@ necessarily need to send a response.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Union
 
 
 class Filesystem:
@@ -42,7 +42,7 @@ class Handler:
         """
         self.fs = Filesystem()
 
-    def process(self, event: dict[str, Any]) -> str | None:
+    def process(self, event: Dict[str, Any]) -> Union[str, None]:
         """
         Process an event from the queue.
 
@@ -67,7 +67,7 @@ class Handler:
         raise ValueError(msg)
 
     @staticmethod
-    def validate_event(event: dict[str, Any] | Any) -> None:  # noqa: ANN401
+    def validate_event(event: Union[Dict[str, Any], Any]) -> None:  # noqa: ANN401
         """
         Validates the event received from the queue.
 

@@ -4,7 +4,9 @@ Test Message Pact consumer.
 Pact was originally designed for HTTP interactions involving a request and a
 response. Message Pact is an addition to Pact that allows for testing of
 non-HTTP interactions, such as message queues. This example demonstrates how to
-use Message Pact to test whether a consumer can handle the messages it.
+use Message Pact to test whether a consumer can handle the messages it. Due to
+the large number of possible transports, Message Pact does not provide a mock
+provider and the tests only verifies the messages.
 
 A note on terminology, the _consumer_ for Message Pact is the system that
 receives the message, and the _provider_ is the system that sends the message.
@@ -14,11 +16,16 @@ ensures that the provider sends the expected messages.
 
 In this example, Pact simply ensures that the consumer is capable of processing
 the message. The consumer need not send back a message, and any sideffects of
-the message must be verified separately (such as through `assert` statements).
+the message must be verified separately (such as through `assert` statements or
+as part of the usual unit testing suite).
 
 > :warning: There is currently a bug whereby the `given` and
-`expects_to_receive` have swapped meanings. This will be addressed in a future
-release.
+`expects_to_receive` have swapped meanings compared to the reference
+implementation. This will be addressed in a future release.
+
+A good resource for understanding the message pact testing can be found [in the
+Pact
+documentation](https://docs.pact.io/getting_started/how_pact_works#non-http-testing-message-pact).
 """
 
 from __future__ import annotations

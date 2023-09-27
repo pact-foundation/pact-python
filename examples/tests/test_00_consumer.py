@@ -7,13 +7,17 @@ consumer is making the expected requests to the provider, and that the provider
 is responding with the expected responses. Once these interactions are
 validated, the contracts can be published to a Pact Broker. The contracts can
 then be used to validate the provider's interactions.
+
+A good resource for understanding the consumer tests is the [Pact Consumer
+Test](https://docs.pact.io/5-minute-getting-started-guide#scope-of-a-consumer-pact-test)
+section of the Pact documentation.
 """
 
 from __future__ import annotations
 
 import logging
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Generator
+from typing import TYPE_CHECKING, Any, Dict, Generator
 
 import pytest
 import requests
@@ -40,6 +44,11 @@ def user_consumer() -> UserConsumer:
     the consumer to use Pact's mock provider. This allows us to define what
     requests the consumer will make to the provider, and what responses the
     provider will return.
+
+    The ability for the client to specify the expected response from the
+    provider is critical to Pact's consumer-driven approach as it allows the
+    consumer to declare the minimal response it requires from the provider (even
+    if the provider is returning more data than the consumer needs).
     """
     return UserConsumer(str(MOCK_URL))
 
@@ -53,7 +62,7 @@ def pact(broker: URL, pact_dir: Path) -> Generator[Pact, Any, None]:
     the provider. This mock provider will expect to receive defined requests
     and will respond with defined responses.
 
-    The fixture here simply defines the Consumer and Provide, and sets up the
+    The fixture here simply defines the Consumer and Provider, and sets up the
     mock provider. With each test, we define the expected request and response
     from the provider as follows:
 
@@ -90,7 +99,11 @@ def test_get_existing_user(pact: Pact, user_consumer: UserConsumer) -> None:
     This test defines the expected request and response from the provider. The
     provider will be expected to return a response with a status code of 200,
     """
-    expected: dict[str, Any] = {
+    # When setting up the expected response, the consumer should only define
+    # what it needs from the provider (as opposed to the full schema). Should
+    # the provider later decide to add or remove fields, Pact's consumer-driven
+    # approach will ensure that interaction is still valid.
+    expected: Dict[str, Any] = {
         "id": Format().integer,
         "name": "Verna Hampton",
         "created_on": Format().iso_8601_datetime(),
