@@ -1,6 +1,7 @@
 """Contract Message Provider."""
 import os
 import time
+import warnings
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -38,6 +39,12 @@ class MessageProvider(object):
         proxy_port='1234'
     ):
         """Create a Message Provider instance."""
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.message_providers = message_providers
         self.provider = provider
         self.consumer = consumer

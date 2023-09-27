@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import json
 import os
 from subprocess import Popen
+import warnings
 
 from .broker import Broker
 from .constants import MESSAGE_PATH
@@ -84,6 +85,12 @@ class MessagePact(Broker):
             `merge`.
         :type file_write_mode: str
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(
             broker_base_url, broker_username, broker_password, broker_token
         )

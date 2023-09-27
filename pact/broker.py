@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import fnmatch
 import os
 from subprocess import Popen
+import warnings
 
 from .constants import BROKER_CLIENT_PATH
 
@@ -36,6 +37,12 @@ class Broker():
             the PACT_BROKER_TOKEN environment variable instead.
             Defaults to None.
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         self.broker_base_url = broker_base_url
         self.broker_username = broker_username
         self.broker_password = broker_password

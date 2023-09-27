@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os
 import platform
 from subprocess import Popen
+import warnings
 
 import psutil
 import requests
@@ -124,6 +125,12 @@ class Pact(Broker):
             `overwrite`.
         :type file_write_mode: str
         """
+        warnings.warn(
+            "This class will be deprecated Pact Python v3 "
+            "(see pact-foundation/pact-python#396)",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(
             broker_base_url, broker_username, broker_password, broker_token
         )
