@@ -106,7 +106,7 @@ extra-dependencies = ["hatchling", "packaging", "requests"]
 lint = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
 test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
 example = "pytest examples/ {args}"
-all = ["lint", "tests"]
+all = ["lint", "test", "example"]
 
 # Test environment for running unit tests. This automatically tests against all
 # supported Python versions.
@@ -118,8 +118,8 @@ python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.test.scripts]
 test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
-# TODO: Adapt the examples to work in Hatch
-all = ["tests"]
+example = "pytest examples/ {args}"
+all = ["test", "example"]
 
 ################################################################################
 ## PyTest Configuration
@@ -153,6 +153,9 @@ ignore = [
   "ANN101", # `self` must be typed
   "ANN102", # `cls` must be typed
 ]
+
+[tool.ruff.pyupgrade]
+keep-runtime-typing = true
 
 [tool.ruff.pydocstyle]
 convention = "google"

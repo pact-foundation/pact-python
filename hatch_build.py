@@ -6,7 +6,7 @@ import os
 import shutil
 import typing
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
@@ -37,7 +37,7 @@ class PactBuildHook(BuildHookInterface):
     def initialize(
         self,
         version: str,  # noqa: ARG002
-        build_data: dict[str, Any],
+        build_data: Dict[str, Any],
     ) -> None:
         """Hook into Hatchling's build process."""
         build_data["infer_tag"] = True

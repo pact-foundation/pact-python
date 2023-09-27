@@ -3,8 +3,9 @@ Simple Consumer Implementation.
 
 This modules defines a simple
 [consumer](https://docs.pact.io/getting_started/terminology#service-consumer)
-with Pact. As Pact is a consumer-driven framework, the consumer defines the
-interactions which the provider must then satisfy.
+which will be tested with Pact in the [consumer
+test](../tests/test_00_consumer.py). As Pact is a consumer-driven framework, the
+consumer defines the interactions which the provider must then satisfy.
 
 The consumer is the application which makes requests to another service (the
 provider) and receives a response to process. In this example, we have a simple
@@ -20,7 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict
 
 import requests
 
@@ -95,7 +96,7 @@ class UserConsumer:
         uri = f"{self.base_uri}/users/{user_id}"
         response = requests.get(uri, timeout=5)
         response.raise_for_status()
-        data: dict[str, Any] = response.json()
+        data: Dict[str, Any] = response.json()
         return User(
             id=data["id"],
             name=data["name"],

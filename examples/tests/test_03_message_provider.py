@@ -1,23 +1,32 @@
 """
 Test Message Pact provider.
 
-Unlike the standard Pact, which is designed for HTTP interactions, the Message
-Pact is designed for non-HTTP interactions. This example demonstrates how to use
-the Message Pact to test whether a provider generates the correct messages.
+Pact was originally designed for HTTP interactions involving a request and a
+response. Message Pact is an addition to Pact that allows for testing of
+non-HTTP interactions, such as message queues. This example demonstrates how to
+use Message Pact to test whether a consumer can handle the messages it. Due to
+the large number of possible transports, Message Pact does not provide a mock
+provider and the tests only verifies the messages.
 
-In such examples, Pact simply checks the kind of messages produced. The consumer
-need not send back a message, and any sideffects of the message must be verified
-separately.
+A note on terminology, the _consumer_ for Message Pact is the system that
+receives the message, and the _provider_ is the system that sends the message.
+Pact is still consumer-driven, and the consumer defines the expected messages it
+will receive from the provider. When the provider is being verified, Pact
+ensures that the provider sends the expected messages.
 
-The below example verifies that the consumer makes the correct filesystem calls
-when it receives a message to read or write a file. The calls themselves are
-mocked out so as to avoid actually writing to the filesystem.
+The below example verifies that the provider sends the expected messages. The
+consumer need not send back a message, and any sideffects of the message must
+be verified on the consumer side.
+
+A good resource for understanding the message pact testing can be found [in the
+Pact
+documentation](https://docs.pact.io/getting_started/how_pact_works#non-http-testing-message-pact).
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from flask import Flask
 from pact import MessageProvider
@@ -29,7 +38,7 @@ app = Flask(__name__)
 PACT_DIR = (Path(__file__).parent / "pacts").resolve()
 
 
-def generate_write_message() -> dict[str, str]:
+def generate_write_message() -> Dict[str, str]:
     return {
         "action": "WRITE",
         "path": "test.txt",
@@ -37,7 +46,7 @@ def generate_write_message() -> dict[str, str]:
     }
 
 
-def generate_read_message() -> dict[str, str]:
+def generate_read_message() -> Dict[str, str]:
     return {
         "action": "READ",
         "path": "test.txt",

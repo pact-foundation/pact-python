@@ -16,12 +16,16 @@ In order to set the provider into the correct state, this test module defines an
 additional endpoint on the provider, in this case `/_pact/provider_states`.
 Calls to this endpoint mock the relevant database calls to set the provider into
 the correct state.
+
+A good resource for understanding the provider tests is the [Pact Provider
+Test](https://docs.pact.io/5-minute-getting-started-guide#scope-of-a-provider-pact-test)
+section of the Pact documentation.
 """
 
 from __future__ import annotations
 
 from multiprocessing import Process
-from typing import Any, Generator
+from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -42,7 +46,9 @@ class ProviderState(BaseModel):
 
 
 @app.post("/_pact/provider_states")
-async def mock_pact_provider_states(state: ProviderState) -> dict[str, str | None]:
+async def mock_pact_provider_states(
+    state: ProviderState,
+) -> Dict[str, Union[str, None]]:
     """
     Define the provider state.
 
@@ -102,10 +108,13 @@ def mock_user_123_exists() -> None:
 
     You may notice that the return value here differs from the consumer's
     expected response. This is because the consumer's expected response is
-    guided by what the consumer users.
+    guided by what the consumer uses.
 
     By using consumer-driven contracts and testing the provider against the
-    consumer's contract, we can ensure that the provider is only providing what
+    consumer's contract, we can ensure that the provider is what the consumer
+    needs. This allows the provider to safely evolve their API (by both adding
+    and removing fields) without fear of breaking the interactions with the
+    consumers.
     """
     import examples.src.fastapi
 

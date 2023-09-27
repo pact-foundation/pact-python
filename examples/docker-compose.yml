@@ -18,6 +18,7 @@ services:
       - postgres
     ports:
       - "9292:9292"
+    restart: always
     environment:
       # Basic auth credentials for the Broker
       PACT_BROKER_ALLOW_PUBLIC_READ: "true"
