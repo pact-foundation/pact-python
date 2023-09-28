@@ -51,4 +51,4 @@ body:
 
         If you do check this box, please send a pull request. If circumstances change and you can't work on it anymore, let us know and we can re-assign it.
       options:
-        - label: I'd be willing to contribute this feature to Docusaurus myself.
+        - label: I'd be willing to contribute this feature to Pact Python myself.
