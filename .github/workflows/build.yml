@@ -152,20 +152,20 @@ jobs:
 
   publish:
     name: Publish wheels
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     needs: [check]
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: artifacts
+          name: wheels
           path: wheelhouse
 
       - name: Push build artifacts to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.10
         with:
-          skip_existing: true
+          skip-existing: true
           user: ${{ secrets.PYPI_USERNAME }}
           password: ${{ secrets.PYPI_PASSWORD }}
           packages-dir: wheelhouse
