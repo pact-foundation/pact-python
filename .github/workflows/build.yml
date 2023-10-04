@@ -155,6 +155,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     needs: [check]
     runs-on: ubuntu-latest
+    environment: Upload Python Package
 
     steps:
       - uses: actions/download-artifact@v3
