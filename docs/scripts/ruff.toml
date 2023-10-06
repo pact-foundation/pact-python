@@ -1,0 +1,6 @@
+extend = "../../pyproject.toml"
+
+[lint]
+ignore = [
+  "INP001",  # Forbid implicit namespaces
+]
