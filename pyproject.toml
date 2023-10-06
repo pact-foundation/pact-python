@@ -77,18 +77,12 @@ build-backend = "hatchling.build"
 path = "pact/__version__.py"
 
 [tool.hatch.build]
-include   = ["pact/**/*.py", "*.md", "LICENSE"]
-artifacts = ["pact/bin/*", "pact/data/*"]
-
-[tool.hatch.build.targets.sdist]
-# Ignore binaries in the source distribution, but include the data files
-# so that they can be installed from the source distribution.
-exclude = ["pact/bin/*"]
+include = ["**/py.typed", "**/*.md", "LICENSE", "pact/**/*.py", "pact/**/*.pyi"]
 
 [tool.hatch.build.targets.wheel]
 # Ignore the data files in the wheel as their contents are already included
 # in the package.
-exclude = ["pact/data/*"]
+artifacts = ["pact/bin/*", "pact/lib/*"]
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 
