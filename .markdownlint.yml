@@ -5,3 +5,5 @@ list-marker-space:
   ol_single: 2
   ol_multi: 2
 line-length: false
+ul-indent:
+  indent: 4

@@ -23,6 +23,10 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        exclude: |
+          (?x)^(
+            mkdocs.yml
+          )$
 
   - repo: https://gitlab.com/bmares/check-json5
     rev: v1.0.0
