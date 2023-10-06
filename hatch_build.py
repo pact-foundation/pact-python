@@ -169,19 +169,16 @@ class PactBuildHook(BuildHookInterface[Any]):
         Args:
             artifact: The path to the downloaded artifact.
         """
-        (ROOT_DIR / "pact" / "bin").mkdir(parents=True, exist_ok=True)
-
         if str(artifact).endswith(".zip"):
             with zipfile.ZipFile(artifact) as f:
-                for member in f.namelist():
-                    if member.startswith("pact/bin"):
-                        f.extract(member, ROOT_DIR)
+                f.extractall(ROOT_DIR)
 
         if str(artifact).endswith(".tar.gz"):
             with tarfile.open(artifact) as f:
-                for member in f.getmembers():
-                    if member.name.startswith("pact/bin"):
-                        f.extract(member, ROOT_DIR)
+                f.extractall(ROOT_DIR)
+
+        # Cleanup the extract `README.md`
+        (ROOT_DIR / "pact" / "README.md").unlink()
 
     def pact_lib_install(self, version: str) -> None:
         """
