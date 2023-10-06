@@ -103,10 +103,10 @@ features           = ["dev"]
 extra-dependencies = ["hatchling", "packaging", "requests"]
 
 [tool.hatch.envs.default.scripts]
-lint = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
-test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
-example = "pytest examples/ {args}"
-all = ["lint", "test", "example"]
+lint    = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
+test    = "pytest {args:tests/}"
+example = "pytest {args:examples/}"
+all     = ["lint", "test", "example"]
 
 # Test environment for running unit tests. This automatically tests against all
 # supported Python versions.
@@ -117,16 +117,20 @@ features = ["test"]
 python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.test.scripts]
-test = "pytest --cov-config=pyproject.toml --cov=pact --cov=tests tests/"
-example = "pytest examples/ {args}"
-all = ["test", "example"]
+test    = "pytest {args:tests/}"
+example = "pytest {args:examples/}"
+all     = ["test", "example"]
 
 ################################################################################
 ## PyTest Configuration
 ################################################################################
 
 [tool.pytest.ini_options]
-addopts = ["--import-mode=importlib"]
+addopts = [
+  "--import-mode=importlib",
+  "--cov-config=pyproject.toml",
+  "--cov=pact",
+]
 
 ################################################################################
 ## Coverage
