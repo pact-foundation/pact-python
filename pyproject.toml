@@ -131,6 +131,12 @@ addopts = [
   "--cov-config=pyproject.toml",
   "--cov=pact",
 ]
+filterwarnings = [
+  "ignore::DeprecationWarning:pact",
+  "ignore::DeprecationWarning:tests",
+  "ignore::PendingDeprecationWarning:pact",
+  "ignore::PendingDeprecationWarning:tests",
+]
 
 ################################################################################
 ## Coverage
