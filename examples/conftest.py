@@ -21,18 +21,6 @@ from yarl import URL
 EXAMPLE_DIR = Path(__file__).parent.resolve()
 
 
-def pytest_addoption(parser: pytest.Parser) -> None:
-    """Define additional command lines to customise the examples."""
-    parser.addoption(
-        "--broker-url",
-        help=(
-            "The URL of the broker to use. If this option has been given, the container"
-            " will _not_ be started."
-        ),
-        type=str,
-    )
-
-
 @pytest.fixture(scope="session")
 def broker(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
     """
