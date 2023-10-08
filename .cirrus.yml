@@ -1,4 +1,5 @@
 TEST_TEMPLATE: &TEST_TEMPLATE
+  skip: $CIRRUS_PR_DRAFT == "true"
   arch_check_script:
     - uname -am
   test_script:
