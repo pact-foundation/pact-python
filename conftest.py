@@ -1,8 +1,9 @@
 """
-Global Pytest configuration.
+Global PyTest configuration.
 
-This file is used to define global Pytest configuration. In this case, we use it
-to define additional command line options to customise the examples.
+This file is automatically loaded by PyTest before running any tests and is used
+to define global fixtures and command line options. Command line options can
+only be defined in this file.
 """
 
 import pytest
