@@ -264,6 +264,18 @@ class ExpressionValueType(Enum):
     DECIMAL = lib.ExpressionValueType_Decimal
     BOOLEAN = lib.ExpressionValueType_Boolean
 
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Expression Value Type.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Expression Value Type.
+        """
+        return f"ExpressionValueType.{self.name}"
+
 
 class GeneratorCategory(Enum):
     """
@@ -280,6 +292,18 @@ class GeneratorCategory(Enum):
     STATUS = lib.GeneratorCategory_STATUS
     METADATA = lib.GeneratorCategory_METADATA
 
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Generator Category.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Generator Category.
+        """
+        return f"GeneratorCategory.{self.name}"
+
 
 class InteractionPart(Enum):
     """
@@ -291,6 +315,18 @@ class InteractionPart(Enum):
     REQUEST = lib.InteractionPart_Request
     RESPONSE = lib.InteractionPart_Response
 
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Interaction Part.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Interaction Part.
+        """
+        return f"InteractionPath.{self.name}"
+
 
 class LevelFilter(Enum):
     """Level Filter."""
@@ -301,6 +337,18 @@ class LevelFilter(Enum):
     INFO = lib.LevelFilter_Info
     DEBUG = lib.LevelFilter_Debug
     TRACE = lib.LevelFilter_Trace
+
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Level Filter.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Level Filter.
+        """
+        return f"LevelFilter.{self.name}"
 
 
 class MatchingRuleCategory(Enum):
@@ -319,6 +367,18 @@ class MatchingRuleCategory(Enum):
     CONTENST = lib.MatchingRuleCategory_CONTENTS
     METADATA = lib.MatchingRuleCategory_METADATA
 
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Matching Rule Category.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Matching Rule Category.
+        """
+        return f"MatchingRuleCategory.{self.name}"
+
 
 class PactSpecification(Enum):
     """
@@ -334,6 +394,18 @@ class PactSpecification(Enum):
     V3 = lib.PactSpecification_V3
     V4 = lib.PactSpecification_V4
 
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Pact Specification.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Pact Specification.
+        """
+        return f"Pact Specification.{self.name}"
+
 
 class StringResult(Enum):
     """
@@ -343,7 +415,19 @@ class StringResult(Enum):
     """
 
     FAILED = lib.StringResult_Failed
-    Ok = lib.StringResult_Ok
+    OK = lib.StringResult_Ok
+
+    def __str__(self) -> str:
+        """
+        Informal string representation of the String Result.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the String Result.
+        """
+        return f"StringResult.{self.name}"
 
 
 def version() -> str:
