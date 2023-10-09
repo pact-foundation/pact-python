@@ -156,6 +156,7 @@ target-version = "py38"
 select         = ["ALL"]
 
 ignore = [
+  "D200",   # Require single line docstrings to be on one line.
   "D203",   # Require blank line before class docstring
   "D212",   # Multi-line docstring summary must start at the first line
   "ANN101", # `self` must be typed
