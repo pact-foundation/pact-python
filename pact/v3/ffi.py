@@ -16,15 +16,56 @@ This modules should provide the following only:
 -   Basic Enum classes
 -   Simple wrappers around functions, including the casting of input and output
     values between the high level Python types and the low level C types.
+-   Simple wrappers around some of the low-level types. Specifically designed to
+    automatically handle the freeing of memory when the Python object is
+    destroyed.
 
 These low-level functions may then be combined into higher level classes and
-modules.
+modules. Ideally, all code outside of this module should be written in pure
+Python and not worry about allocating or freeing memory.
 
 During initial implementation, a lot of these functions will simply raise a
 `NotImplementedError`.
 
 For those unfamiliar with CFFI, please make sure to read the [CFFI
 documentation](https://cffi.readthedocs.io/en/latest/using.html).
+
+### Handles
+
+The Rust library exposes a number of handles to internal data structures. This
+is done to avoid exposing the internal implementation details of the library to
+users of the library, and avoid unnecessarily casting to and from possibly
+complicated structs.
+
+In the Rust library, the handles are thin wrappers around integers, and
+unfortunately the CFFI interface sees this and automatically unwraps them,
+exposing the underlying integer. As a result, we must re-wrap the integer
+returned by the CFFI interface. This unfortunately means that we may be subject
+to changes in private implementation details upstream.
+
+### Freeing Memory
+
+Python has a garbage collector, and as a result, we don't need to worry about
+manually freeing memory. Having said that, Python's garbace collector is only
+aware of Python objects, and not of any memory allocated by the Rust library.
+
+To ensure that the memory allocated by the Rust library is freed, we must make
+sure to define the
+[`__del__`](https://docs.python.org/3/reference/datamodel.html#object.__del__)
+method to call the appropriate free function whenever the Python object is
+destroyed.
+
+Note that there are some rather subtle details as to when this is called, when
+it may never be called, and what global variables are accessible. This is
+explained in the documentation for `__del__` above, and in Python's [garbage
+collection](https://docs.python.org/3/library/gc.html) module.
+
+### Error Handling
+
+The FFI function should handle all errors raised by the function call, and raise
+an appropriate Python exception. The exception should be raised using the
+appropriate Python exception class, and should be documented in the function's
+docstring.
 """
 # ruff: noqa: ARG001 (unused-function-argument)
 # ruff: noqa: A002 (builtin-argument-shadowing)
