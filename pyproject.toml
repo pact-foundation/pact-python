@@ -33,6 +33,7 @@ dependencies = [
   "psutil     ~= 5.9",
   "requests   ~= 2.31",
   "six        ~= 1.16",
+  "typing-extensions ~= 4.8 ; python_version < '3.10'",
   "uvicorn    ~= 0.13",
 ]
 
@@ -53,14 +54,16 @@ types = [
   "types-requests ~= 2.31",
 ]
 test = [
-  "coverage[toml] ~= 7.3",
-  "flask[async]   ~= 2.3",
-  "httpx          ~= 0.24",
-  "mock           ~= 5.1",
-  "pytest         ~= 7.4",
-  "pytest-cov     ~= 4.1",
-  "testcontainers ~= 3.7",
-  "yarl           ~= 1.9",
+  "aiohttp[speedups] ~= 3.8",
+  "coverage[toml]    ~= 7.3",
+  "flask[async]      ~= 2.3",
+  "httpx             ~= 0.24",
+  "mock              ~= 5.1",
+  "pytest            ~= 7.4",
+  "pytest-asyncio    ~= 0.21",
+  "pytest-cov        ~= 4.1",
+  "testcontainers    ~= 3.7",
+  "yarl              ~= 1.9",
 ]
 dev = [
   "pact-python[types]",
@@ -142,9 +145,10 @@ filterwarnings = [
 
 [tool.coverage.report]
 exclude_lines = [
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-  "pragma: no cover",
+  "if __name__ == .__main__.:", # Ignore non-runnable code
+  "if TYPE_CHECKING:", # Ignore typing
+  "raise NotImplementedError", # Ignore defensive assertions
+  "@(abc\\.)?abstractmethod", # Ignore abstract methods
 ]
 
 ################################################################################

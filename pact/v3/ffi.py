@@ -67,15 +67,27 @@ an appropriate Python exception. The exception should be raised using the
 appropriate Python exception class, and should be documented in the function's
 docstring.
 """
+# The following lints are disabled during initial development and should be
+# removed later.
 # ruff: noqa: ARG001 (unused-function-argument)
 # ruff: noqa: A002 (builtin-argument-shadowing)
 # ruff: noqa: D101 (undocumented-public-class)
 
+# The following lints are disabled for this file.
+# ruff: noqa: SLF001
+#       private-member-access, as we need access to other handles' internal
+#       references, without exposing them to the user.
+
+from __future__ import annotations
+
 import warnings
 from enum import Enum
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from ._ffi import ffi, lib  # type: ignore[import]
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # The follow types are classes defined in the Rust code. Ultimately, a Python
 # alternative should be implemented, but for now, the follow lines only serve
@@ -111,7 +123,34 @@ class HttpResponse:
 
 
 class InteractionHandle:
-    ...
+    """
+    Handle to a HTTP Interaction.
+
+    [Rust
+    `InteractionHandle`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/mock_server/handles/struct.InteractionHandle.html)
+    """
+
+    def __init__(self, ref: int) -> None:
+        """
+        Initialise a new Interaction Handle.
+
+        Args:
+            ref:
+                Reference to the Interaction Handle.
+        """
+        self._ref: int = ref
+
+    def __str__(self) -> str:
+        """
+        String representation of the Interaction Handle.
+        """
+        return f"InteractionHandle({self._ref})"
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Interaction Handle.
+        """
+        return f"InteractionHandle({self._ref})"
 
 
 class MatchingRule:
@@ -195,7 +234,89 @@ class Pact:
 
 
 class PactHandle:
-    ...
+    """
+    Handle to a Pact.
+
+    [Rust
+    `PactHandle`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/mock_server/handles/struct.PactHandle.html)
+    """
+
+    def __init__(self, ref: int) -> None:
+        """
+        Initialise a new Pact Handle.
+
+        Args:
+            ref:
+                Rust library reference to the Pact Handle.
+        """
+        self._ref: int = ref
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Handle.
+        """
+        free_pact_handle(self)
+
+    def __str__(self) -> str:
+        """
+        String representation of the Pact Handle.
+        """
+        return f"PactHandle({self._ref})"
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Pact Handle.
+        """
+        return f"PactHandle({self._ref})"
+
+
+class PactServerHandle:
+    """
+    Handle to a Pact Server.
+
+    This does not have an exact correspondance in the Rust library. It is used
+    to manage the lifecycle of the mock server.
+
+    # Implementation Notes
+
+    The Rust library uses the port number as a unique identifier, in much the
+    same was as it uses a wrapped integer for the Pact handle.
+    """
+
+    def __init__(self, ref: int) -> None:
+        """
+        Initialise a new Pact Server Handle.
+
+        Args:
+            ref:
+                Rust library reference to the Pact Server.
+        """
+        self._ref: int = ref
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Server Handle.
+        """
+        cleanup_mock_server(self)
+
+    def __str__(self) -> str:
+        """
+        String representation of the Pact Server Handle.
+        """
+        return f"PactServerHandle({self._ref})"
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Pact Server Handle.
+        """
+        return f"PactServerHandle({self._ref})"
+
+    @property
+    def port(self) -> int:
+        """
+        Port on which the Pact Server is running.
+        """
+        return self._ref
 
 
 class PactInteraction:
@@ -432,9 +553,12 @@ class StringResult(Enum):
 
 def version() -> str:
     """
-    Wraps a Pact model struct.
+    Return the version of the pact_ffi library.
 
     [Rust `pactffi_version`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_version)
+
+    Returns:
+        The version of the pact_ffi library as a string, in the form of `x.y.z`.
     """
     return ffi.string(lib.pactffi_version()).decode("utf-8")
 
@@ -665,13 +789,28 @@ def log_to_stdout(level_filter: LevelFilter) -> int:
     raise NotImplementedError
 
 
-def log_to_stderr(level_filter: LevelFilter) -> int:
+def log_to_stderr(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     """
     Convenience function to direct all logging to stderr.
 
-    [Rust `pactffi_log_to_stderr`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_log_to_stderr)
+    [Rust
+    `pactffi_log_to_stderr`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_log_to_stderr)
+
+    Args:
+        level_filter:
+            The level of logs to filter to. If a string is given, it must match
+            one of the [`LevelFilter`][pact.v3.ffi.LevelFilter] values (case
+            insensitive).
+
+    Raises:
+        RuntimeError: If there was an error setting the logger.
     """
-    raise NotImplementedError
+    if isinstance(level_filter, str):
+        level_filter = LevelFilter[level_filter.upper()]
+    ret = lib.pactffi_log_to_stderr(level_filter.value)
+    if ret != 0:
+        msg = "There was an unknown error setting the logger."
+        raise RuntimeError(msg)
 
 
 def log_to_file(file_name: str, level_filter: LevelFilter) -> int:
@@ -4075,54 +4214,67 @@ def create_mock_server_for_transport(
     addr: str,
     port: int,
     transport: str,
-    transport_config: str,
-) -> int:
+    transport_config: str | None,
+) -> PactServerHandle:
     """
     Create a mock server for the provided Pact handle and transport.
-
-    If the transport is not provided (it is a NULL pointer or an empty string),
-    will default to an HTTP transport. The address is the interface bind to, and
-    will default to the loopback adapter if not specified. Specifying a value of
-    zero for the port will result in the operating system allocating the port.
 
     [Rust
     `pactffi_create_mock_server_for_transport`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_create_mock_server_for_transport)
 
-    Parameters:
+    Args:
+        pact:
+            Handle to the Pact model.
 
-    * `pact` - Handle to a Pact model created with created with
-      `pactffi_new_pact`.
-    * `addr` - Address to bind to (i.e. `127.0.0.1` or `[::1]`). Must be a valid
-      UTF-8 NULL-terminated string, or NULL or empty, in which case the loopback
-      adapter is used.
-    * `port` - Port number to bind to. A value of zero will result in the
-      operating system allocating an available port.
-    * `transport` - The transport to use (i.e. http, https, grpc). Must be a
-      valid UTF-8 NULL-terminated string, or NULL or empty, in which case http
-      will be used.
-    * `transport_config` - (OPTIONAL) Configuration for the transport as a valid
-      JSON string. Set to NULL or empty if not required.
+        addr:
+            The address to bind to.
 
-    The port of the mock server is returned.
+        port:
+            The port number to bind to. A value of zero will result in the
+            operating system allocating an available port.
 
-    # Safety NULL pointers or empty strings can be passed in for the address,
-    transport and transport_config, in which case a default value will be used.
-    Passing in an invalid pointer will result in undefined behaviour.
+        transport:
+            The transport to use (i.e. http, https, grpc). The underlying Pact
+            library will interpret this, typically in a case-sensitive way.
 
-    # Errors
+        transport_config:
+            Configuration to be passed to the transport. This must be a valid
+            JSON string, or `None` if not required.
 
-    Errors are returned as negative values.
+    Returns:
+        A handle to the mock server.
 
-    | Error | Description |
-    |-------|-------------|
-    | -1 | An invalid handle was received. Handles should be created with `pactffi_new_pact` |
-    | -2 | transport_config is not valid JSON |
-    | -3 | The mock server could not be started |
-    | -4 | The method panicked |
-    | -5 | The address is not valid |
+    Raises:
+        RuntimeError: If the mock server could not be created. The error message
+            will contain details of the error.
+    """
+    ret: int = lib.pactffi_create_mock_server_for_transport(
+        pact._ref,
+        addr.encode("utf-8"),
+        port,
+        transport.encode("utf-8"),
+        (
+            transport_config.encode("utf-8")
+            if transport_config is not None
+            else ffi.NULL
+        ),
+    )
+    if ret > 0:
+        return PactServerHandle(ret)
 
-    """  # noqa: E501
-    raise NotImplementedError
+    if ret == -1:
+        msg = f"An invalid Pact handle was received: {pact}."
+    elif ret == -2:  # noqa: PLR2004
+        msg = "Invalid transport_config JSON."
+    elif ret == -3:  # noqa: PLR2004
+        msg = f"Pact mock server could not be started for {pact}."
+    elif ret == -4:  # noqa: PLR2004
+        msg = f"Panick during Pact mock server creation for {pact}."
+    elif ret == -5:  # noqa: PLR2004
+        msg = f"Address is invalid: {addr}."
+    else:
+        msg = f"An unknown error occurred during Pact mock server creation for {pact}."
+    raise RuntimeError(msg)
 
 
 def mock_server_matched(mock_server_port: int) -> bool:
@@ -4163,49 +4315,83 @@ def mock_server_mismatches(mock_server_port: int) -> str:
     raise NotImplementedError
 
 
-def cleanup_mock_server(mock_server_port: int) -> bool:
+def cleanup_mock_server(mock_server_handle: PactServerHandle) -> None:
     """
     External interface to cleanup a mock server.
 
     This function will try terminate the mock server with the given port number
-    and cleanup any memory allocated for it. Returns true, unless a mock server
-    with the given port number does not exist, or the function panics.
+    and cleanup any memory allocated for it.
 
     [Rust
     `pactffi_cleanup_mock_server`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_cleanup_mock_server)
+
+    Args:
+        mock_server_handle:
+            Handle to the mock server to cleanup.
+
+    Raises:
+        RuntimeError: If the mock server could not be cleaned up.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_cleanup_mock_server(mock_server_handle._ref)
+    if not success:
+        msg = f"Could not cleanup mock server with port {mock_server_handle._ref}"
+        raise RuntimeError(msg)
 
 
-def write_pact_file(mock_server_port: int, directory: str, *, overwrite: bool) -> int:
+def write_pact_file(
+    mock_server_handle: PactServerHandle,
+    directory: str | Path,
+    *,
+    overwrite: bool,
+) -> None:
     """
     External interface to trigger a mock server to write out its pact file.
 
     This function should be called if all the consumer tests have passed. The
-    directory to write the file to is passed as the second parameter. If a NULL
-    pointer is passed, the current working directory is used.
+    directory to write the file to is passed as the second parameter.
 
     [Rust
     `pactffi_write_pact_file`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_write_pact_file)
 
-    If overwrite is true, the file will be overwritten with the contents of the
-    current pact. Otherwise, it will be merged with any existing pact file.
+    Args:
+        mock_server_handle:
+            Handle to the mock server to write the pact file for.
 
-    Returns 0 if the pact file was successfully written. Returns a positive code
-    if the file can not be written, or there is no mock server running on that
-    port or the function panics.
+        directory:
+            Directory to write the pact file to.
 
-    # Errors
+        overwrite:
+            Whether to overwrite any existing pact files. If this is false, the
+            pact file will be merged with any existing pact file.
 
-    Errors are returned as positive values.
-
-    | Error | Description |
-    |-------|-------------|
-    | 1 | A general panic was caught |
-    | 2 | The pact file was not able to be written |
-    | 3 | A mock server with the provided port was not found |
+    Raises:
+        RuntimeError: If there was an error writing the pact file.
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_write_pact_file(
+        mock_server_handle._ref,
+        directory,
+        overwrite,
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = (
+            f"The function panicked while writing the Pact for {mock_server_handle} in"
+            f" {directory}."
+        )
+    elif ret == 2:  # noqa: PLR2004
+        msg = (
+            f"The Pact file for {mock_server_handle} could not be written in"
+            f" {directory}."
+        )
+    elif ret == 3:  # noqa: PLR2004
+        msg = f"The Pact for the {mock_server_handle} was not found."
+    else:
+        msg = (
+            "An unknown error occurred while writing the Pact for"
+            f" {mock_server_handle} in {directory}."
+        )
+    raise RuntimeError(msg)
 
 
 def mock_server_logs(mock_server_port: int) -> str:
@@ -4308,13 +4494,22 @@ def new_pact(consumer_name: str, provider_name: str) -> PactHandle:
     [Rust
     `pactffi_new_pact`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_new_pact)
 
-    * `consumer_name` - The name of the consumer for the pact.
-    * `provider_name` - The name of the provider for the pact.
+    Args:
+        consumer_name:
+            The name of the consumer for the pact.
 
-    Returns a new `PactHandle`. The handle will need to be freed with the
-    `pactffi_free_pact_handle` method to release its resources.
+        provider_name:
+            The name of the provider for the pact.
+
+    Returns:
+        Handle to the new Pact model.
     """
-    raise NotImplementedError
+    return PactHandle(
+        lib.pactffi_new_pact(
+            consumer_name.encode("utf-8"),
+            provider_name.encode("utf-8"),
+        ),
+    )
 
 
 def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
@@ -4324,12 +4519,23 @@ def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
     [Rust
     `pactffi_new_interaction`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_new_interaction)
 
-    * `description` - The interaction description. It needs to be unique for
-      each interaction.
+    Args:
+        pact:
+            Handle to the Pact model.
 
-    Returns a new `InteractionHandle`.
+        description:
+            The interaction description. It needs to be unique for each
+            interaction.
+
+    Returns:
+        Handle to the new Interaction.
     """
-    raise NotImplementedError
+    return InteractionHandle(
+        lib.pactffi_new_interaction(
+            pact._ref,
+            description.encode("utf-8"),
+        ),
+    )
 
 
 def new_message_interaction(pact: PactHandle, description: str) -> InteractionHandle:
@@ -4381,19 +4587,27 @@ def upon_receiving(interaction: InteractionHandle, description: str) -> bool:
     raise NotImplementedError
 
 
-def given(interaction: InteractionHandle, description: str) -> bool:
+def given(interaction: InteractionHandle, description: str) -> None:
     """
     Adds a provider state to the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
 
     [Rust
     `pactffi_given`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_given)
 
-    * `description` - The provider state description. It needs to be unique.
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        description:
+            The provider state description. It needs to be unique.
+
+    Raises:
+        RuntimeError: If the provider state could not be specified.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_given(interaction._ref, description.encode("utf-8"))
+    if not success:
+        msg = "The provider state could not be specified."
+        raise RuntimeError(msg)
 
 
 def interaction_test_name(interaction: InteractionHandle, test_name: str) -> int:
@@ -4486,62 +4700,47 @@ def given_with_params(
     raise NotImplementedError
 
 
-def with_request(interaction: InteractionHandle, method: str, path: str) -> bool:
+def with_request(interaction: InteractionHandle, method: str, path: str) -> None:
     r"""
     Configures the request for the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
 
     [Rust
     `pactffi_with_request`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_request)
 
-    * `method` - The request method. Defaults to GET.
-    * `path` - The request path. Defaults to `/`.
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    To include matching rules for the path (only regex really makes sense to
-    use), include the matching rule JSON format with the value as a single JSON
-    document. I.e.
+        method:
+            The request HTTP method.
 
-    ```c
-    const char* value = "{\"value\":\"/path/to/100\", \"pact:matcher:type\":\"regex\", \"regex\":\"\\/path\\/to\\/\\\\d+\"}";
-    pactffi_with_request(handle, "GET", value);
-    ```
-    See
-    [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/master/rust/pact_ffi/IntegrationJson.md)
-    """  # noqa: E501
-    raise NotImplementedError
+        path:
+            The request path.
 
+            This may be a simple string in which case it will be used as-is, or
+            it may be a [JSON matching
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.9/rust/pact_ffi/IntegrationJson.md)
+            which allows regex patterns. For examples:
 
-def with_query_parameter(
-    interaction: InteractionHandle,
-    name: str,
-    index: int,
-    value: str,
-) -> bool:
+            ```json
+            {
+                "value": "/path/to/100",
+                "pact:matcher:type": "regex",
+                "regex": "/path/to/\\d+"
+            }
+            ```
+
+    Raises:
+        RuntimeError: If the request could not be specified.
     """
-    Configures a query parameter for the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
-
-    [Rust
-    `pactffi_with_query_parameter`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_query_parameter)
-
-    * `name` - the query parameter name.
-    * `value` - the query parameter value.
-    * `index` - the index of the value (starts at 0). You can use this to create
-      a query parameter with multiple values
-
-    **DEPRECATED:** Use `pactffi_with_query_parameter_v2`, which deals with
-    multiple values correctly
-    """
-    warnings.warn(
-        "This function is deprecated, use with_query_parameter_v2 instead",
-        DeprecationWarning,
-        stacklevel=2,
+    success: bool = lib.pactffi_with_request(
+        interaction._ref,
+        method.encode("utf-8"),
+        path.encode("utf-8"),
     )
-    raise NotImplementedError
+    if not success:
+        msg = f"The request '{method} {path}' could not be specified for {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_query_parameter_v2(
@@ -4549,53 +4748,80 @@ def with_query_parameter_v2(
     name: str,
     index: int,
     value: str,
-) -> bool:
+) -> None:
     r"""
     Configures a query parameter for the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
 
     [Rust
     `pactffi_with_query_parameter_v2`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_query_parameter_v2)
 
-    * `name` - the query parameter name.
-    * `value` - the query parameter value. Either a simple string or a JSON
-      document.
-    * `index` - the index of the value (starts at 0). You can use this to create
-      a query parameter with multiple values
-
     To setup a query parameter with multiple values, you can either call this
-    function multiple times with a different index value, i.e. to create
-    `id=2&id=3`
+    function multiple times with a different index value:
 
-    ```c
-    pactffi_with_query_parameter_v2(handle, "id", 0, "2");
-    pactffi_with_query_parameter_v2(handle, "id", 1, "3");
+    ```python
+    with_query_parameter_v2(handle, "version", 0, "2")
+    with_query_parameter_v2(handle, "version", 0, "3")
     ```
 
     Or you can call it once with a JSON value that contains multiple values:
 
-    ```c
-    const char* value = "{\"value\": [\"2\",\"3\"]}";
-    pactffi_with_query_parameter_v2(handle, "id", 0, value);
+    ```python
+    with_query_parameter_v2(
+        handle,
+        "version",
+        0,
+        json.dumps({ "value": ["2", "3"] })
+    )
     ```
 
-    To include matching rules for the query parameter, include the matching rule
-    JSON format with the value as a single JSON document. I.e.
+    The JSON value can also contain a matcher, which will be used to match the
+    query parameter value. For example, a semver matcher might look like this:
 
-    ```c
-    const char* value = "{\"value\":\"2\", \"pact:matcher:type\":\"regex\", \"regex\":\"\\\\d+\"}";
-    pactffi_with_query_parameter_v2(handle, "id", 0, value);
+    ```python
+    with_query_parameter_v2(
+        handle,
+        "version",
+        0,
+        json.dumps({
+            "value": "1.2.3",
+            "pact:matcher:type": "regex",
+            "regex": r"\d+\.\d+\.\d+",
+        }),
+    )
     ```
-    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/master/rust/pact_ffi/IntegrationJson.md)
 
-    # Safety
+    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.9/rust/pact_ffi/IntegrationJson.md)
 
-    The name and value parameters must be valid pointers to NULL terminated strings.
-    ```
-    """  # noqa: E501
-    raise NotImplementedError
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        name:
+            The query parameter name.
+
+        index:
+            The index of the value (starts at 0). You can use this to create a
+            query parameter with multiple values.
+
+        value:
+            The query parameter value.
+
+            This may be a simple string in which case it will be used as-is, or
+            it may be a [JSON matching
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.9/rust/pact_ffi/IntegrationJson.md).
+
+    Raises:
+        RuntimeError: If there was an error setting the query parameter.
+    """
+    success: bool = lib.pactffi_with_query_parameter_v2(
+        interaction._ref,
+        name.encode("utf-8"),
+        index,
+        value.encode("utf-8"),
+    )
+    if not success:
+        msg = f"Failed to add query parameter {name} to request {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_specification(pact: PactHandle, version: PactSpecification) -> bool:
@@ -4638,94 +4864,91 @@ def with_pact_metadata(
     raise NotImplementedError
 
 
-def with_header(
-    interaction: InteractionHandle,
-    part: InteractionPart,
-    name: str,
-    index: int,
-    value: str,
-) -> bool:
-    """
-    Configures a header for the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
-
-    [Rust
-    `pactffi_with_header`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_header)
-
-    * `part` - The part of the interaction to add the header to (Request or
-      Response).
-    * `name` - the header name.
-    * `value` - the header value.
-    * `index` - the index of the value (starts at 0). You can use this to create
-      a header with multiple values
-
-    **DEPRECATED:** Use `pactffi_with_header_v2`, which deals with multiple
-    values correctly
-    """
-    warnings.warn(
-        "This function is deprecated, use with_header_v2 instead",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    raise NotImplementedError
-
-
 def with_header_v2(
     interaction: InteractionHandle,
     part: InteractionPart,
     name: str,
     index: int,
     value: str,
-) -> bool:
+) -> None:
     r"""
     Configures a header for the Interaction.
 
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
-
     [Rust `pactffi_with_header_v2`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_header_v2)
 
-    * `part` - The part of the interaction to add the header to (Request or
-      Response).
-    * `name` - the header name.
-    * `value` - the header value.
-    * `index` - the index of the value (starts at 0). You can use this to create
-      a header with multiple values
+    To setup a header with multiple values, you can either call this
+    function multiple times with a different index value:
 
-    To setup a header with multiple values, you can either call this function
-    multiple times with a different index value, i.e. to create `x-id=2, 3`
-
-    ```c
-    pactffi_with_header_v2(handle, InteractionPart::Request, "x-id", 0, "2");
-    pactffi_with_header_v2(handle, InteractionPart::Request, "x-id", 1, "3");
+    ```python
+    with_header_v2(handle, part, "Accept-Version", 0, "2")
+    with_header_v2(handle, part, "Accept-Version", 0, "3")
     ```
 
     Or you can call it once with a JSON value that contains multiple values:
 
-    ```c
-    const char* value = "{\"value\": [\"2\",\"3\"]}";
-    pactffi_with_header_v2(handle, InteractionPart::Request, "x-id", 0, value);
+    ```python
+    with_header_v2(
+        handle,
+        part,
+        "Accept-Version",
+        0,
+        json.dumps({ "value": ["2", "3"] })
+    )
     ```
 
-    To include matching rules for the header, include the matching rule JSON
-    format with the value as a single JSON document. I.e.
+    The JSON value can also contain a matcher, which will be used to match the
+    query parameter value. For example, a semver matcher might look like this:
 
-    ```c
-    const char* value = "{\"value\":\"2\", \"pact:matcher:type\":\"regex\", \"regex\":\"\\\\d+\"}";
-    pactffi_with_header_v2(handle, InteractionPart::Request, "id", 0, value);
+    ```python
+    with_query_parameter_v2(
+        handle,
+        "Accept-Version",
+        0,
+        json.dumps({
+            "value": "1.2.3",
+            "pact:matcher:type": "regex",
+            "regex": r"\d+\.\d+\.\d+",
+        }),
+    )
     ```
 
-    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/master/rust/pact_ffi/IntegrationJson.md)
+    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.9/rust/pact_ffi/IntegrationJson.md)
 
-    NOTE: If you pass in a form with multiple values, the index will be ignored.
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    # Safety
+        part:
+            The part of the interaction to add the header to (Request or
+            Response).
 
-    The name and value parameters must be valid pointers to NULL terminated strings.
-    """  # noqa: E501
-    raise NotImplementedError
+        name:
+            The header name. This is case insensitive.
+
+        index:
+            The index of the value (starts at 0). You can use this to create a
+            header with multiple values.
+
+        value:
+            The header value.
+
+            This may be a simple string in which case it will be used as-is, or
+            it may be a [JSON matching
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.9/rust/pact_ffi/IntegrationJson.md).
+
+    Raises:
+        RuntimeError: If there was an error setting the header.
+    """
+    success: bool = lib.pactffi_with_header_v2(
+        interaction._ref,
+        part.value,
+        name.encode("utf-8"),
+        index,
+        value.encode("utf-8"),
+    )
+    if not success:
+        msg = f"The header {name!r} could not be specified for {interaction}."
+        raise RuntimeError(msg)
 
 
 def set_header(
@@ -4733,90 +4956,115 @@ def set_header(
     part: InteractionPart,
     name: str,
     value: str,
-) -> bool:
+) -> None:
     """
     Sets a header for the Interaction.
 
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started). Note that this function will overwrite
-    any previously set header values. Also, this function will not process the
-    value in any way, so matching rules and generators can not be configured
-    with it.
+    Note that this function will overwrite any previously set header values.
+    Also, this function will not process the value in any way, so matching rules
+    and generators can not be configured with it.
 
     [Rust
     `pactffi_set_header`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_set_header)
 
     If matching rules are required to be set, use `pactffi_with_header_v2`.
 
-    * `part` - The part of the interaction to add the header to (Request or
-      Response).
-    * `name` - the header name.
-    * `value` - the header value.
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    # Safety The name and value parameters must be valid pointers to NULL
-    terminated strings.
+        part:
+            The part of the interaction to add the header to (Request or
+            Response).
+
+        name:
+            The header name. This is case insensitive.
+
+        value:
+            The header value. This is handled as-is, with no processing.
+
+    Raises:
+        RuntimeError: If the header could not be set.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_set_header(
+        interaction._ref,
+        part.value,
+        name.encode("utf-8"),
+        value.encode("utf-8"),
+    )
+    if not success:
+        msg = f"The header {name!r} could not be set for {interaction}."
+        raise RuntimeError(msg)
 
 
-def response_status(interaction: InteractionHandle, status: int) -> bool:
+def response_status(interaction: InteractionHandle, status: int) -> None:
     """
     Configures the response for the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
 
     [Rust
     `pactffi_response_status`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_response_status)
 
-    * `status` - the response status. Defaults to 200.
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        status:
+            The response status. Defaults to 200.
+
+    Raises:
+        RuntimeError: If the response status could not be set.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_response_status(interaction._ref, status)
+    if not success:
+        msg = f"The response status {status} could not be set for {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_body(
     interaction: InteractionHandle,
     part: InteractionPart,
     content_type: str,
-    body: str,
-) -> bool:
+    body: str | None,
+) -> None:
     """
     Adds the body for the interaction.
 
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
-
     [Rust
     `pactffi_with_body`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_body)
-
-    * `part` - The part of the interaction to add the body to (Request or
-      Response).
-    * `content_type` - The content type of the body. Defaults to `text/plain`.
-      Will be ignored if a content type header is already set.
-    * `body` - The body contents. For JSON payloads, matching rules can be
-      embedded in the body. See
-      [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/master/rust/pact_ffi/IntegrationJson.md)
 
     For HTTP and async message interactions, this will overwrite the body. With
     asynchronous messages, the part parameter will be ignored. With synchronous
     messages, the request contents will be overwritten, while a new response
     will be appended to the message.
 
-    # Safety
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    The interaction contents and content type must either be NULL pointers, or
-    point to valid UTF-8 encoded NULL-terminated strings. Otherwise, behaviour
-    is undefined.
+        part:
+            The part of the interaction to add the body to (Request or
+            Response).
 
-    # Error Handling
+        content_type:
+            The content type of the body. Will be ignored if a content type
+            header is already set.
 
-    If the contents is a NULL pointer, it will set the body contents as null. If
-    the content type is a null pointer, or can't be parsed, it will set the
-    content type as TEXT. Returns false if the interaction or Pact can't be
-    modified (i.e. the mock server for it has already started) or an error has
-    occurred.
+        body:
+            The body contents. For JSON payloads, matching rules can be embedded
+            in the body. See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.9/rust/pact_ffi/IntegrationJson.md).
+
+    Raises:
+        RuntimeError: If the body could not be specified.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_with_body(
+        interaction._ref,
+        part.value,
+        content_type.encode("utf-8"),
+        body.encode("utf-8") if body is not None else None,
+    )
+    if not success:
+        msg = f"Unable to set body for {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_binary_file(
@@ -5271,22 +5519,24 @@ def new_async_message(pact: PactHandle, description: str) -> MessageHandle:
     raise NotImplementedError
 
 
-def free_pact_handle(pact: PactHandle) -> int:
+def free_pact_handle(pact: PactHandle) -> None:
     """
     Delete a Pact handle and free the resources used by it.
 
     [Rust
     `pactffi_free_pact_handle`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_free_pact_handle)
 
-    # Error Handling
-
-    On failure, this function will return a positive integer value.
-
-    * `1` - The handle is not valid or does not refer to a valid Pact. Could be
-      that it was previously deleted.
-
+    Raises:
+        RuntimeError: If the handle could not be freed.
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_free_pact_handle(pact._ref)
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"{pact} is not valid or does not refer to a valid Pact."
+    else:
+        msg = f"There was an unknown error freeing {pact}."
+    raise RuntimeError(msg)
 
 
 def free_message_pact_handle(pact: MessagePactHandle) -> int:
