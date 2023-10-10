@@ -19,3 +19,10 @@ be as follows:
     library is moved to the `pact.v2` scope. The `pact.v2` module will be
     considered deprecated, and will be removed in a future release.
 """
+
+from .pact import Interaction, Pact
+
+__all__ = [
+    "Pact",
+    "Interaction",
+]
