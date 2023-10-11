@@ -41,6 +41,9 @@ repos:
     rev: v0.0.289
     hooks:
       - id: ruff
+        # Exclude python files in pact/** and tests/**, except for the
+        # files in pact/v3/** and tests/v3/**.
+        exclude: ^(pact|tests)/(?!v3/).*\.py$
         args: [--fix, --exit-non-zero-on-fix]
         stages: [pre-push]
 
@@ -48,6 +51,9 @@ repos:
     rev: 23.9.1
     hooks:
       - id: black
+        # Exclude python files in pact/** and tests/**, except for the
+        # files in pact/v3/** and tests/v3/**.
+        exclude: ^(pact|tests)/(?!v3/).*\.py$
         stages: [pre-push]
 
   - repo: https://github.com/commitizen-tools/commitizen

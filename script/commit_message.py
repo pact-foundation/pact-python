@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+# ruff: noqa
 import re
-import sys
 import subprocess
+import sys
 
 examples = """+ 61c8ca9 fix: navbar not responsive on mobile
 + 479c48b test: prepared test cases for user authentication
@@ -13,21 +14,21 @@ examples = """+ 61c8ca9 fix: navbar not responsive on mobile
 
 
 def main():
-
     cmd_tag = "git describe --abbrev=0"
-    tag = subprocess.check_output(cmd_tag,
-                                  shell=True).decode("utf-8").split('\n')[0]
+    tag = subprocess.check_output(cmd_tag, shell=True).decode("utf-8").split("\n")[0]
 
-    cmd = "git log --pretty=format:'%s' {}..HEAD".format(tag)
+    cmd = f"git log --pretty=format:'%s' {tag}..HEAD"
     commits = subprocess.check_output(cmd, shell=True)
-    commits = commits.decode("utf-8").split('\n')
+    commits = commits.decode("utf-8").split("\n")
     for commit in commits:
-
-        pattern = r'((build|ci|docs|feat|fix|perf|refactor|style|test|chore|revert)(\([\w\-]+\))?:\s.*)|((Merge|Fixed)(\([\w\-]+\))?\s.*)'  # noqa
+        pattern = r"((build|ci|docs|feat|fix|perf|refactor|style|test|chore|revert)(\([\w\-]+\))?:\s.*)|((Merge|Fixed)(\([\w\-]+\))?\s.*)"
         m = re.match(pattern, commit)
         if m is None:
-            print("\nError with git message '{}' style".format(commit))
-            print("\nPlease change commit message to the conventional format and try to commit again. Examples:")  # noqa
+            print(f"\nError with git message '{commit}' style")
+            print(
+                "\nPlease change commit message to the conventional format and try to"
+                " commit again. Examples:",
+            )
 
             print("\n" + examples)
             sys.exit(1)
