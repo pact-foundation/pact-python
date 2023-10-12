@@ -20,7 +20,7 @@ linux_arm64_task:
     image: $IMAGE
   install_script:
     - apt update --yes
-    - apt install --yes gcc make
+    - apt install --yes gcc make g++
     - python -m pip install --upgrade pip pipx
     - pipx install hatch
   <<: *TEST_TEMPLATE
