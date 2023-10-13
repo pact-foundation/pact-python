@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  STABLE_PYTHON_VERSION: "3.11"
+  STABLE_PYTHON_VERSION: "3.12"
   PYTEST_ADDOPTS: --color=yes
 
 jobs:
@@ -28,12 +28,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         experimental: [false]
         include:
           - # Run tests against the next Python version, but no need for the full list of OSes.
             os: ubuntu-latest
-            python-version: "3.12-dev"
+            python-version: "3.13.0-alpha.0 - 3.13"
             experimental: true
 
     steps:

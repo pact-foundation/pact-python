@@ -22,11 +22,12 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Testing",
 ]
 
-requires-python = ">=3.8, <3.12"
+requires-python = ">=3.8"
 
 # Dependencies of Pact Python should be specified using the broadest range
 # compatible version unless:
@@ -87,7 +88,13 @@ dev = [
 ################################################################################
 
 [build-system]
-requires      = ["hatchling", "packaging", "requests", "cffi"]
+requires = [
+  "hatchling",
+  "packaging",
+  "requests",
+  "cffi",
+  "setuptools ; python_version >= '3.12'",
+]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
@@ -110,8 +117,14 @@ artifacts = ["pact/bin/*", "pact/lib/*", "pact/v3/_ffi.*"]
 # Install dev dependencies in the default environment to simplify the developer
 # workflow.
 [tool.hatch.envs.default]
-features           = ["dev"]
-extra-dependencies = ["hatchling", "packaging", "requests", "cffi"]
+features = ["dev"]
+extra-dependencies = [
+  "hatchling",
+  "packaging",
+  "requests",
+  "cffi",
+  "setuptools ; python_version >= '3.12'",
+]
 
 [tool.hatch.envs.default.scripts]
 lint    = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
@@ -125,7 +138,7 @@ all     = ["lint", "test", "example"]
 features = ["test"]
 
 [[tool.hatch.envs.test.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11"]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.test.scripts]
 test    = "pytest {args:tests/}"
