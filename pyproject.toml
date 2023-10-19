@@ -131,6 +131,7 @@ addopts = [
   "--import-mode=importlib",
   "--cov-config=pyproject.toml",
   "--cov=pact",
+  "--cov-report=xml",
 ]
 filterwarnings = [
   "ignore::DeprecationWarning:pact",
