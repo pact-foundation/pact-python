@@ -6,7 +6,7 @@ default_install_hook_types:
 repos:
   # Generic hooks that apply to a lot of files
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -38,7 +38,7 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.289
+    rev: v0.1.1
     hooks:
       - id: ruff
         # Exclude python files in pact/** and tests/**, except for the
@@ -48,7 +48,7 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 23.10.0
     hooks:
       - id: black
         # Exclude python files in pact/** and tests/**, except for the
@@ -57,7 +57,7 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: 3.8.2
+    rev: v3.12.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
