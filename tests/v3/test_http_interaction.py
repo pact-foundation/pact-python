@@ -407,7 +407,11 @@ def test_with_body_invalid(pact: Pact) -> None:
             pact.upon_receiving("")
             .with_request("GET", "/")
             .will_respond_with(200)
-            .with_body(json.dumps({"request": True}), "application/json", "Invalid")
+            .with_body(
+                json.dumps({"request": True}),
+                "application/json",
+                "Invalid",  # type: ignore[arg-type]
+            )
         )
 
 
@@ -504,11 +508,13 @@ async def test_multipart_file_request(pact: Pact, temp_dir: Path) -> None:
     with pact.serve() as srv, aiohttp.MultipartWriter() as mpwriter:
         mpwriter.append(
             fpy.open("rb"),
-            {"Content-Type": "text/x-python"},
+            # TODO: Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            {"Content-Type": "text/x-python"},  # type: ignore[arg-type]
         )
         mpwriter.append(
             fpng.open("rb"),
-            {"Content-Type": "image/png"},
+            # TODO: Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            {"Content-Type": "image/png"},  # type: ignore[arg-type]
         )
 
         async with aiohttp.ClientSession(srv.url) as session, session.post(

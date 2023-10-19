@@ -6,6 +6,7 @@ be sent from Kafka, or some queueing system. Unlike a HTTP interaction, the
 handler is solely responsible for processing the message, and does not
 necessarily need to send a response.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -59,7 +60,7 @@ class Handler:
         self.validate_event(event)
 
         if event["action"] == "WRITE":
-            return self.fs.write(event["path"], event.get("contents", ""))
+            self.fs.write(event["path"], event.get("contents", ""))
         if event["action"] == "READ":
             return self.fs.read(event["path"])
 

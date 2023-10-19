@@ -38,7 +38,7 @@ FAKE_DB: Dict[int, Dict[str, Any]] = {}
 
 
 @app.get("/users/{uid}")
-async def get_user_by_id(uid: int) -> Dict[str, Any]:
+async def get_user_by_id(uid: int) -> JSONResponse:
     """
     Fetch a user by their ID.
 

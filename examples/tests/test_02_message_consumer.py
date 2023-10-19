@@ -35,8 +35,9 @@ from typing import TYPE_CHECKING, Any, Generator
 from unittest.mock import MagicMock
 
 import pytest
-from examples.src.message import Handler
 from pact import MessageConsumer, MessagePact, Provider
+
+from examples.src.message import Handler
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -116,7 +117,10 @@ def test_write_file(pact: MessagePact, handler: Handler) -> None:
     )
 
     result = handler.process(msg)
-    handler.fs.write.assert_called_once_with("test.txt", "Hello world!")
+    handler.fs.write.assert_called_once_with(  # type: ignore[attr-defined]
+        "test.txt",
+        "Hello world!",
+    )
     assert result is None
 
 
@@ -130,5 +134,5 @@ def test_read_file(pact: MessagePact, handler: Handler) -> None:
     )
 
     result = handler.process(msg)
-    handler.fs.read.assert_called_once_with("test.txt")
+    handler.fs.read.assert_called_once_with("test.txt")  # type: ignore[attr-defined]
     assert result == "Hello world!"

@@ -176,8 +176,28 @@ ignore = [
   "ANN102", # `cls` must be typed
 ]
 
+extend-exclude = [
+  "tests/*.py",
+  "pact/*.py",
+]
+
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true
 
 [tool.ruff.pydocstyle]
 convention = "google"
+
+################################################################################
+## Black Configuration
+################################################################################
+
+[tool.black]
+target-version = ["py38"]
+extend-exclude = '^/(pact|tests)/(?!v3).+\.py$'
+
+################################################################################
+## Mypy Configuration
+################################################################################
+
+[tool.mypy]
+exclude = '^(pact|tests)/(?!v3).+\.py$'

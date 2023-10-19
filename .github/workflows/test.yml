@@ -103,22 +103,21 @@ jobs:
         run: >
           hatch run example --broker-url=http://pactbroker:pactbroker@localhost:9292
 
-  # TODO: Fix lints before enabling this
-  # lint:
-  #   name: Lint
+  lint:
+    name: Lint
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ env.STABLE_PYTHON_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
 
-  #     - name: Install Hatch
-  #       run: pip install --upgrade hatch
+      - name: Install Hatch
+        run: pip install --upgrade hatch
 
-  #     - name: Lint
-  #       run: hatch run lint
+      - name: Lint
+        run: hatch run lint
