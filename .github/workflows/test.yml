@@ -53,7 +53,7 @@ jobs:
       - name: Upload coverage
         # TODO: Configure code coverage monitoring
         if: false && matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
