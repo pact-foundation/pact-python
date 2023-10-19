@@ -3,6 +3,7 @@ extend = "../pyproject.toml"
 ignore = [
   "S101", # Forbid assert statements
   "D103", # Require docstring in public function
+  "D104", # Require docstring in public package
 ]
 
 [per-file-ignores]

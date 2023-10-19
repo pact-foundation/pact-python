@@ -9,13 +9,14 @@ We also define a `pact_dir` fixture to define the directory where the generated
 Pact files will be stored. You are encouraged to have a look at these files
 after the examples have been run.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Generator, Union
 
 import pytest
-from testcontainers.compose import DockerCompose
+from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
 from yarl import URL
 
 EXAMPLE_DIR = Path(__file__).parent.resolve()

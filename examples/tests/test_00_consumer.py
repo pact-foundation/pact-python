@@ -21,9 +21,10 @@ from typing import TYPE_CHECKING, Any, Dict, Generator
 
 import pytest
 import requests
-from examples.src.consumer import User, UserConsumer
 from pact import Consumer, Format, Like, Provider
 from yarl import URL
+
+from examples.src.consumer import User, UserConsumer
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -138,5 +139,6 @@ def test_get_unknown_user(pact: Pact, user_consumer: UserConsumer) -> None:
     with pact:
         with pytest.raises(requests.HTTPError) as excinfo:
             user_consumer.get_user(123)
+        assert excinfo.value.response is not None
         assert excinfo.value.response.status_code == HTTPStatus.NOT_FOUND
         pact.verify()

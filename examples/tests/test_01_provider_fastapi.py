@@ -30,10 +30,11 @@ from unittest.mock import MagicMock
 
 import pytest
 import uvicorn
-from examples.src.fastapi import app
 from pact import Verifier
 from pydantic import BaseModel
 from yarl import URL
+
+from examples.src.fastapi import app
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -78,7 +79,9 @@ def run_server() -> None:
     lambda cannot be used as the target of a `multiprocessing.Process` as it
     cannot be pickled.
     """
-    uvicorn.run(app, host=PROVIDER_URL.host, port=PROVIDER_URL.port)
+    host = PROVIDER_URL.host if PROVIDER_URL.host else "localhost"
+    port = PROVIDER_URL.port if PROVIDER_URL.port else 8080
+    uvicorn.run(app, host=host, port=port)
 
 
 @pytest.fixture(scope="module")

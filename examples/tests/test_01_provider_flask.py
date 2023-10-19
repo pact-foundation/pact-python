@@ -22,7 +22,6 @@ Test](https://docs.pact.io/5-minute-getting-started-guide#scope-of-a-provider-pa
 section of the Pact documentation.
 """
 
-
 from __future__ import annotations
 
 from multiprocessing import Process
@@ -30,10 +29,11 @@ from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
 
 import pytest
-from examples.src.flask import app
 from flask import request
 from pact import Verifier
 from yarl import URL
+
+from examples.src.flask import app
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -58,7 +58,7 @@ async def mock_pact_provider_states() -> Dict[str, Union[str, None]]:
         "user 123 doesn't exist": mock_user_123_doesnt_exist,
         "user 123 exists": mock_user_123_exists,
     }
-    return {"result": mapping[request.json["state"]]()}
+    return {"result": mapping[request.json["state"]]()}  # type: ignore[index]
 
 
 def run_server() -> None:
