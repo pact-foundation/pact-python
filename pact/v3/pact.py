@@ -11,9 +11,11 @@ For the roles of consumer and provider, see the documentation for the
 
 from __future__ import annotations
 
+import abc
+import json
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Literal, Set
+from typing import TYPE_CHECKING, Any, Iterable, Literal, Set, overload
 
 from yarl import URL
 
@@ -28,61 +30,404 @@ if TYPE_CHECKING:
         from typing_extensions import Self
 
 
-class Interaction:
+class Interaction(abc.ABC):
     """
     Interaction between a consumer and a provider.
 
-    This class defines an interaction between a consumer and a provider. It
-    defines a specific request that the consumer makes to the provider, and the
-    response that the provider should return.
+    This abstract class defines an interaction between a consumer and a
+    provider. The concrete subclasses define the type of interaction, and include:
+
+    -  [`HttpInteraction`][pact.v3.pact.HttpInteraction]
+    -  [`AsyncMessageInteraction`][pact.v3.pact.AsyncMessageInteraction]
+    -  [`SyncMessageInteraction`][pact.v3.pact.SyncMessageInteraction]
 
     A set of interactions between a consumer and a provider is called a Pact.
     """
 
+    def __init__(self, description: str) -> None:
+        """
+        Create a new Interaction.
+
+        As this class is abstract, this function should not be called directly
+        but should instead be called through one of the concrete subclasses.
+
+        Args:
+            description:
+                Description of the interaction. This must be unique within the
+                Pact.
+        """
+        self._description = description
+
+    def __str__(self) -> str:
+        """
+        Nice representation of the Interaction.
+        """
+        return f"{self.__class__.__name__}({self._description})"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation of the Interaction.
+        """
+        return f"{self.__class__.__name__}({self._handle!r})"
+
+    @property
+    @abc.abstractmethod
+    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+        """
+        Handle for the Interaction.
+
+        This is used internally by the library to pass the Interaction to the
+        underlying Pact library.
+        """
+
+    @property
+    @abc.abstractmethod
+    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+        """
+        Interaction part.
+
+        Where interactions have multiple parts, this property keeps track
+        of which part is currently being set.
+        """
+
+    def _parse_interaction_part(
+        self,
+        part: Literal["Request", "Response", None],
+    ) -> pact.v3.ffi.InteractionPart:
+        """
+        Convert the input into an InteractionPart.
+        """
+        if part == "Request":
+            return pact.v3.ffi.InteractionPart.REQUEST
+        if part == "Response":
+            return pact.v3.ffi.InteractionPart.RESPONSE
+        if part is None:
+            return self._interaction_part
+        msg = f"Invalid part: {part}"
+        raise ValueError(msg)
+
+    @overload
+    def given(self, state: str) -> Self:
+        ...
+
+    @overload
+    def given(self, state: str, *, name: str, value: str) -> Self:
+        ...
+
+    @overload
+    def given(self, state: str, *, parameters: dict[str, Any] | str) -> Self:
+        ...
+
+    def given(
+        self,
+        state: str,
+        *,
+        name: str | None = None,
+        value: str | None = None,
+        parameters: dict[str, Any] | str | None = None,
+    ) -> Self:
+        """
+        Set the provider state.
+
+        This is the state that the provider should be in when the Interaction is
+        executed. When the provider is being verified, the provider state is
+        passed to the provider so that its internal state can be set to match
+        the provider state.
+
+        In its simplest form, the provider state is a string. For example, to
+        match a provider state of `a user exists`, you would use:
+
+        ```python
+        pact.upon_receiving("a request").given("a user exists")
+        ```
+
+        It is also possible to specify a parameter that will be used to match
+        the provider state. For example, to match a provider state of `a user
+        exists` with a parameter `id` that has the value `123`, you would use:
+
+        ```python
+        (
+            pact.upon_receiving("a request")
+            .given("a user exists", name="id", value="123")
+        )
+        ```
+
+        Lastly, it is possible to specify multiple parameters that will be used
+        to match the provider state. For example, to match a provider state of
+        `a user exists` with a parameter `id` that has the value `123` and a
+        parameter `name` that has the value `John`, you would use:
+
+        ```python
+        (
+            pact.upon_receiving("a request")
+            .given("a user exists", parameters={
+                "id": "123",
+                "name": "John",
+            })
+        )
+        ```
+
+        This function can be called repeatedly to specify multiple provider
+        states for the same Interaction. If the same `state` is specified with
+        different parameters, then the parameters are merged together. The above
+        example with multiple parameters can equivalently be specified as:
+
+        ```python
+        (
+            pact.upon_receiving("a request")
+            .given("a user exists", name="id", value="123")
+            .given("a user exists", name="name", value="John")
+        )
+        ```
+
+        Args:
+            state:
+                Provider state for the Interaction.
+
+            name:
+                Name of the parameter. This must be specified in conjunction
+                with `value`.
+
+            value:
+                Value of the parameter. This must be specified in conjunction
+                with `name`.
+
+            parameters:
+                Key-value pairs of parameters to use for the provider state.
+                These must be encodable using [`json.dumps(...)`][json.dumps].
+                Alternatively, a string contained the JSON object can be passed
+                directly.
+
+                If the string does not contain a valid JSON object, then the
+                string is passed directly as follows:
+
+                ```python
+                (
+                    pact.upon_receiving("a request")
+                    .given("a user exists", name="value", value=parameters)
+                )
+                ```
+
+        Raises:
+            ValueError:
+                If the combination of arguments is invalid or inconsistent.
+        """
+        if name is not None and value is not None and parameters is None:
+            pact.v3.ffi.given_with_param(self._handle, state, name, value)
+        elif name is None and value is None and parameters is not None:
+            if isinstance(parameters, dict):
+                pact.v3.ffi.given_with_params(
+                    self._handle,
+                    state,
+                    json.dumps(parameters),
+                )
+            else:
+                pact.v3.ffi.given_with_params(self._handle, state, parameters)
+        elif name is None and value is None and parameters is None:
+            pact.v3.ffi.given(self._handle, state)
+        else:
+            msg = "Invalid combination of arguments."
+            raise ValueError(msg)
+        return self
+
+    def with_body(
+        self,
+        body: str | None = None,
+        content_type: str = "text/plain",
+        part: Literal["Request", "Response"] | None = None,
+    ) -> Self:
+        """
+        Set the body of the request or response.
+
+        Args:
+            body:
+                Body of the request. If this is `None`, then the body is
+                empty.
+
+            content_type:
+                Content type of the body. This is ignored if the `Content-Type`
+                header has already been set.
+
+            part:
+                Whether the body should be added to the request or the response.
+                If `None`, then the function intelligently determines whether
+                the body should be added to the request or the response, based
+                on whether the
+                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                method has been called.
+        """
+        pact.v3.ffi.with_body(
+            self._handle,
+            self._parse_interaction_part(part),
+            content_type,
+            body,
+        )
+        return self
+
+    def with_binary_file(
+        self,
+        body: bytes | None,
+        content_type: str = "application/octet-stream",
+        part: Literal["Request", "Response"] | None = None,
+    ) -> Self:
+        """
+        Adds a binary file to the request or response.
+
+        Note that for HTTP interactions, this function will overwrite the body
+        if it has been set using
+        [`with_body(...)`][pact.v3.Interaction.with_body].
+
+        Args:
+            part:
+                Whether the body should be added to the request or the response.
+                If `None`, then the function intelligently determines whether
+                the body should be added to the request or the response, based
+                on whether the
+                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                method has been called.
+
+            content_type:
+                Content type of the body. This is ignored if the `Content-Type`
+                header has already been set.
+
+            body:
+                Body of the request.
+        """
+        pact.v3.ffi.with_binary_file(
+            self._handle,
+            self._parse_interaction_part(part),
+            content_type,
+            body,
+        )
+        return self
+
+    def with_multipart_file(  # noqa: PLR0913
+        self,
+        part_name: str,
+        path: Path | None,
+        content_type: str = "application/octet-stream",
+        part: Literal["Request", "Response"] | None = None,
+        boundary: str | None = None,
+    ) -> Self:
+        """
+        Adds a binary file as the body of a multipart request or response.
+
+        The content type of the body will be set to a MIME multipart message.
+        """
+        pact.v3.ffi.with_multipart_file_v2(
+            self._handle,
+            self._parse_interaction_part(part),
+            part_name,
+            path,
+            content_type,
+            boundary,
+        )
+        return self
+
+    def test_name(
+        self,
+        name: str,
+    ) -> Self:
+        """
+        Set the test name annotation for the interaction.
+
+        This is used by V4 interactions to set the name of the test.
+
+        Args:
+            name:
+                Name of the test.
+        """
+        pact.v3.ffi.interaction_test_name(self._handle, name)
+        return self
+
+    def with_plugin_contents(
+        self,
+        contents: dict[str, Any] | str,
+        content_type: str = "text/plain",
+        part: Literal["Request", "Response"] | None = None,
+    ) -> Self:
+        """
+        Set the interaction content using a plugin.
+
+        The value of `contents` is passed directly to the plugin as a JSON
+        string. The plugin will document the format of the JSON content.
+
+        Args:
+            contents:
+                Body of the request. If this is `None`, then the body is empty.
+
+            content_type:
+                Content type of the body. This is ignored if the `Content-Type`
+                header has already been set.
+
+            part:
+                Whether the body should be added to the request or the response.
+                If `None`, then the function intelligently determines whether
+                the body should be added to the request or the response, based
+                on whether the
+                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                method has been called.
+        """
+        if isinstance(contents, dict):
+            contents = json.dumps(contents)
+
+        pact.v3.ffi.interaction_contents(
+            self._handle,
+            self._parse_interaction_part(part),
+            content_type,
+            contents,
+        )
+        return self
+
+
+class HttpInteraction(Interaction):
+    """
+    A synchronous HTTP interaction.
+
+    This class defines a synchronous HTTP interaction between a consumer and a
+    provider. It defines a specific request that the consumer makes to the
+    provider, and the response that the provider should return.
+    """
+
     def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
         """
-        Initialise a new Interaction.
+        Initialise a new HTTP Interaction.
 
         This function should not be called directly. Instead, an Interaction
         should be created using the
         [`upon_receiving(...)`][pact.v3.Pact.upon_receiving] method of a
         [`Pact`][pact.v3.Pact] instance.
         """
-        self._handle = pact.v3.ffi.new_interaction(pact_handle, description)
-        self._is_request = True
+        super().__init__(description)
+        self.__handle = pact.v3.ffi.new_interaction(pact_handle, description)
+        self.__interaction_part = pact.v3.ffi.InteractionPart.REQUEST
         self._request_indices: dict[
             tuple[pact.v3.ffi.InteractionPart, str],
             int,
         ] = defaultdict(int)
         self._parameter_indices: dict[str, int] = defaultdict(int)
 
-    def __str__(self) -> str:
+    @property
+    def _handle(self) -> pact.v3.ffi.InteractionHandle:
         """
-        Informal string representation of the Interaction.
-        """
-        raise NotImplementedError
+        Handle for the Interaction.
 
-    def __repr__(self) -> str:
+        This is used internally by the library to pass the Interaction to the
+        underlying Pact library.
         """
-        Information-rich string representation of the Interaction.
+        return self.__handle
+
+    @property
+    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
         """
-        raise NotImplementedError
+        Interaction part.
 
-    def given(self, state: str) -> Interaction:
+        Keeps track whether we are setting by default the request or the
+        response in the HTTP interaction.
         """
-        Set the provider state.
+        return self.__interaction_part
 
-        This is the state that the provider should be in when the Interaction is
-        executed.
-
-        Args:
-            state:
-                Provider state for the Interaction.
-        """
-        pact.v3.ffi.given(self._handle, state)
-        return self
-
-    def with_request(self, method: str, path: str) -> Interaction:
+    def with_request(self, method: str, path: str) -> Self:
         """
         Set the request.
 
@@ -97,27 +442,12 @@ class Interaction:
         pact.v3.ffi.with_request(self._handle, method, path)
         return self
 
-    def _interaction_part(
-        self,
-        part: Literal["Request", "Response", None],
-    ) -> pact.v3.ffi.InteractionPart:
-        """
-        Convert the input into an InteractionPart.
-        """
-        part = part or ("Request" if self._is_request else "Response")
-        if part == "Request":
-            return pact.v3.ffi.InteractionPart.REQUEST
-        if part == "Response":
-            return pact.v3.ffi.InteractionPart.RESPONSE
-        msg = f"Invalid part: {part}"
-        raise ValueError(msg)
-
     def with_header(
         self,
         name: str,
         value: str,
         part: Literal["Request", "Response"] | None = None,
-    ) -> Interaction:
+    ) -> Self:
         r"""
         Add a header to the request.
 
@@ -207,7 +537,7 @@ class Interaction:
                 [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
                 method has been called.
         """
-        interaction_part = self._interaction_part(part)
+        interaction_part = self._parse_interaction_part(part)
         name_lower = name.lower()
         index = self._request_indices[(interaction_part, name_lower)]
         self._request_indices[(interaction_part, name_lower)] += 1
@@ -224,7 +554,7 @@ class Interaction:
         self,
         headers: dict[str, str] | Iterable[tuple[str, str]],
         part: Literal["Request", "Response"] | None = None,
-    ) -> Interaction:
+    ) -> Self:
         """
         Add multiple headers to the request.
 
@@ -279,7 +609,7 @@ class Interaction:
         name: str,
         value: str,
         part: Literal["Request", "Response"] | None = None,
-    ) -> Interaction:
+    ) -> Self:
         r"""
         Add a header to the request.
 
@@ -304,7 +634,7 @@ class Interaction:
         """
         pact.v3.ffi.set_header(
             self._handle,
-            self._interaction_part(part),
+            self._parse_interaction_part(part),
             name,
             value,
         )
@@ -314,7 +644,7 @@ class Interaction:
         self,
         headers: dict[str, str] | Iterable[tuple[str, str]],
         part: Literal["Request", "Response"] | None = None,
-    ) -> Interaction:
+    ) -> Self:
         """
         Add multiple headers to the request.
 
@@ -344,7 +674,7 @@ class Interaction:
             self.set_header(name, value, part)
         return self
 
-    def with_query_parameter(self, name: str, value: str) -> Interaction:
+    def with_query_parameter(self, name: str, value: str) -> Self:
         r"""
         Add a query to the request.
 
@@ -417,7 +747,7 @@ class Interaction:
     def with_query_parameters(
         self,
         parameters: dict[str, str] | Iterable[tuple[str, str]],
-    ) -> Interaction:
+    ) -> Self:
         """
         Add multiple query parameters to the request.
 
@@ -434,41 +764,7 @@ class Interaction:
             self.with_query_parameter(name, value)
         return self
 
-    def with_body(
-        self,
-        body: str | None = None,
-        content_type: str = "text/plain",
-        part: Literal["Request", "Response"] | None = None,
-    ) -> Interaction:
-        """
-        Set the body of the request.
-
-        Args:
-            body:
-                Body of the request. If this is `None`, then the body is
-                empty.
-
-            content_type:
-                Content type of the body. This is ignored if the `Content-Type`
-                header has already been set.
-
-            part:
-                Whether the body should be added to the request or the response.
-                If `None`, then the function intelligently determines whether
-                the body should be added to the request or the response, based
-                on whether the
-                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
-                method has been called.
-        """
-        pact.v3.ffi.with_body(
-            self._handle,
-            self._interaction_part(part),
-            content_type,
-            body,
-        )
-        return self
-
-    def will_respond_with(self, status: int) -> Interaction:
+    def will_respond_with(self, status: int) -> Self:
         """
         Set the response status.
 
@@ -485,8 +781,102 @@ class Interaction:
                 Status for the response.
         """
         pact.v3.ffi.response_status(self._handle, status)
-        self._is_request = False
+        self.__interaction_part = pact.v3.ffi.InteractionPart.RESPONSE
         return self
+
+
+class AsyncMessageInteraction(Interaction):
+    """
+    An asynchronous message interaction.
+
+    This class defines an asynchronous message interaction between a consumer
+    and a provider. It defines the kind of messages a consumer can accept, and
+    the is agnostic of the underlying protocol, be it a message queue, Apache
+    Kafka, or some other asynchronous protocol.
+    """
+
+    def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
+        """
+        Initialise a new Asynchronous Message Interaction.
+
+        This function should not be called directly. Instead, an
+        AsyncMessageInteraction should be created using the
+        [`upon_receiving(...)`][pact.v3.Pact.upon_receiving] method of a
+        [`Pact`][pact.v3.Pact] instance using the `"Async"` interaction type.
+
+        Args:
+            pact_handle:
+                Handle for the Pact.
+
+            description:
+                Description of the interaction. This must be unique within the
+                Pact.
+        """
+        super().__init__(description)
+        self.__handle = pact.v3.ffi.new_message_interaction(pact_handle, description)
+
+    @property
+    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+        """
+        Handle for the Interaction.
+
+        This is used internally by the library to pass the Interaction to the
+        underlying Pact library.
+        """
+        return self.__handle
+
+    @property
+    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+        return pact.v3.ffi.InteractionPart.REQUEST
+
+
+class SyncMessageInteraction(Interaction):
+    """
+    A synchronous message interaction.
+
+    This class defines a synchronous message interaction between a consumer and
+    a provider. As with [`HttpInteraction`][pact.v3.pact.HttpInteraction], it
+    defines a specific request that the consumer makes to the provider, and the
+    response that the provider should return.
+    """
+
+    def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
+        """
+        Initialise a new Synchronous Message Interaction.
+
+        This function should not be called directly. Instead, an
+        AsyncMessageInteraction should be created using the
+        [`upon_receiving(...)`][pact.v3.Pact.upon_receiving] method of a
+        [`Pact`][pact.v3.Pact] instance using the `"Sync"` interaction type.
+
+        Args:
+            pact_handle:
+                Handle for the Pact.
+
+            description:
+                Description of the interaction. This must be unique within the
+                Pact.
+        """
+        super().__init__(description)
+        self.__handle = pact.v3.ffi.new_sync_message_interaction(
+            pact_handle,
+            description,
+        )
+        self.__interaction_part = pact.v3.ffi.InteractionPart.REQUEST
+
+    @property
+    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+        """
+        Handle for the Interaction.
+
+        This is used internally by the library to pass the Interaction to the
+        underlying Pact library.
+        """
+        return self.__handle
+
+    @property
+    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+        return self.__interaction_part
 
 
 class Pact:
@@ -566,7 +956,42 @@ class Pact:
         """
         return self._provider
 
-    def upon_receiving(self, description: str) -> Interaction:
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+    ) -> HttpInteraction:
+        ...
+
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["HTTP"],
+    ) -> HttpInteraction:
+        ...
+
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["Async"],
+    ) -> AsyncMessageInteraction:
+        ...
+
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["Sync"],
+    ) -> SyncMessageInteraction:
+        ...
+
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["HTTP", "Sync", "Async"] = "HTTP",
+    ) -> HttpInteraction | AsyncMessageInteraction | SyncMessageInteraction:
         """
         Create a new Interaction.
 
@@ -576,8 +1001,20 @@ class Pact:
             description:
                 Description of the interaction. This must be unique
                 within the Pact.
+
+            interaction:
+                Type of interaction. Defaults to `HTTP`. This must be one of
+                `HTTP`, `Async`, or `Sync`.
         """
-        return Interaction(self._handle, description)
+        if interaction == "HTTP":
+            return HttpInteraction(self._handle, description)
+        if interaction == "Async":
+            return AsyncMessageInteraction(self._handle, description)
+        if interaction == "Sync":
+            return SyncMessageInteraction(self._handle, description)
+
+        msg = f"Invalid interaction type: {interaction}"
+        raise ValueError(msg)
 
     def serve(
         self,
