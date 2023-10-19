@@ -150,7 +150,7 @@ class InteractionHandle:
         """
         String representation of the Interaction Handle.
         """
-        return f"InteractionHandle({self._ref})"
+        return f"InteractionHandle({self._ref!r})"
 
 
 class MatchingRule:
@@ -267,7 +267,7 @@ class PactHandle:
         """
         String representation of the Pact Handle.
         """
-        return f"PactHandle({self._ref})"
+        return f"PactHandle({self._ref!r})"
 
 
 class PactServerHandle:
@@ -309,7 +309,7 @@ class PactServerHandle:
         """
         String representation of the Pact Server Handle.
         """
-        return f"PactServerHandle({self._ref})"
+        return f"PactServerHandle({self._ref!r})"
 
     @property
     def port(self) -> int:
@@ -525,7 +525,7 @@ class PactSpecification(Enum):
         """
         Information-rich string representation of the Pact Specification.
         """
-        return f"Pact Specification.{self.name}"
+        return f"PactSpecification.{self.name}"
 
 
 class StringResult(Enum):
