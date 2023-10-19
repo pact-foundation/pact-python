@@ -5,6 +5,7 @@ This file is loaded automatically by PyTest when running the tests in this
 directory.
 """
 
+
 import pytest
 
 
@@ -15,4 +16,4 @@ def _setup_pact_logging() -> None:
     """
     from pact.v3 import ffi
 
-    ffi.log_to_stderr(ffi.LevelFilter.DEBUG)
+    ffi.log_to_stderr("DEBUG")

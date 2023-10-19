@@ -67,6 +67,7 @@ an appropriate Python exception. The exception should be raised using the
 appropriate Python exception class, and should be documented in the function's
 docstring.
 """
+
 # The following lints are disabled during initial development and should be
 # removed later.
 # ruff: noqa: ARG001 (unused-function-argument)
@@ -80,6 +81,7 @@ docstring.
 
 from __future__ import annotations
 
+import gc
 import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, List
@@ -528,7 +530,7 @@ class PactSpecification(Enum):
         return f"PactSpecification.{self.name}"
 
 
-class StringResult(Enum):
+class _StringResult(Enum):
     """
     String Result.
 
@@ -548,7 +550,70 @@ class StringResult(Enum):
         """
         Information-rich string representation of the String Result.
         """
-        return f"StringResult.{self.name}"
+        return f"_StringResultEnum.{self.name}"
+
+
+class StringResult:
+    """
+    String result.
+    """
+
+    def __init__(self, cdata: ffi.CData) -> None:
+        """
+        Initialise a new String Result.
+
+        Args:
+            cdata:
+                CFFI data structure.
+        """
+        if ffi.typeof(cdata).cname != "struct StringResult":
+            msg = f"cdata must be a struct StringResult, got {ffi.typeof(cdata).cname}"
+            raise TypeError(msg)
+        self._cdata: ffi.CData = cdata
+
+    def __str__(self) -> str:
+        """
+        String representation of the String Result.
+        """
+        return self.text
+
+    def __repr__(self) -> str:
+        """
+        Debugging string representation of the String Result.
+        """
+        return f"<StringResult: {'OK' if self.is_ok else 'FAILED'}, {self.text!r}>"
+
+    @property
+    def is_failed(self) -> bool:
+        """
+        Whether the result is an error.
+        """
+        return self._cdata.tag == _StringResult.FAILED.value
+
+    @property
+    def is_ok(self) -> bool:
+        """
+        Whether the result is ok.
+        """
+        return self._cdata.tag == _StringResult.OK.value
+
+    @property
+    def text(self) -> str:
+        """
+        The text of the result.
+        """
+        # The specific `.ok` or `.failed` does not matter.
+        return ffi.string(self._cdata.ok).decode("utf-8")
+
+    def raise_exception(self) -> None:
+        """
+        Raise an exception with the text of the result.
+
+        Raises:
+            RuntimeError: If the result is an error.
+        """
+        if self.is_failed:
+            raise RuntimeError(self.text)
 
 
 def version() -> str:
@@ -614,7 +679,11 @@ def enable_ansi_support() -> None:
     raise NotImplementedError
 
 
-def log_message(source: str, log_level: str, message: str) -> None:
+def log_message(
+    message: str,
+    log_level: LevelFilter | str = LevelFilter.ERROR,
+    source: str | None = None,
+) -> None:
     """
     Log using the shared core logging facility.
 
@@ -623,16 +692,27 @@ def log_message(source: str, log_level: str, message: str) -> None:
 
     This is useful for callers to have a single set of logs.
 
-    - `source`: String. The source of the log, such as the class or caller
-      framework to disambiguate log lines from the rust logging (e.g.  pact_go)
-    - `log_level`: String. One of TRACE, DEBUG, INFO, WARN, ERROR
-    - `message`: Message to log
+    Args:
+        message:
+            The contents written to the log
 
-    # Safety
+        log_level:
+            The verbosity at which this message should be logged.
 
-    This function will fail if any of the pointers passed to it are invalid.
+        source:
+            The source of the log, such as the class, module or caller.
     """
-    raise NotImplementedError
+    if isinstance(log_level, str):
+        log_level = LevelFilter[log_level.upper()]
+    if source is None:
+        import inspect
+
+        source = inspect.stack()[1].function
+    lib.pactffi_log_message(
+        source.encode("utf-8"),
+        log_level.name.encode("utf-8"),
+        message.encode("utf-8"),
+    )
 
 
 def match_message(msg_1: Message, msg_2: Message) -> Mismatches:
@@ -731,7 +811,7 @@ def mismatch_ansi_description(mismatch: Mismatch) -> str:
     raise NotImplementedError
 
 
-def get_error_message(buffer: str, length: int) -> int:
+def get_error_message(length: int = 1024) -> str | None:
     """
     Provide the error message from `LAST_ERROR` to the calling C code.
 
@@ -747,37 +827,40 @@ def get_error_message(buffer: str, length: int) -> int:
     type. If you want more detailed information for debugging purposes, use the
     logging interface.
 
-    # Params
+    Args:
+        length:
+            The length of the buffer to allocate for the error message. If the
+            error message is longer than this, it will be truncated.
 
-    - `buffer`: a pointer to an array of `char` of sufficient length to hold the
-      error message.
-    - `length`: an int providing the length of the `buffer`.
+    Returns:
+        A string containing the error message, or None if there is no error
+        message.
 
-    # Return Codes
-
-    - The number of bytes written to the provided buffer, which may be zero if
-      there is no last error.
-    - `-1` if the provided buffer is a null pointer.
-    - `-2` if the provided buffer length is too small for the error message.
-    - `-3` if the write failed for some other reason.
-    - `-4` if the error message had an interior NULL
-
-    # Notes
-
-    Note that this function zeroes out any excess in the provided buffer.
-
-    # Error Handling
-
-    The return code must be checked for one of the negative number error codes
-    before the buffer is used. If an error code is present, the buffer may not
-    be in a usable state.
-
-    If the buffer is longer than needed for the error message, the excess space
-    will be zeroed as a safety mechanism. This is slightly less efficient than
-    leaving the contents of the buffer alone, but the difference is expected to
-    be negligible in practice.
+    Raises:
+        RuntimeError: If the error message could not be retrieved.
     """
-    raise NotImplementedError
+    buffer = ffi.new("char[]", length)
+    ret: int = lib.pactffi_get_error_message(buffer, length)
+
+    if ret >= 0:
+        # While the documentation says that the return value is the number of bytes
+        # written, the actually return value is always 0 on success.
+        if msg := ffi.string(buffer).decode("utf-8"):
+            return msg
+        return None
+    if ret == -1:
+        msg = "The provided buffer is a null pointer."
+    elif ret == -2:  # noqa: PLR2004
+        # Instead of returning an error here, we call the function again with a
+        # larger buffer.
+        return get_error_message(length * 32)
+    elif ret == -3:  # noqa: PLR2004
+        msg = "The write failed for some other reason."
+    elif ret == -4:  # noqa: PLR2004
+        msg = "The error message had an interior NULL."
+    else:
+        msg = "An unknown error occurred."
+    raise RuntimeError(msg)
 
 
 def log_to_stdout(level_filter: LevelFilter) -> int:
@@ -807,7 +890,7 @@ def log_to_stderr(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     """
     if isinstance(level_filter, str):
         level_filter = LevelFilter[level_filter.upper()]
-    ret = lib.pactffi_log_to_stderr(level_filter.value)
+    ret: int = lib.pactffi_log_to_stderr(level_filter.value)
     if ret != 0:
         msg = "There was an unknown error setting the logger."
         raise RuntimeError(msg)
@@ -828,13 +911,18 @@ def log_to_file(file_name: str, level_filter: LevelFilter) -> int:
     raise NotImplementedError
 
 
-def log_to_buffer(level_filter: LevelFilter) -> int:
+def log_to_buffer(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     """
     Convenience function to direct all logging to a task local memory buffer.
 
     [Rust `pactffi_log_to_buffer`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_log_to_buffer)
     """
-    raise NotImplementedError
+    if isinstance(level_filter, str):
+        level_filter = LevelFilter[level_filter.upper()]
+    ret: int = lib.pactffi_log_to_buffer(level_filter.value)
+    if ret != 0:
+        msg = "There was an unknown error setting the logger."
+        raise RuntimeError(msg)
 
 
 def logger_init() -> None:
@@ -1994,9 +2082,11 @@ def matching_rule_reference_name(rule_result: MatchingRuleResult) -> str:
     raise NotImplementedError
 
 
-def validate_datetime(value: str, format: str) -> int:
+def validate_datetime(value: str, format: str) -> None:
     """
     Validates the date/time value against the date/time format string.
+
+    Raises an error if the value is not a valid date/time for the format string.
 
     If the value is valid, this function will return a zero status code
     (EXIT_SUCCESS). If the value is not valid, will return a value of 1
@@ -2014,7 +2104,17 @@ def validate_datetime(value: str, format: str) -> int:
     This function is safe as long as the value and format parameters point to
     valid NULL-terminated strings.
     """
-    raise NotImplementedError
+    ret = lib.pactffi_validate_datetime(value.encode(), format.encode())
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"Invalid datetime value {value!r}' for format {format!r}"
+        raise ValueError(msg)
+    if ret == 2:  # noqa: PLR2004
+        msg = f"Panic while validating datetime value: {get_error_message()}"
+    else:
+        msg = f"Unknown error while validating datetime value: {ret}"
+    raise RuntimeError(msg)
 
 
 def generator_to_json(generator: Generator) -> str:
@@ -4524,8 +4624,7 @@ def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
             Handle to the Pact model.
 
         description:
-            The interaction description. It needs to be unique for each
-            interaction.
+            The interaction description. It needs to be unique for each Pact.
 
     Returns:
         Handle to the new Interaction.
@@ -4542,15 +4641,26 @@ def new_message_interaction(pact: PactHandle, description: str) -> InteractionHa
     """
     Creates a new message interaction and return a handle to it.
 
-    * `description` - The interaction description. It needs to be unique for
-      each interaction.
-
     [Rust
     `pactffi_new_message_interaction`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_new_message_interaction)
 
-    Returns a new `InteractionHandle`.
+    Args:
+        pact:
+            Handle to the Pact model.
+
+        description:
+            The interaction description. It needs to be unique for each
+            Pact.
+
+    Returns:
+        Handle to the new Interaction
     """
-    raise NotImplementedError
+    return InteractionHandle(
+        lib.pactffi_new_message_interaction(
+            pact._ref,
+            description.encode("utf-8"),
+        ),
+    )
 
 
 def new_sync_message_interaction(
@@ -4560,31 +4670,62 @@ def new_sync_message_interaction(
     """
     Creates a new synchronous message interaction and return a handle to it.
 
-    * `description` - The interaction description. It needs to be unique for
-      each interaction.
-
     [Rust
     `pactffi_new_sync_message_interaction`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_new_sync_message_interaction)
 
-    Returns a new `InteractionHandle`.
+    Args:
+        pact:
+            Handle to the Pact model.
+
+        description:
+            The interaction description. It needs to be unique for each Pact.
+
+    Returns:
+        Handle to the new Interaction
     """
-    raise NotImplementedError
+    return InteractionHandle(
+        lib.pactffi_new_sync_message_interaction(
+            pact._ref,
+            description.encode("utf-8"),
+        ),
+    )
 
 
-def upon_receiving(interaction: InteractionHandle, description: str) -> bool:
+def upon_receiving(interaction: InteractionHandle, description: str) -> None:
     """
     Sets the description for the Interaction.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started)
 
     [Rust
     `pactffi_upon_receiving`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_upon_receiving)
 
-    * `description` - The interaction description. It needs to be unique for
-      each interaction.
+    This function
+
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        description:
+            The interaction description. It needs to be unique for each Pact.
+
+    Raises:
+        RuntimeError: If the interaction description could not be set.
     """
+    # This function has intentionally been left unimplemented. The rationale is
+    # to avoid code of the form:
+    #
+    # ```python
+    #     .with_request("GET", "/")
+    #     .upon_receiving("some new description")
+    # ```
     raise NotImplementedError
+
+    success: bool = lib.pactffi_upon_receiving(
+        interaction._ref,
+        description.encode("utf-8"),
+    )
+    if not success:
+        msg = "The interaction description could not be set."
+        raise RuntimeError(msg)
 
 
 def given(interaction: InteractionHandle, description: str) -> None:
@@ -4610,7 +4751,7 @@ def given(interaction: InteractionHandle, description: str) -> None:
         raise RuntimeError(msg)
 
 
-def interaction_test_name(interaction: InteractionHandle, test_name: str) -> int:
+def interaction_test_name(interaction: InteractionHandle, test_name: str) -> None:
     """
     Sets the test name annotation for the interaction.
 
@@ -4620,9 +4761,19 @@ def interaction_test_name(interaction: InteractionHandle, test_name: str) -> int
     [Rust
     `pactffi_interaction_test_name`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_interaction_test_name)
 
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        test_name:
+            The test name to set.
+
     # Safety
 
     The test name parameter must be a valid pointer to a NULL terminated string.
+
+    Raises:
+        RuntimeError: If the test name can not be set.
 
     # Error Handling
 
@@ -4635,7 +4786,23 @@ def interaction_test_name(interaction: InteractionHandle, test_name: str) -> int
       modified.
     * `4` - Not a V4 interaction.
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_interaction_test_name(
+        interaction._ref,
+        test_name.encode("utf-8"),
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"Function panicked: {get_error_message()}"
+    elif ret == 2:  # noqa: PLR2004
+        msg = f"Invalid handle: {interaction}."
+    elif ret == 3:  # noqa: PLR2004
+        msg = f"Mock server for {interaction} has already started."
+    elif ret == 4:  # noqa: PLR2004
+        msg = f"Interaction {interaction} is not a V4 interaction."
+    else:
+        msg = f"Unknown error setting test name for {interaction}."
+    raise RuntimeError(msg)
 
 
 def given_with_param(
@@ -4643,7 +4810,7 @@ def given_with_param(
     description: str,
     name: str,
     value: str,
-) -> bool:
+) -> None:
     """
     Adds a parameter key and value to a provider state to the Interaction.
 
@@ -4654,23 +4821,38 @@ def given_with_param(
     [Rust
     `pactffi_given_with_param`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_given_with_param)
 
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started).
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    # Parameters
+        description:
+            The provider state description.
 
-    * `description` - The provider state description. It needs to be unique.
-    * `name` - Parameter name.
-    * `value` - Parameter value as JSON.
+        name:
+            Parameter name.
+
+        value:
+            Parameter value as JSON.
+
+    Raises:
+        RuntimeError: If the interaction state could not be updated.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_given_with_param(
+        interaction._ref,
+        description.encode("utf-8"),
+        name.encode("utf-8"),
+        value.encode("utf-8"),
+    )
+    if not success:
+        msg = "The interaction state could not be updated."
+        raise RuntimeError(msg)
 
 
 def given_with_params(
     interaction: InteractionHandle,
     description: str,
     params: str,
-) -> int:
+) -> None:
     """
     Adds a provider state to the Interaction.
 
@@ -4680,10 +4862,18 @@ def given_with_params(
     [Rust
     `pactffi_given_with_params`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_given_with_params)
 
-    # Parameters
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    * `description` - The provider state description.
-    * `params` - Parameter values as a JSON fragment.
+        description:
+            The provider state description.
+
+        params:
+            Parameter values as a JSON fragment.
+
+    Raises:
+        RuntimeError: If the interaction state could not be updated.
 
     # Errors
 
@@ -4697,7 +4887,22 @@ def given_with_params(
     Returns 3 if any of the C strings are not valid.
 
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_given_with_params(
+        interaction._ref,
+        description.encode("utf-8"),
+        params.encode("utf-8"),
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = "The interaction state could not be updated."
+    elif ret == 2:  # noqa: PLR2004
+        msg = f"Internal error: {get_error_message()}"
+    elif ret == 3:  # noqa: PLR2004
+        msg = "Invalid C string."
+    else:
+        msg = "Unknown error."
+    raise RuntimeError(msg)
 
 
 def with_request(interaction: InteractionHandle, method: str, path: str) -> None:
@@ -5071,9 +5276,8 @@ def with_binary_file(
     interaction: InteractionHandle,
     part: InteractionPart,
     content_type: str,
-    body: List[int],
-    size: int,
-) -> bool:
+    body: bytes | None,
+) -> None:
     """
     Adds a binary file as the body with the expected content type and contents.
 
@@ -5084,41 +5288,53 @@ def with_binary_file(
     [Rust
     `pactffi_with_binary_file`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_binary_file)
 
-    * `interaction` - Interaction handle to set the body for.
-    * `part` - Request or response part.
-    * `content_type` - Expected content type.
-    * `body` - example body contents in bytes
-    * `size` - number of bytes in the body
-
     For HTTP and async message interactions, this will overwrite the body. With
     asynchronous messages, the part parameter will be ignored. With synchronous
     messages, the request contents will be overwritten, while a new response
     will be appended to the message.
 
-    # Safety
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    The content type must be a valid UTF-8 encoded NULL-terminated string. The
-    body pointer must be valid for reads of `size` bytes, and it must be
-    properly aligned and consecutive.
+        part:
+            The part of the interaction to add the body to (Request or
+            Response).
 
-    # Error Handling
+        content_type:
+            The content type of the body. Will be ignored if a content type
+            header is already set.
 
-    If the body is a NULL pointer, it will set the body contents as null. If the
-    content type is a null pointer, or can't be parsed, it will return false.
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started) or an error has occurred.
+        body:
+            The body contents. If `None`, the body will be set to null.
     """
-    raise NotImplementedError
+    if len(gc.get_referrers(body)) == 0:
+        warnings.warn(
+            "Make sure to assign the body to a variable to avoid having the byte array"
+            " modified.",
+            UserWarning,
+            stacklevel=3,
+        )
+    success: bool = lib.pactffi_with_binary_file(
+        interaction._ref,
+        part.value,
+        content_type.encode("utf-8"),
+        body if body else ffi.NULL,
+        len(body) if body else 0,
+    )
+    if not success:
+        msg = f"Unable to set body for {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_multipart_file_v2(  # noqa: PLR0913
     interaction: InteractionHandle,
     part: InteractionPart,
     content_type: str,
-    file: str,
+    file: Path | None,
     part_name: str,
-    boundary: str,
-) -> StringResult:
+    boundary: str | None,
+) -> None:
     """
     Adds a binary file as the body as a MIME multipart.
 
@@ -5129,34 +5345,41 @@ def with_multipart_file_v2(  # noqa: PLR0913
     [Rust
     `pactffi_with_multipart_file_v2`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_multipart_file_v2)
 
-    * `interaction` - Interaction handle to set the body for.
-    * `part` - Request or response part.
-    * `content_type` - Expected content type of the file.
-    * `file` - path to the example file
-    * `part_name` - name for the mime part
-    * `boundary` - boundary for the multipart separation
-
     This function can be called multiple times. In that case, each subsequent
     call will be appended to the existing multipart body as a new part.
 
-    # Safety
+    Args:
+        interaction:
+            Handle to the Interaction.
 
-    The content type, file path and part name must be valid pointers to UTF-8
-    encoded NULL-terminated strings. Passing invalid pointers or pointers to
-    strings that are not NULL terminated will lead to undefined behaviour.
+        part:
+            The part of the interaction to add the body to (Request or
+            Response).
 
-    # Error Handling
+        content_type:
+            The content type of the body.
 
-    If the boundary is a NULL pointer, a random string will be used. If the file
-    path is a NULL pointer, it will set the body contents as as an empty
-    mime-part. If the file path does not point to a valid file, or is not able
-    to be read, it will return an error result. If the content type is a null
-    pointer, or can't be parsed, it will return an error result. Returns an
-    error if the interaction or Pact can't be modified (i.e. the mock server for
-    it has already started), the interaction is not an HTTP interaction or some
-    other error occurs.
+        file:
+            Path to the file to add. If `None`, the body will be set to null.
+
+        part_name:
+            Name for the mime part.
+
+        boundary:
+            Boundary for the multipart separation. If `None`, a random string
+            will be used.
     """
-    raise NotImplementedError
+    result = StringResult(
+        lib.pactffi_with_multipart_file_v2(
+            interaction._ref,
+            part.value,
+            content_type.encode("utf-8"),
+            str(file).encode("utf-8") if file else ffi.NULL,
+            part_name.encode("utf-8"),
+            boundary.encode("utf-8") if boundary else ffi.NULL,
+        ),
+    )
+    result.raise_exception()
 
 
 def with_multipart_file(
@@ -5201,6 +5424,8 @@ def with_multipart_file(
     it has already started), the interaction is not an HTTP interaction or some
     other error occurs.
     """
+    # This function is intentionally left unimplemented. The
+    # `with_multipart_file_v2` function should be used instead.
     raise NotImplementedError
 
 
@@ -6216,7 +6441,7 @@ def interaction_contents(
     part: InteractionPart,
     content_type: str,
     contents: str,
-) -> int:
+) -> None:
     """
     Setup the interaction part using a plugin.
 
@@ -6227,32 +6452,43 @@ def interaction_contents(
     [Rust
     `pactffi_interaction_contents`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_interaction_contents)
 
-    Returns zero on success, and a positive integer value on failure.
+    Args:
+        interaction:
+            Handle to the interaction to configure.
 
-    * `interaction` - Handle to the interaction to configure.
-    * `part` - The part of the interaction to configure (request or response).
-      It is ignored for messages.
-    * `content_type` - NULL terminated C string of the content type of the part.
-    * `contents` - NULL terminated C string of the JSON contents that gets
-      passed to the plugin.
+        part:
+            The part of the interaction to configure (request or response). It
+            is ignored for messages.
 
-    # Safety
+        content_type:
+            Mime type of the contents.
 
-    `content_type` and `contents` must be a valid pointers to NULL terminated
-    strings. Invalid pointers will result in undefined behaviour.
-
-    # Errors
-
-    * `1` - A general panic was caught.
-    * `2` - The mock server has already been started.
-    * `3` - The interaction handle is invalid.
-    * `4` - The content type is not valid.
-    * `5` - The contents JSON is not valid JSON.
-    * `6` - The plugin returned an error.
-
-    When an error errors, LAST_ERROR will contain the error message.
+        contents:
+            JSON contents that gets passed to the plugin.
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_interaction_contents(
+        interaction._ref,
+        part.value,
+        content_type.encode("utf-8"),
+        contents.encode("utf-8"),
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"A general panic was caught: {get_error_message()}"
+    if ret == 2:  # noqa: PLR2004
+        msg = "The mock server has already been started."
+    if ret == 3:  # noqa: PLR2004
+        msg = f"The interaction handle {interaction} is invalid."
+    if ret == 4:  # noqa: PLR2004
+        msg = f"The content type {content_type} is not valid."
+    if ret == 5:  # noqa: PLR2004
+        msg = "The content is not valid JSON."
+    if ret == 6:  # noqa: PLR2004
+        msg = f"The plugin returned an error: {get_error_message()}"
+    else:
+        msg = f"There was an unknown error configuring the interaction: {ret}"
+    raise RuntimeError(msg)
 
 
 def matches_string_value(
