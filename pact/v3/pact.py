@@ -542,7 +542,15 @@ class Pact:
         """
         Information-rich string representation of the Pact.
         """
-        return f"Pact({self})"
+        return "<Pact: {}>".format(
+            ", ".join(
+                [
+                    f"consumer={self.consumer!r}",
+                    f"provider={self.provider!r}",
+                    f"handle={self._handle!r}",
+                ],
+            ),
+        )
 
     @property
     def consumer(self) -> str:
@@ -713,7 +721,17 @@ class PactServer:
         """
         Information-rich string representation of the Pact Server.
         """
-        return f"PactServer({self})"
+        return "<PactServer: {}>".format(
+            ", ".join(
+                [
+                    f"transport={self.transport!r}",
+                    f"host={self.host!r}",
+                    f"port={self.port!r}",
+                    f"handle={self._handle!r}",
+                    f"pact={self._pact_handle!r}",
+                ],
+            ),
+        )
 
     def __enter__(self) -> Self:
         """
