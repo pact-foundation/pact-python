@@ -27,14 +27,20 @@ classifiers = [
 ]
 
 requires-python = ">=3.8,<4.0"
+
+# Dependencies of Pact Python should be specified using the broadest range
+# compatible version unless:
+#
+# - A specific feature is required in a new minor release
+# - A minor version address vulnerability which directly impacts Pact Python
 dependencies = [
-  "click      ~= 8.1",
-  "fastapi    ~= 0.103",
-  "psutil     ~= 5.9",
-  "requests   ~= 2.31",
-  "six        ~= 1.16",
-  "typing-extensions ~= 4.8 ; python_version < '3.10'",
-  "uvicorn    ~= 0.13",
+  "click             ~= 8.0",
+  "fastapi           ~= 0.0",
+  "psutil            ~= 5.0",
+  "requests          ~= 2.0",
+  "six               ~= 1.0",
+  "typing-extensions ~= 4.0 ; python_version < '3.10'",
+  "uvicorn           ~= 0.0",
 ]
 
 [project.urls]
@@ -48,28 +54,30 @@ dependencies = [
 pact-verifier = "pact.cli.verify:main"
 
 [project.optional-dependencies]
+# Linting and formatting tools use a more narrow specification to ensure
+# developper consistency. All other dependencies are as above.
 types = [
-  "mypy ~= 1.1",
-  "types-cffi     ~= 1.15",
-  "types-requests ~= 2.31",
+  "mypy           ~= 1.6.0",
+  "types-cffi     ~= 1.0",
+  "types-requests ~= 2.0",
 ]
 test = [
-  "aiohttp[speedups] ~= 3.8",
-  "coverage[toml]    ~= 7.3",
-  "flask[async]      ~= 2.3",
-  "httpx             ~= 0.24",
-  "mock              ~= 5.1",
-  "pytest            ~= 7.4",
-  "pytest-asyncio    ~= 0.21",
-  "pytest-cov        ~= 4.1",
-  "testcontainers    ~= 3.7",
-  "yarl              ~= 1.9",
+  "aiohttp[speedups] ~= 3.0",
+  "coverage[toml]    ~= 7.0",
+  "flask[async]      ~= 3.0",
+  "httpx             ~= 0.0",
+  "mock              ~= 5.0",
+  "pytest            ~= 7.0",
+  "pytest-asyncio    ~= 0.0",
+  "pytest-cov        ~= 4.0",
+  "testcontainers    ~= 3.0",
+  "yarl              ~= 1.0",
 ]
 dev = [
   "pact-python[types]",
   "pact-python[test]",
-  "black          ~= 23.7",
-  "ruff           ~= 0.0",
+  "black          ~= 23.10.0",
+  "ruff           ~= 0.1.0",
 ]
 
 ################################################################################
