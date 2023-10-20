@@ -1,0 +1,30 @@
+name: Labels
+
+on:
+  # For downstream repos, we want to run this on a schedule
+  # so that updates propagate automatically. Weekly is probably
+  # enough.
+  schedule:
+    - cron: "20 0 * * 0"
+  push:
+    branches:
+      - master
+    paths:
+      - .github/labels.yml
+
+jobs:
+  sync-labels:
+    name: Synchronise labels
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Synchronize labels
+        uses: EndBug/label-sync@v2
+        with:
+          config-file: |
+            https://raw.githubusercontent.com/pact-foundation/.github/master/.github/labels.yml
+            .github/labels.yml
