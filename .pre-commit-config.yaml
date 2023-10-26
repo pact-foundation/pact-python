@@ -61,3 +61,15 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      # Mypy is difficult to run pre-commit's isolated environment as it needs
+      # to be able to find dependencies.
+      - id: mypy
+        name: mypy
+        entry: hatch run mypy
+        language: system
+        types: [python]
+        exclude: ^(pact|tests)/(?!v3/).*\.py$
+        stages: [pre-push]
