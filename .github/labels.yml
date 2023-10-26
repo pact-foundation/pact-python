@@ -5,8 +5,6 @@
 - name: area:v2
   description: Relating to v2 code
   color: "C2E0C6"
-  aliases:
-    - documentation
 
 - name: area:examples
   description: Relating to the examples
