@@ -51,3 +51,19 @@ def test_get_error_message() -> None:
     ret: int = ffi.lib.pactffi_validate_datetime(invalid_utf8, invalid_utf8)
     assert ret == 2
     assert ffi.get_error_message() == "error parsing value as UTF-8"
+
+
+def test_owned_string() -> None:
+    string = ffi.get_tls_ca_certificate()
+    assert isinstance(string, str)
+    assert len(string) > 0
+    assert str(string) == string
+    assert repr(string).startswith("<OwnedString: ")
+    assert repr(string).endswith(">")
+    assert string.startswith("-----BEGIN CERTIFICATE-----")
+    assert string.endswith(
+        (
+            "-----END CERTIFICATE-----\n",
+            "-----END CERTIFICATE-----\r\n",
+        )
+    )
