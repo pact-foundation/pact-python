@@ -260,6 +260,7 @@ class PactHandle:
         """
         Destructor for the Pact Handle.
         """
+        cleanup_plugins(self)
         free_pact_handle(self)
 
     def __str__(self) -> str:
@@ -329,19 +330,207 @@ class PactInteraction:
 
 
 class PactInteractionIterator:
-    ...
+    """
+    Iterator over a Pact's interactions.
+
+    Interactions encompasses all types of interactions, including HTTP
+    interactions and messages.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Interaction Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactInteractionIterator *":
+            msg = (
+                "ptr must be a struct PactInteractionIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactInteractionIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactInteractionIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Interaction Iterator.
+        """
+        pact_interaction_iter_delete(self)
+
+    def __next__(self) -> PactInteraction:
+        """
+        Get the next interaction from the iterator.
+        """
+        raise NotImplementedError
 
 
 class PactMessageIterator:
-    ...
+    """
+    Iterator over a Pact's asynchronous messages.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Message Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactMessageIterator *":
+            msg = (
+                f"ptr must be a struct PactMessageIterator, got {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactMessageIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactMessageIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Message Iterator.
+        """
+        pact_message_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> Message:
+        """
+        Get the next message from the iterator.
+        """
+        raise NotImplementedError
 
 
 class PactSyncHttpIterator:
-    ...
+    """
+    Iterator over a Pact's synchronous HTTP interactions.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Synchronous HTTP Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactSyncHttpIterator *":
+            msg = (
+                "ptr must be a struct PactSyncHttpIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactSyncHttpIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactSyncHttpIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Synchronous HTTP Iterator.
+        """
+        pact_sync_http_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> SynchronousHttp:
+        """
+        Get the next message from the iterator.
+        """
+        raise NotImplementedError
 
 
 class PactSyncMessageIterator:
-    ...
+    """
+    Iterator over a Pact's synchronous messages.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Synchronous Message Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactSyncMessageIterator *":
+            msg = (
+                "ptr must be a struct PactSyncMessageIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactSyncMessageIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactSyncMessageIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Synchronous Message Iterator.
+        """
+        pact_sync_message_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> SynchronousMessage:
+        """
+        Get the next message from the iterator.
+        """
+        raise NotImplementedError
 
 
 class Provider:
@@ -2798,7 +2987,7 @@ def pact_message_iter_delete(iter: PactMessageIterator) -> None:
     [Rust
     `pactffi_pact_message_iter_delete`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_message_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_message_iter_delete(iter._ptr)
 
 
 def pact_message_iter_next(iter: PactMessageIterator) -> Message:
@@ -2862,7 +3051,7 @@ def pact_sync_message_iter_delete(iter: PactSyncMessageIterator) -> None:
     [Rust
     `pactffi_pact_sync_message_iter_delete`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_sync_message_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_sync_message_iter_delete(iter._ptr)
 
 
 def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
@@ -2900,7 +3089,7 @@ def pact_sync_http_iter_delete(iter: PactSyncHttpIterator) -> None:
     [Rust
     `pactffi_pact_sync_http_iter_delete`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_sync_http_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_sync_http_iter_delete(iter._ptr)
 
 
 def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction:
@@ -2938,7 +3127,7 @@ def pact_interaction_iter_delete(iter: PactInteractionIterator) -> None:
     [Rust
     `pactffi_pact_interaction_iter_delete`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_interaction_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_interaction_iter_delete(iter._ptr)
 
 
 def matching_rule_to_json(rule: MatchingRule) -> str:
@@ -5095,28 +5284,32 @@ def with_query_parameter_v2(
         raise RuntimeError(msg)
 
 
-def with_specification(pact: PactHandle, version: PactSpecification) -> bool:
+def with_specification(pact: PactHandle, version: PactSpecification) -> None:
     """
     Sets the specification version for a given Pact model.
-
-    Returns false if the interaction or Pact can't be modified (i.e. the mock
-    server for it has already started) or the version is invalid.
 
     [Rust
     `pactffi_with_specification`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_specification)
 
-    * `pact` - Handle to a Pact model
-    * `version` - the spec version to use
+    Args:
+        pact:
+            Handle to a Pact model.
+
+        version:
+            The spec version to use.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_with_specification(pact._ref, version.value)
+    if not success:
+        msg = f"Failed to set Pact specification for {pact}"
+        raise RuntimeError(msg)
 
 
 def with_pact_metadata(
     pact: PactHandle,
-    namespace_: str,
+    namespace: str,
     name: str,
     value: str,
-) -> bool:
+) -> None:
     """
     Sets the additional metadata on the Pact file.
 
@@ -5127,12 +5320,28 @@ def with_pact_metadata(
     [Rust
     `pactffi_with_pact_metadata`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_with_pact_metadata)
 
-    * `pact` - Handle to a Pact model
-    * `namespace` - the top level metadat key to set any key values on
-    * `name` - the key to set
-    * `value` - the value to set
+    Args:
+        pact:
+            Handle to a Pact model
+
+        namespace:
+            The top level metadat key to set any key values on
+
+        name:
+            The key to set
+
+        value:
+            The value to set
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_with_pact_metadata(
+        pact._ref,
+        namespace.encode("utf-8"),
+        name.encode("utf-8"),
+        value.encode("utf-8"),
+    )
+    if not success:
+        msg = f"Failed to set Pact metadata for {pact} with {namespace}.{name}={value}"
+        raise RuntimeError(msg)
 
 
 def with_header_v2(
@@ -5499,9 +5708,6 @@ def pact_handle_get_message_iter(pact: PactHandle) -> PactMessageIterator:
     r"""
     Get an iterator over all the messages of the Pact.
 
-    The returned iterator needs to be freed with
-    `pactffi_pact_message_iter_delete`.
-
     [Rust
     `pactffi_pact_handle_get_message_iter`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_handle_get_message_iter)
 
@@ -5516,7 +5722,7 @@ def pact_handle_get_message_iter(pact: PactHandle) -> PactMessageIterator:
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return PactMessageIterator(lib.pactffi_pact_handle_get_message_iter(pact._ref))
 
 
 def pact_handle_get_sync_message_iter(pact: PactHandle) -> PactSyncMessageIterator:
@@ -5540,7 +5746,9 @@ def pact_handle_get_sync_message_iter(pact: PactHandle) -> PactSyncMessageIterat
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return PactSyncMessageIterator(
+        lib.pactffi_pact_handle_get_sync_message_iter(pact._ref)
+    )
 
 
 def pact_handle_get_sync_http_iter(pact: PactHandle) -> PactSyncHttpIterator:
@@ -5564,7 +5772,7 @@ def pact_handle_get_sync_http_iter(pact: PactHandle) -> PactSyncHttpIterator:
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return PactSyncHttpIterator(lib.pactffi_pact_handle_get_sync_http_iter(pact._ref))
 
 
 def new_message_pact(consumer_name: str, provider_name: str) -> MessagePactHandle:
@@ -5760,54 +5968,46 @@ def with_message_pact_metadata(
     raise NotImplementedError
 
 
-def pact_handle_write_file(pact: PactHandle, directory: str, *, overwrite: bool) -> int:
+def pact_handle_write_file(
+    pact: PactHandle,
+    directory: Path | str | None,
+    *,
+    overwrite: bool,
+) -> None:
     """
     External interface to write out the pact file.
-
-    This function should be called if all the consumer tests have passed. The
-    directory to write the file to is passed as the second parameter. If a NULL
-    pointer is passed, the current working directory is used.
 
     [Rust
     `pactffi_pact_handle_write_file`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_handle_write_file)
 
-    If overwrite is true, the file will be overwritten with the contents of the
-    current pact. Otherwise, it will be merged with any existing pact file.
+    This function should be called if all the consumer tests have passed.
 
-    Returns 0 if the pact file was successfully written. Returns a positive code
-    if the file can not be written or the function panics.
+    Args:
+        directory:
+            The directory to write the file to. If `None`, the current working
+            directory is used.
 
-    # Safety
-
-    The directory parameter must either be NULL or point to a valid NULL
-    terminated string.
-
-    # Errors
-
-    Errors are returned as positive values.
-
-    | Error | Description |
-    |-------|-------------|
-    | 1 | The function panicked. |
-    | 2 | The pact file was not able to be written. |
-    | 3 | The pact for the given handle was not found. |
+        overwrite:
+            If `True`, the file will be overwritten with the contents of the
+            current pact. Otherwise, it will be merged with any existing pact
+            file.
     """
-    raise NotImplementedError
-
-
-def new_async_message(pact: PactHandle, description: str) -> MessageHandle:
-    """
-    Creates a new V4 asynchronous message and returns a handle to it.
-
-    [Rust
-    `pactffi_new_async_message`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_new_async_message)
-
-    * `description` - The message description. It needs to be unique for each
-      Message.
-
-    Returns a new `MessageHandle`.
-    """
-    raise NotImplementedError
+    ret: int = lib.pactffi_pact_handle_write_file(
+        pact._ref,
+        str(directory).encode("utf-8") if directory else ffi.NULL,
+        overwrite,
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"The function panicked while writing {pact} to {directory}."
+    elif ret == 2:
+        msg = f"The pact file was not able to be written for {pact}."
+    elif ret == 3:
+        msg = f"The pact for {pact} was not found."
+    else:
+        msg = f"Unknown error writing {pact} to {directory}."
+    raise RuntimeError(msg)
 
 
 def free_pact_handle(pact: PactHandle) -> None:
@@ -6452,41 +6652,47 @@ def verifier_json(handle: VerifierHandle) -> OwnedString:
     raise NotImplementedError
 
 
-def using_plugin(pact: PactHandle, plugin_name: str, plugin_version: str) -> int:
+def using_plugin(
+    pact: PactHandle,
+    plugin_name: str,
+    plugin_version: str | None,
+) -> None:
     """
     Add a plugin to be used by the test.
 
     The plugin needs to be installed correctly for this function to work.
 
+    Note that plugins run as separate processes, so will need to be cleaned up
+    afterwards by calling [`cleanup_plugins`][pact.v3.ffi.cleanup_plugins]
+    otherwise you will have plugin processes left running.
+
     [Rust
     `pactffi_using_plugin`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_using_plugin)
 
-    * `plugin_name` is the name of the plugin to load.
-    * `plugin_version` is the version of the plugin to load. It is optional, and
-      can be NULL.
+    Args:
+        plugin_name:
+            Name of the plugin to use.
 
-    Returns zero on success, and a positive integer value on failure.
-
-    Note that plugins run as separate processes, so will need to be cleaned up
-    afterwards by calling `pactffi_cleanup_plugins` otherwise you will have
-    plugin processes left running.
-
-    # Safety
-
-    `plugin_name` must be a valid pointer to a NULL terminated string.
-    `plugin_version` may be null, and if not NULL must also be a valid pointer
-    to a NULL terminated string. Invalid pointers will result in undefined
-    behaviour.
-
-    # Errors
-
-    * `1` - A general panic was caught.
-    * `2` - Failed to load the plugin.
-    * `3` - Pact Handle is not valid.
-
-    When an error errors, LAST_ERROR will contain the error message.
+        plugin_version:
+            Version of the plugin to use. If `None`, the latest version will be
+            used.
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_using_plugin(
+        pact._ref,
+        plugin_name.encode("utf-8"),
+        plugin_version.encode("utf-8") if plugin_version is not None else ffi.NULL,
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"A general panic was caught: {get_error_message()}"
+    elif ret == 2:
+        msg = f"Failed to load the plugin {plugin_name}."
+    elif ret == 3:
+        msg = f"The Pact handle {pact} is invalid."
+    else:
+        msg = f"There was an unknown error loading the plugin {plugin_name}."
+    raise RuntimeError(msg)
 
 
 def cleanup_plugins(pact: PactHandle) -> None:
@@ -6499,7 +6705,7 @@ def cleanup_plugins(pact: PactHandle) -> None:
     [Rust
     `pactffi_cleanup_plugins`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_cleanup_plugins)
     """
-    raise NotImplementedError
+    lib.pactffi_cleanup_plugins(pact._ref)
 
 
 def interaction_contents(

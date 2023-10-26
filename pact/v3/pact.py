@@ -956,18 +956,77 @@ class Pact:
         """
         return self._provider
 
-    @overload
-    def upon_receiving(
+    def with_specification(
         self,
-        description: str,
-    ) -> HttpInteraction:
-        ...
+        version: str | pact.v3.ffi.PactSpecification,
+    ) -> Self:
+        """
+        Set the Pact specification version.
+
+        The Pact specification version indicates the features which are
+        supported by the Pact, and certain default behaviours.
+
+        Args:
+            version:
+                Pact specification version. The can be either a string or a
+                [`PactSpecification`][pact.v3.ffi.PactSpecification] instance.
+
+                The version string is case insensitive and has an optional `v`
+                prefix.
+        """
+        if isinstance(version, str):
+            version = version.upper().replace(".", "_")
+            if version.startswith("V"):
+                version = pact.v3.ffi.PactSpecification[version]
+            else:
+                version = pact.v3.ffi.PactSpecification["V" + version]
+        pact.v3.ffi.with_specification(self._handle, version)
+        return self
+
+    def using_plugin(self, name: str, version: str | None = None) -> Self:
+        """
+        Add a plugin to be used by the test.
+
+        Plugins extend the functionality of Pact.
+
+        Args:
+            name:
+                Name of the plugin.
+
+            version:
+                Version of the plugin. This is optional and can be `None`.
+        """
+        pact.v3.ffi.using_plugin(self._handle, name, version)
+        return self
+
+    def with_metadata(
+        self,
+        namespace: str,
+        metadata: dict[str, str],
+    ) -> Self:
+        """
+        Set additional metadata for the Pact.
+
+        A common use for this function is to add information about the client
+        library (name, version, hash, etc.) to the Pact.
+
+        Args:
+            namespace:
+                Namespace for the metadata. This is used to group the metadata
+                together.
+
+            metadata:
+                Key-value pairs of metadata to add to the Pact.
+        """
+        for k, v in metadata.items():
+            pact.v3.ffi.with_pact_metadata(self._handle, namespace, k, v)
+        return self
 
     @overload
     def upon_receiving(
         self,
         description: str,
-        interaction: Literal["HTTP"],
+        interaction: Literal["HTTP"] = ...,
     ) -> HttpInteraction:
         ...
 
@@ -1056,6 +1115,99 @@ class Pact:
             port,
             transport,
             transport_config,
+        )
+
+    def messages(self) -> pact.v3.ffi.PactMessageIterator:
+        """
+        Iterate over the messages in the Pact.
+
+        This function returns an iterator over the messages in the Pact. This
+        is useful for validating the Pact against the provider.
+
+        ```python
+        pact = Pact("consumer", "provider")
+        with pact.serve() as srv:
+            for message in pact.messages():
+                # Validate the message against the provider.
+                ...
+        ```
+
+        Note that the Pact must be written to a file before the messages can be
+        iterated over. This is because the messages are not stored in memory,
+        but rather are streamed directly from the file.
+        """
+        return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
+
+    @overload
+    def interactions(self, type: Literal["HTTP"]) -> pact.v3.ffi.PactSyncHttpIterator:
+        ...
+
+    @overload
+    def interactions(
+        self, type: Literal["Sync"]
+    ) -> pact.v3.ffi.PactSyncMessageIterator:
+        ...
+
+    @overload
+    def interactions(self, type: Literal["Async"]) -> pact.v3.ffi.PactMessageIterator:
+        ...
+
+    def interactions(
+        self, type: str = "HTTP"
+    ) -> (
+        pact.v3.ffi.PactSyncHttpIterator
+        | pact.v3.ffi.PactSyncMessageIterator
+        | pact.v3.ffi.PactMessageIterator
+    ):
+        """
+        Return an iterator over the Pact's interactions.
+
+        The type is used to specify the kind of interactions that will be
+        iterated over. If `"All"` is specified (the default), then all
+        interactions will be iterated over.
+        """
+        # TODO: The FFI does not have a way to iterate over all interactions, unless
+        # you have a pointer to the pact. See
+        # pact-foundation/pact-reference#333.
+        # if type == "All":
+        #     return pact.v3.ffi.pact_model_interaction_iterator(self._handle)
+        if type == "HTTP":
+            return pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
+        if type == "Sync":
+            return pact.v3.ffi.pact_handle_get_sync_message_iter(self._handle)
+        if type == "Async":
+            return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
+        msg = f"Unknown interaction type: {type}"
+        raise ValueError(msg)
+
+    def write_file(
+        self,
+        directory: Path | str = Path.cwd(),
+        *,
+        overwrite: bool = False,
+    ):
+        """
+        Write out the pact to a file.
+
+        This function should be called once all of the consumer tests have been
+        run. It writes the Pact to a file, which can then be used to validate
+        the provider.
+
+        Args:
+            directory:
+                The directory to write the pact to. If the directory does not
+                exist, it will be created. The filename will be
+                automatically generated from the underlying Pact.
+
+            overwrite:
+                If set to True, the file will be overwritten if it already
+                exists. Otherwise, the contents of the file will be merged with
+                the existing file.
+        """
+        pact.v3.ffi.pact_handle_write_file(
+            self._handle,
+            directory,
+            overwrite=overwrite,
         )
 
 
