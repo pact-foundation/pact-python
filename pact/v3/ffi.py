@@ -82,6 +82,7 @@ docstring.
 from __future__ import annotations
 
 import gc
+import typing
 import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, List
@@ -89,6 +90,7 @@ from typing import TYPE_CHECKING, List
 from ._ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
+    import cffi
     from pathlib import Path
 
 # The follow types are classes defined in the Rust code. Ultimately, a Python
@@ -530,35 +532,27 @@ class PactSpecification(Enum):
         return f"PactSpecification.{self.name}"
 
 
-class _StringResult(Enum):
-    """
-    String Result.
-
-    [Rust `StringResult`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/mock_server/enum.StringResult.html)
-    """
-
-    FAILED = lib.StringResult_Failed
-    OK = lib.StringResult_Ok
-
-    def __str__(self) -> str:
-        """
-        Informal string representation of the String Result.
-        """
-        return self.name
-
-    def __repr__(self) -> str:
-        """
-        Information-rich string representation of the String Result.
-        """
-        return f"_StringResultEnum.{self.name}"
-
-
 class StringResult:
     """
     String result.
     """
 
-    def __init__(self, cdata: ffi.CData) -> None:
+    class _StringResult(Enum):
+        """
+        Internal enum from Pact FFI.
+
+        [Rust `StringResult`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/mock_server/enum.StringResult.html)
+        """
+
+        FAILED = lib.StringResult_Failed
+        OK = lib.StringResult_Ok
+
+    class _StringResultCData:
+        tag: int
+        ok: cffi.FFI.CData
+        failed: cffi.FFI.CData
+
+    def __init__(self, cdata: cffi.FFI.CData) -> None:
         """
         Initialise a new String Result.
 
@@ -569,7 +563,7 @@ class StringResult:
         if ffi.typeof(cdata).cname != "struct StringResult":
             msg = f"cdata must be a struct StringResult, got {ffi.typeof(cdata).cname}"
             raise TypeError(msg)
-        self._cdata: ffi.CData = cdata
+        self._cdata = typing.cast(StringResult._StringResultCData, cdata)
 
     def __str__(self) -> str:
         """
@@ -588,14 +582,14 @@ class StringResult:
         """
         Whether the result is an error.
         """
-        return self._cdata.tag == _StringResult.FAILED.value
+        return self._cdata.tag == StringResult._StringResult.FAILED.value
 
     @property
     def is_ok(self) -> bool:
         """
         Whether the result is ok.
         """
-        return self._cdata.tag == _StringResult.OK.value
+        return self._cdata.tag == StringResult._StringResult.OK.value
 
     @property
     def text(self) -> str:
@@ -603,7 +597,10 @@ class StringResult:
         The text of the result.
         """
         # The specific `.ok` or `.failed` does not matter.
-        return ffi.string(self._cdata.ok).decode("utf-8")
+        s = ffi.string(self._cdata.ok)
+        if isinstance(s, bytes):
+            return s.decode("utf-8")
+        return s
 
     def raise_exception(self) -> None:
         """
@@ -625,7 +622,10 @@ def version() -> str:
     Returns:
         The version of the pact_ffi library as a string, in the form of `x.y.z`.
     """
-    return ffi.string(lib.pactffi_version()).decode("utf-8")
+    v = ffi.string(lib.pactffi_version())
+    if isinstance(v, bytes):
+        return v.decode("utf-8")
+    return v
 
 
 def init(log_env_var: str) -> None:
@@ -845,7 +845,9 @@ def get_error_message(length: int = 1024) -> str | None:
     if ret >= 0:
         # While the documentation says that the return value is the number of bytes
         # written, the actually return value is always 0 on success.
-        if msg := ffi.string(buffer).decode("utf-8"):
+        if msg := ffi.string(buffer):
+            if isinstance(msg, bytes):
+                return msg.decode("utf-8")
             return msg
         return None
     if ret == -1:
