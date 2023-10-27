@@ -57,7 +57,7 @@ pact-verifier = "pact.cli.verify:main"
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
 types = [
-  "mypy           ~= 1.6.0",
+  "mypy           == 1.6.0",
   "types-cffi     ~= 1.0",
   "types-requests ~= 2.0",
 ]
@@ -76,8 +76,8 @@ test = [
 dev = [
   "pact-python[types]",
   "pact-python[test]",
-  "black          ~= 23.10.0",
-  "ruff           ~= 0.1.0",
+  "black          == 23.10.1",
+  "ruff           == 0.1.3",
 ]
 
 ################################################################################
