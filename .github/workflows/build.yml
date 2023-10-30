@@ -17,11 +17,6 @@ concurrency:
 env:
   STABLE_PYTHON_VERSION: "3.11"
   CIBW_BUILD_FRONTEND: build
-  CIBW_TEST_COMMAND: >
-    python -c
-    "from pact import EachLike;
-    assert EachLike(1).generate() == {'json_class': 'Pact::ArrayLike', 'contents': 1, 'min': 1}
-    "
 
 jobs:
   build-x86_64:

@@ -34,6 +34,7 @@ requires-python = ">=3.8, <3.12"
 # - A specific feature is required in a new minor release
 # - A minor version address vulnerability which directly impacts Pact Python
 dependencies = [
+  "cffi              ~= 1.0",
   "click             ~= 8.0",
   "fastapi           ~= 0.0",
   "psutil            ~= 5.0",
@@ -92,12 +93,12 @@ build-backend = "hatchling.build"
 path = "pact/__version__.py"
 
 [tool.hatch.build]
-include   = ["pact/**/*.py", "*.md", "LICENSE"]
+include = ["**/py.typed", "**/*.md", "LICENSE", "pact/**/*.py", "pact/**/*.pyi"]
 
 [tool.hatch.build.targets.wheel]
 # Ignore the data files in the wheel as their contents are already included
 # in the package.
-artifacts = ["pact/bin/*", "pact/lib/*"]
+artifacts = ["pact/bin/*", "pact/lib/*", "pact/v3/_ffi.*"]
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 
@@ -155,9 +156,9 @@ filterwarnings = [
 [tool.coverage.report]
 exclude_lines = [
   "if __name__ == .__main__.:", # Ignore non-runnable code
-  "if TYPE_CHECKING:", # Ignore typing
-  "raise NotImplementedError", # Ignore defensive assertions
-  "@(abc\\.)?abstractmethod", # Ignore abstract methods
+  "if TYPE_CHECKING:",          # Ignore typing
+  "raise NotImplementedError",  # Ignore defensive assertions
+  "@(abc\\.)?abstractmethod",   # Ignore abstract methods
 ]
 
 ################################################################################
@@ -176,10 +177,7 @@ ignore = [
   "ANN102", # `cls` must be typed
 ]
 
-extend-exclude = [
-  "tests/*.py",
-  "pact/*.py",
-]
+extend-exclude = ["tests/*.py", "pact/*.py"]
 
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true
@@ -201,3 +199,25 @@ extend-exclude = '^/(pact|tests)/(?!v3).+\.py$'
 
 [tool.mypy]
 exclude = '^(pact|tests)/(?!v3).+\.py$'
+
+################################################################################
+## CI Build Wheel
+################################################################################
+[tool.cibuildwheel]
+test-command = """
+python -c \
+"from pact import EachLike; \
+assert \
+  EachLike(1).generate() \
+  == {'json_class': 'Pact::ArrayLike', 'contents': 1, 'min': 1}; \
+import pact.v3.ffi; \
+assert isinstance(pact.v3.ffi.version(), str);\""""
+
+[tool.cibuildwheel.macos]
+# The repair tool unfortunately did not like the bundled Ruby distributable.
+# TODO: Check whether delocate-wheel can be configured.
+repair-wheel-command = ""
+
+[tool.cibuildwheel.windows]
+# Skipping pypy, see giampaolo/psutil#2325
+skip = "pp*"
