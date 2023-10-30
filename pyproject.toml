@@ -88,7 +88,7 @@ include = ["**/py.typed", "**/*.md", "LICENSE", "pact/**/*.py", "pact/**/*.pyi"]
 [tool.hatch.build.targets.wheel]
 # Ignore the data files in the wheel as their contents are already included
 # in the package.
-artifacts = ["pact/bin/*", "pact/lib/*"]
+artifacts = ["pact/bin/*", "pact/lib/*", "pact/v3/_ffi.*"]
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 
@@ -134,9 +134,10 @@ addopts = ["--import-mode=importlib"]
 
 [tool.coverage.report]
 exclude_lines = [
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-  "pragma: no cover",
+  "if __name__ == .__main__.:", # Ignore non-runnable code
+  "if TYPE_CHECKING:",          # Ignore typing
+  "raise NotImplementedError",  # Ignore defensive assertions
+  "@(abc\\.)?abstractmethod",   # Ignore abstract methods
 ]
 
 ################################################################################
@@ -154,8 +155,49 @@ ignore = [
   "ANN102", # `cls` must be typed
 ]
 
+extend-exclude = ["tests/*.py", "pact/*.py"]
+
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true
 
 [tool.ruff.pydocstyle]
 convention = "google"
+
+################################################################################
+## Black Configuration
+################################################################################
+
+[tool.black]
+target-version = ["py38"]
+extend-exclude = '^/(pact|tests)/(?!v3).+\.py$'
+
+################################################################################
+## Mypy Configuration
+################################################################################
+
+[tool.mypy]
+exclude = '^(pact|tests)/(?!v3).+\.py$'
+
+################################################################################
+## CI Build Wheel
+################################################################################
+[tool.cibuildwheel]
+test-command = """
+python -c \
+"from pact import EachLike; \
+assert \
+  EachLike(1).generate() \
+  == {'json_class': 'Pact::ArrayLike', 'contents': 1, 'min': 1};\""""
+
+[tool.cibuildwheel.macos]
+# The repair tool unfortunately did not like the bundled Ruby distributable.
+# TODO: Check whether delocate-wheel can be configured.
+repair-wheel-command = ""
+
+[tool.cibuildwheel.linux]
+# Pact binaries aren't compatible with musllinux
+skip = "*musllinux*"
+
+[tool.cibuildwheel.windows]
+# Skipping pypy, see giampaolo/psutil#2325
+skip = "pp*"

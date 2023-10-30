@@ -19,11 +19,6 @@ concurrency:
 env:
   STABLE_PYTHON_VERSION: "3.11"
   CIBW_BUILD_FRONTEND: build
-  CIBW_TEST_COMMAND: >
-    python -c
-    "from pact import EachLike;
-    assert EachLike(1).generate() == {'json_class': 'Pact::ArrayLike', 'contents': 1, 'min': 1}
-    "
 
 jobs:
   build-x86_64:
@@ -99,10 +94,8 @@ jobs:
         include:
           - os: ubuntu-latest
             archs: aarch64
-            build: "*manylinux*"
           - os: macos-latest
             archs: arm64
-            build: "*"
 
     steps:
       - uses: actions/checkout@v4
@@ -120,7 +113,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.15.0
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
-          CIBW_BUILD: ${{ matrix.build }}
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -154,9 +146,12 @@ jobs:
 
   publish:
     name: Publish wheels
+
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    needs: [check]
     runs-on: ubuntu-latest
+    environment: Upload Python Package
+
+    needs: [check]
 
     steps:
       - uses: actions/download-artifact@v3
