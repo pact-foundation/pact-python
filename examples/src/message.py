@@ -61,10 +61,11 @@ class Handler:
 
         if event["action"] == "WRITE":
             self.fs.write(event["path"], event.get("contents", ""))
+            return None
         if event["action"] == "READ":
             return self.fs.read(event["path"])
 
-        msg = "Invalid action."
+        msg = f"Invalid action: {event['action']!r}"
         raise ValueError(msg)
 
     @staticmethod
