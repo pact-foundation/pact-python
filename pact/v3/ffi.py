@@ -375,7 +375,7 @@ class PactInteractionIterator:
         """
         Get the next interaction from the iterator.
         """
-        raise NotImplementedError
+        return pact_interaction_iter_next(self)
 
 
 class PactMessageIterator:
@@ -426,7 +426,7 @@ class PactMessageIterator:
         """
         Get the next message from the iterator.
         """
-        raise NotImplementedError
+        return pact_message_iter_next(self)
 
 
 class PactSyncHttpIterator:
@@ -478,7 +478,7 @@ class PactSyncHttpIterator:
         """
         Get the next message from the iterator.
         """
-        raise NotImplementedError
+        return pact_sync_http_iter_next(self)
 
 
 class PactSyncMessageIterator:
@@ -530,7 +530,7 @@ class PactSyncMessageIterator:
         """
         Get the next message from the iterator.
         """
-        raise NotImplementedError
+        return pact_sync_message_iter_next(self)
 
 
 class Provider:
@@ -2994,54 +2994,28 @@ def pact_message_iter_next(iter: PactMessageIterator) -> Message:
     """
     Get the next message from the message pact.
 
-    As the messages returned are owned by the iterator, they do not need to be
-    deleted but will be cleaned up when the iterator is deleted.
-
     [Rust
     `pactffi_pact_message_iter_next`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_message_iter_next)
-
-    Will return a NULL pointer when the iterator has advanced past the end of
-    the list.
-
-    # Safety
-
-    This function is safe.
-
-    Deleting a message returned by the iterator can lead to undefined behaviour.
-
-    # Error Handling
-
-    This function will return a NULL pointer if passed a NULL pointer or if an
-    error occurs.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_message_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    raise NotImplementedError()
+    return Message(ptr)
 
 
 def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMessage:
     """
     Get the next synchronous request/response message from the V4 pact.
 
-    As the messages returned are owned by the iterator, they do not need to be
-    deleted but will be cleaned up when the iterator is deleted.
-
     [Rust
     `pactffi_pact_sync_message_iter_next`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_sync_message_iter_next)
-
-    Will return a NULL pointer when the iterator has advanced past the end of
-    the list.
-
-    # Safety
-
-    This function is safe.
-
-    Deleting a message returned by the iterator can lead to undefined behaviour.
-
-    # Error Handling
-
-    This function will return a NULL pointer if passed a NULL pointer or if an
-    error occurs.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_sync_message_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    raise NotImplementedError()
+    return SynchronousMessage(ptr)
 
 
 def pact_sync_message_iter_delete(iter: PactSyncMessageIterator) -> None:
@@ -3058,28 +3032,14 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
     """
     Get the next synchronous HTTP request/response interaction from the V4 pact.
 
-    As the interactions returned are owned by the iterator, they do not need to
-    be deleted but will be cleaned up when the iterator is deleted.
-
     [Rust
     `pactffi_pact_sync_http_iter_next`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_sync_http_iter_next)
-
-    Will return a NULL pointer when the iterator has advanced past the end of
-    the list.
-
-    # Safety
-
-    This function is safe.
-
-    Deleting an interaction returned by the iterator can lead to undefined
-    behaviour.
-
-    # Error Handling
-
-    This function will return a NULL pointer if passed a NULL pointer or if an
-    error occurs.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_sync_http_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    raise NotImplementedError()
+    return SynchronousHttp(ptr)
 
 
 def pact_sync_http_iter_delete(iter: PactSyncHttpIterator) -> None:
@@ -3096,28 +3056,14 @@ def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction
     """
     Get the next interaction from the pact.
 
-    As the interactions returned are owned by the iterator, they do not need to
-    be deleted but will be cleaned up when the iterator is deleted.
-
     [Rust
     `pactffi_pact_interaction_iter_next`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_pact_interaction_iter_next)
-
-    Will return a NULL pointer when the iterator has advanced past the end of
-    the list.
-
-    # Safety
-
-    This function is safe.
-
-    Deleting an interaction returned by the iterator can lead to undefined
-    behaviour.
-
-    # Error Handling
-
-    This function will return a NULL pointer if passed a NULL pointer or if an
-    error occurs.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_interaction_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    raise NotImplementedError()
+    return PactInteraction(ptr)
 
 
 def pact_interaction_iter_delete(iter: PactInteractionIterator) -> None:
