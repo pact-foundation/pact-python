@@ -6,9 +6,11 @@ on:
       - v*
     branches:
       - master
+      - release/*
   pull_request:
     branches:
       - master
+      - release/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
