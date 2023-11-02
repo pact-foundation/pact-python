@@ -82,10 +82,11 @@ docstring.
 from __future__ import annotations
 
 import gc
+import json
 import typing
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, List
 
 from ._ffi import ffi, lib  # type: ignore[import]
 
@@ -4581,42 +4582,42 @@ def create_mock_server_for_transport(
     raise RuntimeError(msg)
 
 
-def mock_server_matched(mock_server_port: int) -> bool:
+def mock_server_matched(mock_server_handle: PactServerHandle) -> bool:
     """
     External interface to check if a mock server has matched all its requests.
 
-    The port number is passed in, and if all requests have been matched, true is
-    returned. False is returned if there is no mock server on the given port, or
+    If all requests have been matched, `true` is returned. `false` is returned
     if any request has not been successfully matched, or the method panics.
 
     [Rust
     `pactffi_mock_server_matched`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_mock_server_matched)
     """
-    raise NotImplementedError
+    return lib.pactffi_mock_server_matched(mock_server_handle._ref)
 
 
-def mock_server_mismatches(mock_server_port: int) -> str:
+def mock_server_mismatches(
+    mock_server_handle: PactServerHandle,
+) -> list[dict[str, Any]]:
     """
     External interface to get all the mismatches from a mock server.
-
-    The port number of the mock server is passed in, and a pointer to a C string
-    with the mismatches in JSON format is returned.
 
     [Rust
     `pactffi_mock_server_mismatches`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_mock_server_mismatches)
 
-    **NOTE:** The JSON string for the result is allocated on the heap, and will
-    have to be freed once the code using the mock server is complete. The
-    [`cleanup_mock_server`](fn.cleanup_mock_server.html) function is provided
-    for this purpose.
-
     # Errors
 
-    If there is no mock server with the provided port number, or the function
-    panics, a NULL pointer will be returned. Don't try to dereference it, it
-    will not end well for you.
+    Raises:
+        RuntimeError: If there is no mock server with the provided port number,
+            or the function panics.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_mock_server_mismatches(mock_server_handle._ref)
+    if ptr == ffi.NULL:
+        msg = f"No mock server found with port {mock_server_handle}."
+        raise RuntimeError(msg)
+    string = ffi.string(ptr)
+    if isinstance(string, bytes):
+        string = string.decode("utf-8")
+    return json.loads(string)
 
 
 def cleanup_mock_server(mock_server_handle: PactServerHandle) -> None:
