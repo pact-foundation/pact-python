@@ -60,11 +60,15 @@ async def test_basic_request_method(pact: Pact, method: str) -> None:
         .with_request(method, "/")
         .will_respond_with(200)
     )
-    with pact.serve() as srv:
+    with pact.serve(raises=False) as srv:
         async with aiohttp.ClientSession(srv.url) as session:
             for m in ALL_HTTP_METHODS:
                 async with session.request(m, "/") as resp:
                     assert resp.status == (200 if m == method else 500)
+
+        # As we are making unexpected requests, we should have mismatches
+        for mismatch in srv.mismatches:
+            assert mismatch["type"] == "request-not-found"
 
 
 @pytest.mark.parametrize(
@@ -192,10 +196,16 @@ async def test_set_header_request_repeat(
         .set_headers(headers)
         .will_respond_with(200)
     )
-    with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/", headers=headers) as resp:
-                assert resp.status == 500
+    with pact.serve(raises=False) as srv:
+        async with aiohttp.ClientSession(srv.url) as session, session.request(
+            "GET",
+            "/",
+            headers=headers,
+        ) as resp:
+            assert resp.status == 500
+
+        assert len(srv.mismatches) == 1
+        assert srv.mismatches[0]["type"] == "request-mismatch"
 
 
 @pytest.mark.parametrize(

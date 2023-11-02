@@ -1075,12 +1075,14 @@ class Pact:
         msg = f"Invalid interaction type: {interaction}"
         raise ValueError(msg)
 
-    def serve(
+    def serve(  # noqa: PLR0913
         self,
         addr: str = "localhost",
         port: int = 0,
         transport: str = "http",
         transport_config: str | None = None,
+        *,
+        raises: bool = True,
     ) -> PactServer:
         """
         Return a mock server for the Pact.
@@ -1122,6 +1124,7 @@ class Pact:
             port,
             transport,
             transport_config,
+            raises=raises,
         )
 
     def messages(self) -> pact.v3.ffi.PactMessageIterator:
@@ -1218,6 +1221,30 @@ class Pact:
         )
 
 
+class MismatchesError(Exception):
+    """
+    Exception raised when there are mismatches between the Pact and the server.
+    """
+
+    def __init__(self, mismatches: list[dict[str, Any]]) -> None:
+        """
+        Initialise a new MismatchesError.
+
+        Args:
+            mismatches:
+                Mismatches between the Pact and the server.
+        """
+        super().__init__(f"Mismatched interaction (count: {len(mismatches)})")
+        self._mismatches = mismatches
+
+    @property
+    def mismatches(self) -> list[dict[str, Any]]:
+        """
+        Mismatches between the Pact and the server.
+        """
+        return self._mismatches
+
+
 class PactServer:
     """
     Pact Server.
@@ -1234,6 +1261,8 @@ class PactServer:
         port: int = 0,
         transport: str = "HTTP",
         transport_config: str | None = None,
+        *,
+        raises: bool = True,
     ) -> None:
         """
         Initialise a new Pact Server.
@@ -1267,8 +1296,8 @@ class PactServer:
                 Configuration for the transport. This is specific to the
                 transport being used and should be a JSON string.
 
-            raises: Whether or not to raise an exception if the server is not
-                matched upon exit.
+            raises: Whether or not to raise an exception if the server
+                is not matched upon exit.
         """
         self._host = host
         self._port = port
@@ -1276,6 +1305,7 @@ class PactServer:
         self._transport_config = transport_config
         self._pact_handle = pact_handle
         self._handle: None | pact.v3.ffi.PactServerHandle = None
+        self._raises = raises
 
     @property
     def port(self) -> int:
@@ -1309,6 +1339,31 @@ class PactServer:
         Base URL for the server.
         """
         return URL(str(self))
+
+    @property
+    def matched(self) -> bool:
+        """
+        Whether or not the server has been matched.
+
+        This is `True` if the server has been matched, and `False` otherwise.
+        """
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
+        return pact.v3.ffi.mock_server_matched(self._handle)
+
+    @property
+    def mismatches(self) -> list[dict[str, Any]]:
+        """
+        Mismatches between the Pact and the server.
+
+        This is a string containing the mismatches between the Pact and the
+        server. If there are no mismatches, then this is an empty string.
+        """
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
+        return pact.v3.ffi.mock_server_mismatches(self._handle)
 
     def __str__(self) -> str:
         """
@@ -1357,11 +1412,18 @@ class PactServer:
     ) -> None:
         """
         Stop the server.
+
+        Raises:
+            MismatchesError:
+                If the server has not been fully matched and the server is
+                configured to raise an exception.
         """
         if self._handle:
+            if self._raises and not self.matched:
+                raise MismatchesError(self.mismatches)
             self._handle = None
 
-    def __truediv__(self, other: str) -> URL:
+    def __truediv__(self, other: str | object) -> URL:
         """
         URL for the server.
         """
