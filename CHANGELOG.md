@@ -1,3 +1,11 @@
+### 2.1.1
+
+-   e36bb8a - chore: fix wheel builds (JP-Ellis, Mon Oct 30 14:24:39 2023 +1100)
+-   40fd31f - chore: exclude python 3.12 (JP-Ellis, Fri Oct 27 15:45:53 2023 +1100)
+-   8f938ec - chore(ci): use release branches (JP-Ellis, Fri Nov 3 10:01:31 2023 +1100)
+-   23ac394 - chore: update Pact binaries to 2.0.10 (JP-Ellis, Fri Nov 3 09:29:29 2023 +1100)
+-   6b8009f - fix(build): include omitted `lib` dir (JP-Ellis, Fri Oct 6 14:53:13 2023 +1100)
+
 ### 2.1.0
 
 -   82df76f - feat: bump pact standalone to 2.0.7 (JP-Ellis, Mon Sep 25 11:12:45 2023 +1000)
