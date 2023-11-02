@@ -4670,7 +4670,7 @@ def write_pact_file(
     """
     ret: int = lib.pactffi_write_pact_file(
         mock_server_handle._ref,
-        directory,
+        str(directory).encode("utf-8"),
         overwrite,
     )
     if ret == 0:
