@@ -130,3 +130,8 @@ def test_write_file(pact: Pact, temp_dir: Path) -> None:
 )
 def test_specification(pact: Pact, version: str) -> None:
     pact.with_specification(version)
+
+
+def test_server_log(pact: Pact) -> None:
+    with pact.serve() as srv:
+        assert srv.logs is not None

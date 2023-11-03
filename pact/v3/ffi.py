@@ -4699,21 +4699,27 @@ def write_pact_file(
     raise RuntimeError(msg)
 
 
-def mock_server_logs(mock_server_port: int) -> str:
+def mock_server_logs(mock_server_handle: PactServerHandle) -> str:
     """
     Fetch the logs for the mock server.
 
     This needs the memory buffer log sink to be setup before the mock server is
-    started. Returned string will be freed with the `cleanup_mock_server`
-    function call.
+    started.
 
     [Rust
     `pactffi_mock_server_logs`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_mock_server_logs)
 
-    Will return a NULL pointer if the logs for the mock server can not be
-    retrieved.
+    Raises:
+        RuntimeError: If the logs for the mock server can not be retrieved.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_mock_server_logs(mock_server_handle._ref)
+    if ptr == ffi.NULL:
+        msg = f"Unable to obtain logs from {mock_server_handle!r}"
+        raise RuntimeError(msg)
+    string = ffi.string(ptr)
+    if isinstance(string, bytes):
+        string = string.decode("utf-8")
+    return string
 
 
 def generate_datetime_string(format: str) -> StringResult:
