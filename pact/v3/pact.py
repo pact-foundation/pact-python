@@ -1108,6 +1108,13 @@ class Pact:
             transport_config:
                 Configuration for the transport. This is specific to the
                 transport being used and should be a JSON string.
+
+            raises: Whether to raise an exception if there are mismatches
+                between the Pact and the server. If set to `False`, then the
+                mismatches must be handled manually.
+
+        Returns:
+            A [`PactServer`][pact.v3.pact.PactServer] instance.
         """
         return PactServer(
             self._handle,
@@ -1139,21 +1146,23 @@ class Pact:
         return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
 
     @overload
-    def interactions(self, type: Literal["HTTP"]) -> pact.v3.ffi.PactSyncHttpIterator:
+    def interactions(self, kind: Literal["HTTP"]) -> pact.v3.ffi.PactSyncHttpIterator:
         ...
 
     @overload
     def interactions(
-        self, type: Literal["Sync"]
+        self,
+        kind: Literal["Sync"],
     ) -> pact.v3.ffi.PactSyncMessageIterator:
         ...
 
     @overload
-    def interactions(self, type: Literal["Async"]) -> pact.v3.ffi.PactMessageIterator:
+    def interactions(self, kind: Literal["Async"]) -> pact.v3.ffi.PactMessageIterator:
         ...
 
     def interactions(
-        self, type: str = "HTTP"
+        self,
+        kind: str = "HTTP",
     ) -> (
         pact.v3.ffi.PactSyncHttpIterator
         | pact.v3.ffi.PactSyncMessageIterator
@@ -1162,30 +1171,26 @@ class Pact:
         """
         Return an iterator over the Pact's interactions.
 
-        The type is used to specify the kind of interactions that will be
-        iterated over. If `"All"` is specified (the default), then all
-        interactions will be iterated over.
+        The kind is used to specify the type of interactions that will be
+        iterated over.
         """
-        # TODO: The FFI does not have a way to iterate over all interactions, unless
-        # you have a pointer to the pact. See
-        # pact-foundation/pact-reference#333.
-        # if type == "All":
-        #     return pact.v3.ffi.pact_model_interaction_iterator(self._handle)
-        if type == "HTTP":
+        # TODO(JP-Ellis): Add an iterator for `All` interactions.
+        # https://github.com/pact-foundation/pact-python/issues/451
+        if kind == "HTTP":
             return pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
-        if type == "Sync":
+        if kind == "Sync":
             return pact.v3.ffi.pact_handle_get_sync_message_iter(self._handle)
-        if type == "Async":
+        if kind == "Async":
             return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
-        msg = f"Unknown interaction type: {type}"
+        msg = f"Unknown interaction type: {kind}"
         raise ValueError(msg)
 
     def write_file(
         self,
-        directory: Path | str = Path.cwd(),
+        directory: Path | str | None = None,
         *,
         overwrite: bool = False,
-    ):
+    ) -> None:
         """
         Write out the pact to a file.
 
@@ -1204,6 +1209,8 @@ class Pact:
                 exists. Otherwise, the contents of the file will be merged with
                 the existing file.
         """
+        if directory is None:
+            directory = Path.cwd()
         pact.v3.ffi.pact_handle_write_file(
             self._handle,
             directory,
@@ -1259,6 +1266,9 @@ class PactServer:
             transport_config:
                 Configuration for the transport. This is specific to the
                 transport being used and should be a JSON string.
+
+            raises: Whether or not to raise an exception if the server is not
+                matched upon exit.
         """
         self._host = host
         self._port = port

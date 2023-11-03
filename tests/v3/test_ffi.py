@@ -65,5 +65,5 @@ def test_owned_string() -> None:
         (
             "-----END CERTIFICATE-----\n",
             "-----END CERTIFICATE-----\r\n",
-        )
+        ),
     )

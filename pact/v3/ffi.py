@@ -90,8 +90,9 @@ from typing import TYPE_CHECKING, List
 from ._ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
-    import cffi
     from pathlib import Path
+
+    import cffi
     from typing_extensions import Self
 
 # The follow types are classes defined in the Rust code. Ultimately, a Python
@@ -813,6 +814,8 @@ class OwnedString(str):
     As this is subclassed from `str`, it can be used in place of a normal string
     in most cases.
     """
+
+    __slots__ = ("_ptr", "_string")
 
     def __new__(cls, ptr: cffi.FFI.CData) -> Self:
         """
@@ -3000,7 +3003,7 @@ def pact_message_iter_next(iter: PactMessageIterator) -> Message:
     ptr = lib.pactffi_pact_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError()
+    raise NotImplementedError
     return Message(ptr)
 
 
@@ -3014,7 +3017,7 @@ def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMes
     ptr = lib.pactffi_pact_sync_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError()
+    raise NotImplementedError
     return SynchronousMessage(ptr)
 
 
@@ -3038,7 +3041,7 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
     ptr = lib.pactffi_pact_sync_http_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError()
+    raise NotImplementedError
     return SynchronousHttp(ptr)
 
 
@@ -3062,7 +3065,7 @@ def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction
     ptr = lib.pactffi_pact_interaction_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError()
+    raise NotImplementedError
     return PactInteraction(ptr)
 
 
@@ -5693,7 +5696,7 @@ def pact_handle_get_sync_message_iter(pact: PactHandle) -> PactSyncMessageIterat
     ('\0') bytes.
     """
     return PactSyncMessageIterator(
-        lib.pactffi_pact_handle_get_sync_message_iter(pact._ref)
+        lib.pactffi_pact_handle_get_sync_message_iter(pact._ref),
     )
 
 
@@ -5929,6 +5932,9 @@ def pact_handle_write_file(
     This function should be called if all the consumer tests have passed.
 
     Args:
+        pact:
+            Handle to a Pact model.
+
         directory:
             The directory to write the file to. If `None`, the current working
             directory is used.
@@ -5947,9 +5953,9 @@ def pact_handle_write_file(
         return
     if ret == 1:
         msg = f"The function panicked while writing {pact} to {directory}."
-    elif ret == 2:
+    elif ret == 2:  # noqa: PLR2004
         msg = f"The pact file was not able to be written for {pact}."
-    elif ret == 3:
+    elif ret == 3:  # noqa: PLR2004
         msg = f"The pact for {pact} was not found."
     else:
         msg = f"Unknown error writing {pact} to {directory}."
@@ -6616,6 +6622,9 @@ def using_plugin(
     `pactffi_using_plugin`](https://docs.rs/pact_ffi/0.4.9/pact_ffi/?search=pactffi_using_plugin)
 
     Args:
+        pact:
+            Handle to a Pact model.
+
         plugin_name:
             Name of the plugin to use.
 
@@ -6632,9 +6641,9 @@ def using_plugin(
         return
     if ret == 1:
         msg = f"A general panic was caught: {get_error_message()}"
-    elif ret == 2:
+    elif ret == 2:  # noqa: PLR2004
         msg = f"Failed to load the plugin {plugin_name}."
-    elif ret == 3:
+    elif ret == 3:  # noqa: PLR2004
         msg = f"The Pact handle {pact} is invalid."
     else:
         msg = f"There was an unknown error loading the plugin {plugin_name}."
