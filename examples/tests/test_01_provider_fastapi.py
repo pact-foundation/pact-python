@@ -147,7 +147,12 @@ def test_against_broker(broker: URL, verifier: Verifier) -> None:
     """
     code, _ = verifier.verify_with_broker(
         broker_url=str(broker),
-        published_verification_results=True,
+        # Despite the auth being set in the broker URL, we still need to pass
+        # the username and password to the verify_with_broker method.
+        broker_username=broker.user,
+        broker_password=broker.password,
+        publish_version="0.0.0",
+        publish_verification_results=True,
         provider_states_setup_url=str(PROVIDER_URL / "_pact" / "provider_states"),
     )
 
