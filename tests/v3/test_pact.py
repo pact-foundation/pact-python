@@ -3,12 +3,15 @@ Pact unit tests.
 """
 
 from __future__ import annotations
+
 import json
-from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import pytest
 from pact.v3 import Pact
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture()
@@ -84,9 +87,8 @@ def test_interactions_iter(
     for _interaction in interactions:
         # This should be an empty list and therefore the error should never be
         # raised.
-        raise RuntimeError("Should not be reached")
-    else:
-        print("Ok")
+        msg = "Should not be reached"
+        raise RuntimeError(msg)
 
 
 def test_messages(pact: Pact) -> None:
@@ -95,9 +97,8 @@ def test_messages(pact: Pact) -> None:
     for _message in messages:
         # This should be an empty list and therefore the error should never be
         # raised.
-        raise RuntimeError("Should not be reached")
-    else:
-        print("Ok")
+        msg = "Should not be reached"
+        raise RuntimeError(msg)
 
 
 def test_write_file(pact: Pact, temp_dir: Path) -> None:

@@ -105,11 +105,7 @@ async def test_with_header_request(
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
-                "GET",
-                "/",
-                headers=headers,
-            ) as resp:
+            async with session.request("GET", "/", headers=headers) as resp:
                 assert resp.status == 200
 
 
@@ -134,10 +130,7 @@ async def test_with_header_response(
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
-                "GET",
-                "/",
-            ) as resp:
+            async with session.request("GET", "/") as resp:
                 assert resp.status == 200
                 response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
                 for header, value in headers:
@@ -182,11 +175,7 @@ async def test_set_header_request(
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
-                "GET",
-                "/",
-                headers=headers,
-            ) as resp:
+            async with session.request("GET", "/", headers=headers) as resp:
                 assert resp.status == 200
 
 
@@ -205,11 +194,7 @@ async def test_set_header_request_repeat(
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
-                "GET",
-                "/",
-                headers=headers,
-            ) as resp:
+            async with session.request("GET", "/", headers=headers) as resp:
                 assert resp.status == 500
 
 
@@ -233,10 +218,7 @@ async def test_set_header_response(
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
-                "GET",
-                "/",
-            ) as resp:
+            async with session.request("GET", "/") as resp:
                 assert resp.status == 200
                 response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
                 for header, value in headers:
@@ -258,11 +240,7 @@ async def test_set_header_response_repeat(
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
-                "GET",
-                "/",
-                headers=headers,
-            ) as resp:
+            async with session.request("GET", "/", headers=headers) as resp:
                 assert resp.status == 200
                 response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
                 assert ("x-test", "2") in response_headers
@@ -309,10 +287,7 @@ async def test_with_query_parameter_request(
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
             url = srv.url.with_query(query)
-            async with session.request(
-                "GET",
-                url.path_qs,
-            ) as resp:
+            async with session.request("GET", url.path_qs) as resp:
                 assert resp.status == 200
 
 
@@ -327,10 +302,7 @@ async def test_with_query_parameter_dict(pact: Pact) -> None:
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
             url = srv.url.with_query({"test": "true", "foo": "bar"})
-            async with session.request(
-                "GET",
-                url.path_qs,
-            ) as resp:
+            async with session.request("GET", url.path_qs) as resp:
                 assert resp.status == 200
 
 
@@ -508,12 +480,14 @@ async def test_multipart_file_request(pact: Pact, temp_dir: Path) -> None:
     with pact.serve() as srv, aiohttp.MultipartWriter() as mpwriter:
         mpwriter.append(
             fpy.open("rb"),
-            # TODO: Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            # TODO(JP-Ellis): Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            # https://github.com/pact-foundation/pact-python/issues/450
             {"Content-Type": "text/x-python"},  # type: ignore[arg-type]
         )
         mpwriter.append(
             fpng.open("rb"),
-            # TODO: Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            # TODO(JP-Ellis): Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            # https://github.com/pact-foundation/pact-python/issues/450
             {"Content-Type": "image/png"},  # type: ignore[arg-type]
         )
 
