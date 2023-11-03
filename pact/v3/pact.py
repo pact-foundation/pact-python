@@ -1365,6 +1365,24 @@ class PactServer:
             raise RuntimeError(msg)
         return pact.v3.ffi.mock_server_mismatches(self._handle)
 
+    @property
+    def logs(self) -> str | None:
+        """
+        Logs from the server.
+
+        This is a string containing the logs from the server. If there are no
+        logs, then this is `None`. For this to be populated, the logging must
+        be configured to make use of the internal buffer.
+        """
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
+
+        try:
+            return pact.v3.ffi.mock_server_logs(self._handle)
+        except RuntimeError:
+            return None
+
     def __str__(self) -> str:
         """
         URL for the server.
