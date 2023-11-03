@@ -19,6 +19,37 @@ env:
   CIBW_BUILD_FRONTEND: build
 
 jobs:
+  build-sdit:
+    name: Build source distribution
+
+    if: github.event_name == 'push' || ! github.event.pull_request.draft
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all tags
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Install hatch
+        run: pip install --upgrade hatch
+
+      - name: Create source distribution
+        run: |
+          hatch build --target sdist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./dist/*.tar.*
+          if-no-files-found: error
+
   build-x86_64:
     name: Build wheels on ${{ matrix.os }} (x86, 64-bit)
 
@@ -123,20 +154,23 @@ jobs:
 
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    environment: Upload Python Package
+    environment: pypi
 
     needs: [check]
+
+    permissions:
+      # Required for trusted publishing
+      id-token: write
 
     steps:
       - uses: actions/download-artifact@v3
         with:
           name: wheels
-          path: wheelhouse
+          path: wheels
 
       - name: Push build artifacts to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.10
         with:
           skip-existing: true
-          user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
-          packages-dir: wheelhouse
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages-dir: wheels
