@@ -65,4 +65,12 @@ def test_verify(broker: URL) -> None:
     )
 
     with provider:
-        provider.verify_with_broker(broker_url=str(broker))
+        provider.verify_with_broker(
+            broker_url=str(broker),
+            # Despite the auth being set in the broker URL, we still need to pass
+            # the username and password to the verify_with_broker method.
+            broker_username=broker.user,
+            broker_password=broker.password,
+            publish_version="0.0.0",
+            publish_verification_results=True,
+        )
