@@ -8,4 +8,6 @@ on:
 jobs:
   call-workflow:
     uses: pact-foundation/.github/.github/workflows/smartbear-issue-label-added.yml@master
+    permissions:
+      issues: write
     secrets: inherit
