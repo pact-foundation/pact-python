@@ -176,6 +176,7 @@ ignore = [
   "ANN101", # `self` must be typed
   "ANN102", # `cls` must be typed
   "FIX002", # Forbid TODO in comments
+  "TD002",  # Assign someone to 'TODO' comments
 ]
 
 # TODO: Remove the explicity extend-exclude once astral-sh/ruff#6262 is fixed.

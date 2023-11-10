@@ -490,13 +490,13 @@ async def test_multipart_file_request(pact: Pact, temp_dir: Path) -> None:
     with pact.serve() as srv, aiohttp.MultipartWriter() as mpwriter:
         mpwriter.append(
             fpy.open("rb"),
-            # TODO(JP-Ellis): Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            # TODO: Remove type ignore once aio-libs/aiohttp#7741 is resolved
             # https://github.com/pact-foundation/pact-python/issues/450
             {"Content-Type": "text/x-python"},  # type: ignore[arg-type]
         )
         mpwriter.append(
             fpng.open("rb"),
-            # TODO(JP-Ellis): Remove type ignore once aio-libs/aiohttp#7741 is resolved
+            # TODO: Remove type ignore once aio-libs/aiohttp#7741 is resolved
             # https://github.com/pact-foundation/pact-python/issues/450
             {"Content-Type": "image/png"},  # type: ignore[arg-type]
         )

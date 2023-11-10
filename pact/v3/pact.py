@@ -1177,7 +1177,7 @@ class Pact:
         The kind is used to specify the type of interactions that will be
         iterated over.
         """
-        # TODO(JP-Ellis): Add an iterator for `All` interactions.
+        # TODO: Add an iterator for `All` interactions.
         # https://github.com/pact-foundation/pact-python/issues/451
         if kind == "HTTP":
             return pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
