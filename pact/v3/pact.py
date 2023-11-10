@@ -233,7 +233,7 @@ class Interaction(abc.ABC):
     def with_body(
         self,
         body: str | None = None,
-        content_type: str = "text/plain",
+        content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         """
@@ -267,7 +267,7 @@ class Interaction(abc.ABC):
     def with_binary_file(
         self,
         body: bytes | None,
-        content_type: str = "application/octet-stream",
+        content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         """
@@ -305,7 +305,7 @@ class Interaction(abc.ABC):
         self,
         part_name: str,
         path: Path | None,
-        content_type: str = "application/octet-stream",
+        content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
         boundary: str | None = None,
     ) -> Self:
@@ -343,7 +343,7 @@ class Interaction(abc.ABC):
     def with_plugin_contents(
         self,
         contents: dict[str, Any] | str,
-        content_type: str = "text/plain",
+        content_type: str,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         """

@@ -4558,11 +4558,7 @@ def create_mock_server_for_transport(
         addr.encode("utf-8"),
         port,
         transport.encode("utf-8"),
-        (
-            transport_config.encode("utf-8")
-            if transport_config is not None
-            else ffi.NULL
-        ),
+        (transport_config.encode("utf-8") if transport_config else ffi.NULL),
     )
     if ret > 0:
         return PactServerHandle(ret)
@@ -5459,7 +5455,7 @@ def response_status(interaction: InteractionHandle, status: int) -> None:
 def with_body(
     interaction: InteractionHandle,
     part: InteractionPart,
-    content_type: str,
+    content_type: str | None,
     body: str | None,
 ) -> None:
     """
@@ -5495,8 +5491,8 @@ def with_body(
     success: bool = lib.pactffi_with_body(
         interaction._ref,
         part.value,
-        content_type.encode("utf-8"),
-        body.encode("utf-8") if body is not None else None,
+        content_type.encode("utf-8") if content_type else ffi.NULL,
+        body.encode("utf-8") if body else None,
     )
     if not success:
         msg = f"Unable to set body for {interaction}."
@@ -5506,7 +5502,7 @@ def with_body(
 def with_binary_file(
     interaction: InteractionHandle,
     part: InteractionPart,
-    content_type: str,
+    content_type: str | None,
     body: bytes | None,
 ) -> None:
     """
@@ -5549,7 +5545,7 @@ def with_binary_file(
     success: bool = lib.pactffi_with_binary_file(
         interaction._ref,
         part.value,
-        content_type.encode("utf-8"),
+        content_type.encode("utf-8") if content_type else ffi.NULL,
         body if body else ffi.NULL,
         len(body) if body else 0,
     )
@@ -5561,7 +5557,7 @@ def with_binary_file(
 def with_multipart_file_v2(  # noqa: PLR0913
     interaction: InteractionHandle,
     part: InteractionPart,
-    content_type: str,
+    content_type: str | None,
     file: Path | None,
     part_name: str,
     boundary: str | None,
@@ -5604,7 +5600,7 @@ def with_multipart_file_v2(  # noqa: PLR0913
         lib.pactffi_with_multipart_file_v2(
             interaction._ref,
             part.value,
-            content_type.encode("utf-8"),
+            content_type.encode("utf-8") if content_type else ffi.NULL,
             str(file).encode("utf-8") if file else ffi.NULL,
             part_name.encode("utf-8"),
             boundary.encode("utf-8") if boundary else ffi.NULL,
@@ -6642,7 +6638,7 @@ def using_plugin(
     ret: int = lib.pactffi_using_plugin(
         pact._ref,
         plugin_name.encode("utf-8"),
-        plugin_version.encode("utf-8") if plugin_version is not None else ffi.NULL,
+        plugin_version.encode("utf-8") if plugin_version else ffi.NULL,
     )
     if ret == 0:
         return
