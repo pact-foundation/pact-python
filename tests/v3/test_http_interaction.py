@@ -527,7 +527,7 @@ async def test_name(pact: Pact) -> None:
 async def test_with_plugin(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a plugin")
-        .with_plugin_contents("{}")
+        .with_plugin_contents("{}", "application/json")
         .will_respond_with(200)
     )
     with pact.serve() as srv:
