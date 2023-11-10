@@ -264,14 +264,14 @@ class Interaction(abc.ABC):
         )
         return self
 
-    def with_binary_file(
+    def with_binary_body(
         self,
         body: bytes | None,
         content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         """
-        Adds a binary file to the request or response.
+        Adds a binary body to the request or response.
 
         Note that for HTTP interactions, this function will overwrite the body
         if it has been set using

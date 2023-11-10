@@ -435,7 +435,7 @@ async def test_binary_file_request(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a binary file")
         .with_request("POST", "/")
-        .with_binary_file(payload, "application/octet-stream")
+        .with_binary_body(payload, "application/octet-stream")
         .will_respond_with(200)
     )
     with pact.serve() as srv:
@@ -456,7 +456,7 @@ async def test_binary_file_response(pact: Pact) -> None:
         pact.upon_receiving("a basic request with a binary file response")
         .with_request("GET", "/")
         .will_respond_with(200)
-        .with_binary_file(payload, "application/bytes")
+        .with_binary_body(payload, "application/bytes")
     )
     with pact.serve() as srv:
         async with aiohttp.ClientSession(srv.url) as session:
