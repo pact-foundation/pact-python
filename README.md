@@ -464,9 +464,9 @@ The parameters for this differ slightly in naming from their CLI equivalents:
 
 You can see more details in the examples
 
--   [Message Provider Verifier Test](https://github.com/pact-foundation/pact-python/tree/master/examples/message/tests/provider/test_message_provider.py)
--   [Flask Provider Verifier Test](https://github.com/pact-foundation/pact-python/tree/master/examples/flask_provider/tests/provider/test_provider.py)
--   [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/tree/master/examples/fastapi_provider/tests/provider/test_provider.py)
+-   [Message Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_03_message_provider.py)
+-   [Flask Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_flask.py)
+-   [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_fastapi.py)
 
 ### Provider States
 
