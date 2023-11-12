@@ -317,9 +317,9 @@ class Interaction(abc.ABC):
         pact.v3.ffi.with_multipart_file_v2(
             self._handle,
             self._parse_interaction_part(part),
-            part_name,
-            path,
             content_type,
+            path,
+            part_name,
             boundary,
         )
         return self
