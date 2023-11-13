@@ -32,7 +32,7 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.3
+    rev: v3.1.0
     hooks:
       - id: prettier
         stages: [pre-push]
