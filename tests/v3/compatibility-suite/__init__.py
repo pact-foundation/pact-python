@@ -1,0 +1,3 @@
+"""
+Compatibility suite tests.
+"""
