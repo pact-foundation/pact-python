@@ -116,7 +116,7 @@ extra-dependencies = ["hatchling", "packaging", "requests", "cffi"]
 [tool.hatch.envs.default.scripts]
 lint    = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
 test    = "pytest {args:tests/}"
-example = "pytest {args:examples/}"
+example = "pytest examples/ {args}"
 all     = ["lint", "test", "example"]
 
 # Test environment for running unit tests. This automatically tests against all
@@ -129,7 +129,7 @@ python = ["3.8", "3.9", "3.10", "3.11"]
 
 [tool.hatch.envs.test.scripts]
 test    = "pytest {args:tests/}"
-example = "pytest {args:examples/}"
+example = "pytest examples/ {args}"
 all     = ["test", "example"]
 
 ################################################################################
