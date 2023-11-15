@@ -342,7 +342,7 @@ def the_following_http_interactions_have_been_defined(
     converters={"ids": lambda s: list(map(int, s.split(",")))},
     target_fixture="srv",
 )
-def the_mock_server_is_started_with_interactions(
+def the_mock_server_is_started_with_interactions(  # noqa: C901
     ids: list[int],
     interaction_definitions: dict[int, InteractionDefinition],
 ) -> Generator[PactServer, Any, None]:
@@ -377,7 +377,7 @@ def the_mock_server_is_started_with_interactions(
                     definition.body.string,
                     definition.body.mime_type,
                 )
-            else:
+            elif definition.body.bytes:
                 logging.info(
                     "-> with_binary_file(%s, %s)",
                     truncate(definition.body.bytes),
@@ -387,6 +387,9 @@ def the_mock_server_is_started_with_interactions(
                     definition.body.bytes,
                     definition.body.mime_type,
                 )
+            else:
+                msg = "Unexpected body definition"
+                raise RuntimeError(msg)
 
         logging.info("-> will_respond_with(%s)", definition.response)
         interaction.will_respond_with(definition.response)
@@ -406,7 +409,7 @@ def the_mock_server_is_started_with_interactions(
                     definition.response_body.string,
                     definition.response_content,
                 )
-            else:
+            elif definition.response_body.bytes:
                 logging.info(
                     "-> with_binary_file(%s, %s)",
                     truncate(definition.response_body.bytes),
@@ -416,6 +419,9 @@ def the_mock_server_is_started_with_interactions(
                     definition.response_body.bytes,
                     definition.response_content,
                 )
+            else:
+                msg = "Unexpected body definition"
+                raise RuntimeError(msg)
 
     with pact.serve(raises=False) as srv:
         yield srv
