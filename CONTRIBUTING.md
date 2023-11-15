@@ -99,7 +99,7 @@ You can also try using the new [github.dev](https://github.dev/pact-foundation/p
     pipx install hatch
     ```
 
-3.  After cloning the repository, run `hatch shell` in the root of the repository. This will install all dependencies in a Python virtual environment and then ensure that the virtual environment is activated.
+3.  After cloning the repository, run `hatch shell` in the root of the repository. This will install all dependencies in a Python virtual environment and then ensure that the virtual environment is activated. You will also need to run `git submodule init` if you want to run tests, as Pact Python makes use of the Pact Compability Suite.
 
 4.  To run tests, run `hatch run test` to make sure the test suite is working. You should also make sure the example works by running `hatch run example`. For the examples, you will have to make sure that you have Docker (or a suitable alternative) installed and running.
 
