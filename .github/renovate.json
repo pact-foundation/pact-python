@@ -4,6 +4,9 @@
   "pre-commit": {
     "enabled": true
   },
+  "git-submodules": {
+    "enabled": true
+  },
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0
 }
