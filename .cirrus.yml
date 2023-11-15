@@ -11,6 +11,7 @@ TEST_TEMPLATE: &TEST_TEMPLATE
 linux_arm64_task:
   env:
     PATH: ${HOME}/.local/bin:${PATH}
+    CIRRUS_CLONE_SUBMODULES: "true"
     matrix:
       - IMAGE: "python:3.8-slim"
       - IMAGE: "python:3.9-slim"
@@ -30,6 +31,7 @@ macosx_arm64_task:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
     PATH: ${HOME}/.local/bin:${HOME}/.pyenv/shims:${PATH}
+    CIRRUS_CLONE_SUBMODULES: "true"
     matrix:
       - PYTHON: "3.8"
       - PYTHON: "3.9"
