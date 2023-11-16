@@ -274,7 +274,3 @@ assert isinstance(pact.v3.ffi.version(), str);\""""
 # The repair tool unfortunately did not like the bundled Ruby distributable.
 # TODO: Check whether delocate-wheel can be configured.
 repair-wheel-command = ""
-
-[tool.cibuildwheel.windows]
-# Skipping pypy, see giampaolo/psutil#2325
-skip = "pp*"
