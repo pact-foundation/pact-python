@@ -12,6 +12,7 @@ linux_arm64_task:
   env:
     PATH: ${HOME}/.local/bin:${PATH}
     CIRRUS_CLONE_SUBMODULES: "true"
+    HATCH_VERBOSE: 1
     matrix:
       - IMAGE: "python:3.8-slim"
       - IMAGE: "python:3.9-slim"

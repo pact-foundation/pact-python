@@ -15,6 +15,7 @@ concurrency:
 env:
   STABLE_PYTHON_VERSION: "3.12"
   PYTEST_ADDOPTS: --color=yes
+  HATCH_VERBOSE: 1
 
 jobs:
   test:
