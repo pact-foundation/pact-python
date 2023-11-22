@@ -60,6 +60,16 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  test-conlusion:
+    name: Test matrix complete
+
+    runs-on: ubuntu-latest
+    needs:
+      - test
+
+    steps:
+      - run: echo "Test matrix completed successfully."
+
   example:
     name: Example
 
