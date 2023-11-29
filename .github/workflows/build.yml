@@ -170,7 +170,7 @@ jobs:
           path: wheels
 
       - name: Push build artifacts to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.10
+        uses: pypa/gh-action-pypi-publish@v1.8.11
         with:
           skip-existing: true
           password: ${{ secrets.PYPI_TOKEN }}
