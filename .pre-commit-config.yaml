@@ -57,7 +57,7 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.12.0
+    rev: v3.13.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
