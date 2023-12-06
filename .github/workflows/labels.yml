@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Synchronize labels
-        uses: EndBug/label-sync@v2
+        uses: EndBug/label-sync@da00f2c11fdb78e4fae44adac2fdd713778ea3e8 # v2
         with:
           config-file: |
             https://raw.githubusercontent.com/pact-foundation/.github/master/.github/labels.yml

@@ -38,12 +38,12 @@ jobs:
             experimental: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
           submodules: true
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -56,7 +56,7 @@ jobs:
       - name: Upload coverage
         # TODO: Configure code coverage monitoring
         if: false && matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -78,7 +78,7 @@ jobs:
 
     services:
       broker:
-        image: pactfoundation/pact-broker:latest
+        image: pactfoundation/pact-broker:latest@sha256:186205f0596fd4f4ce553876f6e846ae614db2b9d582f0391ec418d71e5e4473
         ports:
           - "9292:9292"
         env:
@@ -90,10 +90,10 @@ jobs:
           PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Set up Python 3
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
 
@@ -122,10 +122,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
 
