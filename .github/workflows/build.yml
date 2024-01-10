@@ -145,7 +145,7 @@ jobs:
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
 
-      - uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4
+      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4
         with:
           path: wheelhouse
 
@@ -166,7 +166,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4
+      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4
         with:
           path: wheels
 
