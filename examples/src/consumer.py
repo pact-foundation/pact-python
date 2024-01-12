@@ -30,7 +30,7 @@ import requests
 class User:
     """User data class."""
 
-    id: int  # noqa: A003
+    id: int
     name: str
     created_on: datetime
 
