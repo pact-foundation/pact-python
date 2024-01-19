@@ -38,7 +38,7 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.13
+    rev: v0.1.14
     hooks:
       - id: ruff
         # Exclude python files in pact/** and tests/**, except for the
