@@ -48,7 +48,7 @@ repos:
         stages: [pre-push]
 
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.1.0
     hooks:
       - id: black
         # Exclude python files in pact/** and tests/**, except for the
