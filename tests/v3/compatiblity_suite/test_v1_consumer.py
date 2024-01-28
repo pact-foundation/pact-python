@@ -453,9 +453,9 @@ def request_n_is_made_to_the_mock_server(
     return requests.request(
         definition.method,
         str(srv.url.with_path(definition.path)),
-        params=URL.build(query_string=definition.query).query
-        if definition.query
-        else None,
+        params=(
+            URL.build(query_string=definition.query).query if definition.query else None
+        ),
         headers=definition.headers if definition.headers else None,  # type: ignore[arg-type]
         data=definition.body.bytes if definition.body else None,
     )
@@ -502,9 +502,9 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
     return requests.request(
         definition.method,
         str(srv.url.with_path(definition.path)),
-        params=URL.build(query_string=definition.query).query
-        if definition.query
-        else None,
+        params=(
+            URL.build(query_string=definition.query).query if definition.query else None
+        ),
         headers=definition.headers if definition.headers else None,  # type: ignore[arg-type]
         data=definition.body.bytes if definition.body else None,
     )

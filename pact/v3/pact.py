@@ -107,16 +107,13 @@ class Interaction(abc.ABC):
         raise ValueError(msg)
 
     @overload
-    def given(self, state: str) -> Self:
-        ...
+    def given(self, state: str) -> Self: ...
 
     @overload
-    def given(self, state: str, *, name: str, value: str) -> Self:
-        ...
+    def given(self, state: str, *, name: str, value: str) -> Self: ...
 
     @overload
-    def given(self, state: str, *, parameters: dict[str, Any] | str) -> Self:
-        ...
+    def given(self, state: str, *, parameters: dict[str, Any] | str) -> Self: ...
 
     def given(
         self,
@@ -1027,24 +1024,21 @@ class Pact:
         self,
         description: str,
         interaction: Literal["HTTP"] = ...,
-    ) -> HttpInteraction:
-        ...
+    ) -> HttpInteraction: ...
 
     @overload
     def upon_receiving(
         self,
         description: str,
         interaction: Literal["Async"],
-    ) -> AsyncMessageInteraction:
-        ...
+    ) -> AsyncMessageInteraction: ...
 
     @overload
     def upon_receiving(
         self,
         description: str,
         interaction: Literal["Sync"],
-    ) -> SyncMessageInteraction:
-        ...
+    ) -> SyncMessageInteraction: ...
 
     def upon_receiving(
         self,
@@ -1149,19 +1143,22 @@ class Pact:
         return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
 
     @overload
-    def interactions(self, kind: Literal["HTTP"]) -> pact.v3.ffi.PactSyncHttpIterator:
-        ...
+    def interactions(
+        self,
+        kind: Literal["HTTP"],
+    ) -> pact.v3.ffi.PactSyncHttpIterator: ...
 
     @overload
     def interactions(
         self,
         kind: Literal["Sync"],
-    ) -> pact.v3.ffi.PactSyncMessageIterator:
-        ...
+    ) -> pact.v3.ffi.PactSyncMessageIterator: ...
 
     @overload
-    def interactions(self, kind: Literal["Async"]) -> pact.v3.ffi.PactMessageIterator:
-        ...
+    def interactions(
+        self,
+        kind: Literal["Async"],
+    ) -> pact.v3.ffi.PactMessageIterator: ...
 
     def interactions(
         self,
