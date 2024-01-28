@@ -5,6 +5,7 @@ These tests are intended to ensure that the FFI module is working correctly.
 They are not intended to test the Pact API itself, as that is handled by the
 client library.
 """
+
 import re
 
 import pytest
