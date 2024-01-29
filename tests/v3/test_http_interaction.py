@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import pytest
+
 from pact.v3 import Pact
 
 if TYPE_CHECKING:

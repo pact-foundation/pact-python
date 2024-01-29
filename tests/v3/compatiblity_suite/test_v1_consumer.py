@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING, Any, Generator
 
 import pytest
 import requests
-from pact.v3 import Pact
 from pytest_bdd import given, parsers, scenario, then, when
 from yarl import URL
 
-from .util import (  # type: ignore[import-untyped]
+from pact.v3 import Pact
+from tests.v3.compatiblity_suite.util import (
     FIXTURES_ROOT,
     InteractionDefinition,
     string_to_int,

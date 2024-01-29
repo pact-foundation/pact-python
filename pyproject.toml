@@ -76,12 +76,7 @@ test = [
   "pytest-cov        ~= 4.0",
   "testcontainers    ~= 3.0",
 ]
-dev = [
-  "pact-python[types]",
-  "pact-python[test]",
-  "black          ==24.1.1",
-  "ruff           ==0.1.14",
-]
+dev = ["pact-python[types]", "pact-python[test]", "ruff==0.1.14"]
 
 ################################################################################
 ## Hatch Build Configuration
@@ -127,10 +122,14 @@ extra-dependencies = [
 ]
 
 [tool.hatch.envs.default.scripts]
-lint    = ["black --check --diff {args:.}", "ruff {args:.}", "mypy {args:.}"]
-test    = "pytest {args:tests/}"
-example = "pytest examples/ {args}"
-all     = ["lint", "test", "example"]
+lint       = "ruff check --show-source --show-fixes {args}"
+typecheck  = "mypy {args:.}"
+format     = "ruff format --diff {args}"
+test       = "pytest tests/ {args}"
+example    = "pytest examples/ {args}"
+all        = ["format", "lint", "typecheck", "test", "example"]
+docs       = ["mkdocs serve {args}"]
+docs-build = ["mkdocs build {args}"]
 
 # Test environment for running unit tests. This automatically tests against all
 # supported Python versions.
@@ -139,11 +138,6 @@ features = ["test"]
 
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
-
-[tool.hatch.envs.test.scripts]
-test    = "pytest {args:tests/}"
-example = "pytest examples/ {args}"
-all     = ["test", "example"]
 
 ################################################################################
 ## PyTest Configuration
@@ -186,17 +180,6 @@ exclude_lines = [
 
 [tool.ruff]
 target-version = "py38"
-select         = ["ALL"]
-
-ignore = [
-  "D200",   # Require single line docstrings to be on one line.
-  "D203",   # Require blank line before class docstring
-  "D212",   # Multi-line docstring summary must start at the first line
-  "ANN101", # `self` must be typed
-  "ANN102", # `cls` must be typed
-  "FIX002", # Forbid TODO in comments
-  "TD002",  # Assign someone to 'TODO' comments
-]
 
 # TODO: Remove the explicity extend-exclude once astral-sh/ruff#6262 is fixed.
 # https://github.com/pact-foundation/pact-python/issues/458
@@ -236,19 +219,38 @@ extend-exclude = [
   "tests/test_verify_wrapper.py",
 ]
 
-[tool.ruff.pyupgrade]
+[tool.ruff.lint]
+select = ["ALL"]
+
+ignore = [
+  "D200",   # Require single line docstrings to be on one line.
+  "D203",   # Require blank line before class docstring
+  "D212",   # Multi-line docstring summary must start at the first line
+  "ANN101", # `self` must be typed
+  "ANN102", # `cls` must be typed
+  "FIX002", # Forbid TODO in comments
+  "TD002",  # Assign someone to 'TODO' comments
+
+  # The following are disabled for compatibility with the formatter
+  "COM812", # enforce trailing commas
+  "ISC001", # require imports to be sorted
+]
+
+[tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-################################################################################
-## Black Configuration
-################################################################################
+[tool.ruff.isort]
+known-first-party = ["pact"]
 
-[tool.black]
-target-version = ["py38"]
-extend-exclude = '^/(pact|tests)/(?!v3).+\.py$'
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.format]
+preview               = true
+docstring-code-format = true
 
 ################################################################################
 ## Mypy Configuration

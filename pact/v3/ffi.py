@@ -88,7 +88,7 @@ import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List
 
-from ._ffi import ffi, lib  # type: ignore[import]
+from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -5146,7 +5146,7 @@ def with_query_parameter_v2(
         handle,
         "version",
         0,
-        json.dumps({ "value": ["2", "3"] })
+        json.dumps({"value": ["2", "3"]}),
     )
     ```
 
@@ -5288,7 +5288,7 @@ def with_header_v2(
         part,
         "Accept-Version",
         0,
-        json.dumps({ "value": ["2", "3"] })
+        json.dumps({"value": ["2", "3"]}),
     )
     ```
 

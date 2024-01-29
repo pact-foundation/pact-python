@@ -7,6 +7,7 @@ from __future__ import annotations
 import re
 
 import pytest
+
 from pact.v3 import Pact
 
 

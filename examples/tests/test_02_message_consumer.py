@@ -35,9 +35,9 @@ from typing import TYPE_CHECKING, Any, Generator
 from unittest.mock import MagicMock
 
 import pytest
-from pact import MessageConsumer, MessagePact, Provider
 
 from examples.src.message import Handler
+from pact import MessageConsumer, MessagePact, Provider
 
 if TYPE_CHECKING:
     from pathlib import Path

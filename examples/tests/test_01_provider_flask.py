@@ -30,10 +30,10 @@ from unittest.mock import MagicMock
 
 import pytest
 from flask import request
-from pact import Verifier
 from yarl import URL
 
 from examples.src.flask import app
+from pact import Verifier
 
 PROVIDER_URL = URL("http://localhost:8080")
 

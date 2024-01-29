@@ -21,10 +21,10 @@ from typing import TYPE_CHECKING, Any, Dict, Generator
 
 import pytest
 import requests
-from pact import Consumer, Format, Like, Provider
 from yarl import URL
 
 from examples.src.consumer import User, UserConsumer
+from pact import Consumer, Format, Like, Provider
 
 if TYPE_CHECKING:
     from pathlib import Path
