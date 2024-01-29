@@ -5,7 +5,7 @@
 The easiest way is to just run the following command from the root folder with the HEAD commit on trunk and the appropriate version. We follow `<MAJOR>.<MINOR>.<PATCH>` versioning.
 
 ```shell
-$ script/release_prep.sh X.Y.Z
+script/release_prep.sh X.Y.Z
 ```
 
 This script effectively runs the following:
@@ -15,26 +15,26 @@ This script effectively runs the following:
 2.  Update the `CHANGELOG.md` using:
 
     ```shell
-    $ git log --pretty=format:'  * %h - %s (%an, %ad)' vX.Y.Z..HEAD
+    git log --pretty=format:'  * %h - %s (%an, %ad)' vX.Y.Z..HEAD
     ```
 
 3.  Add files to git
 
     ```shell
-    $ git add CHANGELOG.md pact/__version__.py
+    git add CHANGELOG.md pact/__version__.py
     ```
 
 4.  Commit
 
     ```shell
-    $ git commit -m "Releasing version X.Y.Z"
+    git commit -m "Releasing version X.Y.Z"
     ```
 
 5.  Tag
 
     ```shell
-    $ git tag -a vX.Y.Z -m "Releasing version X.Y.Z"
-    $ git push origin master --tags
+    git tag -a vX.Y.Z -m "Releasing version X.Y.Z"
+    git push origin master --tags
     ```
 
 ## Updating Pact Ruby
@@ -43,7 +43,7 @@ To upgrade the versions of `pact-mock_service` and `pact-provider-verifier`, cha
 
 ## Publishing to pypi
 
-1.  Wait until GitHub Actions have run and the new tag is available at https://github.com/pact-foundation/pact-python/releases/tag/vX.Y.Z
+1.  Wait until GitHub Actions have run and the new tag is available at `https://github.com/pact-foundation/pact-python/releases/tag/vX.Y.Z`
 
 2.  Set the title to `pact-python-X.Y.Z`
 

@@ -131,9 +131,9 @@ Working on your first Pull Request? You can learn how from this free video serie
 
 Please make sure the following is done when submitting a pull request:
 
-1. **Keep your PR small.** Small pull requests (~300 lines of diff) are much easier to review and more likely to get merged. Make sure the PR does only one thing, otherwise please split it.
-2. **Use descriptive titles.** It is recommended to follow this [commit message style](#semantic-commit-messages).
-3. **Test your changes.** Describe your [**test plan**](#test-plan) in your pull request description.
+1.  **Keep your PR small.** Small pull requests (~300 lines of diff) are much easier to review and more likely to get merged. Make sure the PR does only one thing, otherwise please split it.
+2.  **Use descriptive titles.** It is recommended to follow this [commit message style](#conventional-commit-messages).
+3.  **Test your changes.** Describe your [**test plan**](#test-plan) in your pull request description.
 
 All pull requests should be opened against the `master` branch.
 

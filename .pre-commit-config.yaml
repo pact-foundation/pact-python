@@ -65,3 +65,13 @@ repos:
         types: [python]
         exclude: ^(pact|tests)/(?!v3/).*\.py$
         stages: [pre-push]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        exclude: |
+          (?x)^(
+            .github/PULL_REQUEST_TEMPLATE\.md
+          | CHANGELOG.md
+          )
