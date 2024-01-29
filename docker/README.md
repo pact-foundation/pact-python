@@ -2,7 +2,7 @@
 
 This is for contributors who want to make changes and test for all different versions of python currently supported. If you don't want to set up and install all the different python versions locally (and there are some difficulties with that) you can just run them in docker using containers.
 
-# Setup
+## Setup
 
 To build a container say for Python 3.11, change to the root directory of the project and run:
 

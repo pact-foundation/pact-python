@@ -10,28 +10,28 @@ For more information about what Pact is, and how it can help you test your code 
 
 Note: As of Version 1.0 deprecates support for python 2.7 to allow us to incorporate python 3.x features more readily. If you want to still use Python 2.7 use the 0.x.y versions. Only bug fixes will now be added to that release.
 
-# How to use pact-python
+## How to use pact-python
 
-## Installation
+### Installation
 
-```
+```console
 pip install pact-python
 ```
 
-## Getting started
+### Getting started
 
 <!-- Absolute link for rendering page in docs.pact.io -->
 
 A guide follows but if you go to the [examples](https://github.com/pact-foundation/pact-python/tree/master/examples). This has a consumer, provider and pact-broker set of tests for both FastAPI and Flask.
 
-## Writing a Pact
+### Writing a Pact
 
 Creating a complete contract is a two step process:
 
-1. Create a test on the consumer side that declares the expectations it has of the provider
-2. Create a provider state that allows the contract to pass when replayed against the provider
+1.  Create a test on the consumer side that declares the expectations it has of the provider
+2.  Create a provider state that allows the contract to pass when replayed against the provider
 
-## Writing the Consumer Test
+### Writing the Consumer Test
 
 If we have a method that communicates with one of our external services, which we'll call `Provider`, and our product, `Consumer` is hitting an endpoint on `Provider` at `/users/<user>` to get information about a particular user.
 
@@ -104,7 +104,7 @@ Using the Pact object as a [context manager], we call our method under test whic
     pact.verify()
 ```
 
-### Requests
+#### Requests
 
 When defining the expected HTTP request that your code is expected to make you can specify the method, path, body, headers, and query:
 
@@ -146,11 +146,11 @@ The mock service offers you several important features when building your contra
 -   If a request is made that does not match one you defined or if a request from your code is missing it will return an error with details.
 -   Finally, it will record your contracts as a JSON file that you can store in your repository or publish to a Pact broker.
 
-## Expecting Variable Content
+### Expecting Variable Content
 
 The above test works great if that user information is always static, but what happens if the user has a last updated field that is set to the current time every time the object is modified? To handle variable data and make your tests more robust, there are 3 helpful matchers:
 
-### Term(matcher, generate)
+#### Term(matcher, generate)
 
 Asserts the value should match the given regular expression. You could use this to expect a timestamp with a particular format in the request or response where you know you need a particular format, but are unconcerned about the exact date:
 
@@ -171,7 +171,7 @@ body = {
 
 When you run the tests for the consumer, the mock service will return the value you provided as `generate`, in this case `2016-12-15T20:16:01`. When the contract is verified on the provider, the regex will be used to search the response from the real provider service and the test will be considered successful if the regex finds a match in the response.
 
-### Like(matcher)
+#### Like(matcher)
 
 Asserts the element's type matches the matcher. For example:
 
@@ -199,7 +199,7 @@ Like({
 
 ```
 
-### EachLike(matcher, minimum=1)
+#### EachLike(matcher, minimum=1)
 
 Asserts the value is an array type that consists of elements like the one passed in. It can be used to assert simple arrays:
 
@@ -222,6 +222,8 @@ EachLike({
 
 > Note, you do not need to specify everything that will be returned from the Provider in a JSON response, any extra data that is received will be ignored and the tests will still pass.
 
+<!-- block quote separator -->
+
 > Note, to get the generated values from an object that can contain matchers like Term, Like, EachLike, etc. for assertion in self.assertEqual(result, expected) you may need to use get_generated_values() helper function:
 
 ```python
@@ -229,7 +231,7 @@ from pact.matchers import get_generated_values
 self.assertEqual(result, get_generated_values(expected))
 ```
 
-### Match common formats
+#### Match common formats
 
 Often times, you find yourself having to re-write regular expressions for common formats.
 
@@ -271,30 +273,30 @@ Like({
 
 For more information see [Matching](https://docs.pact.io/getting_started/matching)
 
-## Uploading pact files to a Pact Broker
+### Uploading pact files to a Pact Broker
 
 There are two ways to publish your pact files, to a Pact Broker.
 
-1. [Pact CLI tools](https://docs.pact.io/pact_broker/client_cli) **recommended**
-2. Pact Python API
+1.  [Pact CLI tools](https://docs.pact.io/pact_broker/client_cli) **recommended**
+2.  Pact Python API
 
-### CLI
+#### Broker CLI
 
 See [Publishing and retrieving pacts](https://docs.pact.io/pact_broker/publishing_and_retrieving_pacts)
 
 Example uploading to a Pact Broker
 
-```
+```console
 pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-username someUsername --broker-password somePassword
 ```
 
 Example uploading to a PactFlow Broker
 
-```
+```console
 pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-token SomeToken
 ```
 
-### Python API
+#### Broker Python API
 
 ```python
 broker = Broker(broker_base_url="http://localhost")
@@ -319,11 +321,11 @@ The parameters for this differ slightly in naming from their CLI equivalents:
 | `--consumer-app-version` | `version` |
 | `n/a` | `consumer_name` |
 
-## Verifying Pacts Against a Service
+### Verifying Pacts Against a Service
 
 In addition to writing Pacts for Python consumers, you can also verify those Pacts against a provider of any language. There are two ways to do this.
 
-### CLI
+#### Verifier CLI
 
 After installing pact-python a `pact-verifier` application should be available. To get details about its use you can call it with the help argument:
 
@@ -341,80 +343,80 @@ Which will immediately invoke the Pact verifier, making HTTP requests to the ser
 
 There are several options for configuring how the Pacts are verified:
 
-###### --provider-base-url
+-   **`--provider-base-url`**
 
-Required. Defines the URL of the server to make requests to when verifying the Pacts.
+    Required. Defines the URL of the server to make requests to when verifying the Pacts.
 
-###### --pact-url
+-   **`--pact-url`**
 
-Required if --pact-urls not specified. The location of a Pact file you want to verify. This can be a URL to a [Pact Broker] or a local path, to provide multiple files, specify multiple arguments.
+    Required if --pact-urls not specified. The location of a Pact file you want to verify. This can be a URL to a [Pact Broker] or a local path, to provide multiple files, specify multiple arguments.
 
-```
-pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/one.json --pact-url=./pacts/two.json
-```
+    ```console
+    pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/one.json --pact-url=./pacts/two.json
+    ```
 
-###### --pact-urls
+-   **`--pact-urls`**
 
-Required if --pact-url not specified. The location of the Pact files you want to verify. This can be a URL to a [Pact Broker] or one or more local paths, separated by a comma.
+    Required if --pact-url not specified. The location of the Pact files you want to verify. This can be a URL to a [Pact Broker] or one or more local paths, separated by a comma.
 
-###### --provider-states-url
+-   **`--provider-states-url`**
 
-_DEPRECATED AFTER v 0.6.0._ The URL where your provider application will produce the list of available provider states. The verifier calls this URL to ensure the Pacts specify valid states before making the HTTP requests.
+    _DEPRECATED AFTER v 0.6.0._ The URL where your provider application will produce the list of available provider states. The verifier calls this URL to ensure the Pacts specify valid states before making the HTTP requests.
 
-###### --provider-states-setup-url
+-   **`--provider-states-setup-url`**
 
-The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', state: 'a thing exists'}`.
+    The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', state: 'a thing exists'}`.
 
-###### --pact-broker-url
+-   **`--pact-broker-url`**
 
-Base URl for the Pact Broker instance to publish pacts to. Can also be specified via the environment variable `PACT_BROKER_BASE_URL`.
+    Base URl for the Pact Broker instance to publish pacts to. Can also be specified via the environment variable `PACT_BROKER_BASE_URL`.
 
-###### --pact-broker-username
+-   **`--pact-broker-username`**
 
-The username to use when contacting the Pact Broker. Can also be specified via the environment variable `PACT_BROKER_USERNAME`.
+    The username to use when contacting the Pact Broker. Can also be specified via the environment variable `PACT_BROKER_USERNAME`.
 
-###### --pact-broker-password
+-   **`--pact-broker-password`**
 
-The password to use when contacting the Pact Broker. You can also specify this value as the environment variable `PACT_BROKER_PASSWORD`.
+    The password to use when contacting the Pact Broker. You can also specify this value as the environment variable `PACT_BROKER_PASSWORD`.
 
-###### --pact-broker-token
+-   **`--pact-broker-token`**
 
-The bearer token to use when contacting the Pact Broker. You can also specify this value as the environment variable `PACT_BROKER_TOKEN`.
+    The bearer token to use when contacting the Pact Broker. You can also specify this value as the environment variable `PACT_BROKER_TOKEN`.
 
-###### --consumer-version-tag
+-   **`--consumer-version-tag`**
 
-Retrieve the latest pacts with this consumer version tag. Used in conjunction with `--provider`. May be specified multiple times.
+    Retrieve the latest pacts with this consumer version tag. Used in conjunction with `--provider`. May be specified multiple times.
 
-###### --consumer-version-selector
+-   **`--consumer-version-selector`**
 
-You can also retrieve pacts with consumer version selector, a more flexible approach in specifying which pacts you need. May be specified multiple times. Read more about selectors [here](https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/).
+    You can also retrieve pacts with consumer version selector, a more flexible approach in specifying which pacts you need. May be specified multiple times. Read more about selectors [here](https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/).
 
-###### --provider-version-tag
+-   **`--provider-version-tag`**
 
-Tag to apply to the provider application version. May be specified multiple times.
+    Tag to apply to the provider application version. May be specified multiple times.
 
-###### --provider-version-branch
+-   **`--provider-version-branch`**
 
-Branch to apply to the provider application version.
+    Branch to apply to the provider application version.
 
-###### --custom-provider-header
+-   **`--custom-provider-header`**
 
-Header to add to provider state set up and pact verification requests e.g.`Authorization: Basic cGFjdDpwYWN0`
-May be specified multiple times.
+    Header to add to provider state set up and pact verification requests e.g.`Authorization: Basic cGFjdDpwYWN0`
+    May be specified multiple times.
 
-###### -t, --timeout
+-   **`-t, --timeout`**
 
-The duration in seconds we should wait to confirm that the verification process was successful. Defaults to 30.
+    The duration in seconds we should wait to confirm that the verification process was successful. Defaults to 30.
 
-###### -a, --provider-app-version
+-   **`-a, --provider-app-version`**
 
-The provider application version. Required for publishing verification results.
+    The provider application version. Required for publishing verification results.
 
-###### -r, --publish-verification-results
+-   **`-r, --publish-verification-results`**
 
-Publish verification results to the broker.
+    Publish verification results to the broker.
 
-### Python API
+#### Verifier Python API
 
 You can use the Verifier class. This allows you to write native python code and the test framework of your choice.
 
@@ -468,7 +470,7 @@ You can see more details in the examples
 -   [Flask Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_flask.py)
 -   [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_fastapi.py)
 
-### Provider States
+#### Provider States
 
 In many cases, your contracts will need very specific data to exist on the provider to pass successfully. If you are fetching a user profile, that user needs to exist, if querying a list of records, one or more records needs to exist. To support decoupling the testing of the consumer and provider, Pact offers the idea of provider states to communicate from the consumer what data should exist on the provider.
 
@@ -480,7 +482,7 @@ When setting up the testing of a provider you will also need to setup the manage
 
 For more information about provider states, refer to the [Pact documentation] on [Provider States].
 
-# Development
+## Development
 
 <!-- Absolute link for rendering page in docs.pact.io -->
 
@@ -488,8 +490,8 @@ Please read [CONTRIBUTING.md](https://github.com/pact-foundation/pact-python/blo
 
 To setup a development environment:
 
-1. If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv]
-2. Its recommended to create a Python [virtualenv] for the project
+1.  If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv]
+2.  Its recommended to create a Python [virtualenv] for the project
 
 To setup the environment, run tests, and package the application, run: `make release`
 
@@ -499,17 +501,17 @@ This creates a `dist/pact-python-N.N.N.tar.gz` file, where the Ns are the curren
 
 `pip install ./dist/pact-python-N.N.N.tar.gz`
 
-## Offline Installation of Standalone Packages
+### Offline Installation of Standalone Packages
 
 Although all Ruby standalone applications are predownloaded into the wheel artifact, it may be useful, for development, purposes to install custom Ruby binaries. In which case, use the `bin-path` flag.
 
-```
+```console
 pip install pact-python --bin-path=/absolute/path/to/folder/containing/pact/binaries/for/your/os
 ```
 
 Pact binaries can be found at [Pact Ruby Releases](https://github.com/pact-foundation/pact-ruby-standalone/releases).
 
-## Testing
+### Testing
 
 This project has unit and end to end tests, which can both be run from make:
 
@@ -517,7 +519,7 @@ Unit: `make test`
 
 End to end: `make e2e`
 
-## Contact
+### Contact
 
 Join us in slack: [![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
 
@@ -526,16 +528,10 @@ or
 -   Twitter: [@pact_up](https://twitter.com/pact_up)
 -   Stack Overflow: [stackoverflow.com/questions/tagged/pact](https://stackoverflow.com/questions/tagged/pact)
 
-[bundler]: http://bundler.io/
 [context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
-[Pact]: https://docs.pact.io
 [Pact Broker]: https://docs.pact.io/pact_broker
 [Pact documentation]: https://docs.pact.io/
-[Pact Mock Service]: https://github.com/pact-foundation/pact-mock_service
 [Pact specification]: https://github.com/pact-foundation/pact-specification
 [Provider States]: https://docs.pact.io/getting_started/provider_states
-[pact-provider-verifier]: https://github.com/pact-foundation/pact-provider-verifier
 [pyenv]: https://github.com/pyenv/pyenv
-[rvm]: https://rvm.io/
-[rbenv]: https://github.com/rbenv/rbenv
 [virtualenv]: http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/
