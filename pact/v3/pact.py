@@ -144,8 +144,9 @@ class Interaction(abc.ABC):
 
         ```python
         (
-            pact.upon_receiving("a request")
-            .given("a user exists", name="id", value="123")
+            pact.upon_receiving("a request").given(
+                "a user exists", name="id", value="123"
+            )
         )
         ```
 
@@ -156,11 +157,13 @@ class Interaction(abc.ABC):
 
         ```python
         (
-            pact.upon_receiving("a request")
-            .given("a user exists", parameters={
-                "id": "123",
-                "name": "John",
-            })
+            pact.upon_receiving("a request").given(
+                "a user exists",
+                parameters={
+                    "id": "123",
+                    "name": "John",
+                },
+            )
         )
         ```
 
@@ -200,8 +203,9 @@ class Interaction(abc.ABC):
 
                 ```python
                 (
-                    pact.upon_receiving("a request")
-                    .given("a user exists", name="value", value=parameters)
+                    pact.upon_receiving("a request").given(
+                        "a user exists", name="value", value=parameters
+                    )
                 )
                 ```
 
@@ -503,8 +507,7 @@ class HttpInteraction(Interaction):
 
         ```python
         (
-            pact.upon_receiving("a request")
-            .with_header(
+            pact.upon_receiving("a request").with_header(
                 "Accept-Version",
                 json.dumps({
                     "value": "1.2.3",
@@ -693,8 +696,7 @@ class HttpInteraction(Interaction):
 
         ```python
         (
-            pact.upon_receiving("a request")
-            .with_query_parameter(
+            pact.upon_receiving("a request").with_query_parameter(
                 "name",
                 json.dumps({
                     "value": ["John", "Mary"],
@@ -709,8 +711,7 @@ class HttpInteraction(Interaction):
 
         ```python
         (
-            pact.upon_receiving("a request")
-            .with_query_parameter(
+            pact.upon_receiving("a request").with_query_parameter(
                 "version",
                 json.dumps({
                     "value": "1.2.3",

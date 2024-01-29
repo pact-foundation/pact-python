@@ -49,6 +49,8 @@ example:
 .PHONY: lint
 lint:
 	hatch run lint
+	hatch run format
+	hatch run typecheck
 
 
 .PHONY: ci

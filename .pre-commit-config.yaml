@@ -45,16 +45,8 @@ repos:
         # files in pact/v3/** and tests/v3/**.
         exclude: ^(pact|tests)/(?!v3/).*\.py$
         args: [--fix, --exit-non-zero-on-fix]
-        stages: [pre-push]
-
-  - repo: https://github.com/psf/black
-    rev: 24.1.1
-    hooks:
-      - id: black
-        # Exclude python files in pact/** and tests/**, except for the
-        # files in pact/v3/** and tests/v3/**.
+      - id: ruff-format
         exclude: ^(pact|tests)/(?!v3/).*\.py$
-        stages: [pre-push]
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.13.0

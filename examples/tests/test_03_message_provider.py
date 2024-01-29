@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict
 
 from flask import Flask
+
 from pact import MessageProvider
 
 if TYPE_CHECKING:

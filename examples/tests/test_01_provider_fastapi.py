@@ -30,11 +30,11 @@ from unittest.mock import MagicMock
 
 import pytest
 import uvicorn
-from pact import Verifier
 from pydantic import BaseModel
 from yarl import URL
 
 from examples.src.fastapi import app
+from pact import Verifier
 
 PROVIDER_URL = URL("http://localhost:8080")
 

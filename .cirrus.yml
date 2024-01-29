@@ -6,6 +6,8 @@ TEST_TEMPLATE: &TEST_TEMPLATE
     - python --version
       # TODO: Fix lints before enabling
     - echo hatch run lint
+    - echo hatch run typecheck
+    - echo hatch run format
     - hatch run test
 
 linux_arm64_task:

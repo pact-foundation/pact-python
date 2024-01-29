@@ -109,11 +109,11 @@ You can also try using the new [github.dev](https://github.dev/pact-foundation/p
 
 -   **Most important: Look around.** Match the style you see used in the rest of the project. This includes formatting, naming files, naming things in code, naming things in documentation, etc.
 -   "Attractive"
--   We do have Black (a formatter) and Ruff (a syntax linter) to catch most stylistic problems. If you are working locally, they should automatically fix some issues during git commits and push.
+-   We do have Ruff to catch most stylistic problems (both linting and formatting). If you are working locally, they should automatically fix some issues during git commits and push.
 
 Don't worry too much about styles in general—the maintainers will help you fix them as they review your code.
 
-To help catch a lot of simple formatting or linting issues, you can run `hatch run lint` to run Black and Ruff. This process can also be automated by installing [`pre-commit`](https://pre-commit.com/) hooks:
+To help catch a lot of simple formatting or linting issues, you can run `hatch run lint` to run the linter and `hatch run format` to format your code. This process can also be automated by installing [`pre-commit`](https://pre-commit.com/) hooks:
 
 ```sh
 pre-commit install

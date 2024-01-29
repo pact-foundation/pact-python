@@ -8,6 +8,7 @@ import json
 from typing import TYPE_CHECKING, Literal
 
 import pytest
+
 from pact.v3 import Pact
 
 if TYPE_CHECKING:

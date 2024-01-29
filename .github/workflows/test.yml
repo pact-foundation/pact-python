@@ -134,3 +134,9 @@ jobs:
 
       - name: Lint
         run: hatch run lint
+
+      - name: Typecheck
+        run: hatch run typecheck
+
+      - name: Format
+        run: hatch run format
