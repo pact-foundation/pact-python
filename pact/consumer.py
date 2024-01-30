@@ -13,7 +13,7 @@ class Consumer(object):
 
     >>> from pact import Consumer, Provider
     >>> consumer = Consumer('my-web-front-end')
-    >>> consumer.has_pact_with(Provider('my-backend-serivce'))
+    >>> consumer.has_pact_with(Provider('my-backend-service'))
     """
 
     def __init__(self, name, service_cls=Pact, tags=None,
@@ -79,7 +79,7 @@ class Consumer(object):
         >>> from pact import Consumer, Provider
         >>> consumer = Consumer('my-web-front-end')
         >>> consumer.has_pact_with(
-        ...   Provider('my-backend-serivce'),
+        ...   Provider('my-backend-service'),
         ...   host_name='192.168.1.1',
         ...   port=8000)
 
@@ -91,7 +91,7 @@ class Consumer(object):
             `localhost`.
         :type host_name: str
         :param port: The TCP port to use when contacting the Pact mock service.
-            This will need to tbe the same port used by your code under test
+            This will need to be the same port used by your code under test
             to contact the mock service. It defaults to: 1234
         :type port: int
         :param log_dir: The directory where logs should be written. Defaults to
