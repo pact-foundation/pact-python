@@ -75,7 +75,7 @@ jobs:
           fetch-depth: 0
 
       - name: Create wheels
-        uses: pypa/cibuildwheel@0b04ab1040366101259658b355777e4ff2d16f83 # v2.16.4
+        uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
 
@@ -117,7 +117,7 @@ jobs:
           platforms: arm64
 
       - name: Create wheels
-        uses: pypa/cibuildwheel@0b04ab1040366101259658b355777e4ff2d16f83 # v2.16.4
+        uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
 
