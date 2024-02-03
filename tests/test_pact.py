@@ -562,6 +562,22 @@ class PactContextManagerTestCase(PactTestCase):
         self.mock_setup.assert_called_once_with(pact)
         self.assertFalse(self.mock_verify.called)
 
+    def test_does_not_leave_interactions_after_exception(self):
+        pact = Pact(self.consumer, self.provider)
+        (pact
+         .given('I am creating a new pact using the Pact class')
+         .upon_receiving('a specific request to the server')
+         .with_request('GET', '/path')
+         .will_respond_with(200, body='success'))
+        with self.assertRaises(RuntimeError):
+            with pact:
+                raise RuntimeError
+
+        assert pact._interactions == []
+
+
+
+
 
 class PactContextManagerSetupTestCase(PactTestCase):
     def test_definition_without_description(self):
