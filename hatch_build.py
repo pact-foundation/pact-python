@@ -193,11 +193,11 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         if str(artifact).endswith(".zip"):
             with zipfile.ZipFile(artifact) as f:
-                f.extractall(ROOT_DIR)
+                f.extractall(ROOT_DIR)  # noqa: S202
 
         if str(artifact).endswith(".tar.gz"):
             with tarfile.open(artifact) as f:
-                f.extractall(ROOT_DIR)
+                f.extractall(ROOT_DIR)  # noqa: S202
 
         # Cleanup the extract `README.md`
         (ROOT_DIR / "pact" / "README.md").unlink()

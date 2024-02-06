@@ -76,7 +76,7 @@ test = [
   "pytest-cov        ~= 4.0",
   "testcontainers    ~= 3.0",
 ]
-dev = ["pact-python[types]", "pact-python[test]", "ruff==0.1.15"]
+dev = ["pact-python[types]", "pact-python[test]", "ruff==0.2.1"]
 
 ################################################################################
 ## Hatch Build Configuration
@@ -122,9 +122,9 @@ extra-dependencies = [
 ]
 
 [tool.hatch.envs.default.scripts]
-lint       = "ruff check --show-source --show-fixes {args}"
+lint       = "ruff check --output-format=full --show-fixes {args}"
 typecheck  = "mypy {args:.}"
-format     = "ruff format --diff {args}"
+format     = "ruff format {args}"
 test       = "pytest tests/ {args}"
 example    = "pytest examples/ {args}"
 all        = ["format", "lint", "typecheck", "test", "example"]
@@ -242,10 +242,10 @@ keep-runtime-typing = true
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["pact"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
 [tool.ruff.format]
