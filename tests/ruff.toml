@@ -1,4 +1,6 @@
 extend = "../pyproject.toml"
+
+[lint]
 ignore = [
   "D103",    # Require docstrings on public functions
   "INP001",  # Forbid implicit namespaces
