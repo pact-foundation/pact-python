@@ -29,7 +29,9 @@ from packaging.tags import sys_tags
 
 ROOT_DIR = Path(__file__).parent.resolve()
 
-PACT_BIN_VERSION = os.getenv("PACT_BIN_VERSION", "2.0.7")
+# Latest version available at:
+# https://github.com/pact-foundation/pact-ruby-standalone/releases
+PACT_BIN_VERSION = os.getenv("PACT_BIN_VERSION", "2.1.0")
 PACT_BIN_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 
 PACT_LIB_VERSION = os.getenv("PACT_LIB_VERSION", "0.4.9")
