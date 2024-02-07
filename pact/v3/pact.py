@@ -380,6 +380,41 @@ class Interaction(abc.ABC):
         )
         return self
 
+    def with_matching_rules(
+        self,
+        rules: dict[str, Any] | str,
+        part: Literal["Request", "Response"] | None = None,
+    ) -> Self:
+        """
+        Add matching rules to the interaction.
+
+        Matching rules are used to specify how the request or response should be
+        matched. This is useful for specifying that certain parts of the request
+        or response are flexible, such as the date or time.
+
+        Args:
+            rules:
+                Matching rules to add to the interaction. This must be
+                encodable using [`json.dumps(...)`][json.dumps], or a string.
+
+            part:
+                Whether the matching rules should be added to the request or the
+                response. If `None`, then the function intelligently determines
+                whether the matching rules should be added to the request or the
+                response, based on whether the
+                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                method has been called.
+        """
+        if isinstance(rules, dict):
+            rules = json.dumps(rules)
+
+        pact.v3.ffi.with_matching_rules(
+            self._handle,
+            self._parse_interaction_part(part),
+            rules,
+        )
+        return self
+
 
 class HttpInteraction(Interaction):
     """
