@@ -5687,7 +5687,14 @@ def with_matching_rules(
     Raises:
         RuntimeError: If the rules could not be added.
     """
-    raise NotImplementedError
+    success: bool = lib.pactffi_with_matching_rules(
+        interaction._ref,
+        part.value,
+        rules.encode("utf-8"),
+    )
+    if not success:
+        msg = f"Unable to set matching rules for {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_multipart_file_v2(  # noqa: PLR0913
