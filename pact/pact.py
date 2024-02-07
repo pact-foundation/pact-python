@@ -383,6 +383,7 @@ class Pact(Broker):
         Calls the mock service to verify that all interactions occurred as
         expected, and has it write out the contracts to disk.
         """
+        self._interactions = []
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             return
 
