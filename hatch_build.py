@@ -34,7 +34,9 @@ ROOT_DIR = Path(__file__).parent.resolve()
 PACT_BIN_VERSION = os.getenv("PACT_BIN_VERSION", "2.1.0")
 PACT_BIN_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 
-PACT_LIB_VERSION = os.getenv("PACT_LIB_VERSION", "0.4.9")
+# Latest version available at:
+# https://github.com/pact-foundation/pact-reference/releases
+PACT_LIB_VERSION = os.getenv("PACT_LIB_VERSION", "0.4.15")
 PACT_LIB_URL = "https://github.com/pact-foundation/pact-reference/releases/download/libpact_ffi-v{version}/{prefix}pact_ffi-{os}-{machine}.{ext}"
 
 
