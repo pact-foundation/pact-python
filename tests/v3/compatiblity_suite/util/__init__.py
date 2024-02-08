@@ -1,5 +1,22 @@
 """
 Utility functions to help with testing.
+
+## Sharing PyTest BDD Steps
+
+The PyTest BDD library does some 'magic' to make the given/when/then steps
+available in the test context. This is done by inspecting the stack frame of the
+calling function and injecting the step definition function as a fixture.
+
+This is a problem when sharing steps between different test suites, as the stack
+frame is different. Fortunately, PyTest BDD allows us to specify the stack level
+to inspect, so we can use that to our advantage with the following pattern:
+
+```python
+def some_step(stacklevel: int = 1) -> None:
+    @when(..., stacklevel=stacklevel + 1)
+    def _():
+        # Step definition goes here
+```
 """
 
 from __future__ import annotations
@@ -12,9 +29,14 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 from multidict import MultiDict
+from yarl import URL
+
+if typing.TYPE_CHECKING:
+    import pact.v3
+    import pact.v3.pact
 
 logger = logging.getLogger(__name__)
-SUITE_ROOT = Path(__file__).parent / "definition"
+SUITE_ROOT = Path(__file__).parent.parent / "definition"
 FIXTURES_ROOT = SUITE_ROOT / "fixtures"
 
 
@@ -98,6 +120,33 @@ def truncate(data: str | bytes) -> str:
         + '"'
         + f" ({length} bytes, sha256={checksum[:7]})"
     )
+
+
+def parse_markdown_table(content: str) -> list[dict[str, str]]:
+    """
+    Parse a Markdown table into a list of dictionaries.
+
+    The table is expected to be in the following format:
+
+    ```markdown
+    | key1 | key2 | key3 |
+    | val1 | val2 | val3 |
+    ```
+
+    Note that the first row is expected to be the column headers, and the
+    remaining rows are the values. There is no header/body separation.
+    """
+    rows = [
+        list(map(str.strip, row.split("|")))[1:-1]
+        for row in content.split("\n")
+        if row.strip()
+    ]
+
+    if len(rows) < 2:
+        msg = f"Expected at least two rows in the table, got {len(rows)}"
+        raise ValueError(msg)
+
+    return [dict(zip(rows[0], row)) for row in rows[1:]]
 
 
 class InteractionDefinition:
@@ -221,15 +270,16 @@ class InteractionDefinition:
         self.id: int | None = None
         self.method: str = kwargs.pop("method")
         self.path: str = kwargs.pop("path")
-        self.response: int = int(kwargs.pop("response"))
+        self.response: int = int(kwargs.pop("response", 200))
         self.query: str | None = None
         self.headers: MultiDict[str] = MultiDict()
         self.body: InteractionDefinition.Body | None = None
         self.response_content: str | None = None
         self.response_body: InteractionDefinition.Body | None = None
+        self.matching_rules: str | None = None
         self.update(**kwargs)
 
-    def update(self, **kwargs: str) -> None:  # noqa: C901
+    def update(self, **kwargs: str) -> None:  # noqa: C901, PLR0912
         """
         Update the interaction definition.
 
@@ -238,36 +288,57 @@ class InteractionDefinition:
         """
         if interaction_id := kwargs.pop("No", None):
             self.id = int(interaction_id)
+
         if method := kwargs.pop("method", None):
             self.method = method
+
         if path := kwargs.pop("path", None):
             self.path = path
+
         if query := kwargs.pop("query", None):
             self.query = query
+
         if headers := kwargs.pop("headers", None):
-            self.headers = InteractionDefinition.parse_headers(headers)
+            self.headers = self.parse_headers(headers)
+
+        if headers := (
+            kwargs.pop("raw headers", None) or kwargs.pop("raw_headers", None)
+        ):
+            self.headers = self.parse_headers(headers)
+
         if body := kwargs.pop("body", None):
             # When updating the body, we _only_ update the body content, not
             # the content type.
             orig_content_type = self.body.mime_type if self.body else None
             self.body = InteractionDefinition.Body(body)
             self.body.mime_type = orig_content_type or self.body.mime_type
+
         if content_type := (
             kwargs.pop("content_type", None) or kwargs.pop("content type", None)
         ):
             if self.body is None:
                 self.body = InteractionDefinition.Body("")
             self.body.mime_type = content_type
+
         if response := kwargs.pop("response", None):
             self.response = int(response)
+
         if response_content := (
             kwargs.pop("response_content", None) or kwargs.pop("response content", None)
         ):
             self.response_content = response_content
+
         if response_body := (
             kwargs.pop("response_body", None) or kwargs.pop("response body", None)
         ):
             self.response_body = InteractionDefinition.Body(response_body)
+
+        if matching_rules := (
+            kwargs.pop("matching_rules", None) or kwargs.pop("matching rules", None)
+        ):
+            self.matching_rules = InteractionDefinition.parse_matching_rules(
+                matching_rules
+            )
 
         if len(kwargs) > 0:
             msg = f"Unexpected arguments: {kwargs.keys()}"
@@ -281,8 +352,8 @@ class InteractionDefinition:
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
 
-    @staticmethod
-    def parse_headers(headers: str) -> MultiDict[str]:
+    @classmethod
+    def parse_headers(cls, headers: str) -> MultiDict[str]:
         """
         Parse the headers.
 
@@ -296,6 +367,112 @@ class InteractionDefinition:
         """
         kvs: list[tuple[str, str]] = []
         for header in headers.split(", "):
-            k, v = header.strip("'").split(": ")
+            k, _sep, v = header.strip("'").partition(": ")
             kvs.append((k, v))
         return MultiDict(kvs)
+
+    @classmethod
+    def parse_matching_rules(cls, matching_rules: str) -> str:
+        """
+        Parse the matching rules.
+
+        The matching rules are in one of two formats:
+
+        - An explicit JSON object, prefixed by `JSON: `.
+        - A fixture file which contains the matching rules.
+        """
+        if matching_rules.startswith("JSON: "):
+            return matching_rules[6:]
+
+        with (FIXTURES_ROOT / matching_rules).open("r") as file:
+            return file.read()
+
+    def add_to_pact(self, pact: pact.v3.Pact, name: str) -> None:  # noqa: PLR0912, C901
+        """
+        Add the interaction to the pact.
+
+        This is a convenience method that allows the interaction definition to
+        be added to the pact, defining the "upon receiving ... with ... will
+        respond with ...".
+
+        Args:
+            pact:
+                The pact being defined.
+
+            name:
+                Name for this interaction. Must be unique for the pact.
+        """
+        interaction = pact.upon_receiving(name)
+        logging.info("with_request(%s, %s)", self.method, self.path)
+        interaction.with_request(self.method, self.path)
+
+        if self.query:
+            query = URL.build(query_string=self.query).query
+            logging.info("with_query_parameters(%s)", query.items())
+            interaction.with_query_parameters(query.items())
+
+        if self.headers:
+            logging.info("with_headers(%s)", self.headers.items())
+            interaction.with_headers(self.headers.items())
+
+        if self.body:
+            if self.body.string:
+                logging.info(
+                    "with_body(%s, %s)",
+                    truncate(self.body.string),
+                    self.body.mime_type,
+                )
+                interaction.with_body(
+                    self.body.string,
+                    self.body.mime_type,
+                )
+            elif self.body.bytes:
+                logging.info(
+                    "with_binary_file(%s, %s)",
+                    truncate(self.body.bytes),
+                    self.body.mime_type,
+                )
+                interaction.with_binary_body(
+                    self.body.bytes,
+                    self.body.mime_type,
+                )
+            else:
+                msg = "Unexpected body definition"
+                raise RuntimeError(msg)
+
+        if self.matching_rules:
+            logging.info("with_matching_rules(%s)", self.matching_rules)
+            interaction.with_matching_rules(self.matching_rules)
+
+        if self.response:
+            logging.info("will_respond_with(%s)", self.response)
+            interaction.will_respond_with(self.response)
+
+        if self.response_content:
+            if self.response_body is None:
+                msg = "Expected response body along with response content type"
+                raise ValueError(msg)
+
+            if self.response_body.string:
+                logging.info(
+                    "with_body(%s, %s)",
+                    truncate(self.response_body.string),
+                    self.response_content,
+                )
+                interaction.with_body(
+                    self.response_body.string,
+                    self.response_content,
+                )
+            elif self.response_body.bytes:
+                logging.info(
+                    "with_binary_file(%s, %s)",
+                    truncate(self.response_body.bytes),
+                    self.response_content,
+                )
+                interaction.with_binary_body(
+                    self.response_body.bytes,
+                    self.response_content,
+                )
+            else:
+                msg = "Unexpected body definition"
+                raise RuntimeError(msg)
