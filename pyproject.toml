@@ -84,16 +84,20 @@ dev = ["pact-python[types]", "pact-python[test]", "ruff==0.2.2"]
 
 [build-system]
 requires = [
+  "cffi",
+  "hatch-vcs",
   "hatchling",
   "packaging",
   "requests",
-  "cffi",
   "setuptools ; python_version >= '3.12'",
 ]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "pact/__version__.py"
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "pact/__version__.py"
 
 [tool.hatch.build]
 include = ["**/py.typed", "**/*.md", "LICENSE", "pact/**/*.py", "pact/**/*.pyi"]

@@ -9,8 +9,27 @@ from .pact import Pact
 from .provider import Provider
 from .verifier import Verifier
 
-from .__version__ import __version__  # noqa: F401
+from .__version__ import __version__, __version_tuple__
 
-__all__ = ('Broker', 'Consumer', 'EachLike', 'Like',
-           'MessageConsumer', 'MessagePact', 'MessageProvider',
-           'Pact', 'Provider', 'SomethingLike', 'Term', 'Format', 'Verifier')
+__url__ = "https://github.com/pactflow/accord"
+__license__ = "MIT"
+
+__all__ = [
+    '__version__',
+    '__version_tuple__',
+    '__url__',
+    '__license__',
+    'Broker',
+    'Consumer',
+    'EachLike',
+    'Like',
+    'MessageConsumer',
+    'MessagePact',
+    'MessageProvider',
+    'Pact',
+    'Provider',
+    'SomethingLike',
+    'Term',
+    'Format',
+    'Verifier',
+]
