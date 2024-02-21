@@ -3,7 +3,10 @@ name        = "pact-python"
 description = "Tool for creating and verifying consumer-driven contracts using the Pact framework."
 dynamic     = ["version"]
 
-authors     = [{ name = "Matthew Balvanz", email = "matthew.balvanz@workiva.com" }]
+authors = [
+  { name = "Matthew Balvanz", email = "matthew.balvanz@workiva.com" },
+  { name = "Joshua Ellis", email = "josh@jpellis.me" },
+]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 
 readme = "README.md"
