@@ -5,15 +5,15 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import TYPE_CHECKING, Any, Generator
+from typing import Any, Generator
 
-from pytest_bdd import given, parsers, scenario, then, when
+from pytest_bdd import given, parsers, scenario, then
 
 from pact.v3.pact import HttpInteraction, Pact
 from tests.v3.compatiblity_suite.util import parse_markdown_table
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from tests.v3.compatiblity_suite.util.consumer import (
+    the_pact_file_for_the_test_is_generated,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,18 +101,7 @@ def a_provider_state_is_specified_with_the_following_data(
 ################################################################################
 
 
-@when(
-    "the Pact file for the test is generated",
-    target_fixture="pact_data",
-)
-def the_pact_file_for_the_test_is_generated(
-    temp_dir: Path,
-    pact_interaction: tuple[Pact, HttpInteraction],
-) -> dict[str, Any]:
-    """The Pact file for the test is generated."""
-    pact_interaction[0].write_file(temp_dir)
-    with (temp_dir / "consumer-provider.json").open("r") as file:
-        return json.load(file)
+the_pact_file_for_the_test_is_generated()
 
 
 ################################################################################
