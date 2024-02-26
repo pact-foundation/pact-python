@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from pathlib import Path
 
-    from pact.v3.pact import PactServer
+    from pact.v3.pact import HttpInteraction, PactServer
     from tests.v3.compatiblity_suite.util import InteractionDefinition
 
 logger = logging.getLogger(__name__)
@@ -191,6 +191,22 @@ def the_pact_test_is_done(stacklevel: int = 1) -> None:
         """
         The pact test is done.
         """
+
+
+def the_pact_file_for_the_test_is_generated(stacklevel: int = 1) -> None:
+    @when(
+        "the Pact file for the test is generated",
+        target_fixture="pact_data",
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        temp_dir: Path,
+        pact_interaction: tuple[Pact, HttpInteraction],
+    ) -> dict[str, Any]:
+        """The Pact file for the test is generated."""
+        pact_interaction[0].write_file(temp_dir)
+        with (temp_dir / "consumer-provider.json").open("r") as file:
+            return json.load(file)
 
 
 ################################################################################
