@@ -325,6 +325,49 @@ class Interaction(abc.ABC):
         )
         return self
 
+    def set_key(self, key: str | None) -> Self:
+        """
+        Sets the key for the interaction.
+
+        This is used by V4 interactions to set the key of the interaction, which
+        can subsequently used to reference the interaction.
+        """
+        pact.v3.ffi.set_key(self._handle, key)
+        return self
+
+    def set_pending(self, *, pending: bool) -> Self:
+        """
+        Mark the interaction as pending.
+
+        This is used by V4 interactions to mark the interaction as pending, in
+        which case the provider is not expected to honour the interaction.
+        """
+        pact.v3.ffi.set_pending(self._handle, pending=pending)
+        return self
+
+    def set_comment(self, key: str, value: Any | None) -> Self:  # noqa: ANN401
+        """
+        Set a comment for the interaction.
+
+        This is used by V4 interactions to set a comment for the interaction. A
+        comment consists of a key-value pair, where the key is a string and the
+        value is anything that can be encoded as JSON.
+
+        Args:
+            key:
+                Key for the comment.
+
+            value:
+                Value for the comment. This must be encodable using
+                [`json.dumps(...)`][json.dumps], or an existing JSON string. The
+                value of `None` will remove the comment with the given key.
+        """
+        if isinstance(value, str) or value is None:
+            pact.v3.ffi.set_comment(self._handle, key, value)
+        else:
+            pact.v3.ffi.set_comment(self._handle, key, json.dumps(value))
+        return self
+
     def test_name(
         self,
         name: str,
@@ -518,7 +561,7 @@ class HttpInteraction(Interaction):
         # JSON Matching
 
         Pact's matching rules are defined in the [upstream
-        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.15/rust/pact_ffi/IntegrationJson.md)
+        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.18/rust/pact_ffi/IntegrationJson.md)
         and support a wide range of matching rules. These can be specified
         using a JSON object as a strong using `json.dumps(...)`. For example,
         the above rule whereby the `X-Foo` header has multiple values can be
@@ -758,7 +801,7 @@ class HttpInteraction(Interaction):
         ```
 
         For more information on the format of the JSON object, see the [upstream
-        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.15/rust/pact_ffi/IntegrationJson.md).
+        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.18/rust/pact_ffi/IntegrationJson.md).
 
         Args:
             name:
