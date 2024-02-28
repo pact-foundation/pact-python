@@ -46,6 +46,7 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Install Hatch
         run: pip install --upgrade hatch
@@ -96,6 +97,7 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
 
       - name: Install Hatch
         run: pip install --upgrade hatch
@@ -128,6 +130,7 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
 
       - name: Install Hatch
         run: pip install --upgrade hatch
