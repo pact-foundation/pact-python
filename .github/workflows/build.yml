@@ -36,6 +36,7 @@ jobs:
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
 
       - name: Install hatch
         run: pip install --upgrade hatch
@@ -73,6 +74,16 @@ jobs:
         with:
           # Fetch all tags
           fetch-depth: 0
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ github.workflow }}-pip-${{ runner.os }}
+            ${{ github.workflow }}-pip
+            ${{ github.workflow }}
 
       - name: Filter targets
         id: cibw-filter
@@ -123,6 +134,16 @@ jobs:
           # Fetch all tags
           fetch-depth: 0
 
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ github.workflow }}-pip-${{ runner.os }}
+            ${{ github.workflow }}-pip
+            ${{ github.workflow }}
+
       - name: Set up QEMU
         if: matrix.os == 'ubuntu-latest'
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
@@ -153,10 +174,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
       - name: Setup Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
 
       - uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4
         with:
