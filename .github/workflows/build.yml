@@ -20,7 +20,7 @@ env:
   CIBW_BUILD_FRONTEND: build
 
 jobs:
-  build-sdit:
+  build-sdist:
     name: Build source distribution
 
     if: github.event_name == 'push' || ! github.event.pull_request.draft
@@ -114,7 +114,7 @@ jobs:
   build-arm64:
     name: Build wheels on ${{ matrix.os }} (arm64)
 
-    # As this requires emulation, it's not worth running on PRs
+    # As this requires emulation, it's not worth running on PRs or master
     if: >-
       github.event_name == 'push' &&
       startsWith(github.event.ref, 'refs/tags')
@@ -189,22 +189,60 @@ jobs:
           pipx run twine check --strict wheelhouse/*
 
   publish:
-    name: Publish wheels
+    name: Publish wheels and sdist
 
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment: pypi
 
-    needs: [check]
+    needs:
+      - build-sdist
+      - build-x86_64
+      - build-arm64
 
     permissions:
       # Required for trusted publishing
       id-token: write
+      # Required for release creation
+      contents: write
 
     steps:
       - uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4
         with:
           path: wheels
+          merge-multiple: true
+
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Update changelog
+        id: changelog
+        run: |
+          pip install --upgrade commitizen
+
+          cz changelog \
+            --incremental \
+            --template .github/CHANGELOG.md.j2 \
+            --dry-run \
+            | tail -n+2 \
+            > ${{ runner.temp }}/changelog
+          echo -e "\n\n## Pull Requests\n\n" >> ${{ runner.temp }}/changelog
+
+          cz changelog \
+            --incremental \
+            --template .github/CHANGELOG.md.j2
+
+      - name: Generate release
+        id: release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: wheels/*
+          body_path: ${{ runner.temp }}/changelog
+          draft: false
+          prerelease: false
+          generate_release_notes: true
 
       - name: Push build artifacts to PyPI
         uses: pypa/gh-action-pypi-publish@e53eb8b103ffcb59469888563dc324e3c8ba6f06 # v1.8.12
@@ -212,3 +250,14 @@ jobs:
           skip-existing: true
           password: ${{ secrets.PYPI_TOKEN }}
           packages-dir: wheels
+
+      - name: Create PR for changelog update
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: "chore: update changelog ${{ github.ref_name }}"
+          title: "chore: update changelog"
+          body: |
+            This PR updates the changelog for ${{ github.ref_name }}.
+          branch: chore/update-changelog
+          base: master
