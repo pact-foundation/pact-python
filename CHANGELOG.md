@@ -1,31 +1,27 @@
-### 2.1.0
+## v2.1.0 (2023-10-04)
 
--   82df76f - feat: bump pact standalone to 2.0.7 (JP-Ellis, Mon Sep 25 11:12:45 2023 +1000)
--   9896320 - chore: address pr comments (JP-Ellis, Wed Sep 27 10:31:56 2023 +1000)
--   e86b7eb - chore(example): avoid changing python path (JP-Ellis, Fri Sep 22 13:28:26 2023 +1000)
--   045083b - chore(ci): split tests examples and lints (JP-Ellis, Thu Sep 21 12:46:44 2023 +1000)
--   3a59235 - chore(example): migrate message pact example (JP-Ellis, Wed Sep 20 13:47:26 2023 +1000)
--   aa0f07e - chore(example): update readme (JP-Ellis, Wed Sep 20 13:20:06 2023 +1000)
--   9488f0e - chore(example): migrate flask provider example (JP-Ellis, Mon Sep 18 15:46:38 2023 +1000)
--   dd8827a - chore(example): migrate fastapi provider example (JP-Ellis, Mon Sep 18 14:20:39 2023 +1000)
--   4c47843 - chore(example): migrate consumer example (JP-Ellis, Fri Sep 15 16:30:20 2023 +1000)
--   8ee2eb0 - feat(example): simplify docker-compose (JP-Ellis, Thu Sep 14 17:00:14 2023 +1000)
--   7c60dd5 - docs: incorporate suggestions from @YOU54F (JP-Ellis, Fri Sep 22 11:37:22 2023 +1000)
--   6d223fc - docs: add issue and pr templates (JP-Ellis, Wed Sep 20 18:04:43 2023 +1000)
--   3634a5c - docs: rewrite contributing.md (JP-Ellis, Wed Sep 20 18:00:19 2023 +1000)
--   093d9b8 - chore(ci): migrate cicd to hatch (JP-Ellis, Wed Sep 13 13:21:36 2023 +1000)
--   5b19665 - chore!: migrate to pyproject.toml and hatch (JP-Ellis, Tue Sep 12 16:13:24 2023 +1000)
--   04deeec - chore: update pre-commit config (JP-Ellis, Wed Sep 13 10:57:51 2023 +1000)
--   d5017f8 - style: add pre-commit hooks and editorconfig (JP-Ellis, Thu Sep 14 11:22:58 2023 +1000)
--   ed5f86c - chore: add pact-foundation triage automation (Matt Fellows, Fri Aug 4 16:37:05 2023 +1000)
+### BREAKING CHANGE
 
-### 2.0.1
+-   Drop support for Python 3.6 and 3.7
+
+### Feat
+
+-   bump pact standalone to 2.0.7
+-   **example**: simplify docker-compose
+
+### Fix
+
+-   **ci**: pypi publish
+-   **github**: fix typo in template
+-   migrate to pyproject.toml and hatch
+
+## 2.0.1
 
 -   d3397b7 - chore(examples): update docker setup for non linux os (Yousaf Nabi, Tue Jul 25 14:55:42 2023 +0100)
 -   ef12e56 - feat: update standalone to 2.0.3 (Yousaf Nabi, Tue Jul 25 14:00:38 2023 +0100)
 -   1429d2f - chore: update MANIFEST file to note 2.0.2 standalone (Yousaf Nabi, Tue Jul 25 13:56:08 2023 +0100)
 
-### 2.0.0
+## 2.0.0
 
 -   2a244ea - chore: update to 2.0.2 pact-ruby-standalone (Yousaf Nabi, Sat Jul 8 14:12:18 2023 +0100)
 -   819f0a7 - test: v2.0.1 (pact-2.0.1) - pact-ruby-standalone (Yousaf Nabi, Thu May 18 23:30:30 2023 +0100)
@@ -61,7 +57,7 @@
 -   a219f49 - fix: actualize doc on how to make contributions (Serghei Iakovlev, Thu Mar 2 08:56:48 2023 +0100)
 -   4919772 - feat: add matchers for ISO 8601 date format (Serghei Iakovlev, Sun Mar 12 16:03:44 2023 +0100)
 
-### 1.7.0
+## 1.7.0
 
 -   44cda33 - chore: /s/Pactflow/PactFlow (Yousaf Nabi, Thu Jan 26 16:11:54 2023 +0000)
 -   1bbdd37 - feat: Enhance provider states for pact-message (#322) (nsfrias, Tue Jan 24 17:04:29 2023 +0000)
@@ -69,7 +65,7 @@
 -   d87d54b - fix: setup security issue (#318) (Elliott Murray, Mon Nov 21 09:39:41 2022 +0000)
 -   55f2a64 - fix: requirements_dev.txt to reduce vulnerabilities (#317) (Matt Fellows, Sun Nov 6 02:12:30 2022 +1100)
 
-### 1.6.0
+## 1.6.0
 
 -   ceff89b - Publish verify branches (#306) (Yousaf Nabi, Sun Sep 11 11:33:44 2022 +0100)
 -   89733d6 - feat: Support verify with branch (#302) (B3nnyL, Sun Sep 11 20:14:13 2022 +1000)
@@ -78,22 +74,22 @@
 -   2015f72 - build: Correct download logic when installing. Add a helper target to setup a pyenv via make (#297) (mikegeeves, Sun Jun 19 09:27:07 2022 +0100)
 -   c17ac70 - docs: Update docs to reflect usage for native Python (#227) (Jiayun Fang, Wed Apr 27 10:00:50 2022 -0700)
 
-### 1.5.2
+## 1.5.2
 
 -   25823ae - chore: update PACT_STANDALONE_VERSION to 1.88.83 (#292) (Yousaf Nabi, Mon Mar 21 22:14:40 2022 +0000)
 
-### 1.5.1
+## 1.5.1
 
 -   e645b24 - feat: message_pact -> with_metadata() updated to accept term (#289) (sunsathish88, Tue Mar 8 12:08:34 2022 -0500)
 -   b981865 - docs(examples-consumer): add pip install requirements to the consumer… (#291) (mikegeeves, Sun Mar 6 10:12:32 2022 +0000)
 -   4c76ae8 - test(examples): move shared fixtures to a common folder so they can b… (#280) (mikegeeves, Sun Mar 6 10:10:11 2022 +0000)
 
-### 1.5.0
+## 1.5.0
 
 -   8085be0 - feat: No include pending (#284) (Abraham Gonzalez, Wed Feb 2 13:20:39 2022 +0100)
 -   f169f3b - ci: python36-support-removed (#283) (mikegeeves, Sat Jan 22 10:26:44 2022 +0000)
 
-### 1.4.6
+## 1.4.6
 
 -   6c25844 - chore: flake8 config to ignore direnv (Elliott Murray, Mon Jan 3 18:33:47 2022 +0000)
 -   891134a - feat(matcher): Allow bytes type in from_term function (#281) (joshua-badger, Mon Jan 3 11:23:40 2022 -0700)
@@ -101,19 +97,19 @@
 -   02643d4 - test(examples-fastapi): tidy FastAPI example, making consistent with Flask (#274) (mikegeeves, Sun Oct 31 21:52:54 2021 +0000)
 -   bf110e2 - docs: Docs/examples (#273) (Elliott Murray, Tue Oct 26 21:54:00 2021 +0100)
 
-### 1.4.5
+## 1.4.5
 
 -   695d51f - fix: update standalone to 1.88.77 to fix Let's Encrypt CA issue (Matt Fellows, Mon Oct 11 13:29:34 2021 +1100)
 
-### 1.4.4
+## 1.4.4
 
 -   b90cf3d - fix(ruby): update ruby standalone to support disabling SSL verification via an environment variable (m-aciek, Sat Oct 2 03:04:14 2021 +0200)
 
-### 1.4.3
+## 1.4.3
 
 -   08f0dc0 - feat: added support for message provider using pact broker (#257) (Fabio Pulvirenti, Sun Sep 5 22:49:51 2021 +0200)
 
-### 1.4.2
+## 1.4.2
 
 -   f2230b6 - chore: Bundle Ruby standalones into dist artifact. (#256) (Taj Pereira, Sun Aug 22 19:53:53 2021 +0930)
 -   e370786 - chore: Releasing version 1.4.1 (Elliott Murray, Tue Aug 17 18:55:53 2021 +0100)
@@ -123,17 +119,17 @@
 -   903371b - feat: added support for message provider (#251) (Fabio Pulvirenti, Sat Jul 31 13:24:19 2021 +0200)
 -   2c81029 - chore(snyk): update fastapi (#239) (Elliott Murray, Fri Jun 11 09:12:38 2021 +0100)
 
-### 1.4.1
+## 1.4.1
 
 -   7dc8864 - fix: make uvicorn versions over 0.14 (#255) (Elliott Murray, Tue Aug 17 18:51:52 2021 +0100)
 
-### 1.4.0
+## 1.4.0
 
 -   0089937 - fix: issue originating from snyk with requests and urllib (#252) (Elliott Murray, Sat Jul 31 12:46:15 2021 +0100)
 -   903371b - feat: added support for message provider (#251) (Fabio Pulvirenti, Sat Jul 31 13:24:19 2021 +0200)
 -   2c81029 - chore(snyk): update fastapi (#239) (Elliott Murray, Fri Jun 11 09:12:38 2021 +0100)
 
-### 1.3.9
+## 1.3.9
 
 -   98d9a4b - chore(ruby): update ruby standalen (#233) (Elliott Murray, Thu May 13 20:21:10 2021 +0100)
 -   657e770 - fix: change default from empty string to empty list (#235) (Vasile Tofan, Thu May 13 22:20:47 2021 +0300)
@@ -141,12 +137,12 @@
 -   3c909f1 - docs: example uses date matcher (#231) (Elliott Murray, Sat May 1 11:51:28 2021 +0100)
 -   6390144 - fix: fix datetime serialization issues in Format (#230) (Syed Muhammad Dawoud Sheraz Ali, Thu Apr 29 01:49:53 2021 +0500)
 
-### 1.3.8
+## 1.3.8
 
 -   3c909f1 - docs: example uses date matcher (#231) (Elliott Murray, Sat May 1 11:51:28 2021 +0100)
 -   6390144 - fix: fix datetime serialization issues in Format (#230) (Syed Muhammad Dawoud Sheraz Ali, Thu Apr 29 01:49:53 2021 +0500)
 
-### 1.3.7
+## 1.3.7
 
 -   20f828f - fix(broker): token added to verify steps (#226) (Elliott Murray, Sat Apr 24 13:47:22 2021 +0100)
 -   c4fe422 - chore: Releasing version 1.3.6 (Elliott Murray, Tue Apr 20 20:58:50 2021 +0100)
@@ -160,7 +156,7 @@
 -   f293dbb - Merge pull request #215 from pact-foundation/snyk-fix-ab489d8931bdf95d6ef0d217aa1b2eb6 (Elliott Murray, Wed Mar 31 09:27:02 2021 +0100)
 -   5946872 - fix: docker/py36.Dockerfile to reduce vulnerabilities (snyk-bot, Tue Mar 30 21:41:35 2021 +0000)
 
-### 1.3.6
+## 1.3.6
 
 -   34160a8 - fix: publish verification results was wrong (#222) (Elliott Murray, Tue Apr 20 20:58:20 2021 +0100)
 -   2c0252c - Merge pull request #219 from pact-foundation/ci/revert_snyk_36 (Elliott Murray, Sat Apr 3 11:13:49 2021 +0100)
@@ -245,17 +241,17 @@
 -   8f9a925 - Merge pull request #195 from cdambo/pass-pact-dir-to-cli (Elliott Murray, Sat Jan 23 10:39:53 2021 +0000)
 -   545fc37 - fix: send to cli pact_files with the pact_dir in their path (Chanan Damboritz, Tue Jan 19 18:51:17 2021 +0200)
 
-### 1.3.5
+## 1.3.5
 
 -   5864e47 - Merge pull request #213 from pact-foundation/fix/revert_some_publish (Elliott Murray, Sun Mar 28 15:27:50 2021 +0100)
 -   94e597a - fix(publish): fixing the fix. Pact Python api uses only publish_version and ensures it follows that (Elliott Murray, Sun Mar 28 15:20:04 2021 +0100)
 
-### 1.3.4
+## 1.3.4
 
 -   c778c71 - Merge pull request #212 from pact-foundation/fix/verify_in_provider (Elliott Murray, Sat Mar 27 18:59:25 2021 +0000)
 -   ea0b64a - fix: verifier should now publish (Elliott Murray, Sat Mar 27 16:21:25 2021 +0000)
 
-### 1.3.3
+## 1.3.3
 
 -   5e282ff - Merge pull request #211 from anneschuth/fix/pass-pact-dir (Elliott Murray, Thu Mar 25 21:21:56 2021 +0000)
 -   987c4fc - fix: pass pact_dir to publish() (Anne Schuth, Thu Mar 25 10:06:54 2021 +0100)
@@ -276,12 +272,12 @@
 -   5a0934c - chore: update ci stuff (Elliott Murray, Sat Feb 27 09:57:31 2021 +0000)
 -   66e79e2 - chore: move from nose to pytests as we are now 3.6+ (Elliott Murray, Sat Feb 27 09:34:37 2021 +0000)
 
-### 1.3.1
+## 1.3.1
 
 -   4440022 - Merge pull request #203 from pact-foundation/fix/version_confusion (Elliott Murray, Sat Feb 27 09:15:08 2021 +0000)
 -   9cac2d7 - fix: introduced and renamed specification version (Elliott Murray, Tue Feb 23 21:22:36 2021 +0000)
 
-### 1.3.0
+## 1.3.0
 
 -   eaa90e1 - Merge pull request #194 from williaminfante/feat/pact-message-2 (Elliott Murray, Mon Jan 25 08:48:00 2021 +0000)
 -   5ed73db - test: consider publish to broker with no pact_dir argument (William Infante, Mon Jan 25 17:19:08 2021 +1100)
@@ -330,7 +326,7 @@
 -   8f9a925 - Merge pull request #195 from cdambo/pass-pact-dir-to-cli (Elliott Murray, Sat Jan 23 10:39:53 2021 +0000)
 -   545fc37 - fix: send to cli pact_files with the pact_dir in their path (Chanan Damboritz, Tue Jan 19 18:51:17 2021 +0200)
 
-### 1.2.11
+## 1.2.11
 
 -   ba10318 - Merge pull request #192 from pact-foundation/fix/deploy_wheel_fix (Elliott Murray, Tue Dec 29 20:05:52 2020 +0000)
 -   289e784 - fix: not creating wheel (Elliott Murray, Tue Dec 29 20:00:19 2020 +0000)
@@ -351,7 +347,7 @@
 -   37e2f3a - chore: wqshell script to run flask in exmaples (Elliott Murray, Sun Nov 1 11:41:59 2020 +0000)
 -   b5d9d7b - chore(upgrade): upgrade python version to 3.8 (Elliott Murray, Sun Nov 1 11:12:10 2020 +0000)
 
-### 1.2.10
+## 1.2.10
 
 -   9438449 - Merge pull request #191 from pact-foundation/build-and-test-with-github-actions (Elliott Murray, Sat Dec 19 12:38:23 2020 +0000)
 -   2796ef5 - docs: Added badge to README (Elliott Murray, Sat Dec 19 09:37:22 2020 +0000)
@@ -369,7 +365,7 @@
 -   37e2f3a - chore: wqshell script to run flask in exmaples (Elliott Murray, Sun Nov 1 11:41:59 2020 +0000)
 -   b5d9d7b - chore(upgrade): upgrade python version to 3.8 (Elliott Murray, Sun Nov 1 11:12:10 2020 +0000)
 
-### 1.2.9
+## 1.2.9
 
 -   4430681 - Merge pull request #183 from thatguysimon/feat/verifier-class-consumer-version-selectors (Elliott Murray, Mon Oct 19 15:35:47 2020 +0100)
 -   683a931 - fix: Fix flaky tests using OrderedDict (Simon Nizov, Mon Oct 19 17:21:21 2020 +0300)
@@ -377,7 +373,7 @@
 -   e7c87ce - style: Fix linting issues (Simon Nizov, Mon Oct 19 11:16:59 2020 +0300)
 -   ee2eda0 - feat(verifier): Allow setting consumer_version_selectors on Verifier (Simon Nizov, Mon Oct 19 11:01:18 2020 +0300)
 
-### 1.2.8
+## 1.2.8
 
 -   4c68fd4 - Merge pull request #182 from thatguysimon/feat/enable-wip-pacts (Elliott Murray, Sat Oct 17 16:00:50 2020 +0100)
 -   9ea14d3 - refactor: Extract input validation in call_verify out into a dedicated method (Simon Nizov, Sat Oct 17 17:27:49 2020 +0300)
@@ -389,19 +385,19 @@
 -   186f4f4 - Merge pull request #179 from pact-foundation/docs/example_readme (Elliott Murray, Thu Oct 15 10:13:13 2020 +0100)
 -   2f66618 - docs(examples): tweak to readme (Elliott Murray, Thu Oct 15 10:08:52 2020 +0100)
 
-### 1.2.7
+## 1.2.7
 
 -   90b71d2 - Merge pull request #178 from pact-foundation/fix/custom_header_typo (Elliott Murray, Fri Oct 9 12:47:37 2020 +0100)
 -   b07ef69 - fix(verifier): headers not propogated properly (Elliott Murray, Fri Oct 9 12:24:25 2020 +0100)
 -   0e9b71c - Merge pull request #177 from pact-foundation/docs/remove_handcrafted_broker (Elliott Murray, Fri Oct 9 12:01:24 2020 +0100)
 -   2db7008 - docs(examples): removed manaul publish to broker (Elliott Murray, Fri Oct 9 11:54:30 2020 +0100)
 
-### 1.2.6
+## 1.2.6
 
 -   1192bd6 - Merge pull request #173 from copalco/master (Elliott Murray, Thu Sep 10 15:30:07 2020 +0100)
 -   5db7100 - feat(verifier): allow to use unauthenticated brokers (Piotr Kopalko, Thu Sep 10 14:12:12 2020 +0200)
 
-### 1.2.5
+## 1.2.5
 
 -   46372c7 - Merge pull request #171 from m-aciek/enable-pending (Elliott Murray, Wed Sep 9 10:03:02 2020 +0100)
 -   e840587 - fix(verifier): remove superfluous verbose mentions (Maciej Olko, Sat Sep 5 21:33:52 2020 +0200)
@@ -413,14 +409,14 @@
 -   fc6c365 - fix(verifier): remove superfluous option from verify CLI command (Maciej Olko, Thu Sep 3 13:30:57 2020 +0200)
 -   fbbd5fa - ci(pre-commit): add commitizen to pre-commit configuration (Maciej Olko, Thu Sep 3 17:19:45 2020 +0200)
 
-### 1.2.4
+## 1.2.4
 
 -   a594e22 - Merge pull request #170 from alecgerona/feat/consumer-version-selector (Elliott Murray, Thu Aug 27 15:21:45 2020 +0100)
 -   05c5e41 - docs(cli): improve cli help grammar (Alexandre Gerona, Thu Aug 27 06:28:56 2020 +0800)
 -   49d5f7c - docs: update README.md with relevant option documentation (Alexandre Gerona, Thu Aug 27 06:22:37 2020 +0800)
 -   5a99528 - feat(cli): add consumer-version-selector option (Alexandre Gerona, Thu Aug 27 06:22:07 2020 +0800)
 
-### 1.2.3
+## 1.2.3
 
 -   8188d88 - chore: fix release script (Elliott Murray, Wed Aug 26 12:46:10 2020 +0100)
 -   e0e5106 - Merge pull request #169 from pact-foundation/chore/update_pr_scripts (Elliott Murray, Wed Aug 26 10:24:47 2020 +0100)
@@ -429,14 +425,14 @@
 -   468e4ad - Merge pull request #168 from pact-foundation/chore/upgrade-to-pact-ruby-standalone-1-88-3 (Elliott Murray, Wed Aug 26 09:49:33 2020 +0100)
 -   ce944fe - feat: update standalone to 1.88.3 (Elliott Murray, Wed Aug 26 09:08:27 2020 +0100)
 
-### 1.2.2
+## 1.2.2
 
 -   2c52053 - Merge pull request #167 from pact-foundation/feat/add_env_vars_verify (Elliott Murray, Mon Aug 24 16:08:04 2020 +0100)
 -   ce62588 - feat: added env vars for broker verify (Elliott Murray, Mon Aug 24 16:03:44 2020 +0100)
 -   880fff2 - Merge pull request #165 from pact-foundation/docs/https_fix (Elliott Murray, Thu Aug 20 12:43:12 2020 +0100)
 -   1a3605e - docs: https svg (Elliott Murray, Thu Aug 20 12:37:01 2020 +0100)
 
-### 1.2.1
+## 1.2.1
 
 -   69a4a9a - Merge pull request #163 from elliottmurray/fix/custom_header (Elliott Murray, Sat Aug 8 10:17:20 2020 +0100)
 -   88b7d9f - fix: custom headers had a typo (Elliott Murray, Sat Aug 1 11:08:54 2020 +0100)
@@ -444,7 +440,7 @@
 -   9875c71 - docs: merged 2 examples (Elliott Murray, Fri Jul 24 12:00:37 2020 +0100)
 -   6f0d3ac - docs: Example code verifier (Elliott Murray, Fri Jul 24 11:31:17 2020 +0100)
 
-### 1.2.0
+## 1.2.0
 
 -   2b844c5 - Merge pull request #159 from pact-foundation/feat/fix_provider_classs (Elliott Murray, Fri Jul 24 09:47:46 2020 +0100)
 -   9c565bb - feat: fixing up tests and examples and code for provider class (Elliott Murray, Mon Jul 20 15:57:49 2020 +0100)
@@ -454,7 +450,7 @@
 -   ff9894a - Merge pull request #154 from elliottmurray/style/git_message (Elliott Murray, Sat Jun 27 13:31:16 2020 +0100)
 -   be6697f - fix: change to head from master (Elliott Murray, Sat Jun 27 13:08:08 2020 +0100)
 
-### 1.1.0
+## 1.1.0
 
 -   1079417 - test (Elliott Murray, Thu Jun 25 10:02:14 2020 +0100)
 -   7fe1ef4 - Releasing version 1.1.0 (Elliott Murray, Thu Jun 25 09:41:42 2020 +0100)
@@ -467,7 +463,7 @@
 -   aee95ed - Merge pull request #144 from pact-foundation/chore_cleanup (Elliott Murray, Wed Jun 10 21:38:12 2020 +0100)
 -   9c71ea0 - chore: removed some files and moved a few things around (Elliott Murray, Wed Jun 10 21:33:37 2020 +0100)
 
-### v1.0.1
+## v1.0.1
 
 -   8c78ff7 - Releasing version 1.0.1 (Elliott Murray, Wed Jun 3 11:01:39 2020 +0100)
 -   63f0e3e - Merge pull request #142 from elliottmurray/ssl_verify (Elliott Murray, Wed Jun 3 09:50:10 2020 +0100)
@@ -480,7 +476,7 @@
 -   60c9f5a - Fix deploy to pypi2 (Elliott Murray, Fri May 22 13:50:41 2020 +0100)
 -   e2c7e4e - Fix deploy to pypi (Elliott Murray, Fri May 22 13:41:27 2020 +0100)
 
-### v1.0.0
+## v1.0.0
 
 -   2c6e4eb - Releasing version 1.0.0 (Elliott Murray, Fri May 22 13:30:49 2020 +0100)
 -   c68ccb7 - Merge pull request #140 from elliottmurray/python2_deprecate (Elliott Murray, Fri May 22 13:29:38 2020 +0100)
@@ -498,7 +494,7 @@
 -   a21118c - Use raw strings to avoid deprecated escape sequence (Peter Yasi, Thu May 14 08:54:01 2020 -0400)
 -   715d10f - Initial implementation with example unit tests (Peter Yasi, Thu May 14 00:00:30 2020 -0400)
 
-### 0.22.0
+## 0.22.0
 
 -   d112a4a - Merge pull request #134 from elliottmurray/multiple-custom-provider-header (Elliott Murray, Mon May 11 16:32:49 2020 +0100)
 -   58f8e6b - Fix some style issues (Elliott Murray, Wed Apr 29 12:35:00 2020 +0100)
@@ -522,7 +518,7 @@
 -   5785782 - Move tests to standard tests dir (Peter Yasi, Fri Apr 17 14:03:04 2020 -0400)
 -   88ea23d - docs: update RELEASING.md (Beth Skurrie, Tue Feb 18 10:46:11 2020 +1100)
 
-### 0.21.0
+## 0.21.0
 
 -   6352dda - feat: update to pact-ruby-standalone-1.79.0 (#127) (Beth Skurrie, Tue Feb 18 10:25:59 2020 +1100)
 -   758d6ea - Converting to kwargs (Elliott Murray, Sat Feb 1 16:24:49 2020 +1100)
@@ -531,7 +527,7 @@
 -   5dcb56c - Add broker_token parameter for authentication (mikahjc, Tue Jun 11 16:16:46 2019 -0600)
 -   1bdfb42 - Integrate the Ruby pact broker client to allow for automatic publishing of pacts (mikahjc, Tue Jun 11 11:13:18 2019 -0600)
 
-### 0.20.0
+## 0.20.0
 
 -   978d9f3 - fix typo (Jingjing Duan, Wed May 24 15:48:43 2017 -0700)
 -   4ede7d5 - Merge pull request #117 from dlmiddlecote/feature/expose-more-options (Matt Fellows, Fri Jan 17 10:00:56 2020 +1100)
@@ -544,7 +540,7 @@
 -   9a0eaa7 - Merge pull request #109 from pact-foundation/dependabot/pip/flask-1.0 (Matthew Balvanz, Mon Sep 30 21:35:20 2019 -0500)
 -   6f70a28 - Bump flask from 0.11.1 to 1.0 (dependabot[bot], Sat Sep 28 19:20:11 2019 +0000)
 
-### 0.19.0
+## 0.19.0
 
 -   fed5fba - Start testing in Python 3.7 (Matthew Balvanz, Sat Sep 28 15:18:17 2019 -0500)
 -   19aa689 - Adjust tests to support click 2.0.0 to 7.0.0 (Matthew Balvanz, Sat Sep 28 15:04:53 2019 -0500)
@@ -561,12 +557,12 @@
 -   a5c8146 - Update README.md (bvccaneer, Fri Aug 24 19:23:26 2018 +0200)
 -   4d40485 - adding documentation around #52 and fixing dead link for Matching docs (szekar1, Fri Aug 24 19:19:10 2018 +0200)
 
-### 0.18.0
+## 0.18.0
 
 -   4e8bb85 - Upgrade pact-ruby-standalone (Matthew Balvanz, Tue Aug 21 08:56:53 2018 -0500)
 -   8a44feb - chore(docs): update contact information (Matt Fellows, Thu Aug 2 17:18:43 2018 +1000)
 
-### 0.17.0
+## 0.17.0
 
 -   cf5d5bc - Merge pull request #87 from acabelloj/custom-provider-header-support (Matthew Balvanz, Fri Jul 20 22:27:33 2018 -0500)
 -   cc61427 - Fixes #83 The verifier always returns exit code 0 (Matthew Balvanz, Fri Jul 20 22:08:26 2018 -0500)
@@ -574,17 +570,17 @@
 -   273b3fd - Remove Python 3.3 testing (Matthew Balvanz, Wed Jul 4 10:36:01 2018 -0500)
 -   01c6763 - Add support to custom provider header (Alejandro Cabello Jiménez, Fri Jun 1 11:40:32 2018 +0200)
 
-### 0.16.1
+## 0.16.1
 
 -   eecbb60 - Merge pull request #79 from shahha/fix-stopping-mock-service-on-windows (Matthew Balvanz, Fri Mar 16 08:45:19 2018 -0500)
 -   4115264 - Added windows specific code to check if mock service is stopped. (Hardik Shah, Wed Mar 7 10:44:33 2018 +1100)
 
-### 0.16.0
+## 0.16.0
 
 -   30af240 - Merge pull request #78 from pact-foundation/standalone-1-29-2 (Matthew Balvanz☃, Fri Mar 2 22:05:12 2018 -0600)
 -   d428951 - Update to pact-ruby-standalone 1.29.2 (Matthew Balvanz, Fri Mar 2 21:59:08 2018 -0600)
 
-### 0.15.0
+## 0.15.0
 
 -   eb925c3 - Merge pull request #77 from pact-foundation/standalone-1-9-1 (Matthew Balvanz☃, Fri Mar 2 21:22:35 2018 -0600)
 -   2a2dcd1 - Upgrade to pact-ruby-standalone 1.9.1 (Matthew Balvanz, Fri Mar 2 21:18:25 2018 -0600)
@@ -593,12 +589,12 @@
 -   589224a - Hide Ruby stack traces by default (Matthew Balvanz, Fri Mar 2 20:56:59 2018 -0600)
 -   e952b37 - Reduce timeout in \_wait_for_server_start to 25s (Fabian Büchler, Fri Feb 9 11:04:01 2018 +0100)
 
-### 0.14.0
+## 0.14.0
 
 -   3070638 - Merge pull request #71 from pact-foundation/update-standalone-1-9-0 (Matthew Balvanz, Sat Feb 3 23:25:37 2018 -0600)
 -   475703c - Resolves #58: Update to pact-ruby-standalone 1.9.0 (Matthew Balvanz, Sat Feb 3 23:12:22 2018 -0600)
 
-### 0.13.0
+## 0.13.0
 
 -   3316743 - Merge pull request #69 from jawu/#52-helper-function-for-assertion-with-matchers (Matthew Balvanz, Sat Jan 20 16:43:56 2018 -0600)
 -   ae7f333 - Merge pull request #70 from bethesque/issues/pact-provider-verifier-19 (Matthew Balvanz, Sat Jan 20 16:40:31 2018 -0600)
@@ -606,7 +602,7 @@
 -   8bedfd4 - removed local files (Janneck Wullschleger, Wed Dec 20 05:12:08 2017 +0100)
 -   5ab2648 - solves #52 added get_generated_values to resolve Mathers to their generated value for assertion (Janneck Wullschleger, Wed Dec 20 05:06:33 2017 +0100)
 
-### 0.12.0
+## 0.12.0
 
 -   149dfc7 - Merge pull request #67 from jawu/enable-possibility-to-use-mathers-in-path (Matthew Balvanz, Sun Dec 17 10:32:34 2017 -0600)
 -   fb97d2f - fixed doc string of Request (Janneck Wullschleger, Sat Dec 16 20:44:11 2017 +0100)
@@ -614,7 +610,7 @@
 -   697a6a2 - fixed port parameter in e2e test for python 2.7 (Janneck Wullschleger, Thu Dec 14 15:08:05 2017 +0100)
 -   ca2eb92 - added from_term call in Request constructor to process path property for json transport (Janneck Wullschleger, Thu Dec 14 14:45:11 2017 +0100)
 
-### 0.11.0
+## 0.11.0
 
 -   ad69039 - Merge pull request #63 from pact-foundation/run-specific-interactions (Matthew Balvanz, Sun Dec 17 09:53:35 2017 -0600)
 -   eb63864 - Output a rerun command when a verification fails (Matthew Balvanz, Sun Nov 19 20:44:06 2017 -0600)
@@ -625,12 +621,12 @@
 -   c1a5402 - Merge pull request #2 from pact-foundation/master (dhoomakethu, Tue Oct 31 12:15:53 2017 +0530)
 -   b91f6c3 - Merge pull request #1 from pact-foundation/master (dhoomakethu, Mon Aug 21 12:36:15 2017 +0530)
 
-### 0.10.0
+## 0.10.0
 
 -   821671e - Merge pull request #53 from pact-foundation/verify-directories (Matthew Balvanz, Sat Nov 18 23:26:05 2017 -0600)
 -   8291bb7 - Resolve #22: --pact-url accepts directories (Matthew Balvanz, Sat Oct 7 11:35:37 2017 -0500)
 
-### 0.9.0
+## 0.9.0
 
 -   735aa87 - Set new project minimum requirements (Matthew Balvanz, Sun Oct 22 16:30:12 2017 -0500)
 -   295f17c - Merge pull request #60 from ftobia/requirements (Matthew Balvanz, Sun Oct 22 16:09:59 2017 -0500)
@@ -648,7 +644,7 @@
 -   b5e1f95 - allow later versions of requests (Chris Hannam, Tue Aug 29 13:38:42 2017 +0100)
 -   08fe123 - make setup-url name format match above reference (Chris Hannam, Fri Aug 25 11:03:35 2017 +0100)
 
-### 0.8.0
+## 0.8.0
 
 -   edb6c72 - Merge pull request #41 from pact-foundation/fix-running-on-windows (Matthew Balvanz, Thu Aug 10 21:39:27 2017 -0500)
 -   244fff1 - Merge pull request #42 from pact-foundation/deprecate-provider-states-url (Matthew Balvanz, Thu Aug 10 21:38:44 2017 -0500)
@@ -656,7 +652,7 @@
 -   4661406 - Move to using the `service` command with pact-mock-service (Matthew Balvanz, Sat Jul 29 10:00:47 2017 -0500)
 -   04107db - Remove the PyPi server declaration to use the defaults (Matthew Balvanz, Sun Jul 16 09:05:30 2017 -0500)
 
-### v0.7.0
+## v0.7.0
 
 -   223ea76 - Merge pull request #32 from SimKev2/pacturls (Matthew Balvanz, Sun Jul 16 08:41:14 2017 -0500)
 -   e382eb4 - Add tests for #36 SomethingLike not supporting Terms (Matthew Balvanz, Sun Jul 16 08:36:58 2017 -0500)
@@ -667,12 +663,12 @@
 -   65b493d - Merge pull request #33 from bethesque/reamde (Matthew Balvanz, Tue Jun 27 08:58:08 2017 -0500)
 -   f5a5958 - Update README.md (Beth Skurrie, Sun Jun 25 10:37:03 2017 +1000)
 
-### v0.6.2
+## v0.6.2
 
 -   69caa40 - Merge pull request #35 from pact-foundation/fix-broker-credentials (Matt Fellows, Tue Jun 27 20:49:35 2017 +1000)
 -   d60f37f - Fix the use of broker credentials (Matthew Balvanz, Mon Jun 26 21:14:53 2017 -0500)
 
-### v0.6.1
+## v0.6.1
 
 -   14968ea - Merge pull request #34 from hartror/rh_version_fix (Matthew Balvanz, Mon Jun 26 20:23:29 2017 -0500)
 -   aca520f - pydocstyle is fussy, should have run it before pushing (Rory Hart, Sun Jun 25 20:11:26 2017 +1000)
@@ -685,19 +681,19 @@
 -   3198817 - Update CONTRIBUTING.md (Beth Skurrie, Thu Jun 22 08:36:57 2017 +1000)
 -   7a08bb2 - Update CONTRIBUTING.md (Beth Skurrie, Thu Jun 22 08:35:27 2017 +1000)
 
-### v0.6.0
+## v0.6.0
 
 -   10aaaf6 - Merge pull request #27 from pact-foundation/download-pre-package-mock-service-and-verifier (Matthew Balvanz, Tue Jun 20 21:51:40 2017 -0500)
 -   a9b991b - Update to pact-ruby-standalone 1.0.0 (Matthew Balvanz, Mon Jun 19 10:17:09 2017 -0500)
 -   ab43c8b - Switch to installing the packages from pact-ruby-standalone (Matthew Balvanz, Wed May 31 21:00:51 2017 -0500)
 -   db3e7c3 - Use the compiled Ruby applications from pact-mock-service and pact-provider-verifier (Matthew Balvanz, Mon May 29 22:18:47 2017 -0500)
 
-### v0.5.0
+## v0.5.0
 
 -   c085a01 - Merge pull request #26 from AnObfuscator/stub-multiple-requests (Matthew Balvanz, Mon Jun 19 09:14:51 2017 -0500)
 -   22c0272 - Add support for stubbing multiple requests at the same time (AnObfuscator, Fri Jun 16 23:18:01 2017 -0500)
 
-### v0.4.1
+## v0.4.1
 
 -   66cf151 - Add RELEASING.md closes #18 (Matthew Balvanz, Tue May 30 22:41:06 2017 -0500)
 -   3f61c91 - Add support for request bodies that are False in Python (Matthew Balvanz, Tue May 30 21:57:46 2017 -0500)
@@ -706,7 +702,7 @@
 -   dd3c703 - Merge pull request #16 from jduan/master (Jose Salvatierra, Thu May 25 09:20:10 2017 +0100)
 -   978d9f3 - fix typo (Jingjing Duan, Wed May 24 15:48:43 2017 -0700)
 
-### v0.4.0
+## v0.4.0
 
 -   8bec271 - Setup Travis CI to publish to PyPi (Matthew Balvanz, Wed May 24 16:51:05 2017 -0500)
 -   d67a015 - Merge pull request #14 from pact-foundation/verify-pacts (Matthew Balvanz, Wed May 24 16:46:49 2017 -0500)
@@ -717,12 +713,12 @@
 -   51eb338 - Command line application for verifying pacts (Matthew Balvanz, Fri May 19 22:24:06 2017 -0500)
 -   4b0bbd7 - Update the developer instructions (Matthew Balvanz, Fri May 19 22:05:54 2017 -0500)
 
-### v0.3.0
+## v0.3.0
 
 -   3130f9a - Merge pull request #11 from pact-foundation/update-mock-service (Matthew Balvanz, Sun May 14 09:03:43 2017 -0500)
 -   9b20d36 - Updated Versions of Pact Ruby applications (Matthew Balvanz, Sat May 13 09:43:44 2017 -0500)
 
-### v0.2.0
+## v0.2.0
 
 -   140f583 - Merge pull request #8 from pact-foundation/manage-mock-service (Matthew Balvanz, Sat May 13 09:18:40 2017 -0500)
 -   5994c3a - pact-python manages the mock service for the user (Matthew Balvanz, Tue May 9 21:58:08 2017 -0500)
@@ -731,7 +727,7 @@
 -   fd68b41 - Merge pull request #2 from pact-foundation/package-ruby-apps (Matthew Balvanz, Sat Apr 22 10:55:48 2017 -0500)
 -   75a96dc - Package the Ruby Mock Service and Verifier (Matthew Balvanz, Tue Apr 4 23:14:11 2017 -0500)
 
-### v0.1.0
+## v0.1.0
 
 -   189c647 - Merge pull request #3 from pact-foundation/travis-ci (Jose Salvatierra, Fri Apr 7 21:40:02 2017 +0100)
 -   559efb8 - Add Travis CI build (Matthew Balvanz, Fri Apr 7 11:12:01 2017 -0500)
