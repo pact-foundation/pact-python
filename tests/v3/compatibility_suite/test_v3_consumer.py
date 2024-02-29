@@ -10,8 +10,8 @@ from typing import Any, Generator
 from pytest_bdd import given, parsers, scenario, then
 
 from pact.v3.pact import HttpInteraction, Pact
-from tests.v3.compatiblity_suite.util import parse_markdown_table
-from tests.v3.compatiblity_suite.util.consumer import (
+from tests.v3.compatibility_suite.util import parse_markdown_table
+from tests.v3.compatibility_suite.util.consumer import (
     the_pact_file_for_the_test_is_generated,
 )
 

@@ -100,15 +100,33 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "pact/__version__.py"
+version-file = "src/pact/__version__.py"
 
-[tool.hatch.build]
-include = ["**/py.typed", "**/*.md", "LICENSE", "pact/**/*.py", "pact/**/*.pyi"]
+[tool.hatch.build.targets.sdist]
+include = [
+  # Source
+  "/src/pact/**/*.py",
+  "/src/pact/**/*.pyi",
+  "/src/pact/**/py.typed",
+
+  # Metadata
+  "*.md",
+  "LICENSE",
+]
 
 [tool.hatch.build.targets.wheel]
-# Ignore the data files in the wheel as their contents are already included
-# in the package.
-artifacts = ["pact/bin/*", "pact/lib/*", "pact/v3/_ffi.*"]
+packages = ["/src/pact"]
+include = [
+  # Source
+  "/src/pact/**/*.py",
+  "/src/pact/**/*.pyi",
+  "/src/pact/**/py.typed",
+]
+artifacts = [
+  "/src/pact/bin/*",     # Ruby executables
+  "/src/pact/lib/*",     # Ruby library
+  "/src/pact/v3/_ffi.*", # Rust library
+]
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 
@@ -135,8 +153,8 @@ format     = "ruff format {args}"
 test       = "pytest tests/ {args}"
 example    = "pytest examples/ {args}"
 all        = ["format", "lint", "typecheck", "test", "example"]
-docs       = ["mkdocs serve {args}"]
-docs-build = ["mkdocs build {args}"]
+docs       = "mkdocs serve {args}"
+docs-build = "mkdocs build {args}"
 
 # Test environment for running unit tests. This automatically tests against all
 # supported Python versions.
@@ -151,6 +169,7 @@ python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 ################################################################################
 
 [tool.pytest.ini_options]
+pythonpath = "."
 addopts = [
   "--import-mode=importlib",
   "--cov-config=pyproject.toml",
@@ -173,6 +192,10 @@ markers = [
 ## Coverage
 ################################################################################
 
+[tool.coverage.paths]
+pact  = ["/src/pact"]
+tests = ["/examples", "/tests"]
+
 [tool.coverage.report]
 exclude_lines = [
   "if __name__ == .__main__.:", # Ignore non-runnable code
@@ -191,25 +214,25 @@ target-version = "py38"
 # TODO: Remove the explicity extend-exclude once astral-sh/ruff#6262 is fixed.
 # https://github.com/pact-foundation/pact-python/issues/458
 extend-exclude = [
-  # "pact/*.py",
-  # "pact/cli/*.py",
-  # "tests/*.py",
-  # "tests/cli/*.py",
-  "pact/__init__.py",
-  "pact/__version__.py",
-  "pact/broker.py",
-  "pact/cli/*.py",
-  "pact/constants.py",
-  "pact/consumer.py",
-  "pact/http_proxy.py",
-  "pact/matchers.py",
-  "pact/message_consumer.py",
-  "pact/message_pact.py",
-  "pact/message_provider.py",
-  "pact/pact.py",
-  "pact/provider.py",
-  "pact/verifier.py",
-  "pact/verify_wrapper.py",
+  # "src/pact/*.py",
+  # "src/pact/cli/*.py",
+  # "src/tests/*.py",
+  # "src/tests/cli/*.py",
+  "src/pact/__init__.py",
+  "src/pact/__version__.py",
+  "src/pact/broker.py",
+  "src/pact/cli/*.py",
+  "src/pact/constants.py",
+  "src/pact/consumer.py",
+  "src/pact/http_proxy.py",
+  "src/pact/matchers.py",
+  "src/pact/message_consumer.py",
+  "src/pact/message_pact.py",
+  "src/pact/message_provider.py",
+  "src/pact/pact.py",
+  "src/pact/provider.py",
+  "src/pact/verifier.py",
+  "src/pact/verify_wrapper.py",
   "tests/__init__.py",
   "tests/cli/*.py",
   "tests/conftest.py",
@@ -264,7 +287,7 @@ docstring-code-format = true
 ################################################################################
 
 [tool.mypy]
-exclude = '^(pact|tests)/(?!v3).+\.py$'
+exclude = '^(src/pact|tests)/(?!v3).+\.py$'
 
 ################################################################################
 ## CI Build Wheel
