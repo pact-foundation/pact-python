@@ -1,11 +1,11 @@
 ################################################################################
 ## Pact Python Specific
 ################################################################################
-pact/bin
-pact/data
+src/pact/bin
+src/pact/data
 
 # Version is determined from the VCS
-pact/__version__.py
+src/pact/__version__.py
 
 ################################################################################
 ## Standard Templates

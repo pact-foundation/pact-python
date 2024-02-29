@@ -15,7 +15,7 @@ from pytest_bdd import parsers, then, when
 from yarl import URL
 
 from pact.v3 import Pact
-from tests.v3.compatiblity_suite.util import (
+from tests.v3.compatibility_suite.util import (
     FIXTURES_ROOT,
     parse_markdown_table,
     string_to_int,
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from pact.v3.pact import HttpInteraction, PactServer
-    from tests.v3.compatiblity_suite.util import InteractionDefinition
+    from tests.v3.compatibility_suite.util import InteractionDefinition
 
 logger = logging.getLogger(__name__)
 

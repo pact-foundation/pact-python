@@ -42,8 +42,8 @@ repos:
     hooks:
       - id: ruff
         # Exclude python files in pact/** and tests/**, except for the
-        # files in pact/v3/** and tests/v3/**.
-        exclude: ^(pact|tests)/(?!v3/).*\.py$
+        # files in src/pact/v3/** and tests/v3/**.
+        exclude: ^(src/pact|tests)/(?!v3/).*\.py$
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
         exclude: ^(pact|tests)/(?!v3/).*\.py$
@@ -63,7 +63,7 @@ repos:
         entry: hatch run mypy
         language: system
         types: [python]
-        exclude: ^(pact|tests)/(?!v3/).*\.py$
+        exclude: ^(src/pact|tests)/(?!v3/).*\.py$
         stages: [pre-push]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli

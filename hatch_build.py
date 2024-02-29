@@ -27,7 +27,7 @@ import requests
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
 
-ROOT_DIR = Path(__file__).parent.resolve()
+PACT_ROOT_DIR = Path(__file__).parent.resolve() / "src" / "pact"
 
 # Latest version available at:
 # https://github.com/pact-foundation/pact-ruby-standalone/releases
@@ -73,7 +73,7 @@ class PactBuildHook(BuildHookInterface[Any]):
     def clean(self, versions: list[str]) -> None:  # noqa: ARG002
         """Clean up any files created by the build hook."""
         for subdir in ["bin", "lib", "data"]:
-            shutil.rmtree(ROOT_DIR / "pact" / subdir, ignore_errors=True)
+            shutil.rmtree(PACT_ROOT_DIR / subdir, ignore_errors=True)
 
     def initialize(
         self,
@@ -107,7 +107,7 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         Install the Pact standalone binaries.
 
-        The binaries are installed in `pact/bin`, and the relevant version for
+        The binaries are installed in `src/pact/bin`, and the relevant version for
         the current operating system is determined automatically.
 
         Args:
@@ -188,23 +188,28 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         Extract the Pact binaries.
 
-        The upstream distributables contain a lot of files which are not needed
-        for this library. This function ensures that only the files in
-        `pact/bin` are extracted to avoid unnecessary bloat.
+        The binaries in the `bin` directory require the underlying Ruby runtime
+        to be present, which is included in the `lib` directory.
 
         Args:
             artifact: The path to the downloaded artifact.
         """
-        if str(artifact).endswith(".zip"):
-            with zipfile.ZipFile(artifact) as f:
-                f.extractall(ROOT_DIR)  # noqa: S202
+        with tempfile.TemporaryDirectory() as tmpdir:
+            if str(artifact).endswith(".zip"):
+                with zipfile.ZipFile(artifact) as f:
+                    f.extractall(tmpdir)  # noqa: S202
 
-        if str(artifact).endswith(".tar.gz"):
-            with tarfile.open(artifact) as f:
-                f.extractall(ROOT_DIR)  # noqa: S202
+            if str(artifact).endswith(".tar.gz"):
+                with tarfile.open(artifact) as f:
+                    f.extractall(tmpdir)  # noqa: S202
 
-        # Cleanup the extract `README.md`
-        (ROOT_DIR / "pact" / "README.md").unlink()
+            for d in ["bin", "lib"]:
+                if (PACT_ROOT_DIR / d).is_dir():
+                    shutil.rmtree(PACT_ROOT_DIR / d)
+                shutil.copytree(
+                    Path(tmpdir) / "pact" / d,
+                    PACT_ROOT_DIR / d,
+                )
 
     def pact_lib_install(self, version: str) -> None:
         """
@@ -415,7 +420,7 @@ class PactBuildHook(BuildHookInterface[Any]):
             library_dirs=[str(self.tmpdir)],
         )
         output = Path(ffibuilder.compile(verbose=True, tmpdir=str(self.tmpdir)))
-        shutil.copy(output, ROOT_DIR / "pact" / "v3")
+        shutil.copy(output, PACT_ROOT_DIR / "v3")
 
     def _download(self, url: str) -> Path:
         """
@@ -431,7 +436,7 @@ class PactBuildHook(BuildHookInterface[Any]):
             The path to the downloaded artifact.
         """
         filename = url.split("/")[-1]
-        artifact = ROOT_DIR / "pact" / "data" / filename
+        artifact = PACT_ROOT_DIR / "data" / filename
         artifact.parent.mkdir(parents=True, exist_ok=True)
 
         if not artifact.exists():

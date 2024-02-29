@@ -7,8 +7,11 @@ import logging
 import pytest
 from pytest_bdd import given, parsers, scenario
 
-from tests.v3.compatiblity_suite.util import InteractionDefinition, parse_markdown_table
-from tests.v3.compatiblity_suite.util.consumer import (
+from tests.v3.compatibility_suite.util import (
+    InteractionDefinition,
+    parse_markdown_table,
+)
+from tests.v3.compatibility_suite.util.consumer import (
     a_response_is_returned,
     request_n_is_made_to_the_mock_server,
     request_n_is_made_to_the_mock_server_with_the_following_changes,
