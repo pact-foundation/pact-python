@@ -20,9 +20,8 @@ be as follows:
     considered deprecated, and will be removed in a future release.
 """
 
-from pact.v3.pact import Interaction, Pact
+from pact.v3.pact import Pact
 
 __all__ = [
     "Pact",
-    "Interaction",
 ]
