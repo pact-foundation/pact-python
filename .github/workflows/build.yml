@@ -76,7 +76,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cache pip packages
-        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+        uses: actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319 # v4
         with:
           path: ~/.cache/pip
           key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
@@ -135,7 +135,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cache pip packages
-        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
+        uses: actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319 # v4
         with:
           path: ~/.cache/pip
           key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
