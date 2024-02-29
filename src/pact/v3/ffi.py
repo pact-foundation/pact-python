@@ -528,7 +528,40 @@ class SynchronousHttp: ...
 class SynchronousMessage: ...
 
 
-class VerifierHandle: ...
+class VerifierHandle:
+    """
+    Handle to a Verifier.
+
+    [Rust `VerifierHandle`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/verifier/handle/struct.VerifierHandle.html)
+    """
+
+    def __init__(self, ref: int) -> None:
+        """
+        Initialise a new Verifier Handle.
+
+        Args:
+            ref:
+                Rust library reference to the Verifier Handle.
+        """
+        self._ref: int = ref
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Verifier Handle.
+        """
+        verifier_shutdown(self)
+
+    def __str__(self) -> str:
+        """
+        String representation of the Verifier Handle.
+        """
+        return f"PactHandle({self._ref})"
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Verifier Handle.
+        """
+        return f"PactHandle({self._ref!r})"
 
 
 class ExpressionValueType(Enum):
@@ -6328,55 +6361,20 @@ def verify(args: str) -> int:
     raise NotImplementedError
 
 
-def verifier_new() -> VerifierHandle:
+def verifier_new_for_application() -> VerifierHandle:
     """
     Get a Handle to a newly created verifier.
-
-    You should call `pactffi_verifier_shutdown` when done with the verifier to
-    free all allocated resources.
-
-    [Rust
-    `pactffi_verifier_new`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_new)
-
-    Deprecated: This function is deprecated. Use
-    `pactffi_verifier_new_for_application` which allows the calling
-    application/framework name and version to be specified.
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    Returns NULL on error.
-    """
-    warnings.warn(
-        "This function is deprecated, use verifier_new_for_application instead",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    raise NotImplementedError
-
-
-def verifier_new_for_application(name: str, version: str) -> VerifierHandle:
-    """
-    Get a Handle to a newly created verifier.
-
-    You should call `pactffi_verifier_shutdown` when done with the verifier to
-    free all allocated resources
 
     [Rust
     `pactffi_verifier_new_for_application`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_new_for_application)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    Returns NULL on error.
     """
-    raise NotImplementedError
+    from pact import __version__
+
+    result: int = lib.pactffi_verifier_new_for_application(
+        b"pact-python",
+        __version__.encode("utf-8"),
+    )
+    return VerifierHandle(result)
 
 
 def verifier_shutdown(handle: VerifierHandle) -> None:
@@ -6385,7 +6383,7 @@ def verifier_shutdown(handle: VerifierHandle) -> None:
 
     [Rust `pactffi_verifier_shutdown`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_shutdown)
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_shutdown(handle._ref)
 
 
 def verifier_set_provider_info(  # noqa: PLR0913
