@@ -675,6 +675,27 @@ class PactSpecification(Enum):
     V3 = lib.PactSpecification_V3
     V4 = lib.PactSpecification_V4
 
+    @classmethod
+    def from_str(cls, version: str) -> PactSpecification:
+        """
+        Instantiate a Pact Specification from a string.
+
+        This method is case-insensitive, and allows for the version to be
+        specified with or without a leading "V", and with either a dot or an
+        underscore as the separator.
+
+        Args:
+            version:
+                The version of the Pact Specification.
+
+        Returns:
+            The Pact Specification.
+        """
+        version = version.upper().replace(".", "_")
+        if version.startswith("V"):
+            return cls[version]
+        return cls["V" + version]
+
     def __str__(self) -> str:
         """
         Informal string representation of the Pact Specification.
@@ -5280,7 +5301,7 @@ def handle_get_pact_spec_version(handle: PactHandle) -> PactSpecification:
     Returns:
         The spec version for the Pact model.
     """
-    raise NotImplementedError
+    return PactSpecification(lib.pactffi_handle_get_pact_spec_version(handle._ref))
 
 
 def with_pact_metadata(

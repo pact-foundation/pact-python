@@ -109,6 +109,13 @@ class Pact:
         """
         return self._provider
 
+    @property
+    def specification(self) -> pact.v3.ffi.PactSpecification:
+        """
+        Pact specification version.
+        """
+        return pact.v3.ffi.handle_get_pact_spec_version(self._handle)
+
     def with_specification(
         self,
         version: str | pact.v3.ffi.PactSpecification,
@@ -128,11 +135,7 @@ class Pact:
                 prefix.
         """
         if isinstance(version, str):
-            version = version.upper().replace(".", "_")
-            if version.startswith("V"):
-                version = pact.v3.ffi.PactSpecification[version]
-            else:
-                version = pact.v3.ffi.PactSpecification["V" + version]
+            version = pact.v3.ffi.PactSpecification.from_str(version)
         pact.v3.ffi.with_specification(self._handle, version)
         return self
 

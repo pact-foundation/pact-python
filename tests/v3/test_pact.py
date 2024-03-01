@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Literal
 import pytest
 
 from pact.v3 import Pact
+from pact.v3.ffi import PactSpecification
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -131,6 +132,7 @@ def test_write_file(pact: Pact, temp_dir: Path) -> None:
 )
 def test_specification(pact: Pact, version: str) -> None:
     pact.with_specification(version)
+    assert pact.specification == PactSpecification.from_str(version)
 
 
 def test_server_log(pact: Pact) -> None:
