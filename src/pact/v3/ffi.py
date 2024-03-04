@@ -83,6 +83,7 @@ from __future__ import annotations
 
 import gc
 import json
+import logging
 import typing
 import warnings
 from enum import Enum
@@ -91,10 +92,14 @@ from typing import TYPE_CHECKING, Any, List
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
+    import datetime
+    from collections.abc import Collection
     from pathlib import Path
 
     import cffi
     from typing_extensions import Self
+
+logger = logging.getLogger(__name__)
 
 # The follow types are classes defined in the Rust code. Ultimately, a Python
 # alternative should be implemented, but for now, the follow lines only serve
@@ -535,7 +540,7 @@ class VerifierHandle:
     [Rust `VerifierHandle`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/verifier/handle/struct.VerifierHandle.html)
     """
 
-    def __init__(self, ref: int) -> None:
+    def __init__(self, ref: cffi.FFI.CData) -> None:
         """
         Initialise a new Verifier Handle.
 
@@ -543,7 +548,7 @@ class VerifierHandle:
             ref:
                 Rust library reference to the Verifier Handle.
         """
-        self._ref: int = ref
+        self._ref = ref
 
     def __del__(self) -> None:
         """
@@ -555,13 +560,13 @@ class VerifierHandle:
         """
         String representation of the Verifier Handle.
         """
-        return f"PactHandle({self._ref})"
+        return f"VerifierHandle({hex(id(self._ref))})"
 
     def __repr__(self) -> str:
         """
         String representation of the Verifier Handle.
         """
-        return f"PactHandle({self._ref!r})"
+        return f"<VerifierHandle: _ref at {hex(id(self._ref))}>"
 
 
 class ExpressionValueType(Enum):
@@ -6370,7 +6375,7 @@ def verifier_new_for_application() -> VerifierHandle:
     """
     from pact import __version__
 
-    result: int = lib.pactffi_verifier_new_for_application(
+    result: cffi.FFI.CData = lib.pactffi_verifier_new_for_application(
         b"pact-python",
         __version__.encode("utf-8"),
     )
@@ -6388,61 +6393,98 @@ def verifier_shutdown(handle: VerifierHandle) -> None:
 
 def verifier_set_provider_info(  # noqa: PLR0913
     handle: VerifierHandle,
-    name: str,
-    scheme: str,
-    host: str,
-    port: int,
-    path: str,
+    name: str | None,
+    scheme: str | None,
+    host: str | None,
+    port: int | None,
+    path: str | None,
 ) -> None:
     """
     Set the provider details for the Pact verifier.
 
-    Passing a NULL for any field will use the default value for that field.
-
     [Rust
     `pactffi_verifier_set_provider_info`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_provider_info)
 
-    # Safety
+    Args:
+        handle:
+            The verifier handle to update.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        name:
+            A user-friendly name to describe the provider.
+
+        scheme:
+            Determine the scheme to use, typically one of `HTTP` or `HTTPS`.
+
+        host:
+            The host of the provider. This may be either a hostname to resolve,
+            or an IP address.
+
+        port:
+            The port of the provider.
+
+        path:
+            The path of the provider.
+
+    If any value is `None`, the default value as determined by the underlying
+    FFI library will be used.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_set_provider_info(
+        handle._ref,
+        name.encode("utf-8") if name else ffi.NULL,
+        scheme.encode("utf-8") if scheme else ffi.NULL,
+        host.encode("utf-8") if host else ffi.NULL,
+        port,
+        path.encode("utf-8") if path else ffi.NULL,
+    )
 
 
 def verifier_add_provider_transport(
     handle: VerifierHandle,
-    protocol: str,
+    protocol: str | None,
     port: int,
-    path: str,
-    scheme: str,
+    path: str | None,
+    scheme: str | None,
 ) -> None:
     """
     Adds a new transport for the given provider.
 
-    Passing a NULL for any field will use the default value for that field.
-
     [Rust
     `pactffi_verifier_add_provider_transport`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_add_provider_transport)
 
-    For non-plugin based message interactions, set protocol to "message" and set
-    scheme to an empty string or "https" if secure HTTP is required.
-    Communication to the calling application will be over HTTP to the default
-    provider hostname.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    # Safety
+        protocol:
+            In this context, the kind of
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        port:
+            The port of the provider.
+
+        path:
+            The path of the provider.
+
+        scheme:
+            The scheme to use, typically one of `HTTP` or `HTTPS`.
+
+    If any value is `None`, the default value as determined by the underlying
+    FFI library will be used.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_add_provider_transport(
+        handle._ref,
+        protocol.encode("utf-8") if protocol else ffi.NULL,
+        port,
+        path.encode("utf-8") if path else ffi.NULL,
+        scheme.encode("utf-8") if scheme else ffi.NULL,
+    )
 
 
 def verifier_set_filter_info(
     handle: VerifierHandle,
-    filter_description: str,
-    filter_state: str,
-    filter_no_state: int,
+    filter_description: str | None,
+    filter_state: str | None,
+    *,
+    filter_no_state: bool,
 ) -> None:
     """
     Set the filters for the Pact verifier.
@@ -6450,26 +6492,35 @@ def verifier_set_filter_info(
     [Rust
     `pactffi_verifier_set_filter_info`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_filter_info)
 
-    If `filter_description` is not empty, it needs to be as a regular
-    expression.
+    Set filters to narrow down the interactions to verify.
 
-    `filter_no_state` is a boolean value. Set it to greater than zero to turn
-    the option on.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    # Safety
+        filter_description:
+            A regular expression to filter the interactions by description.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        filter_state:
+            A regular expression to filter the interactions by state.
 
+        filter_no_state:
+            If `True`, the option to filter by state will be turned on.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_set_filter_info(
+        handle._ref,
+        filter_description.encode("utf-8") if filter_description else ffi.NULL,
+        filter_state.encode("utf-8") if filter_state else ffi.NULL,
+        filter_no_state,
+    )
 
 
 def verifier_set_provider_state(
     handle: VerifierHandle,
     url: str,
-    teardown: int,
-    body: int,
+    *,
+    teardown: bool,
+    body: bool,
 ) -> None:
     """
     Set the provider state URL for the Pact verifier.
@@ -6477,134 +6528,170 @@ def verifier_set_provider_state(
     [Rust
     `pactffi_verifier_set_provider_state`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_provider_state)
 
-    `teardown` is a boolean value. If teardown state change requests should be
-    made after an interaction is validated (default is false). Set it to greater
-    than zero to turn the option on. `body` is a boolean value. Sets if state
-    change request data should be sent in the body (> 0, true) or as query
-    parameters (== 0, false). Set it to greater than zero to turn the option on.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    # Safety
+        url:
+            The URL to use for the provider state.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        teardown:
+            If teardown state change requests should be made after an
+            interaction is validated.
 
+        body:
+            If state change request data should be sent in the body or the
+            query.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_set_provider_state(
+        handle._ref,
+        url.encode("utf-8"),
+        teardown,
+        body,
+    )
 
 
 def verifier_set_verification_options(
     handle: VerifierHandle,
-    disable_ssl_verification: int,
+    *,
+    disable_ssl_verification: bool,
     request_timeout: int,
-) -> int:
+) -> None:
     """
     Set the options used by the verifier when calling the provider.
 
     [Rust
     `pactffi_verifier_set_verification_options`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_verification_options)
 
-    `disable_ssl_verification` is a boolean value. Set it to greater than zero
-    to turn the option on.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    # Safety
+        disable_ssl_verification:
+            If SSL verification should be disabled.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
-
+        request_timeout:
+            The timeout for the request in milliseconds.
     """
-    raise NotImplementedError
+    retval: int = lib.pactffi_verifier_set_verification_options(
+        handle._ref,
+        disable_ssl_verification,
+        request_timeout,
+    )
+    if retval != 0:
+        msg = f"Failed to set verification options for {handle}."
+        raise RuntimeError(msg)
 
 
-def verifier_set_coloured_output(handle: VerifierHandle, coloured_output: int) -> int:
+def verifier_set_coloured_output(
+    handle: VerifierHandle,
+    *,
+    enabled: bool,
+) -> None:
     """
     Enables or disables coloured output using ANSI escape codes.
-
-    By default, coloured output is enabled.
 
     [Rust
     `pactffi_verifier_set_coloured_output`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_coloured_output)
 
-    `coloured_output` is a boolean value. Set it to greater than zero to turn
-    the option on.
+    By default, coloured output is enabled.
 
-    # Safety
+    Args:
+        handle:
+            The verifier handle to update.
 
-    This function is safe as long as the handle pointer points to a valid
-    handle.
-
+        enabled:
+            A boolean value to enable or disable coloured output.
     """
-    raise NotImplementedError
+    retval: int = lib.pactffi_verifier_set_coloured_output(
+        handle._ref,
+        enabled,
+    )
+    if retval != 0:
+        msg = f"Failed to set coloured output for {handle}."
+        raise RuntimeError(msg)
 
 
-def verifier_set_no_pacts_is_error(handle: VerifierHandle, is_error: int) -> int:
+def verifier_set_no_pacts_is_error(handle: VerifierHandle, *, enabled: bool) -> None:
     """
     Enables or disables if no pacts are found to verify results in an error.
 
     [Rust
     `pactffi_verifier_set_no_pacts_is_error`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_no_pacts_is_error)
 
-    `is_error` is a boolean value. Set it to greater than zero to enable an
-    error when no pacts are found to verify, and set it to zero to disable this.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    # Safety
-
-    This function is safe as long as the handle pointer points to a valid
-    handle.
-
+        enabled:
+            If `True`, an error will be raised when no pacts are found to verify.
     """
-    raise NotImplementedError
+    retval: int = lib.pactffi_verifier_set_no_pacts_is_error(
+        handle._ref,
+        enabled,
+    )
+    if retval != 0:
+        msg = f"Failed to set no pacts is error for {handle}."
+        raise RuntimeError(msg)
 
 
-def verifier_set_publish_options(  # noqa: PLR0913
+def verifier_set_publish_options(
     handle: VerifierHandle,
     provider_version: str,
     build_url: str,
     provider_tags: List[str],
-    provider_tags_len: int,
     provider_branch: str,
-) -> int:
+) -> None:
     """
     Set the options used when publishing verification results to the Broker.
 
     [Rust
     `pactffi_verifier_set_publish_options`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_publish_options)
 
-    # Args
+    Args:
+        handle:
+            The verifier handle to update.
 
-    - `handle` - The pact verifier handle to update
-    - `provider_version` - Version of the provider to publish
-    - `build_url` - URL to the build which ran the verification
-    - `provider_tags` - Collection of tags for the provider
-    - `provider_tags_len` - Number of provider tags supplied
-    - `provider_branch` - Name of the branch used for verification
+        provider_version:
+            Version of the provider to publish.
 
-    # Safety
+        build_url:
+            URL to the build which ran the verification.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        provider_tags:
+            Collection of tags for the provider.
 
+        provider_branch:
+            Name of the branch used for verification.
     """
-    raise NotImplementedError
+    retval: int = lib.pactffi_verifier_set_publish_options(
+        handle._ref,
+        provider_version.encode("utf-8"),
+        build_url.encode("utf-8"),
+        [ffi.new("char[]", t.encode("utf-8")) for t in provider_tags or []],
+        len(provider_tags),
+        provider_branch.encode("utf-8"),
+    )
+    if retval != 0:
+        msg = f"Failed to set publish options for {handle}."
+        raise RuntimeError(msg)
 
 
 def verifier_set_consumer_filters(
     handle: VerifierHandle,
-    consumer_filters: List[str],
-    consumer_filters_len: int,
+    consumer_filters: Collection[str],
 ) -> None:
     """
     Set the consumer filters for the Pact verifier.
 
     [Rust
     `pactffi_verifier_set_consumer_filters`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_set_consumer_filters)
-
-    # Safety
-
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
-
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_set_consumer_filters(
+        handle._ref,
+        [ffi.new("char[]", f.encode("utf-8")) for f in consumer_filters],
+        len(consumer_filters),
+    )
 
 
 def verifier_add_custom_header(
@@ -6617,13 +6704,12 @@ def verifier_add_custom_header(
 
     [Rust
     `pactffi_verifier_add_custom_header`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_add_custom_header)
-
-    # Safety
-
-    The header name and value must point to a valid NULL terminated string and
-    must contain valid UTF-8.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_add_custom_header(
+        handle._ref,
+        header_name.encode("utf-8"),
+        header_value.encode("utf-8"),
+    )
 
 
 def verifier_add_file_source(handle: VerifierHandle, file: str) -> None:
@@ -6632,14 +6718,8 @@ def verifier_add_file_source(handle: VerifierHandle, file: str) -> None:
 
     [Rust
     `pactffi_verifier_add_file_source`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_add_file_source)
-
-    # Safety
-
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
-
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_add_file_source(handle._ref, file.encode("utf-8"))
 
 
 def verifier_add_directory_source(handle: VerifierHandle, directory: str) -> None:
@@ -6657,124 +6737,179 @@ def verifier_add_directory_source(handle: VerifierHandle, directory: str) -> Non
     with U+FFFD REPLACEMENT CHARACTER.
 
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_add_directory_source(handle._ref, directory.encode("utf-8"))
 
 
 def verifier_url_source(
     handle: VerifierHandle,
     url: str,
-    username: str,
-    password: str,
-    token: str,
+    username: str | None,
+    password: str | None,
+    token: str | None,
 ) -> None:
     """
     Adds a URL as a source to verify.
 
-    The Pact file will be fetched from the URL.
-
     [Rust
     `pactffi_verifier_url_source`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_url_source)
 
-    If a username and password is given, then basic authentication will be used
-    when fetching the pact file. If a token is provided, then bearer token
-    authentication will be used.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    # Safety
+        url:
+            The URL to use as a source for the verifier.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        username:
+            The username to use when fetching pacts from the URL.
 
+        password:
+            The password to use when fetching pacts from the URL.
+
+        token:
+            The token to use when fetching pacts from the URL. This will be used
+            as a bearer token. It is mutually exclusive with the username and
+            password.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_url_source(
+        handle._ref,
+        url.encode("utf-8"),
+        username.encode("utf-8") if username else ffi.NULL,
+        password.encode("utf-8") if password else ffi.NULL,
+        token.encode("utf-8") if token else ffi.NULL,
+    )
 
 
 def verifier_broker_source(
     handle: VerifierHandle,
     url: str,
-    username: str,
-    password: str,
-    token: str,
+    username: str | None,
+    password: str | None,
+    token: str | None,
 ) -> None:
     """
     Adds a Pact broker as a source to verify.
 
-    This will fetch all the pact files from the broker that match the provider
-    name.
-
     [Rust
     `pactffi_verifier_broker_source`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_broker_source)
 
-    If a username and password is given, then basic authentication will be used
-    when fetching the pact file. If a token is provided, then bearer token
-    authentication will be used.
+    This will fetch all the pact files from the broker that match the provider
+    name.
 
-    # Safety
+    Args:
+        handle:
+            The verifier handle to update.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        url:
+            The URL to use as a source for the verifier.
 
+        username:
+            The username to use when fetching pacts from the broker.
+
+        password:
+            The password to use when fetching pacts from the broker.
+
+        token:
+            The token to use when fetching pacts from the broker. This will be
+            used as a bearer token.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_broker_source(
+        handle._ref,
+        url.encode("utf-8"),
+        username.encode("utf-8") if username else ffi.NULL,
+        password.encode("utf-8") if password else ffi.NULL,
+        token.encode("utf-8") if token else ffi.NULL,
+    )
 
 
 def verifier_broker_source_with_selectors(  # noqa: PLR0913
     handle: VerifierHandle,
     url: str,
-    username: str,
-    password: str,
-    token: str,
+    username: str | None,
+    password: str | None,
+    token: str | None,
     enable_pending: int,
-    include_wip_pacts_since: str,
+    include_wip_pacts_since: datetime.date | None,
     provider_tags: List[str],
-    provider_tags_len: int,
-    provider_branch: str,
+    provider_branch: str | None,
     consumer_version_selectors: List[str],
-    consumer_version_selectors_len: int,
     consumer_version_tags: List[str],
-    consumer_version_tags_len: int,
 ) -> None:
     """
     Adds a Pact broker as a source to verify.
 
-    This will fetch all the pact files from the broker that match the provider
-    name and the consumer version selectors (See
-    `https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/`).
-
     [Rust
     `pactffi_verifier_broker_source_with_selectors`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_broker_source_with_selectors)
 
-    The consumer version selectors must be passed in in JSON format.
+    This will fetch all the pact files from the broker that match the provider
+    name and the consumer version selectors (See [Consumer Version
+    Selectors](https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/)).
 
-    `enable_pending` is a boolean value. Set it to greater than zero to turn the
-    option on.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    If the `include_wip_pacts_since` option is provided, it needs to be a date
-    formatted in ISO format (YYYY-MM-DD).
+        url:
+            The URL to use as a source for the verifier.
 
-    If a username and password is given, then basic authentication will be used
-    when fetching the pact file. If a token is provided, then bearer token
-    authentication will be used.
+        username:
+            The username to use when fetching pacts from the broker.
 
-    # Safety
+        password:
+            The password to use when fetching pacts from the broker.
 
-    All string fields must contain valid UTF-8. Invalid UTF-8 will be replaced
-    with U+FFFD REPLACEMENT CHARACTER.
+        token:
+            The token to use when fetching pacts from the broker. This will be
+            used as a bearer token.
 
+        enable_pending:
+            If pending pacts should be included in the verification process.
+
+        include_wip_pacts_since:
+            The date to use to filter out WIP pacts.
+
+        provider_tags:
+            The tags to use to filter the provider pacts.
+
+        provider_branch:
+            The branch to use to filter the provider pacts.
+
+        consumer_version_selectors:
+            The consumer version selectors to use to filter the consumer pacts.
+
+        consumer_version_tags:
+            The tags to use to filter the consumer pacts.
     """
-    raise NotImplementedError
+    lib.pactffi_verifier_broker_source_with_selectors(
+        handle._ref,
+        url.encode("utf-8"),
+        username.encode("utf-8") if username else ffi.NULL,
+        password.encode("utf-8") if password else ffi.NULL,
+        token.encode("utf-8") if token else ffi.NULL,
+        enable_pending,
+        include_wip_pacts_since.isoformat().encode("utf-8")
+        if include_wip_pacts_since
+        else ffi.NULL,
+        [ffi.new("char[]", t.encode("utf-8")) for t in provider_tags],
+        len(provider_tags),
+        provider_branch.encode("utf-8") if provider_branch else ffi.NULL,
+        [ffi.new("char[]", s.encode("utf-8")) for s in consumer_version_selectors],
+        len(consumer_version_selectors),
+        [ffi.new("char[]", t.encode("utf-8")) for t in consumer_version_tags],
+        len(consumer_version_tags),
+    )
 
 
-def verifier_execute(handle: VerifierHandle) -> int:
+def verifier_execute(handle: VerifierHandle) -> None:
     """
     Runs the verification.
 
-    [Rust `pactffi_verifier_execute`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_execute)
-
-    # Error Handling
-
-    Errors will be reported with a non-zero return value.
+    (https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_execute)
     """
-    raise NotImplementedError
+    success: int = lib.pactffi_verifier_execute(handle._ref)
+    if success != 0:
+        msg = f"Failed to execute verifier for {handle}."
+        raise RuntimeError(msg)
 
 
 def verifier_cli_args() -> str:
@@ -6840,68 +6975,73 @@ def verifier_logs(handle: VerifierHandle) -> OwnedString:
     """
     Extracts the logs for the verification run.
 
-    This needs the memory buffer log sink to be setup before the verification is
-    executed. The returned string will need to be freed with the `free_string`
-    function call to avoid leaking memory.
-
     [Rust
     `pactffi_verifier_logs`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_logs)
 
-    Will return a NULL pointer if the logs for the verification can not be
-    retrieved.
+    This needs the memory buffer log sink to be setup before the verification is
+    executed. The returned string will need to be freed with the `free_string`
+    function call to avoid leaking memory.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_verifier_logs(handle._ref)
+    if ptr == ffi.NULL:
+        msg = f"Failed to get logs for {handle}."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def verifier_logs_for_provider(provider_name: str) -> OwnedString:
     """
     Extracts the logs for the verification run for the provider name.
 
-    This needs the memory buffer log sink to be setup before the verification is
-    executed. The returned string will need to be freed with the `free_string`
-    function call to avoid leaking memory.
-
     [Rust
     `pactffi_verifier_logs_for_provider`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_logs_for_provider)
 
-    Will return a NULL pointer if the logs for the verification can not be
-    retrieved.
+    This needs the memory buffer log sink to be setup before the verification is
+    executed. The returned string will need to be freed with the `free_string`
+    function call to avoid leaking memory.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_verifier_logs_for_provider(provider_name.encode("utf-8"))
+    if ptr == ffi.NULL:
+        msg = f"Failed to get logs for {provider_name}."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def verifier_output(handle: VerifierHandle, strip_ansi: int) -> OwnedString:
     """
     Extracts the standard output for the verification run.
 
-    The returned string will need to be freed with the `free_string` function
-    call to avoid leaking memory.
-
     [Rust
     `pactffi_verifier_output`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_output)
 
-    * `strip_ansi` - This parameter controls ANSI escape codes. Setting it to a
-      non-zero value
-    will cause the ANSI control codes to be stripped from the output.
+    Args:
+        handle:
+            The verifier handle to update.
 
-    Will return a NULL pointer if the handle is invalid.
+        strip_ansi:
+            This parameter controls ANSI escape codes. Setting it to a non-zero
+            value will cause the ANSI control codes to be stripped from the
+            output.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_verifier_output(handle._ref, strip_ansi)
+    if ptr == ffi.NULL:
+        msg = f"Failed to get output for {handle}."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def verifier_json(handle: VerifierHandle) -> OwnedString:
     """
     Extracts the verification result as a JSON document.
 
-    The returned string will need to be freed with the `free_string` function
-    call to avoid leaking memory.
-
     [Rust
     `pactffi_verifier_json`](https://docs.rs/pact_ffi/0.4.18/pact_ffi/?search=pactffi_verifier_json)
-
-    Will return a NULL pointer if the handle is invalid.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_verifier_json(handle._ref)
+    if ptr == ffi.NULL:
+        msg = f"Failed to get JSON for {handle}."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def using_plugin(

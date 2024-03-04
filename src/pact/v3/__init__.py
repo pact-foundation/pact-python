@@ -23,9 +23,11 @@ be as follows:
 import warnings
 
 from pact.v3.pact import Pact
+from pact.v3.verifier import Verifier
 
 __all__ = [
     "Pact",
+    "Verifier",
 ]
 
 warnings.warn(
