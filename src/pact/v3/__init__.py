@@ -20,8 +20,17 @@ be as follows:
     considered deprecated, and will be removed in a future release.
 """
 
+import warnings
+
 from pact.v3.pact import Pact
 
 __all__ = [
     "Pact",
 ]
+
+warnings.warn(
+    "The `pact.v3` module is not yet stable. Use at your own risk, and expect "
+    "breaking changes in future releases.",
+    stacklevel=2,
+    category=ImportWarning,
+)
