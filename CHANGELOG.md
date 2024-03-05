@@ -1,9 +1,14 @@
-## v2.1.2 (2024-03-05)
+## v2.1.1 (2024-03-05)
 
 ### BREAKING CHANGE
 
--   The public functions within the constants module have been removed. If you previously used them, please make use of the constants. For example, instead of `pact.constants.broker_client_exe()` use `pact.constants.BROKER_CLIENT_PATH` instead.
--   It is possible to use the system installed Pact executables by setting `PACT_USE_SYSTEM_BINS` to `True` or `Yes` (case insensitive).
+-   The public functions within the constants module have
+been removed. If you previously used them, please make use of the
+constants. For example, instead of `pact.constants.broker_client_exe()`
+use `pact.constants.BROKER_CLIENT_PATH` instead.
+-   It is possible to use the system installed Pact
+executables by setting `PACT_USE_SYSTEM_BINS` to `True` or `Yes` (case
+insensitive).
 
 ### Feat
 
@@ -29,9 +34,9 @@
 -   **example**: publish message pact
 -   **example**: publish_verification_results typo
 -   **example**: unknown action
--   **v3**: add `__next__` implementation
+-   **v3**: add __next__ implementation
 -   **deps**: add yarl dependency
--   **v3**: unconventional `__repr__` implementation
+-   **v3**: unconventional __repr__ implementation
 -   **build**: include omitted `lib` dir
 -   **test**: ignore internal deprecation warnings
 -   **ci**: add missing environment
@@ -39,11 +44,9 @@
 ### Refactor
 
 -   **v3**: split interactions into modules
+
+
 -   refactor constants
-
-## v2.1.1 (2023-10-04)
-
-Identical to 2.1.0, but with a fix to the publication process to PyPI.
 
 ## v2.1.0 (2023-10-04)
 
