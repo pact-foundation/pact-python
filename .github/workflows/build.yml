@@ -125,8 +125,13 @@ jobs:
         include:
           - os: ubuntu-latest
             archs: aarch64
+            build: manylinux
+          - os: ubuntu-latest
+            archs: aarch64
+            build: musllinx
           - os: macos-latest
             archs: arm64
+            build: ""
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
@@ -154,11 +159,12 @@ jobs:
         uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
+          CIBW_BUILD: ${{ matrix.build == '' && '*' || format('*{0}*', matrix.build) }}
 
       - name: Upload wheels
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4
         with:
-          name: wheels-${{ matrix.os }}-${{ matrix.archs }}
+          name: wheels-${{ matrix.os }}-${{ matrix.archs }}-${{  matrix.build }}
           path: ./wheelhouse/*.whl
           if-no-files-found: error
           compression-level: 0
