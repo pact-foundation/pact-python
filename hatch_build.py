@@ -283,6 +283,8 @@ class PactBuildHook(BuildHookInterface[Any]):
             os = "linux"
             if platform.endswith("x86_64"):
                 machine = "x86_64-musl"
+            elif platform.endswith("aarch64"):
+                machine = "aarch64-musl"
             else:
                 raise UnsupportedPlatformError(platform)
             return PACT_LIB_URL.format(
