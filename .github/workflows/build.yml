@@ -128,7 +128,7 @@ jobs:
             build: manylinux
           - os: ubuntu-latest
             archs: aarch64
-            build: musllinx
+            build: musllinux
           - os: macos-latest
             archs: arm64
             build: ""
