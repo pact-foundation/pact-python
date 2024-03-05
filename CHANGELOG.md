@@ -1,3 +1,50 @@
+## v2.1.2 (2024-03-05)
+
+### BREAKING CHANGE
+
+-   The public functions within the constants module have been removed. If you previously used them, please make use of the constants. For example, instead of `pact.constants.broker_client_exe()` use `pact.constants.BROKER_CLIENT_PATH` instead.
+-   It is possible to use the system installed Pact executables by setting `PACT_USE_SYSTEM_BINS` to `True` or `Yes` (case insensitive).
+
+### Feat
+
+-   add support for musllinux_aarch64
+-   **v3**: add specification attribute to pacts
+-   **v3**: upgrade ffi to 0.4.18
+-   determine version from vcs
+-   **v3**: add with_matching_rules
+-   add python 3.12 support
+-   **v3**: implement server log methods
+-   **v3**: add mock server mismatches
+-   **v3**: implement Pact Handle methods
+-   **ffi**: add OwnedString class
+-   **v3**: implement interaction methods
+-   **v3**: implement pact class
+-   **v3**: add v3.ffi module
+
+### Fix
+
+-   clean pact interactions on exception
+-   **v3**: incorrect arg order
+-   **v3**: rename `with_binary_file`
+-   **example**: publish message pact
+-   **example**: publish_verification_results typo
+-   **example**: unknown action
+-   **v3**: add `__next__` implementation
+-   **deps**: add yarl dependency
+-   **v3**: unconventional `__repr__` implementation
+-   **build**: include omitted `lib` dir
+-   **test**: ignore internal deprecation warnings
+-   **ci**: add missing environment
+
+### Refactor
+
+-   **v3**: split interactions into modules
+-   refactor constants
+
+## v2.1.1 (2023-10-04)
+
+Identical to 2.1.0, but with a fix to the publication process to PyPI.
+
 ## v2.1.0 (2023-10-04)
 
 ### BREAKING CHANGE
