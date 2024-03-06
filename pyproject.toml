@@ -51,7 +51,7 @@ dependencies = [
 
 [project.urls]
 "Homepage"      = "https://pact.io"
-"Repository"    = "https://github.com/pact-foundation-pact-python"
+"Repository"    = "https://github.com/pact-foundation/pact-python"
 "Documentation" = "https://docs.pact.io"
 "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
 "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/master/CHANGELOG.md"
