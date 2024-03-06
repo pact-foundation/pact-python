@@ -293,6 +293,10 @@ exclude = '^(src/pact|tests)/(?!v3).+\.py$'
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
+before-build = """
+python -m pip install hatch
+hatch clean
+"""
 test-command = """
 python -c \
 "from pact import EachLike; \
