@@ -49,7 +49,7 @@ repos:
         exclude: ^(pact|tests)/(?!v3/).*\.py$
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.16.0
+    rev: v3.17.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
