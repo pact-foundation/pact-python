@@ -97,6 +97,11 @@ jobs:
             echo "build=*" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Set macOS deployment target
+        if: startsWith(matrix.os, 'macos-')
+        run: |
+          echo "MACOSX_DEPLOYMENT_TARGET=10.12" >> "$GITHUB_ENV"
+
       - name: Create wheels
         uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
         env:
