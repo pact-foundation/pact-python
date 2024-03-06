@@ -296,6 +296,13 @@ exclude = '^(src/pact|tests)/(?!v3).+\.py$'
 before-build = """
 python -m pip install hatch
 hatch clean
+if ! command -v cargo &> /dev/null; then
+  curl -sSf https://sh.rustup.rs | sh -s -- --profile=minimal -y
+  for bin in $(ls "$HOME/.cargo/bin"); do
+    ln -v "$HOME/.cargo/bin/$bin" "/usr/bin/$bin"
+  done
+  rustup show
+fi
 """
 test-command = """
 python -c \
@@ -310,14 +317,3 @@ assert isinstance(pact.v3.ffi.version(), str);\""""
 # The repair tool unfortunately did not like the bundled Ruby distributable.
 # TODO: Check whether delocate-wheel can be configured.
 repair-wheel-command = ""
-
-[[tool.cibuildwheel.overrides]]
-# Pydantic for pypy needs to be built from source, which requires Rust.
-select = "pp*-*linux*"
-before-test = """
-curl -sSf https://sh.rustup.rs -sSf | sh -s -- --profile=minimal -y
-for bin in $(ls "$HOME/.cargo/bin"); do
-  ln -v "$HOME/.cargo/bin/$bin" "/usr/bin/$bin"
-done
-rustup show
-"""
