@@ -75,6 +75,11 @@ class PactBuildHook(BuildHookInterface[Any]):
         for subdir in ["bin", "lib", "data"]:
             shutil.rmtree(PACT_ROOT_DIR / subdir, ignore_errors=True)
 
+        for ffi in (PACT_ROOT_DIR / "v3").glob("_ffi.*"):
+            if ffi.name == "_ffi.pyi":
+                continue
+            ffi.unlink()
+
     def initialize(
         self,
         version: str,  # noqa: ARG002
