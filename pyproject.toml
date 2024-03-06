@@ -293,16 +293,14 @@ exclude = '^(src/pact|tests)/(?!v3).+\.py$'
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
+skip = "pp38-*"
 before-build = """
-python -m pip install hatch
-hatch clean
-if ! command -v cargo &> /dev/null; then
-  curl -sSf https://sh.rustup.rs | sh -s -- --profile=minimal -y
-  for bin in $(ls "$HOME/.cargo/bin"); do
-    ln -v "$HOME/.cargo/bin/$bin" "/usr/bin/$bin"
-  done
-  rustup show
-fi
+rm -rvf src/pact/v3/bin
+rm -rvf src/pact/v3/data
+rm -rvf src/pact/v3/lib
+mv -v src/pact/v3/_ffi.pyi _ffi.pyi
+rm -rvf src/pact/v3/_ffi.*
+mv -v _ffi.pyi src/pact/v3/_ffi.pyi
 """
 test-command = """
 python -c \
