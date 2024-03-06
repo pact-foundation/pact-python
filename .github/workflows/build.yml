@@ -24,7 +24,7 @@ jobs:
     name: Build source distribution
 
     if: github.event_name == 'push' || ! github.event.pull_request.draft
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
@@ -62,11 +62,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             archs: x86_64
-          - os: macos-latest
+          - os: macos-12
             archs: x86_64
-          - os: windows-latest
+          - os: windows-2019
             archs: AMD64
 
     steps:
@@ -123,13 +123,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             archs: aarch64
             build: manylinux
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             archs: aarch64
             build: musllinux
-          - os: macos-latest
+          - os: macos-12
             archs: arm64
             build: ""
 
@@ -150,7 +150,7 @@ jobs:
             ${{ github.workflow }}
 
       - name: Set up QEMU
-        if: matrix.os == 'ubuntu-latest'
+        if: startsWith(matrix.os, 'ubuntu-')
         uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
         with:
           platforms: arm64
@@ -173,7 +173,7 @@ jobs:
     name: Publish wheels and sdist
 
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     environment: pypi
 
     needs:
