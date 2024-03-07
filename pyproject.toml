@@ -315,3 +315,11 @@ assert isinstance(pact.v3.ffi.version(), str);\""""
 # The repair tool unfortunately did not like the bundled Ruby distributable.
 # TODO: Check whether delocate-wheel can be configured.
 repair-wheel-command = ""
+
+[tool.cibuildwheel.windows]
+before-build = [
+  'FOR /R src\pact\v3 %G IN (_ffi.*) DO IF NOT %~nxG == _ffi.pyi DEL /F /Q "%G"',
+  'IF EXIST src\pact\v3\bin\ RMDIR /S /Q src\pact\v3\bin',
+  'IF EXIST src\pact\v3\data\ RMDIR /S /Q src\pact\v3\data',
+  'IF EXIST src\pact\v3\lib\ RMDIR /S /Q src\pact\v3\lib',
+]
