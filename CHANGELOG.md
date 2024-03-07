@@ -1,3 +1,9 @@
+## v2.1.3 (2024-03-07)
+
+### Fix
+
+-   avoid wheel bloat
+
 ## v2.1.2 (2024-03-05)
 
 ### BREAKING CHANGE
