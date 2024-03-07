@@ -24,7 +24,7 @@ jobs:
     name: Build source distribution
 
     if: github.event_name == 'push' || ! github.event.pull_request.draft
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
@@ -178,7 +178,7 @@ jobs:
     name: Publish wheels and sdist
 
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     environment: pypi
 
     needs:
