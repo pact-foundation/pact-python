@@ -1,0 +1,8 @@
+{
+  "consumer": { "name": "Example Consumer" },
+  "provider": { "name": "Example Producer" },
+  "metadata": {
+    "pactSpecification": { "version": "2.0" }
+  },
+  "interactions": []
+}
