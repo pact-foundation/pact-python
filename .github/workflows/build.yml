@@ -238,7 +238,7 @@ jobs:
           generate_release_notes: true
 
       - name: Push build artifacts to PyPI
-        uses: pypa/gh-action-pypi-publish@e53eb8b103ffcb59469888563dc324e3c8ba6f06 # v1.8.12
+        uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450 # v1.8.14
         with:
           skip-existing: true
           password: ${{ secrets.PYPI_TOKEN }}
