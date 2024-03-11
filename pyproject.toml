@@ -38,15 +38,15 @@ requires-python = ">=3.8"
 # - A specific feature is required in a new minor release
 # - A minor version address vulnerability which directly impacts Pact Python
 dependencies = [
-  "cffi              ~= 1.0",
-  "click             ~= 8.0",
-  "fastapi           ~= 0.0",
-  "psutil            ~= 5.0",
-  "requests          ~= 2.0",
-  "six               ~= 1.0",
-  "typing-extensions ~= 4.0 ; python_version < '3.10'",
-  "uvicorn           ~= 0.0",
-  "yarl              ~= 1.0",
+  "cffi              ~=1.0",
+  "click             ~=8.0",
+  "fastapi           ~=0.0",
+  "psutil            ~=5.0",
+  "requests          ~=2.0",
+  "six               ~=1.0",
+  "typing-extensions ~=4.0 ; python_version < '3.10'",
+  "uvicorn           ~=0.0",
+  "yarl              ~=1.0",
 ]
 
 [project.urls]
@@ -62,25 +62,29 @@ pact-verifier = "pact.cli.verify:main"
 [project.optional-dependencies]
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
-types = [
+devel-types = [
   "mypy           ==1.9.0",
-  "types-cffi     ~= 1.0",
-  "types-requests ~= 2.0",
+  "types-cffi     ~=1.0",
+  "types-requests ~=2.0",
 ]
-test = [
-  "aiohttp[speedups] ~= 3.0",
-  "coverage[toml]    ~= 7.0",
-  "flask[async]      ~= 3.0",
-  "httpx             ~= 0.0",
-  "mock              ~= 5.0",
-  # pytest 8.1.0 is not compatible with pytest-bdd yet
-  "pytest            ~= 8.0.0",
-  "pytest-asyncio    ~= 0.0",
-  "pytest-bdd        ~= 7.0",
-  "pytest-cov        ~= 4.0",
-  "testcontainers    ~= 3.0",
+devel-test = [
+  "aiohttp[speedups] ~=3.0",
+  "coverage[toml]    ~=7.0",
+  "flask[async]      ~=3.0",
+  "httpx             ~=0.0",
+  "mock              ~=5.0",
+  # TODO: Upgrade to PyTest 8.1
+  # Pending on https://github.com/pytest-dev/pytest-bdd/issues/673
+  "pytest            ~=8.0.0",
+  "pytest-asyncio    ~=0.0",
+  "pytest-bdd        ~=7.0",
+  "pytest-cov        ~=4.0",
+  "testcontainers    ~=3.0",
 ]
-dev = ["pact-python[types]", "pact-python[test]", "ruff==0.3.2"]
+devel = [
+  "pact-python[devel-types,devel-test]",
+  "ruff ==0.3.2"
+]
 
 ################################################################################
 ## Hatch Build Configuration
@@ -138,7 +142,7 @@ artifacts = [
 # Install dev dependencies in the default environment to simplify the developer
 # workflow.
 [tool.hatch.envs.default]
-features = ["dev"]
+features = ["devel"]
 extra-dependencies = [
   "hatchling",
   "packaging",
