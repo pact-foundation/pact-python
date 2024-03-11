@@ -103,7 +103,7 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=10.12" >> "$GITHUB_ENV"
 
       - name: Create wheels
-        uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
+        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce # v2.17.0
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_BUILD: ${{ steps.cibw-filter.outputs.build }}
@@ -161,7 +161,7 @@ jobs:
           platforms: arm64
 
       - name: Create wheels
-        uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
+        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce # v2.17.0
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_BUILD: ${{ matrix.build == '' && '*' || format('*{0}*', matrix.build) }}
