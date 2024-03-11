@@ -74,7 +74,7 @@ test = [
   "httpx             ~= 0.0",
   "mock              ~= 5.0",
   # pytest 8.1.0 is not compatible with pytest-bdd yet
-  "pytest            ~= 8.0.0",
+  "pytest            ~=8.1.1",
   "pytest-asyncio    ~= 0.0",
   "pytest-bdd        ~= 7.0",
   "pytest-cov        ~= 4.0",
