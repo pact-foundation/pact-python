@@ -164,7 +164,7 @@ docs-build = "mkdocs build {args}"
 # Test environment for running unit tests. This automatically tests against all
 # supported Python versions.
 [tool.hatch.envs.test]
-features = ["test"]
+features = ["devel-test"]
 
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
