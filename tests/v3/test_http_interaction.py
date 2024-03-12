@@ -5,6 +5,7 @@ Pact Http Interaction unit tests.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import TYPE_CHECKING
 
@@ -536,3 +537,26 @@ async def test_with_plugin(pact: Pact) -> None:
             async with session.get("/") as resp:
                 assert resp.status == 200
                 assert await resp.read() == b""
+
+
+@pytest.mark.asyncio()
+async def test_pact_server_verbose(
+    pact: Pact,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    (
+        pact.upon_receiving("a basic request with a plugin")
+        .with_request("GET", "/foo")
+        .will_respond_with(200)
+    )
+    with caplog.at_level(logging.WARNING, logger="pact.v3.pact"), pact.serve(
+        raises=False, verbose=True
+    ) as srv:
+        async with aiohttp.ClientSession(srv.url) as session:
+            async with session.get("/bar") as resp:
+                assert resp.status == 500
+
+    assert len(caplog.records) == 1
+    for record in caplog.records:
+        assert record.levelname == "ERROR"
+        assert record.message.startswith("Mismatches:\n")
