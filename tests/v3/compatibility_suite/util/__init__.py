@@ -199,7 +199,6 @@ class InteractionDefinition:
 
             self.bytes = data.encode("utf-8")
             self.string = data
-            self.mime_type = "text/plain"
 
         def __repr__(self) -> str:
             """
@@ -311,7 +310,7 @@ class InteractionDefinition:
             # the content type.
             orig_content_type = self.body.mime_type if self.body else None
             self.body = InteractionDefinition.Body(body)
-            self.body.mime_type = orig_content_type or self.body.mime_type
+            self.body.mime_type = self.body.mime_type or orig_content_type
 
         if content_type := (
             kwargs.pop("content_type", None) or kwargs.pop("content type", None)
