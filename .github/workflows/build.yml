@@ -229,7 +229,7 @@ jobs:
 
       - name: Generate release
         id: release
-        uses: softprops/action-gh-release@3198ee18f814cdf787321b4a32a26ddbf37acc52 # v2
+        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2
         with:
           files: wheels/*
           body_path: ${{ runner.temp }}/changelog
