@@ -205,7 +205,9 @@ class InteractionDefinition:
             Debugging representation.
             """
             return "<Body: {}>".format(
-                ", ".join(truncate(f"{k}={v!r}") for k, v in vars(self).items()),
+                ", ".join(
+                    str(k) + "=" + truncate(repr(v)) for k, v in vars(self).items()
+                ),
             )
 
         def parse_fixture(self, fixture: Path) -> None:
