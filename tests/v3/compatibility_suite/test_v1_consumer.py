@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 
-import pytest
 from pytest_bdd import given, parsers, scenario
 
 from tests.v3.compatibility_suite.util import (
@@ -153,9 +152,6 @@ def test_request_with_invalid_body() -> None:
     """
 
 
-# TODO: Enable this test when the upstream issue is resolved:
-# https://github.com/pact-foundation/pact-compatibility-suite/issues/3
-@pytest.mark.skip("Waiting on upstream fix")
 @scenario(
     "definition/features/V1/http_consumer.feature",
     "Request with the incorrect type of body contents",
@@ -226,9 +222,6 @@ def test_request_with_xml_body_negative_case() -> None:
     """
 
 
-# TODO: Enable this test when the upstream issue is resolved:
-# https://github.com/pact-foundation/pact-reference/issues/336
-@pytest.mark.skip("Waiting on upstream fix")
 @scenario(
     "definition/features/V1/http_consumer.feature",
     "Request with a binary body (positive case)",
@@ -239,9 +232,6 @@ def test_request_with_a_binary_body_positive_case() -> None:
     """
 
 
-# TODO: Enable this test when the upstream issue is resolved:
-# https://github.com/pact-foundation/pact-reference/issues/336
-@pytest.mark.skip("Waiting on upstream fix")
 @scenario(
     "definition/features/V1/http_consumer.feature",
     "Request with a binary body (negative case)",
