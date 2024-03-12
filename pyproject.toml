@@ -188,6 +188,10 @@ filterwarnings = [
   "ignore::PendingDeprecationWarning:tests",
 ]
 
+log_level = "NOTSET"
+log_format = "%(asctime)s [%(levelname)-8s] %(name)s: %(message)s"
+log_date-format = "%H:%M:%S"
+
 markers = [
   # Markers for the compatibility suite
   "consumer",
