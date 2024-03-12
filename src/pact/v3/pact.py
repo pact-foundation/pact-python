@@ -11,6 +11,8 @@ For the roles of consumer and provider, see the documentation for the
 
 from __future__ import annotations
 
+import json
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Set, overload
 
@@ -30,6 +32,8 @@ if TYPE_CHECKING:
         from typing import Self
     except ImportError:
         from typing_extensions import Self
+
+logger = logging.getLogger(__name__)
 
 
 class Pact:
@@ -236,6 +240,7 @@ class Pact:
         transport_config: str | None = None,
         *,
         raises: bool = True,
+        verbose: bool = True,
     ) -> PactServer:
         """
         Return a mock server for the Pact.
@@ -264,9 +269,14 @@ class Pact:
                 Configuration for the transport. This is specific to the
                 transport being used and should be a JSON string.
 
-            raises: Whether to raise an exception if there are mismatches
-                between the Pact and the server. If set to `False`, then the
-                mismatches must be handled manually.
+            raises:
+                Whether to raise an exception if there are mismatches between
+                the Pact and the server. If set to `False`, then the mismatches
+                must be handled manually.
+
+            verbose:
+                Whether or not to print the mismatches to the logger. This works
+                independently of `raises`.
 
         Returns:
             A [`PactServer`][pact.v3.pact.PactServer] instance.
@@ -278,6 +288,7 @@ class Pact:
             transport,
             transport_config,
             raises=raises,
+            verbose=verbose,
         )
 
     def messages(self) -> pact.v3.ffi.PactMessageIterator:
@@ -419,6 +430,7 @@ class PactServer:
         transport_config: str | None = None,
         *,
         raises: bool = True,
+        verbose: bool = True,
     ) -> None:
         """
         Initialise a new Pact Server.
@@ -452,8 +464,13 @@ class PactServer:
                 Configuration for the transport. This is specific to the
                 transport being used and should be a JSON string.
 
-            raises: Whether or not to raise an exception if the server
-                is not matched upon exit.
+            raises:
+                Whether or not to raise an exception if the server is not
+                matched upon exit.
+
+            verbose:
+                Whether or not to print the mismatches to the logger. This works
+                independently of `raises`.
         """
         self._host = host
         self._port = port
@@ -462,6 +479,7 @@ class PactServer:
         self._pact_handle = pact_handle
         self._handle: None | pact.v3.ffi.PactServerHandle = None
         self._raises = raises
+        self._verbose = verbose
 
     @property
     def port(self) -> int:
@@ -592,8 +610,13 @@ class PactServer:
                 If the server has not been fully matched and the server is
                 configured to raise an exception.
         """
-        if self._handle:
-            if self._raises and not self.matched:
+        if self._handle and not self.matched:
+            if self._verbose:
+                logger.error(
+                    "Mismatches:\n%s",
+                    json.dumps(self.mismatches, indent=2),
+                )
+            if self._raises:
                 raise MismatchesError(self.mismatches)
             self._handle = None
 
