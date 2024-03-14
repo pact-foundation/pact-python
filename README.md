@@ -1,8 +1,35 @@
-# pact-python
+# Pact Python
 
-[![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
-[![License](https://img.shields.io/github/license/pact-foundation/pact-python.svg?maxAge=2592000)](https://github.com/pact-foundation/pact-python/blob/master/LICENSE)
-[![Build and Test](https://github.com/pact-foundation/pact-python/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/pact-foundation/pact-python/actions/workflows/build_and_test.yml)
+<!-- markdownlint-disable no-inline-html -->
+<table align="center">
+    <tr>
+        <td>Package</td>
+        <td>
+            <a href="https://pypi.python.org/pypi/pact-python"><img src="https://img.shields.io/pypi/v/pact-python.svg" alt="Version"></a>
+            <a href="https://pypi.python.org/pypi/pact-python"><img src="https://img.shields.io/pypi/pyversions/pact-python.svg" alt="Python Versions"></a>
+            <a href="https://pypi.python.org/pypi/pact-python"><img src="https://img.shields.io/pypi/dm/pact-python.svg" alt="Downloads"></a>
+        </td>
+    </tr>
+    <tr>
+        <td>CI/CD</td>
+        <td>
+            <a href="https://github.com/pact-foundation/pact-python/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/test.yml?label=test" alt="CI - Test"></a>
+            <a href="https://github.com/pact-foundation/pact-python/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/build.yml?label=build" alt="CI - Build"></a>
+            <a href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml"><img src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?label=docs" alt="CI - Docs"></a>
+        </td>
+    </tr>
+    <tr>
+        <td>Meta</td>
+        <td>
+            <a href="https://github.com/pypa/hatch"><img src="https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg" alt="Hatch project"></a>
+            <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="linting - Ruff"></a>
+            <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="code style - Ruff"></a>
+            <a href="https://github.com/python/mypy"><img src="https://img.shields.io/badge/types-Mypy-blue.svg" alt="types - Mypy"></a>
+            <a href="https://pypi.python.org/pypi/ruff"><img src="https://img.shields.io/pypi/l/pact-python.svg" alt="License"></a>
+        </td>
+    </tr>
+</table>
+<!-- markdownlint-enable no-inline-html -->
 
 Python version of Pact. Enables consumer driven contract testing, providing a mock service and DSL for the consumer project, and interaction playback and verification for the service provider project. Currently supports version 2 of the [Pact specification].
 

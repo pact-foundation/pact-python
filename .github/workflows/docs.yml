@@ -1,0 +1,56 @@
+name: docs
+
+on:
+  push:
+
+env:
+  STABLE_PYTHON_VERSION: "3.12"
+  PYTEST_ADDOPTS: --color=yes
+
+jobs:
+  build:
+    name: Build docs
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
+
+      - name: Build docs
+        run: |
+          hatch run mkdocs build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: site
+
+  publish:
+    name: Publish docs
+
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
