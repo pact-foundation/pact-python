@@ -173,11 +173,11 @@ def serialize(obj: Any) -> Any:  # noqa: ANN401, PLR0911
 
     All other types are converted to strings using the `repr` function.
     """
-    if isinstance(obj, datetime | date | time):
+    if isinstance(obj, (datetime, date, time)):
         return obj.isoformat()
 
     # Basic types which are already serializable
-    if isinstance(obj, str | int | float | bool | type(None)):
+    if isinstance(obj, (str, int, float, bool, type(None))):
         return obj
 
     # Bytes

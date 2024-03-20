@@ -23,7 +23,7 @@ import shutil
 import socket
 import subprocess
 from contextvars import ContextVar
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -37,6 +37,13 @@ from tests.v3.compatibility_suite.util import serialize
 
 if TYPE_CHECKING:
     from tests.v3.compatibility_suite.util import InteractionDefinition
+
+if sys.version_info < (3, 11):
+    from datetime import timezone
+
+    UTC = timezone.utc
+else:
+    from datetime import UTC
 
 
 logger = logging.getLogger(__name__)
