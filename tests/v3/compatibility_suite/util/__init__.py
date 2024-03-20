@@ -149,6 +149,41 @@ def parse_markdown_table(content: str) -> list[dict[str, str]]:
     return [dict(zip(rows[0], row)) for row in rows[1:]]
 
 
+def parse_headers(headers: str) -> MultiDict[str]:
+    """
+    Parse the headers.
+
+    The headers are in the format:
+
+    ```text
+    'X-A: 1', 'X-B: 2', 'X-A: 3'
+    ```
+
+    As headers can be repeated, the result is a MultiDict.
+    """
+    kvs: list[tuple[str, str]] = []
+    for header in headers.split(", "):
+        k, _sep, v = header.strip("'").partition(": ")
+        kvs.append((k, v))
+    return MultiDict(kvs)
+
+
+def parse_matching_rules(matching_rules: str) -> str:
+    """
+    Parse the matching rules.
+
+    The matching rules are in one of two formats:
+
+    - An explicit JSON object, prefixed by `JSON: `.
+    - A fixture file which contains the matching rules.
+    """
+    if matching_rules.startswith("JSON: "):
+        return matching_rules[6:]
+
+    with (FIXTURES_ROOT / matching_rules).open("r") as file:
+        return file.read()
+
+
 class InteractionDefinition:
     """
     Interaction definition.
@@ -300,12 +335,12 @@ class InteractionDefinition:
             self.query = query
 
         if headers := kwargs.pop("headers", None):
-            self.headers = self.parse_headers(headers)
+            self.headers = parse_headers(headers)
 
         if headers := (
             kwargs.pop("raw headers", None) or kwargs.pop("raw_headers", None)
         ):
-            self.headers = self.parse_headers(headers)
+            self.headers = parse_headers(headers)
 
         if body := kwargs.pop("body", None):
             # When updating the body, we _only_ update the body content, not
@@ -337,9 +372,7 @@ class InteractionDefinition:
         if matching_rules := (
             kwargs.pop("matching_rules", None) or kwargs.pop("matching rules", None)
         ):
-            self.matching_rules = InteractionDefinition.parse_matching_rules(
-                matching_rules
-            )
+            self.matching_rules = parse_matching_rules(matching_rules)
 
         if len(kwargs) > 0:
             msg = f"Unexpected arguments: {kwargs.keys()}"
@@ -352,41 +385,6 @@ class InteractionDefinition:
         return "<Body: {}>".format(
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
-
-    @classmethod
-    def parse_headers(cls, headers: str) -> MultiDict[str]:
-        """
-        Parse the headers.
-
-        The headers are in the format:
-
-        ```text
-        'X-A: 1', 'X-B: 2', 'X-A: 3'
-        ```
-
-        As headers can be repeated, the result is a MultiDict.
-        """
-        kvs: list[tuple[str, str]] = []
-        for header in headers.split(", "):
-            k, _sep, v = header.strip("'").partition(": ")
-            kvs.append((k, v))
-        return MultiDict(kvs)
-
-    @classmethod
-    def parse_matching_rules(cls, matching_rules: str) -> str:
-        """
-        Parse the matching rules.
-
-        The matching rules are in one of two formats:
-
-        - An explicit JSON object, prefixed by `JSON: `.
-        - A fixture file which contains the matching rules.
-        """
-        if matching_rules.startswith("JSON: "):
-            return matching_rules[6:]
-
-        with (FIXTURES_ROOT / matching_rules).open("r") as file:
-            return file.read()
 
     def add_to_pact(self, pact: pact.v3.Pact, name: str) -> None:  # noqa: PLR0912, C901
         """
