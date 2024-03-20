@@ -304,6 +304,7 @@ class InteractionDefinition:
     def __init__(self, **kwargs: str) -> None:
         """Initialise the interaction definition."""
         self.id: int | None = None
+        self.state: str | None = None
         self.method: str = kwargs.pop("method")
         self.path: str = kwargs.pop("path")
         self.response: int = int(kwargs.pop("response", 200))
