@@ -350,8 +350,8 @@ class Verifier:
     def set_publish_options(
         self,
         version: str,
-        url: str,
-        branch: str,
+        url: str | None = None,
+        branch: str | None = None,
         tags: list[str] | None = None,
     ) -> Self:
         """

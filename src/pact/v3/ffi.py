@@ -6638,9 +6638,9 @@ def verifier_set_no_pacts_is_error(handle: VerifierHandle, *, enabled: bool) -> 
 def verifier_set_publish_options(
     handle: VerifierHandle,
     provider_version: str,
-    build_url: str,
-    provider_tags: List[str],
-    provider_branch: str,
+    build_url: str | None,
+    provider_tags: List[str] | None,
+    provider_branch: str | None,
 ) -> None:
     """
     Set the options used when publishing verification results to the Broker.
@@ -6667,10 +6667,10 @@ def verifier_set_publish_options(
     retval: int = lib.pactffi_verifier_set_publish_options(
         handle._ref,
         provider_version.encode("utf-8"),
-        build_url.encode("utf-8"),
+        build_url.encode("utf-8") if build_url else ffi.NULL,
         [ffi.new("char[]", t.encode("utf-8")) for t in provider_tags or []],
-        len(provider_tags),
-        provider_branch.encode("utf-8"),
+        len(provider_tags or []),
+        provider_branch.encode("utf-8") if provider_branch else ffi.NULL,
     )
     if retval != 0:
         msg = f"Failed to set publish options for {handle}."
