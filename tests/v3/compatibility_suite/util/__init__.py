@@ -28,12 +28,13 @@ import typing
 from pathlib import Path
 from xml.etree import ElementTree
 
+import flask
+from flask import request
 from multidict import MultiDict
 from yarl import URL
 
 if typing.TYPE_CHECKING:
-    import pact.v3
-    import pact.v3.pact
+    from pact.v3.pact import Pact
 
 logger = logging.getLogger(__name__)
 SUITE_ROOT = Path(__file__).parent.parent / "definition"
@@ -311,7 +312,7 @@ class InteractionDefinition:
         self.query: str | None = None
         self.headers: MultiDict[str] = MultiDict()
         self.body: InteractionDefinition.Body | None = None
-        self.response_content: str | None = None
+        self.response_headers: MultiDict[str] = MultiDict()
         self.response_body: InteractionDefinition.Body | None = None
         self.matching_rules: str | None = None
         self.update(**kwargs)
@@ -357,18 +358,31 @@ class InteractionDefinition:
                 self.body = InteractionDefinition.Body("")
             self.body.mime_type = content_type
 
-        if response := kwargs.pop("response", None):
+        if response := kwargs.pop("response", None) or kwargs.pop("status", None):
             self.response = int(response)
+
+        if response_headers := (
+            kwargs.pop("response_headers", None) or kwargs.pop("response headers", None)
+        ):
+            self.response_headers = parse_headers(response_headers)
 
         if response_content := (
             kwargs.pop("response_content", None) or kwargs.pop("response content", None)
         ):
-            self.response_content = response_content
+            if self.response_body is None:
+                self.response_body = InteractionDefinition.Body("")
+            self.response_body.mime_type = response_content
 
         if response_body := (
             kwargs.pop("response_body", None) or kwargs.pop("response body", None)
         ):
+            orig_content_type = (
+                self.response_body.mime_type if self.response_body else None
+            )
             self.response_body = InteractionDefinition.Body(response_body)
+            self.response_body.mime_type = (
+                self.response_body.mime_type or orig_content_type
+            )
 
         if matching_rules := (
             kwargs.pop("matching_rules", None) or kwargs.pop("matching rules", None)
@@ -387,7 +401,7 @@ class InteractionDefinition:
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
 
-    def add_to_pact(self, pact: pact.v3.Pact, name: str) -> None:  # noqa: PLR0912, C901
+    def add_to_pact(self, pact: Pact, name: str) -> None:  # noqa: C901, PLR0912
         """
         Add the interaction to the pact.
 
@@ -405,6 +419,11 @@ class InteractionDefinition:
         interaction = pact.upon_receiving(name)
         logging.info("with_request(%s, %s)", self.method, self.path)
         interaction.with_request(self.method, self.path)
+
+        # We distinguish between "" and None here.
+        if self.state is not None:
+            logging.info("given(%s)", self.state)
+            interaction.given(self.state)
 
         if self.query:
             query = URL.build(query_string=self.query).query
@@ -448,31 +467,81 @@ class InteractionDefinition:
             logging.info("will_respond_with(%s)", self.response)
             interaction.will_respond_with(self.response)
 
-        if self.response_content:
-            if self.response_body is None:
-                msg = "Expected response body along with response content type"
-                raise ValueError(msg)
-
+        if self.response_body:
             if self.response_body.string:
                 logging.info(
                     "with_body(%s, %s)",
                     truncate(self.response_body.string),
-                    self.response_content,
+                    self.response_body.mime_type,
                 )
                 interaction.with_body(
                     self.response_body.string,
-                    self.response_content,
+                    self.response_body.mime_type,
                 )
             elif self.response_body.bytes:
                 logging.info(
                     "with_binary_file(%s, %s)",
                     truncate(self.response_body.bytes),
-                    self.response_content,
+                    self.response_body.mime_type,
                 )
                 interaction.with_binary_body(
                     self.response_body.bytes,
-                    self.response_content,
+                    self.response_body.mime_type,
                 )
             else:
                 msg = "Unexpected body definition"
                 raise RuntimeError(msg)
+
+    def add_to_flask(self, app: flask.Flask) -> None:
+        """
+        Add an interaction to a Flask app.
+
+        Args:
+            app:
+                The Flask app to add the interaction to.
+        """
+
+        async def route_fn() -> flask.Response:
+            logger.info("Received request: %s %s", self.method, self.path)
+            if self.query:
+                query = URL.build(query_string=self.query).query
+                # Perform a two-way check to ensure that the query parameters
+                # are present in the request, and that the request contains no
+                # unexpected query parameters.
+                for k, v in query.items():
+                    assert request.args[k] == v
+                for k, v in request.args.items():
+                    assert query[k] == v
+
+            if self.headers:
+                # Perform a one-way check to ensure that the expected headers
+                # are present in the request, but don't check for any unexpected
+                # headers.
+                for k, v in self.headers.items():
+                    assert k in request.headers
+                    assert request.headers[k] == v
+
+            if self.body:
+                assert request.data == self.body.bytes
+
+            return flask.Response(
+                response=self.response_body.bytes or self.response_body.string or None
+                if self.response_body
+                else None,
+                status=self.response,
+                headers=self.response_headers,
+                content_type=self.response_body.mime_type
+                if self.response_body
+                else None,
+                direct_passthrough=True,
+            )
+
+        # The route function needs to have a unique name
+        clean_name = self.path.replace("/", "_").replace("__", "_")
+        route_fn.__name__ = f"{self.method.lower()}_{clean_name}"
+
+        app.add_url_rule(
+            self.path,
+            view_func=route_fn,
+            methods=[self.method],
+        )
