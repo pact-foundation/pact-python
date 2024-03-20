@@ -589,7 +589,7 @@ class Verifier:
 
         pact.v3.ffi.verifier_url_source(
             self._handle,
-            str(url),
+            str(url.with_user(None).with_password(None)),
             username,
             password,
             token,
@@ -686,14 +686,14 @@ class Verifier:
         if selector:
             return BrokerSelectorBuilder(
                 self,
-                str(url),
+                str(url.with_user(None).with_password(None)),
                 username,
                 password,
                 token,
             )
         pact.v3.ffi.verifier_broker_source(
             self._handle,
-            str(url),
+            str(url.with_user(None).with_password(None)),
             username,
             password,
             token,
