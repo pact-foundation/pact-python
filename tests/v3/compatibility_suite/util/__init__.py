@@ -21,11 +21,15 @@ def some_step(stacklevel: int = 1) -> None:
 
 from __future__ import annotations
 
+import base64
 import contextlib
 import hashlib
 import logging
 import typing
+from collections.abc import Collection, Mapping
+from datetime import date, datetime, time
 from pathlib import Path
+from typing import Any
 from xml.etree import ElementTree
 
 import flask
@@ -97,7 +101,7 @@ def truncate(data: str | bytes) -> str:
     """
     if len(data) <= 32:
         if isinstance(data, str):
-            return f"{data!r}"
+            return f"{data}"
         return data.decode("utf-8", "backslashreplace")
 
     length = len(data)
@@ -148,6 +152,57 @@ def parse_markdown_table(content: str) -> list[dict[str, str]]:
         raise ValueError(msg)
 
     return [dict(zip(rows[0], row)) for row in rows[1:]]
+
+
+def serialize(obj: Any) -> Any:  # noqa: ANN401, PLR0911
+    """
+    Convert an object to a dictionary.
+
+    This function converts an object to a dictionary by calling `vars` on the
+    object. This is useful for classes which are not otherwise serializable
+    using `json.dumps`.
+
+    A few special cases are handled:
+
+    -   If the object is a `datetime` object, it is converted to an ISO 8601
+        string.
+    -   All forms of [`Mapping`][collections.abc.Mapping] are converted to
+        dictionaries.
+    -   All forms of [`Collection`][collections.abc.Collection] are converted to
+        lists.
+
+    All other types are converted to strings using the `repr` function.
+    """
+    if isinstance(obj, datetime | date | time):
+        return obj.isoformat()
+
+    # Basic types which are already serializable
+    if isinstance(obj, str | int | float | bool | type(None)):
+        return obj
+
+    # Bytes
+    if isinstance(obj, bytes):
+        return {
+            "__class__": obj.__class__.__name__,
+            "data": base64.b64encode(obj).decode("utf-8"),
+        }
+
+    # Collections
+    if isinstance(obj, Mapping):
+        return {k: serialize(v) for k, v in obj.items()}
+
+    if isinstance(obj, Collection):
+        return [serialize(v) for v in obj]
+
+    # Objects
+    if hasattr(obj, "__dict__"):
+        return {
+            "__class__": obj.__class__.__name__,
+            "__module__": obj.__class__.__module__,
+            **{k: serialize(v) for k, v in obj.__dict__.items()},
+        }
+
+    return repr(obj)
 
 
 def parse_headers(headers: str) -> MultiDict[str]:
