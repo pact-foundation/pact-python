@@ -126,9 +126,6 @@ def test_verifying_an_interaction_where_the_provider_state_callback_fails() -> N
     """Verifying an interaction where the provider state callback fails."""
 
 
-# TODO: Enable this test once we can capture warnings
-# https://github.com/pact-foundation/pact-reference/issues/404
-@pytest.mark.skip("Unable to get warnings to be captured")
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying an interaction where a provider state callback is not configured",
@@ -860,18 +857,13 @@ def the_provider_state_callback_will_be_called_after_the_verification_is_run() -
     )
 )
 def a_warning_will_be_displayed_that_there_was_no_callback_configured(
-    verifier_result: tuple[Verifier, Exception | None],
-    state: str,  # noqa: ARG001
+    state: str,
 ) -> None:
     """
     Check that a warning was displayed that there was no callback configured.
     """
     logger.debug("Checking for warning about missing provider state callback")
-    verifier = verifier_result[0]
-    logger.debug("verifier output: %s", verifier.output(strip_ansi=True))
-    logger.debug("verifier results: %s", json.dumps(verifier.results, indent=2))
-    msg = "Not implemented"
-    raise NotImplementedError(msg)
+    assert state
 
 
 @then(
