@@ -195,6 +195,7 @@ log_date_format = "%H:%M:%S"
 markers = [
   # Markers for the compatibility suite
   "consumer",
+  "provider",
 ]
 
 ################################################################################
