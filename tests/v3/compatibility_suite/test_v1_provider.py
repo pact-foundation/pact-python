@@ -420,10 +420,10 @@ def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # n
         while True:
             if process.stdout:
                 while line := process.stdout.readline():
-                    logger.debug("Provider stdout: %s", line)
+                    logger.debug("Provider stdout: %s", line.strip())
             if process.stderr:
                 while line := process.stderr.readline():
-                    logger.debug("Provider stderr: %s", line)
+                    logger.debug("Provider stderr: %s", line.strip())
 
     thread = Thread(target=redirect, daemon=True)
     thread.start()

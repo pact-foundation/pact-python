@@ -25,6 +25,7 @@ import base64
 import contextlib
 import hashlib
 import logging
+import sys
 import typing
 from collections.abc import Collection, Mapping
 from datetime import date, datetime, time
@@ -555,9 +556,18 @@ class InteractionDefinition:
             app:
                 The Flask app to add the interaction to.
         """
+        sys.stderr.write(
+            f"Adding interaction to Flask app: {self.method} {self.path}\n"
+        )
+        sys.stderr.write(f"  Query: {self.query}\n")
+        sys.stderr.write(f"  Headers: {self.headers}\n")
+        sys.stderr.write(f"  Body: {self.body}\n")
+        sys.stderr.write(f"  Response: {self.response}\n")
+        sys.stderr.write(f"  Response headers: {self.response_headers}\n")
+        sys.stderr.write(f"  Response body: {self.response_body}\n")
 
-        async def route_fn() -> flask.Response:
-            logger.info("Received request: %s %s", self.method, self.path)
+        def route_fn() -> flask.Response:
+            sys.stderr.write(f"Received request: {self.method} {self.path}\n")
             if self.query:
                 query = URL.build(query_string=self.query).query
                 # Perform a two-way check to ensure that the query parameters

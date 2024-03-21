@@ -180,14 +180,12 @@ class Provider:
 
         @app.after_request
         def log_request(response: flask.Response) -> flask.Response:
-            logger.debug("Request: %s %s", request.method, request.path)
-            logger.debug(
-                "Request query string: %s", request.query_string.decode("utf-8")
-            )
-            logger.debug("Request query params: %s", serialize(request.args))
-            logger.debug("Request headers: %s", serialize(request.headers))
-            logger.debug("Request body: %s", request.data.decode("utf-8"))
-            logger.debug("Request form: %s", serialize(request.form))
+            sys.stderr.write(f"START REQUEST: {request.method} {request.path}\n")
+            sys.stderr.write(f"Query string: {request.query_string.decode('utf-8')}\n")
+            sys.stderr.write(f"Header: {serialize(request.headers)}\n")
+            sys.stderr.write(f"Body: {request.data.decode('utf-8')}\n")
+            sys.stderr.write(f"Form: {serialize(request.form)}\n")
+            sys.stderr.write("END REQUEST\n")
 
             with (
                 self.provider_dir
@@ -210,13 +208,13 @@ class Provider:
 
         @app.after_request
         def log_response(response: flask.Response) -> flask.Response:
-            try:
-                body = response.get_data(as_text=True)
-            except UnicodeDecodeError:
-                body = "<binary>"
-            logger.debug("Response: %s", response.status_code)
-            logger.debug("Response headers: %s", serialize(response.headers))
-            logger.debug("Response body: %s", body)
+            sys.stderr.write(f"START RESPONSE: {response.status_code}\n")
+            sys.stderr.write(f"Headers: {serialize(response.headers)}\n")
+            sys.stderr.write(
+                f"Body: {response.get_data().decode('utf-8', errors='replace')}\n"
+            )
+            sys.stderr.write("END RESPONSE\n")
+
             with (
                 self.provider_dir
                 / f"response.{datetime.now(tz=UTC).strftime('%H:%M:%S.%f')}.json"
@@ -226,7 +224,7 @@ class Provider:
                         "status_code": response.status_code,
                         "headers_list": serialize(response.headers),
                         "headers_dict": serialize(dict(response.headers)),
-                        "body": body,
+                        "body": response.get_data().decode("utf-8", errors="replace"),
                     },
                     f,
                 )
