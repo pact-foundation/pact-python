@@ -315,7 +315,7 @@ class PactBroker:
             "publish",
             str(directory),
             "--broker-base-url",
-            str(self.url),
+            str(self.url.with_user(None).with_password(None)),
         ]
         if self.username:
             cmd.extend(["--broker-username", self.username])
