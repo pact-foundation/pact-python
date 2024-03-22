@@ -299,6 +299,25 @@ class PactBroker:
         msg = "pact-broker not found"
         raise NotImplementedError(msg)
 
+    def reset(self) -> None:
+        """
+        Reset the Pact Broker.
+
+        This function will reset the Pact Broker by deleting all pacts and
+        verification results.
+        """
+        requests.delete(
+            str(
+                self.url
+                / "integrations"
+                / "provider"
+                / self.provider
+                / "consumer"
+                / self.consumer
+            ),
+            timeout=2,
+        )
+
     def publish(self, directory: Path | str, version: str | None = None) -> None:
         """
         Publish the interactions to the Pact Broker.
