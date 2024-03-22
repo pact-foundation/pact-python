@@ -13,9 +13,10 @@ import signal
 import subprocess
 import sys
 import time
+from contextvars import ContextVar
 from pathlib import Path
 from threading import Thread
-from typing import Any, Generator, NoReturn
+from typing import Any, Generator, NoReturn, Union
 
 import pytest
 import requests
@@ -34,11 +35,50 @@ from tests.v3.compatibility_suite.util.provider import PactBroker
 
 logger = logging.getLogger(__name__)
 
+reset_broker_var = ContextVar("reset_broker", default=True)
+"""
+This context variable is used to determine whether the Pact broker should be
+cleaned up. It is used to ensure that the broker is only cleaned up once, even
+if a step is run multiple times.
+
+All scenarios which make use of the Pact broker should set this to `True` at the
+start of the scenario.
+"""
+
 
 @pytest.fixture()
 def verifier() -> Verifier:
     """Return a new Verifier."""
     return Verifier()
+
+
+@pytest.fixture(scope="session")
+def broker_url(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
+    """
+    Fixture to run the Pact broker.
+
+    This inspects whether the `--broker-url` option has been given. If it has,
+    it is assumed that the broker is already running and simply returns the
+    given URL.
+
+    Otherwise, the Pact broker is started in a container. The URL of the
+    containerised broker is then returned.
+    """
+    broker_url: Union[str, None] = request.config.getoption("--broker-url")
+
+    # If we have been given a broker URL, there's nothing more to do here and we
+    # can return early.
+    if broker_url:
+        yield URL(broker_url)
+        return
+
+    with DockerCompose(
+        Path(__file__).parent / "util",
+        compose_file_name="pact-broker.yml",
+        pull=True,
+    ) as _:
+        yield URL("http://pactbroker:pactbroker@localhost:9292")
+    return
 
 
 ################################################################################
@@ -70,36 +110,44 @@ def test_incorrect_request_is_made_to_provider() -> None:
     """Incorrect request is made to provider."""
 
 
+@pytest.mark.container()
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying a simple HTTP request via a Pact broker",
 )
 def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
     """Verifying a simple HTTP request via a Pact broker."""
+    reset_broker_var.set(True)  # noqa: FBT003
 
 
+@pytest.mark.container()
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying a simple HTTP request via a Pact broker with publishing results enabled",
 )
 def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> None:
     """Verifying a simple HTTP request via a Pact broker with publishing."""
+    reset_broker_var.set(True)  # noqa: FBT003
 
 
+@pytest.mark.container()
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying multiple Pact files via a Pact broker",
 )
 def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
     """Verifying multiple Pact files via a Pact broker."""
+    reset_broker_var.set(True)  # noqa: FBT003
 
 
+@pytest.mark.container()
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Incorrect request is made to provider via a Pact broker",
 )
 def test_incorrect_request_is_made_to_provider_via_a_pact_broker() -> None:
     """Incorrect request is made to provider via a Pact broker."""
+    reset_broker_var.set(True)  # noqa: FBT003
 
 
 @scenario(
@@ -475,6 +523,7 @@ def a_pact_file_for_interaction_is_to_be_verified(
 )
 def a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker(
     interaction_definitions: dict[int, InteractionDefinition],
+    broker_url: URL,
     verifier: Verifier,
     interaction: int,
     temp_dir: Path,
@@ -494,15 +543,14 @@ def a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker(
     pacts_dir.mkdir(exist_ok=True, parents=True)
     pact.write_file(pacts_dir)
 
-    with DockerCompose(
-        Path(__file__).parent / "util",
-        compose_file_name="pact-broker.yml",
-        pull=True,
-    ) as _:
-        pact_broker = PactBroker(URL("http://pactbroker:pactbroker@localhost:9292"))
-        pact_broker.publish(pacts_dir)
-        verifier.broker_source(pact_broker.url)
-        yield pact_broker
+    pact_broker = PactBroker(broker_url)
+    if reset_broker_var.get():
+        logger.debug("Resetting Pact broker")
+        pact_broker.reset()
+        reset_broker_var.set(False)  # noqa: FBT003
+    pact_broker.publish(pacts_dir)
+    verifier.broker_source(pact_broker.url)
+    yield pact_broker
 
 
 @given("publishing of verification results is enabled")

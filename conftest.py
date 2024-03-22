@@ -19,3 +19,16 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         ),
         type=str,
     )
+    parser.addoption(
+        "--container",
+        action="store_true",
+        help="Run tests using a container",
+    )
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    """
+    Hook into the setup phase of tests.
+    """
+    if "container" in item.keywords and not item.config.getoption("--container"):
+        pytest.skip("need --container to run this test")

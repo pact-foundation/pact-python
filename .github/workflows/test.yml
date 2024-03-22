@@ -18,17 +18,30 @@ env:
   HATCH_VERBOSE: 1
 
 jobs:
-  test:
+  test-container:
     name: >-
       Tests py${{ matrix.python-version }} on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
 
+    services:
+      broker:
+        image: pactfoundation/pact-broker:latest@sha256:8f10947f230f661ef21f270a4abcf53214ba27cd68063db81de555fcd93e07dd
+        ports:
+          - "9292:9292"
+        env:
+          # Basic auth credentials for the Broker
+          PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+          PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
+          PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+          # Database
+          PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite
+
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         experimental: [false]
         include:
@@ -51,8 +64,20 @@ jobs:
       - name: Install Hatch
         run: pip install --upgrade hatch
 
+      - name: Ensure broker is live
+        run: |
+          i=0
+          until curl -sSf http://localhost:9292/diagnostic/status/heartbeat; do
+            i=$((i+1))
+            if [ $i -gt 120 ]; then
+              echo "Broker failed to start"
+              exit 1
+            fi
+            sleep 1
+          done
+
       - name: Run tests
-        run: hatch run test
+        run: hatch run test --broker-url=http://pactbroker:pactbroker@localhost:9292 --container
 
       - name: Upload coverage
         # TODO: Configure code coverage monitoring
@@ -61,12 +86,44 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  test-no-container:
+    name: >-
+      Tests py${{ matrix.python-version }} on ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        experimental: [false]
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          submodules: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
+
+      - name: Run tests
+        run: hatch run test
+
   test-conlusion:
     name: Test matrix complete
 
     runs-on: ubuntu-latest
     needs:
-      - test
+      - test-container
+      - test-no-container
 
     steps:
       - run: echo "Test matrix completed successfully."
