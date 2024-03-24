@@ -78,7 +78,7 @@ devel-test = [
   "pytest            ~=8.0.0",
   "pytest-asyncio    ~=0.0",
   "pytest-bdd        ~=7.0",
-  "pytest-cov        ~=4.0",
+  "pytest-cov        ~=5.0",
   "testcontainers    ~=3.0",
 ]
 devel = [
