@@ -407,15 +407,23 @@ class InteractionDefinition:
         self.id: int | None = None
 
         self.states: list[InteractionDefinition.State] = []
+        self.pending: bool = False
+        self.text_comments: list[str] = []
+        self.comments: dict[str, str] = {}
+        self.test_name: str | None = None
+
         self.method: str = kwargs.pop("method")
         self.path: str = kwargs.pop("path")
         self.response: int = int(kwargs.pop("response", 200))
         self.query: str | None = None
         self.headers: MultiDict[str] = MultiDict()
         self.body: InteractionDefinition.Body | None = None
+
         self.response_headers: MultiDict[str] = MultiDict()
         self.response_body: InteractionDefinition.Body | None = None
         self.matching_rules: str | None = None
+        self.response_matching_rules: str | None = None
+
         self.update(**kwargs)
 
     def update(self, **kwargs: str) -> None:  # noqa: C901, PLR0912
@@ -490,6 +498,12 @@ class InteractionDefinition:
         ):
             self.matching_rules = parse_matching_rules(matching_rules)
 
+        if matching_rules := (
+            kwargs.pop("response_matching_rules", None)
+            or kwargs.pop("response matching rules", None)
+        ):
+            self.response_matching_rules = parse_matching_rules(matching_rules)
+
         if len(kwargs) > 0:
             msg = f"Unexpected arguments: {kwargs.keys()}"
             raise TypeError(msg)
@@ -502,7 +516,7 @@ class InteractionDefinition:
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
 
-    def add_to_pact(self, pact: Pact, name: str) -> None:  # noqa: C901, PLR0912
+    def add_to_pact(self, pact: Pact, name: str) -> None:  # noqa: C901, PLR0912, PLR0915
         """
         Add the interaction to the pact.
 
@@ -528,6 +542,22 @@ class InteractionDefinition:
             else:
                 logger.info("given(%s)", state.name)
                 interaction.given(state.name)
+
+        if self.pending:
+            logger.info("set_pending(True)")
+            interaction.set_pending(pending=True)
+
+        if self.text_comments:
+            logger.info("set_comment(text, %s)", self.text_comments)
+            interaction.set_comment("text", self.text_comments)
+
+        for key, value in self.comments.items():
+            logger.info("set_comment(%s, %s)", key, value)
+            interaction.set_comment(key, value)
+
+        if self.test_name:
+            logger.info("test_name(%s)", self.test_name)
+            interaction.test_name(self.test_name)
 
         if self.query:
             query = URL.build(query_string=self.query).query
@@ -571,6 +601,10 @@ class InteractionDefinition:
             logger.info("will_respond_with(%s)", self.response)
             interaction.will_respond_with(self.response)
 
+        if self.response_headers:
+            logger.info("with_headers(%s)", self.response_headers)
+            interaction.with_headers(self.response_headers.items())
+
         if self.response_body:
             if self.response_body.string:
                 logger.info(
@@ -595,6 +629,10 @@ class InteractionDefinition:
             else:
                 msg = "Unexpected body definition"
                 raise RuntimeError(msg)
+
+        if self.response_matching_rules:
+            logger.info("with_matching_rules(%s)", self.response_matching_rules)
+            interaction.with_matching_rules(self.response_matching_rules)
 
     def add_to_flask(self, app: flask.Flask) -> None:
         """
@@ -642,7 +680,7 @@ class InteractionDefinition:
                 if self.response_body
                 else None,
                 status=self.response,
-                headers=self.response_headers,
+                headers=dict(**self.response_headers),
                 content_type=self.response_body.mime_type
                 if self.response_body
                 else None,

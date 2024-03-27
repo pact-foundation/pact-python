@@ -77,3 +77,57 @@ index 94fda44..2838116 100644
        | file: multipart2-body.xml |
      And a Pact file for interaction 10 is to be verified
      When the verification is run
+diff --git a/features/V2/http_provider.feature b/features/V2/http_provider.feature
+index d51df8b..57c58e7 100644
+--- a/features/V2/http_provider.feature
++++ b/features/V2/http_provider.feature
+@@ -10,15 +10,15 @@ Feature: Basic HTTP provider
+
+   Scenario: Supports matching rules for the response headers (positive case)
+     Given a provider is started that returns the response from interaction 1, with the following changes:
+-      | headers        |
+-      | 'X-TEST: 1000' |
++      | response headers |
++      | 'X-TEST: 1000'   |
+     And a Pact file for interaction 1 is to be verified
+     When the verification is run
+     Then the verification will be successful
+
+   Scenario: Supports matching rules for the response headers (negative case)
+     Given a provider is started that returns the response from interaction 1, with the following changes:
+-      | headers          |
++      | response headers |
+       | 'X-TEST: 123ABC' |
+     And a Pact file for interaction 1 is to be verified
+     When the verification is run
+@@ -27,7 +27,7 @@ Feature: Basic HTTP provider
+
+   Scenario: Verifies the response body (positive case)
+     Given a provider is started that returns the response from interaction 2, with the following changes:
+-      | body                             |
++      | response body                      |
+       | JSON: { "one": "100", "two": "b" } |
+     And a Pact file for interaction 2 is to be verified
+     When the verification is run
+@@ -35,7 +35,7 @@ Feature: Basic HTTP provider
+
+   Scenario: Verifies the response body (negative case)
+     Given a provider is started that returns the response from interaction 2, with the following changes:
+-      | body                             |
++      | response body                    |
+       | JSON: { "one": 100, "two": "b" } |
+     And a Pact file for interaction 2 is to be verified
+     When the verification is run
+diff --git a/features/V4/http_provider.feature b/features/V4/http_provider.feature
+index be3d1ff..8e15a13 100644
+--- a/features/V4/http_provider.feature
++++ b/features/V4/http_provider.feature
+@@ -9,7 +9,7 @@ Feature: HTTP provider
+
+   Scenario: Verifying a pending HTTP interaction
+     Given a provider is started that returns the response from interaction 1, with the following changes:
+-      | body              |
++      | response body              |
+       | file: basic2.json |
+     And a Pact file for interaction 1 is to be verified, but is marked pending
+     When the verification is run
