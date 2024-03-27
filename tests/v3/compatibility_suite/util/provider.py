@@ -649,15 +649,17 @@ def a_pact_file_for_interaction_is_to_be_verified(
 ) -> None:
     @given(
         parsers.re(
-            r"a Pact file for interaction (?P<interaction>\d+) is to be verified",
+            r"a Pact file for interaction (?P<interaction>\d+) is to be verified"
+            r"(?P<pending>(, but is marked pending)?)",
         ),
-        converters={"interaction": int},
+        converters={"interaction": int, "pending": lambda x: x != ""},
         stacklevel=stacklevel + 1,
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
         verifier: Verifier,
         interaction: int,
+        pending: bool,  # noqa: FBT001
         temp_dir: Path,
     ) -> None:
         """
@@ -670,12 +672,75 @@ def a_pact_file_for_interaction_is_to_be_verified(
         )
 
         defn = interaction_definitions[interaction]
+        defn.pending = pending
 
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
         defn.add_to_pact(pact, f"interaction {interaction}")
         (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
         pact.write_file(temp_dir / "pacts")
+
+        with (temp_dir / "pacts" / "consumer-provider.json").open(
+            "r",
+            encoding="utf-8",
+        ) as f:
+            for line in f:
+                logger.debug("Pact file: %s", line.rstrip())
+
+        verifier.add_source(temp_dir / "pacts")
+
+
+def a_pact_file_for_interaction_is_to_be_verified_with_comments(
+    version: str,
+    stacklevel: int = 1,
+) -> None:
+    @given(
+        parsers.re(
+            r"a Pact file for interaction (?P<interaction>\d+) is to be verified"
+            r" with the following comments:\n(?P<comments>.+)",
+            re.DOTALL,
+        ),
+        converters={"interaction": int, "comments": parse_markdown_table},
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        interaction_definitions: dict[int, InteractionDefinition],
+        verifier: Verifier,
+        interaction: int,
+        comments: list[dict[str, str]],
+        temp_dir: Path,
+    ) -> None:
+        """
+        Verify the Pact file for the given interaction.
+        """
+        logger.debug(
+            "Adding interaction %d to be verified: %s",
+            interaction,
+            interaction_definitions[interaction],
+        )
+
+        defn = interaction_definitions[interaction]
+        for comment in comments:
+            if comment["type"] == "text":
+                defn.text_comments.append(comment["comment"])
+            elif comment["type"] == "testname":
+                defn.test_name = comment["comment"]
+            else:
+                defn.comments[comment["type"]] = comment["comment"]
+        logger.info("Updated interaction %d: %s", interaction, defn)
+
+        pact = Pact("consumer", "provider")
+        pact.with_specification(version)
+        defn.add_to_pact(pact, f"interaction {interaction}")
+        (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+        pact.write_file(temp_dir / "pacts")
+
+        with (temp_dir / "pacts" / "consumer-provider.json").open(
+            "r",
+            encoding="utf-8",
+        ) as f:
+            for line in f:
+                logger.debug("Pact file: %s", line.rstrip())
 
         verifier.add_source(temp_dir / "pacts")
 
@@ -816,6 +881,54 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
             json.dump([s.as_dict() for s in defn.states], f)
 
 
+def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_states_defined(
+    version: str,
+    stacklevel: int = 1,
+) -> None:
+    @given(
+        parsers.re(
+            r"a Pact file for interaction (?P<interaction>\d+) is to be verified"
+            r" with the following provider states defined:\n(?P<states>.+)",
+            re.DOTALL,
+        ),
+        converters={"interaction": int, "states": parse_markdown_table},
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        interaction_definitions: dict[int, InteractionDefinition],
+        verifier: Verifier,
+        interaction: int,
+        states: list[dict[str, Any]],
+        temp_dir: Path,
+    ) -> None:
+        """
+        Verify the Pact file for the given interaction with provider states defined.
+        """
+        logger.debug(
+            "Adding interaction %d to be verified with provider states %s",
+            interaction,
+            states,
+        )
+
+        defn = interaction_definitions[interaction]
+        defn.states = [
+            InteractionDefinition.State(s["State Name"], s.get("Parameters", None))
+            for s in states
+        ]
+
+        pact = Pact("consumer", "provider")
+        pact.with_specification(version)
+        defn.add_to_pact(pact, f"interaction {interaction}")
+        (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+        pact.write_file(temp_dir / "pacts")
+
+        verifier.add_source(temp_dir / "pacts")
+
+        with (temp_dir / "provider_states").open("w") as f:
+            logger.debug("Writing provider state to %s", temp_dir / "provider_states")
+            json.dump([s.as_dict() for s in defn.states], f)
+
+
 def a_request_filter_is_configured_to_make_the_following_changes(
     stacklevel: int = 1,
 ) -> None:
@@ -942,8 +1055,8 @@ def the_verification_results_will_contain_a_error(
             warnings.warn(
                 f"Multiple mismatch types found: {mismatch_types}", stacklevel=1
             )
-            for error in verifier.results["errors"]:
-                for mismatch in error["mismatch"]["mismatches"]:
+            for verifier_error in verifier.results["errors"]:
+                for mismatch in verifier_error["mismatch"]["mismatches"]:
                     warnings.warn(f"Mismatch: {mismatch}", stacklevel=1)
 
 
@@ -1097,6 +1210,55 @@ def the_provider_state_callback_will_receive_a_setup_call(
             raise AssertionError(msg)
 
 
+def the_provider_state_callback_will_receive_a_setup_call_with_parameters(
+    stacklevel: int = 1,
+) -> None:
+    @then(
+        parsers.re(
+            r"the provider state callback"
+            r" will receive a (?P<action>setup|teardown) call"
+            r' (with )?"(?P<state>[^"]*)"'
+            r" and the following parameters:\n(?P<parameters>.+)",
+            re.DOTALL,
+        ),
+        converters={"parameters": parse_markdown_table},
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        temp_dir: Path,
+        action: str,
+        state: str,
+        parameters: list[dict[str, str]],
+    ) -> None:
+        """
+        Check that the provider state callback received a setup call.
+        """
+        logger.info("Checking provider state callback received a %s call", action)
+        logger.info("Callback files: %s", list(temp_dir.glob("callback.*.json")))
+        params: dict[str, str] = parameters[0]
+        # If we have a string that looks quoted, unquote it
+        for key, value in params.items():
+            if value.startswith('"') and value.endswith('"'):
+                params[key] = value[1:-1]
+
+        for file in temp_dir.glob("callback.*.json"):
+            with file.open("r") as f:
+                data: dict[str, Any] = json.load(f)
+                logger.debug("Checking callback data: %s", data)
+                if (
+                    "action" in data["query_params"]
+                    and data["query_params"]["action"] == action
+                    and data["query_params"]["state"] == state
+                ):
+                    for key, value in params.items():
+                        assert key in data["query_params"], f"Parameter {key} not found"
+                        assert data["query_params"][key] == value
+                    break
+        else:
+            msg = f"No {action} call found"
+            raise AssertionError(msg)
+
+
 def the_provider_state_callback_will_not_receive_a_setup_call(
     stacklevel: int = 1,
 ) -> None:
@@ -1192,3 +1354,86 @@ def the_request_to_the_provider_will_contain_the_header(
         else:
             msg = "No request found"
             raise AssertionError(msg)
+
+
+def there_will_be_a_pending_error(
+    stacklevel: int = 1,
+) -> None:
+    @then(
+        parsers.re(r'there will be a pending "(?P<error>[^"]+)" error'),
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        error: str,
+        verifier_result: tuple[Verifier, Exception | None],
+    ) -> None:
+        """
+        There will be a pending error.
+        """
+        logger.debug("Checking for pending error")
+        verifier, err = verifier_result
+
+        if error == "Body had differences":
+            mismatch = "BodyMismatch"
+        else:
+            msg = f"Unknown error type: {error}"
+            raise ValueError(msg)
+
+        assert err is None
+        assert "pendingErrors" in verifier.results
+        for verifier_error in verifier.results["pendingErrors"]:
+            mismatches = [m["type"] for m in verifier_error["mismatch"]["mismatches"]]
+            if mismatch in mismatches:
+                if len(mismatches) > 1:
+                    warnings.warn(
+                        f"Multiple mismatch types found: {mismatches}",
+                        stacklevel=2,
+                    )
+                break
+        else:
+            msg = "Pending error not found"
+            raise AssertionError(msg)
+
+
+def the_comment_will_have_been_printed_to_the_console(stacklevel: int = 1) -> None:
+    @then(
+        parsers.re(
+            r'the comment "(?P<comment>[^"]+)" will have been printed to the console'
+        ),
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        comment: str,
+        verifier_result: tuple[Verifier, Exception | None],
+    ) -> None:
+        """
+        Check that the given comment was printed to the console.
+        """
+        verifier, err = verifier_result
+        logger.debug("Checking for comment %r in verifier output", comment)
+        logger.debug("Verifier output: %s", verifier.output(strip_ansi=True))
+        assert err is None
+        assert comment in verifier.output(strip_ansi=True)
+
+
+def the_name_of_the_test_will_be_displayed_as_the_original_test_name(
+    stacklevel: int = 1,
+) -> None:
+    @then(
+        parsers.re(
+            r'the "(?P<test_name>[^"]+)" will displayed as the original test name'
+        ),
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        test_name: str,
+        verifier_result: tuple[Verifier, Exception | None],
+    ) -> None:
+        """
+        Check that the given test name was displayed as the original test name.
+        """
+        verifier, err = verifier_result
+        logger.debug("Checking for test name %r in verifier output", test_name)
+        logger.debug("Verifier output: %s", verifier.output(strip_ansi=True))
+        assert err is None
+        assert test_name in verifier.output(strip_ansi=True)
