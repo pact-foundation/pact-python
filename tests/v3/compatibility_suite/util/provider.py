@@ -49,6 +49,7 @@ from yarl import URL
 import pact.constants  # type: ignore[import-untyped]
 from pact.v3.pact import Pact
 from tests.v3.compatibility_suite.util import (
+    InteractionDefinition,
     parse_headers,
     parse_markdown_table,
     serialize,
@@ -58,7 +59,6 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from pact.v3.verifier import Verifier
-    from tests.v3.compatibility_suite.util import InteractionDefinition
 
 if sys.version_info < (3, 11):
     from datetime import timezone
@@ -181,10 +181,19 @@ class Provider:
             if (self.provider_dir / "fail_callback").exists():
                 return "Provider state not found", 404
 
-            provider_state_path = self.provider_dir / "provider_state"
-            if provider_state_path.exists():
-                state = provider_state_path.read_text()
-                assert request.args["state"] == state
+            provider_states_path = self.provider_dir / "provider_states"
+            if provider_states_path.exists():
+                with provider_states_path.open() as f:
+                    states = [InteractionDefinition.State(**s) for s in json.load(f)]
+                for state in states:
+                    if request.args["state"] == state.name:
+                        for k, v in state.parameters.items():
+                            assert k in request.args
+                            assert str(request.args[k]) == str(v)
+                        break
+                else:
+                    msg = "State not found"
+                    raise ValueError(msg)
 
             json_file = (
                 self.provider_dir
@@ -792,7 +801,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
         )
 
         defn = interaction_definitions[interaction]
-        defn.state = state
+        defn.states = [InteractionDefinition.State(state)]
 
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
@@ -802,9 +811,9 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
 
         verifier.add_source(temp_dir / "pacts")
 
-        with (temp_dir / "provider_state").open("w") as f:
-            logger.debug("Writing provider state to %s", temp_dir / "provider_state")
-            f.write(state)
+        with (temp_dir / "provider_states").open("w") as f:
+            logger.debug("Writing provider state to %s", temp_dir / "provider_states")
+            json.dump([s.as_dict() for s in defn.states], f)
 
 
 def a_request_filter_is_configured_to_make_the_following_changes(
