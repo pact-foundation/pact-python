@@ -17,7 +17,7 @@ from tests.v3.compatibility_suite.util.provider import (
     a_failed_verification_result_will_be_published_back,
     a_pact_file_for_interaction_is_to_be_verified,
     a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker,
-    a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_define,
+    a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined,
     a_provider_is_started_that_returns_the_responses_from_interactions,
     a_provider_is_started_that_returns_the_responses_from_interactions_with_changes,
     a_provider_state_callback_is_configured,
@@ -308,7 +308,7 @@ def the_following_http_interactions_have_been_defined(
 
 a_pact_file_for_interaction_is_to_be_verified("V1")
 a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker("V1")
-a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_define("V1")
+a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined("V1")
 a_provider_is_started_that_returns_the_responses_from_interactions()
 a_provider_is_started_that_returns_the_responses_from_interactions_with_changes()
 a_provider_state_callback_is_configured()
