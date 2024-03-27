@@ -758,7 +758,7 @@ def a_provider_state_callback_is_configured(
         )
 
 
-def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_define(
+def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
     version: str,
     stacklevel: int = 1,
 ) -> None:
