@@ -34,6 +34,7 @@ import signal
 import socket
 import subprocess
 import time
+import warnings
 from contextvars import ContextVar
 from datetime import datetime
 from threading import Thread
@@ -281,6 +282,10 @@ class Provider:
         Start the provider.
         """
         url = URL(f"http://localhost:{_find_free_port()}")
+        sys.stderr.write("Starting provider on %s\n" % url)
+        for endpoint in self.app.url_map.iter_rules():
+            sys.stderr.write(f"  * {endpoint}\n")
+
         self.app.run(
             host=url.host,
             port=url.port,
@@ -918,11 +923,19 @@ def the_verification_results_will_contain_a_error(
             msg = f"Unknown error type: {error}"
             raise ValueError(msg)
 
-        assert mismatch_type in [
+        mismatch_types = [
             mismatch["type"]
             for error in verifier.results["errors"]
             for mismatch in error["mismatch"]["mismatches"]
         ]
+        assert mismatch_type in mismatch_types
+        if len(mismatch_types) > 1:
+            warnings.warn(
+                f"Multiple mismatch types found: {mismatch_types}", stacklevel=1
+            )
+            for error in verifier.results["errors"]:
+                for mismatch in error["mismatch"]["mismatches"]:
+                    warnings.warn(f"Mismatch: {mismatch}", stacklevel=1)
 
 
 def a_verification_result_will_not_be_published_back(

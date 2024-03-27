@@ -473,7 +473,7 @@ class InteractionDefinition:
                 Name for this interaction. Must be unique for the pact.
         """
         interaction = pact.upon_receiving(name)
-        logging.info("with_request(%s, %s)", self.method, self.path)
+        logger.info("with_request(%s, %s)", self.method, self.path)
         interaction.with_request(self.method, self.path)
 
         # We distinguish between "" and None here.
@@ -483,16 +483,16 @@ class InteractionDefinition:
 
         if self.query:
             query = URL.build(query_string=self.query).query
-            logging.info("with_query_parameters(%s)", query.items())
+            logger.info("with_query_parameters(%s)", query.items())
             interaction.with_query_parameters(query.items())
 
         if self.headers:
-            logging.info("with_headers(%s)", self.headers.items())
+            logger.info("with_headers(%s)", self.headers.items())
             interaction.with_headers(self.headers.items())
 
         if self.body:
             if self.body.string:
-                logging.info(
+                logger.info(
                     "with_body(%s, %s)",
                     truncate(self.body.string),
                     self.body.mime_type,
@@ -502,7 +502,7 @@ class InteractionDefinition:
                     self.body.mime_type,
                 )
             elif self.body.bytes:
-                logging.info(
+                logger.info(
                     "with_binary_file(%s, %s)",
                     truncate(self.body.bytes),
                     self.body.mime_type,
@@ -516,16 +516,16 @@ class InteractionDefinition:
                 raise RuntimeError(msg)
 
         if self.matching_rules:
-            logging.info("with_matching_rules(%s)", self.matching_rules)
+            logger.info("with_matching_rules(%s)", self.matching_rules)
             interaction.with_matching_rules(self.matching_rules)
 
         if self.response:
-            logging.info("will_respond_with(%s)", self.response)
+            logger.info("will_respond_with(%s)", self.response)
             interaction.will_respond_with(self.response)
 
         if self.response_body:
             if self.response_body.string:
-                logging.info(
+                logger.info(
                     "with_body(%s, %s)",
                     truncate(self.response_body.string),
                     self.response_body.mime_type,
@@ -535,7 +535,7 @@ class InteractionDefinition:
                     self.response_body.mime_type,
                 )
             elif self.response_body.bytes:
-                logging.info(
+                logger.info(
                     "with_binary_file(%s, %s)",
                     truncate(self.response_body.bytes),
                     self.response_body.mime_type,
