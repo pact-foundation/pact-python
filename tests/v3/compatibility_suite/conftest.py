@@ -7,9 +7,8 @@ submodule has been initialized before running the tests.
 
 import shutil
 import subprocess
-from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Generator, Union
 
 import pytest
 from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]

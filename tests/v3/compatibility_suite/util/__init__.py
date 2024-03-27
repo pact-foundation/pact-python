@@ -31,12 +31,13 @@ import typing
 from collections.abc import Collection, Mapping
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any, Self
+from typing import Any
 from xml.etree import ElementTree
 
 import flask
 from flask import request
 from multidict import MultiDict
+from typing_extensions import Self
 from yarl import URL
 
 if typing.TYPE_CHECKING:
