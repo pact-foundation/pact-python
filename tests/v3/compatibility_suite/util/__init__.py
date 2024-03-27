@@ -24,13 +24,14 @@ from __future__ import annotations
 import base64
 import contextlib
 import hashlib
+import json
 import logging
 import sys
 import typing
 from collections.abc import Collection, Mapping
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 from xml.etree import ElementTree
 
 import flask
@@ -358,10 +359,54 @@ class InteractionDefinition:
                 msg = "Unknown file type"
                 raise ValueError(msg)
 
+    class State:
+        """
+        Provider state.
+        """
+
+        def __init__(
+            self,
+            name: str,
+            parameters: str | dict[str, Any] | None = None,
+        ) -> None:
+            """
+            Instantiate the provider state.
+            """
+            self.name = name
+            self.parameters: dict[str, Any]
+            if isinstance(parameters, str):
+                self.parameters = json.loads(parameters)
+            else:
+                self.parameters = parameters or {}
+
+        def __repr__(self) -> str:
+            """
+            Debugging representation.
+            """
+            return "<State: {}>".format(
+                ", ".join(
+                    str(k) + "=" + truncate(repr(v)) for k, v in vars(self).items()
+                ),
+            )
+
+        def as_dict(self) -> dict[str, str | dict[str, Any]]:
+            """
+            Convert the provider state to a dictionary.
+            """
+            return {"name": self.name, "parameters": self.parameters}
+
+        @classmethod
+        def from_dict(cls, data: dict[str, Any]) -> Self:
+            """
+            Convert a dictionary to a provider state.
+            """
+            return cls(**data)
+
     def __init__(self, **kwargs: str) -> None:
         """Initialise the interaction definition."""
         self.id: int | None = None
-        self.state: str | None = None
+
+        self.states: list[InteractionDefinition.State] = []
         self.method: str = kwargs.pop("method")
         self.path: str = kwargs.pop("path")
         self.response: int = int(kwargs.pop("response", 200))
@@ -476,10 +521,13 @@ class InteractionDefinition:
         logger.info("with_request(%s, %s)", self.method, self.path)
         interaction.with_request(self.method, self.path)
 
-        # We distinguish between "" and None here.
-        if self.state is not None:
-            logging.info("given(%s)", self.state)
-            interaction.given(self.state)
+        for state in self.states or []:
+            if state.parameters:
+                logger.info("given(%s, parameters=%s)", state.name, state.parameters)
+                interaction.given(state.name, parameters=state.parameters)
+            else:
+                logger.info("given(%s)", state.name)
+                interaction.given(state.name)
 
         if self.query:
             query = URL.build(query_string=self.query).query
