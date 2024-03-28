@@ -1,70 +1,203 @@
 """
-Script used by mkdocs-gen-files to generate documentation for Pact Python.
+Script used by mkdocs-gen-files to generate documentation from Python.
 
 The script is run by mkdocs-gen-files when the documentation is built in order
 to generate documentation from Python docstrings.
 """
 
+from __future__ import annotations
+
 import subprocess
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING, TypeVar
 
 import mkdocs_gen_files
+from pathspec import PathSpec
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+_T = TypeVar("_T")
 
 
-def process_python(src: str, dest: Union[str, None] = None) -> None:
+def is_subsequence(a: Sequence[_T], b: Sequence[_T]) -> int | None:
+    """
+    Checks if a is a sublist of b.
+
+    This will return the index of the first element of a in b if a is a sublist
+    of b, or None otherwise.
+    """
+    if len(a) > len(b):
+        return None
+    for i in range(len(b) - len(a) + 1):
+        if all(a[j] == b[i + j] for j in range(len(a))):
+            return i
+    return None
+
+
+def map_destination(
+    path: Path,
+    mapping: list[tuple[Sequence[str], Sequence[str]]],
+) -> Path | None:
+    """
+    Takes a path to a Python files and maps it to a destination Markdown file.
+
+    A few notes about some special files:
+
+    - `__main__.py` files are ignored.
+    - `__init__.py` files are mapped to the directory containing the file, with
+      the name `README.md`.
+
+    Args:
+        path:
+            The path to the Python file.
+
+        mapping:
+            List of tuples containing the source and destination paths to map.
+            Note that the list is processed in order, with later mappings
+            applied after earlier mappings.
+    """
+    segments = list(path.with_suffix(".md").parts)
+
+    if segments[-1] == "__main__.md":
+        return None
+
+    if segments[-1] == "__init__.md":
+        segments[-1] = "README.md"
+
+    for from_parts, to_parts in mapping:
+        idx = is_subsequence(from_parts, segments)
+        if idx is not None:
+            segments = [
+                *segments[:idx],
+                *to_parts,
+                *segments[idx + len(from_parts) :],
+            ]
+    return Path(*segments)
+
+
+def map_python_identifier(
+    path: Path,
+    mapping: list[tuple[str, str]],
+) -> str | None:
+    """
+    Takes a path to a Python files and maps it to a destination Markdown file.
+
+    A few notes about some special files:
+
+    - `__main__.py` files are ignored.
+    - `__init__.py` files are handled as usual within Python, i.e.,
+      `some/path/__init__.py` is identified as `some.path`, and therefore is
+      equivalent to `some/path.py`.
+
+    Args:
+        path:
+            The path to the Python file.
+
+        mapping:
+            List of tuples containing the source and destination Python
+            identifiers to map. Note that the list is processed in order, with
+            later mappings applied after earlier mappings.
+    """
+    segments = list(path.with_suffix("").parts)
+
+    if segments[-1] == "__main__":
+        return None
+
+    if segments[-1] == "__init__":
+        segments = segments[:-1]
+
+    python_identifier = ".".join(segments)
+    for from_identifier, to_identifier in mapping:
+        idx = is_subsequence(from_identifier.split("."), python_identifier.split("."))
+        if idx is not None:
+            python_identifier = (
+                python_identifier[:idx]
+                + to_identifier
+                + python_identifier[idx + len(from_identifier) :]
+            )
+    return python_identifier
+
+
+def process_python(
+    src: str,
+    ignore: list[str] | None = None,
+    destination_mapping: list[tuple[str, str]] | None = None,
+    python_mapping: list[tuple[str, str]] | None = None,
+) -> None:
     """
     Process the Python files in the given directory.
 
     The source directory is relative to the root of the repository, and only
-    Python files which are version controlled are processed. The generated
-    documentation may optionally written to a different directory.
+    Python files which are version controlled are processed. Once processed,
+    they will be available to MkDocs as if they were located in the `docs`
+    directory.
+
+    This makes use of `mkdocstrings` to generate documentation from the Python
+    docstrings.
+
+    Args:
+        src:
+            The source directory to process.
+
+        ignore:
+            A list of patterns to ignore. This uses the same syntax as `.gitignore`.
+
+        destination_mapping:
+            List of tuples containing the source and destination paths to map.
+            Note that the list is processed in order, with later mappings
+            applied after earlier mappings.
+
+        python_mapping:
+            List of tuples containing the source and destination Python
+            identifiers to map. Note that the list is processed in order, with
+            later mappings applied after earlier mappings. This is applied
+            idependently of the `destination_mapping` argument.
     """
-    dest = dest or src
-
-    # List of all files version controlled files in the SRC_ROOT
+    ignore_spec = PathSpec.from_lines("gitwildmatch", ignore or [])
     files = sorted(
-        map(
-            Path,
-            subprocess.check_output(["git", "ls-files", src])  # noqa: S603, S607
-            .decode("utf-8")
-            .splitlines(),
-        ),
+        Path(p)
+        for p in subprocess.check_output(
+            ["git", "ls-files", src],  # noqa: S603, S607
+        )
+        .decode("utf-8")
+        .splitlines()
+        if p.endswith(".py") and not ignore_spec.match_file(p)
     )
-    files = sorted(filter(lambda p: p.suffix == ".py", files))
 
-    for source_path in files:
-        module_path = source_path.relative_to(src).with_suffix("")
-        doc_path = source_path.relative_to(src).with_suffix(".md")
-        full_doc_path = Path(dest, doc_path)
+    for file in files:
+        destination = map_destination(
+            file,
+            [(Path(a).parts, Path(b).parts) for a, b in destination_mapping or []],
+        )
+        python_identifier = map_python_identifier(file, python_mapping or [])
 
-        parts = [src, *module_path.parts]
-
-        # Skip __main__ modules
-        if parts[-1] == "__main__":
+        if not destination or not python_identifier:
             continue
 
-        # The __init__ modules are implicit in the directory structure.
-        if parts[-1] == "__init__":
-            parts = parts[:-1]
-            full_doc_path = full_doc_path.parent / "README.md"
-
-        if full_doc_path.exists():
-            with mkdocs_gen_files.open(full_doc_path, "a", encoding="utf-8") as fd:
-                python_identifier = ".".join(parts)
-                print("# " + parts[-1], file=fd)
-                print("::: " + python_identifier, file=fd)
-        else:
-            with mkdocs_gen_files.open(full_doc_path, "w", encoding="utf-8") as fd:
-                python_identifier = ".".join(parts)
-                print("# " + parts[-1], file=fd)
-                print("::: " + python_identifier, file=fd)
+        with mkdocs_gen_files.open(
+            destination,
+            "a" if destination.exists() else "w",
+            encoding="utf-8",
+        ) as fd:
+            print(
+                "# " + python_identifier.split(".")[-1].replace("_", " ").title(),
+                file=fd,
+            )
+            print("::: " + python_identifier, file=fd)
 
         mkdocs_gen_files.set_edit_path(
-            full_doc_path,
-            f"https://github.com/pact-foundation/pact-python/edit/master/pact/{module_path}.py",
+            destination,
+            f"https://github.com/pact-foundation/pact-python/edit/master/{file}",
         )
 
 
-process_python("pact")
-process_python("examples")
+if __name__ == "<run_path>":
+    process_python(
+        "src/pact",
+        destination_mapping=[
+            ("src/pact", "pact"),
+        ],
+        python_mapping=[("src.pact", "pact")],
+    )
+    process_python("examples")
