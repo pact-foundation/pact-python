@@ -8,7 +8,7 @@ Assuming you have [hatch](https://hatch.pypa.io/latest/) installed, the example 
 hatch run example
 ```
 
-The code within the examples is intended to be well documented and you are encouraged to look through the code as well (or submit a PR if anything is unclear!).
+The code within the examples is intended to be well-documented and you are encouraged to look through the code as well (or submit a PR if anything is unclear!).
 
 ## Overview
 
@@ -34,7 +34,7 @@ sequenceDiagram
 
 To test this interaction naively would require both the consumer and provider to be running at the same time. While this is straightforward in the above example, this quickly becomes impractical as the number of interactions grows between many microservices. Pact solves this by allowing the consumer and provider to be tested independently.
 
-Pact achieves this be mocking the other side of the interaction:
+Pact achieves this by mocking the other side of the interaction:
 
 <!-- markdownlint-disable no-inline-html -->
 <div align="center">
@@ -65,7 +65,7 @@ sequenceDiagram
 </div>
 <!-- markdownlint-enable no-inline-html -->
 
-In the first stage, the consumer defines a number of interactions in the form below. Pact sets up a mock server that will respond to the requests as defined by the consumer. All these interactions, containing both the request and expected response, are all sent to the Pact Broker.
+In the first stage, the consumer defines a number of interactions in the form below. Pact sets up a mock server that will respond to the requests as defined by the consumer. All these interactions, containing both the request and expected response, are sent to the Pact Broker.
 
 > Given {provider state} </br>
 > Upon receiving {description} </br>
@@ -74,7 +74,7 @@ In the first stage, the consumer defines a number of interactions in the form be
 
 In the second stage, the provider retrieves the interactions from the Pact Broker. It then sets up a mock client that will make the requests as defined by the consumer. Pact then verifies that the responses from the provider match the expected responses defined by the consumer.
 
-In this way, Pact is consumer driven and can ensure that the provider is compatible with the consumer. While this example showcases both sides in Python, this is absolutely not required. The provider could be written in any language, and satisfy contracts from a number of consumers all written in different languages.
+In this way, Pact is consumer-driven and can ensure that the provider is compatible with the consumer. While this example showcases both sides in Python, this is absolutely not required. The provider could be written in any language, and satisfy contracts from a number of consumers all written in different languages.
 
 ### Consumer
 
@@ -97,9 +97,9 @@ expected: dict[str, Any] = {
 
 ### Provider
 
-This example showcases to different providers, one written in Flask and one written in FastAPI. Both are simple Python web servers that respond to a HTTP GET request. The Flask provider is defined in [`src/flask.py`][examples.src.flask] and the FastAPI provider is defined in [`src/fastapi.py`][examples.src.fastapi]. The tests for the providers are defined in [`tests/test_01_provider_flask.py`][examples.tests.test_01_provider_flask] and [`tests/test_01_provider_fastapi.py`][examples.tests.test_01_provider_fastapi].
+This example showcases two different providers; one written in Flask and one written in FastAPI. Both are simple Python web servers that respond to a HTTP GET request. The Flask provider is defined in [`src/flask.py`][examples.src.flask] and the FastAPI provider is defined in [`src/fastapi.py`][examples.src.fastapi]. The tests for the providers are defined in [`tests/test_01_provider_flask.py`][examples.tests.test_01_provider_flask] and [`tests/test_01_provider_fastapi.py`][examples.tests.test_01_provider_fastapi].
 
-Unlike the consumer side, the provider side is responsible to responding to the interactions defined by the consumers. In this regard, the provider testing is rather simple:
+Unlike the consumer side, the provider side is responsible for responding to the interactions defined by the consumers. In this regard, the provider testing is rather simple:
 
 ```py
 code, _ = verifier.verify_with_broker(
