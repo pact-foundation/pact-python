@@ -1,7 +1,11 @@
 # Pact Python
 
 <!-- markdownlint-disable no-inline-html -->
-<table align="center">
+<div align="center">
+    <b>Fast, easy and reliable testing for your APIs and microservices.</b>
+</div>
+
+<div align="center"><table>
     <tr>
         <td>Package</td>
         <td>
@@ -13,552 +17,148 @@
     <tr>
         <td>CI/CD</td>
         <td>
-            <a href="https://github.com/pact-foundation/pact-python/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/test.yml?label=test" alt="CI - Test"></a>
-            <a href="https://github.com/pact-foundation/pact-python/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/build.yml?label=build" alt="CI - Build"></a>
-            <a href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml"><img src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?label=docs" alt="CI - Docs"></a>
+            <a
+                href="https://github.com/pact-foundation/pact-python/actions/workflows/test.yml"><img
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/test.yml?branch=master&label=test"
+                alt="Test Status"></a>
+            <a
+                href="https://github.com/pact-foundation/pact-python/actions/workflows/build.yml"><img
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/build.yml?branch=master&label=build"
+                alt="Build Status"></a>
+            <a
+                href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml"><img
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?branch=master&label=docs"
+                alt="Build Status"></a>
         </td>
     </tr>
     <tr>
         <td>Meta</td>
         <td>
-            <a href="https://github.com/pypa/hatch"><img src="https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg" alt="Hatch project"></a>
-            <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="linting - Ruff"></a>
-            <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="code style - Ruff"></a>
-            <a href="https://github.com/python/mypy"><img src="https://img.shields.io/badge/types-Mypy-blue.svg" alt="types - Mypy"></a>
-            <a href="https://pypi.python.org/pypi/ruff"><img src="https://img.shields.io/pypi/l/pact-python.svg" alt="License"></a>
+            <a
+                href="https://github.com/pypa/hatch"><img
+                src="https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg"
+                alt="Hatch project"></a>
+            <a href="https://github.com/astral-sh/ruff"><img
+                src="https://img.shields.io/badge/ruff-ruff?label=linting&color=%23261230"
+                alt="linting - Ruff"></a>
+            <a href="https://github.com/astral-sh/ruff"><img
+                src="https://img.shields.io/badge/ruff-ruff?label=style&color=%23261230"
+                alt="style - Ruff"></a>
+            <a
+                href="https://github.com/python/mypy"><img
+                src="https://img.shields.io/badge/types-Mypy-blue.svg"
+                alt="types - Mypy"></a>
+            <a
+                href="https://pypi.python.org/pypi/ruff"><img
+                src="https://img.shields.io/pypi/l/pact-python.svg"
+                alt="License"></a>
         </td>
     </tr>
-</table>
+    <tr>
+        <td>Community</td>
+        <td>
+            <a
+                href="http://slack.pact.io"><img
+                src="https://slack.pact.io/badge.svg"
+                alt="Slack"></a>
+            <a
+                href="https://stackoverflow.com/questions/tagged/pact"><img
+                src="https://img.shields.io/badge/stackoverflow-pact-orange.svg"
+                alt="Stack Overflow"></a>
+            <a
+                href="https://twitter.com/pact_up"><img
+                src="https://img.shields.io/twitter/follow/pact_up?style=social"
+                alt="Twitter"></a>
+        </td>
+    </tr>
+</table></div>
+
+<div align="center"><table><tr><td>
+<b>Pact</b> is the de-facto API contract testing tool. Replace expensive and brittle end-to-end integration tests with fast, reliable and easy to debug unit tests.
+
+<ul style="list-style-type: none">
+    <li>⚡ Lightning fast</li>
+    <li>🎈 Effortless full-stack integration testing - from the front-end to the back-end</li>
+    <li>🔌 Supports HTTP/REST and event-driven systems</li>
+    <li>🛠️ Configurable mock server</li>
+    <li>😌 Powerful matching rules prevents brittle tests</li>
+    <li>🤝 Integrates with Pact Broker / PactFlow for powerful CI/CD workflows</li>
+    <li>🔡 Supports 12+ languages</li>
+</ul>
+
+<b>Why use Pact?</b> Contract testing with Pact lets you:
+
+<ul style="list-style-type: none">
+    <li>⚡ Test locally</li>
+    <li>🚀 Deploy faster</li>
+    <li>⬇️ Reduce the lead time for change</li>
+    <li>💰 Reduce the cost of API integration testing</li>
+    <li>💥 Prevent breaking changes</li>
+    <li>🔎 Understand your system usage</li>
+    <li>📃 Document your APIs for free</li>
+    <li>🗄 Remove the need for complex data fixtures</li>
+    <li>🤷‍♂️ Reduce the reliance on complex test environments</li>
+</ul>
+
+Watch our <a href="https://www.youtube.com/playlist?list=PLwy9Bnco-IpfZ72VQ7hce8GicVZs7nm0i">series</a> on the problems with end-to-end integrated tests, and how contract testing can help.
+
+</td></tr></table></div>
+
 <!-- markdownlint-enable no-inline-html -->
 
-Python version of Pact. Enables consumer driven contract testing, providing a mock service and DSL for the consumer project, and interaction playback and verification for the service provider project. Currently supports version 2 of the [Pact specification].
+## Documentation
 
-For more information about what Pact is, and how it can help you test your code more efficiently, check out the [Pact documentation].
+This readme provides a high-level overview of the Pact Python library. For detailed documentation, please refer to the [full Pact Python documentation](https://pact-foundation.github.io/pact-python). For a more general overview of Pact and the rest of the ecosystem, please refer to the [Pact documentation](https://docs.pact.io).
 
-Note: As of Version 1.0 deprecates support for python 2.7 to allow us to incorporate python 3.x features more readily. If you want to still use Python 2.7 use the 0.x.y versions. Only bug fixes will now be added to that release.
+-   [Installation](#installation)
+-   [Consumer testing](docs/consumer.md)
+-   [Provider testing](docs/provider.md)
+-   [Examples](examples/README.md)
 
-## How to use pact-python
+Documentation for the API is generated from the docstrings in the code which you can view [here](https://pact-foundation.github.io/pact-python/pact). Please be aware that only the [`pact.v3` module][pact.v3] is thoroughly documented at this time.
 
-### Installation
+### Need Help
 
-```console
+-   [Join](https://slack.pact.io) our community [slack workspace][Pact Foundation Slack].
+-   [Stack Overflow](https://stackoverflow.com/questions/tagged/pact) is a great place to ask questions.
+-   Say 👋 on Twitter: [@pact_up](https://twitter.com/pact_up)
+-   Join a discussion 💬 on [GitHub Discussions]
+-   [Raise an issue][GitHub Issues] on GitHub
+
+[Pact Foundation Slack]: https://pact-foundation.slack.com/
+[GitHub Discussions]: https://github.com/pact-foundation/pact-python/discussions
+[GitHub Issues]: https://github.com/pact-foundation/pact-python/issues
+
+## V3 Preview
+
+Pact Python is currently undergoing a major rewrite which will be released with the `3.0.0` version. This rewrite will replace the existing Ruby backend with a Rust backend which will provide a significant performance improvement and will allow us to support more features in the future. You can find more information about this rewrite in [this tracking issue on GitHub](https://github.com/pact-foundation/pact-python/issues/396).
+
+You can preview the new version by using the [`pact.v3` module][pact.v3]. The new version is not yet feature complete, and may be subject to changes. Having said that, we would love to get your feedback on the new version:
+
+-   For any issues you find, please [raise an issue][GitHub Issues] on GitHub.
+-   For any feedback you have, please join the discussion either on [GitHub Discussions] or in the [`#pact-python`](https://pact-foundation.slack.com/archives/C9VECUP6E) channel on the [Pact Foundation Slack].
+
+## Installation
+
+The latest version of Pact Python can be installed from PyPi:
+
+```sh
 pip install pact-python
+# 🚀 now write some tests!
 ```
 
-### Getting started
+### Requirements
 
-<!-- Absolute link for rendering page in docs.pact.io -->
+Pact Python tries to support all versions of Python that are still supported by the Python Software Foundation. Older version of Python may work, but are not officially supported.
 
-A guide follows but if you go to the [examples](https://github.com/pact-foundation/pact-python/tree/master/examples). This has a consumer, provider and pact-broker set of tests for both FastAPI and Flask.
+In order to support the broadest range of use cases, Pact Python tries to impose the least restrictions on the versions of libraries that it uses.
 
-### Writing a Pact
+### Do Not Track
 
-Creating a complete contract is a two step process:
+In order to get better statistics as to who is using Pact, we have an anonymous tracking event that triggers when Pact installs for the first time. The only things we [track](https://docs.pact.io/metrics) are your type of OS, and the version information for the package being installed. No personally identifiable information is sent as part of this request. You can disable tracking by setting the environment variable `PACT_DO_NOT_TRACK=1`:
 
-1.  Create a test on the consumer side that declares the expectations it has of the provider
-2.  Create a provider state that allows the contract to pass when replayed against the provider
+## Contributing
 
-### Writing the Consumer Test
+We welcome contributions to the Pact Python library in many forms. There are many ways to help, from writing code, to providing new examples, to writing documentation, to testing the library and providing feedback. For more information, see the [contributing guide](CONTRIBUTING.md).
 
-If we have a method that communicates with one of our external services, which we'll call `Provider`, and our product, `Consumer` is hitting an endpoint on `Provider` at `/users/<user>` to get information about a particular user.
-
-If the code to fetch a user looked like this:
-
-```python
-import requests
-
-def user(user_name):
-    """Fetch a user object by user_name from the server."""
-    uri = 'http://localhost:1234/users/' + user_name
-    return requests.get(uri).json()
-```
-
-Then `Consumer`'s contract test might look something like this:
-
-```python
-import atexit
-import unittest
-
-from pact import Consumer, Provider
-
-
-pact = Consumer('Consumer').has_pact_with(Provider('Provider'))
-pact.start_service()
-atexit.register(pact.stop_service)
-
-
-class GetUserInfoContract(unittest.TestCase):
-  def test_get_user(self):
-    expected = {
-      'username': 'UserA',
-      'id': 123,
-      'groups': ['Editors']
-    }
-
-    (pact
-     .given('UserA exists and is not an administrator')
-     .upon_receiving('a request for UserA')
-     .with_request('get', '/users/UserA')
-     .will_respond_with(200, body=expected))
-
-    with pact:
-      result = user('UserA')
-
-    self.assertEqual(result, expected)
-
-```
-
-This does a few important things:
-
--   Defines the Consumer and Provider objects that describe our product and our service under test
--   Uses `given` to define the setup criteria for the Provider `UserA exists and is not an administrator`
--   Defines what the request that is expected to be made by the consumer will contain
--   Defines how the server is expected to respond
-
-Using the Pact object as a [context manager], we call our method under test which will then communicate with the Pact mock service. The mock service will respond with the items we defined, allowing us to assert that the method processed the response and returned the expected value. If you want more control over when the mock service is configured and the interactions verified, use the `setup` and `verify` methods, respectively:
-
-```python
-   (pact
-     .given('UserA exists and is not an administrator')
-     .upon_receiving('a request for UserA')
-     .with_request('get', '/users/UserA')
-     .will_respond_with(200, body=expected))
-
-    pact.setup()
-    # Some additional steps before running the code under test
-    result = user('UserA')
-    # Some additional steps before verifying all interactions have occurred
-    pact.verify()
-```
-
-#### Requests
-
-When defining the expected HTTP request that your code is expected to make you can specify the method, path, body, headers, and query:
-
-```python
-pact.with_request(
-    method='GET',
-    path='/api/v1/my-resources/',
-    query={'search': 'example'}
-)
-```
-
-`query` is used to specify URL query parameters, so the above example expects a request made to `/api/v1/my-resources/?search=example`.
-
-```python
-pact.with_request(
-    method='POST',
-    path='/api/v1/my-resources/123',
-    body={'user_ids': [1, 2, 3]},
-    headers={'Content-Type': 'application/json'},
-)
-```
-
-You can define exact values for your expected request like the examples above, or you can use the matchers defined later to assist in handling values that are variable.
-
-The default hostname and port for the Pact mock service will be `localhost:1234` but you can adjust this during Pact creation:
-
-```python
-from pact import Consumer, Provider
-pact = Consumer('Consumer').has_pact_with(
-    Provider('Provider'), host_name='mockservice', port=8080)
-```
-
-This can be useful if you need to run to create more than one Pact for your test because your code interacts with two different services. It is important to note that the code you are testing with this contract _must_ contact the mock service. So in this example, the `user` method could accept an argument to specify the location of the server, or retrieve it from an environment variable so you can change its URI during the test.
-
-The mock service offers you several important features when building your contracts:
-
--   It provides a real HTTP server that your code can contact during the test and provides the responses you defined.
--   You provide it with the expectations for the request your code will make and it will assert the contents of the actual requests made based on your expectations.
--   If a request is made that does not match one you defined or if a request from your code is missing it will return an error with details.
--   Finally, it will record your contracts as a JSON file that you can store in your repository or publish to a Pact broker.
-
-### Expecting Variable Content
-
-The above test works great if that user information is always static, but what happens if the user has a last updated field that is set to the current time every time the object is modified? To handle variable data and make your tests more robust, there are 3 helpful matchers:
-
-#### Term(matcher, generate)
-
-Asserts the value should match the given regular expression. You could use this to expect a timestamp with a particular format in the request or response where you know you need a particular format, but are unconcerned about the exact date:
-
-```python
-from pact import Term
-...
-body = {
-    'username': 'UserA',
-    'last_modified': Term('\d+-\d+-\d+T\d+:\d+:\d+', '2016-12-15T20:16:01')
-}
-
-(pact
- .given('UserA exists and is not an administrator')
- .upon_receiving('a request for UserA')
- .with_request('get', '/users/UserA/info')
- .will_respond_with(200, body=body))
-```
-
-When you run the tests for the consumer, the mock service will return the value you provided as `generate`, in this case `2016-12-15T20:16:01`. When the contract is verified on the provider, the regex will be used to search the response from the real provider service and the test will be considered successful if the regex finds a match in the response.
-
-#### Like(matcher)
-
-Asserts the element's type matches the matcher. For example:
-
-```python
-from pact import Like
-Like(123)  # Matches if the value is an integer
-Like('hello world')  # Matches if the value is a string
-Like(3.14)  # Matches if the value is a float
-```
-
-The argument supplied to `Like` will be what the mock service responds with.
-
-When a dictionary is used as an argument for Like, all the child objects (and their child objects etc.) will be matched according to their types, unless you use a more specific matcher like a Term.
-
-```python
-from pact import Like, Term
-Like({
-    'username': Term('[a-zA-Z]+', 'username'),
-    'id': 123, # integer
-    'confirmed': False, # boolean
-    'address': { # dictionary
-        'street': '200 Bourke St' # string
-    }
-})
-
-```
-
-#### EachLike(matcher, minimum=1)
-
-Asserts the value is an array type that consists of elements like the one passed in. It can be used to assert simple arrays:
-
-```python
-from pact import EachLike
-EachLike(1)  # All items are integers
-EachLike('hello')  # All items are strings
-```
-
-Or other matchers can be nested inside to assert more complex objects:
-
-```python
-from pact import EachLike, Term
-EachLike({
-    'username': Term('[a-zA-Z]+', 'username'),
-    'id': 123,
-    'groups': EachLike('administrators')
-})
-```
-
-> Note, you do not need to specify everything that will be returned from the Provider in a JSON response, any extra data that is received will be ignored and the tests will still pass.
-
-<!-- block quote separator -->
-
-> Note, to get the generated values from an object that can contain matchers like Term, Like, EachLike, etc. for assertion in self.assertEqual(result, expected) you may need to use get_generated_values() helper function:
-
-```python
-from pact.matchers import get_generated_values
-self.assertEqual(result, get_generated_values(expected))
-```
-
-#### Match common formats
-
-Often times, you find yourself having to re-write regular expressions for common formats.
-
-```python
-from pact import Format
-Format().integer  # Matches if the value is an integer
-Format().ip_address  # Matches if the value is an ip address
-```
-
-We've created a number of them for you to save you the time:
-
-| matcher           | description                                                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `identifier`      | Match an ID (e.g. 42)                                                                                                  |
-| `integer`         | Match all numbers that are integers (both ints and longs)                                                              |
-| `decimal`         | Match all real numbers (floating point and decimal)                                                                    |
-| `hexadecimal`     | Match all hexadecimal encoded strings                                                                                  |
-| `date`            | Match string containing basic ISO8601 dates (e.g. 2016-01-01)                                                          |
-| `timestamp`       | Match a string containing an RFC3339 formatted timestamp (e.g. Mon, 31 Oct 2016 15:21:41 -0400)                        |
-| `time`            | Match string containing times in ISO date format (e.g. T22:44:30.652Z)                                                 |
-| `iso_datetime`    | Match string containing ISO 8601 formatted dates (e.g. 2015-08-06T16:53:10+01:00)                                      |
-| `iso_datetime_ms` | Match string containing ISO 8601 formatted dates, enforcing millisecond precision (e.g. 2015-08-06T16:53:10.123+01:00) |
-| `ip_address`      | Match string containing IP4 formatted address                                                                          |
-| `ipv6_address`    | Match string containing IP6 formatted address                                                                          |
-| `uuid`            | Match strings containing UUIDs                                                                                         |
-
-These can be used to replace other matchers
-
-```python
-from pact import Like, Format
-Like({
-    'id': Format().integer, # integer
-    'lastUpdated': Format().timestamp, # timestamp
-    'location': { # dictionary
-        'host': Format().ip_address # ip address
-    }
-})
-```
-
-For more information see [Matching](https://docs.pact.io/getting_started/matching)
-
-### Uploading pact files to a Pact Broker
-
-There are two ways to publish your pact files, to a Pact Broker.
-
-1.  [Pact CLI tools](https://docs.pact.io/pact_broker/client_cli) **recommended**
-2.  Pact Python API
-
-#### Broker CLI
-
-See [Publishing and retrieving pacts](https://docs.pact.io/pact_broker/publishing_and_retrieving_pacts)
-
-Example uploading to a Pact Broker
-
-```console
-pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-username someUsername --broker-password somePassword
-```
-
-Example uploading to a PactFlow Broker
-
-```console
-pact-broker publish /path/to/pacts/consumer-provider.json --consumer-app-version 1.0.0 --branch main --broker-base-url https://test.pactflow.io --broker-token SomeToken
-```
-
-#### Broker Python API
-
-```python
-broker = Broker(broker_base_url="http://localhost")
-broker.publish("TestConsumer",
-                       "2.0.1",
-                       branch='consumer-branch',
-                       pact_dir='.')
-
-output, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
-
-```
-
-The parameters for this differ slightly in naming from their CLI equivalents:
-| CLI | native Python |
-|-----------------------------------|-----------------------------------|
-| `--branch` | `branch` |
-| `--build-url` | `build_url` |
-| `--auto-detect-version-properties`| `auto_detect_version_properties` |
-| `--tag=TAG` | `consumer_tags` |
-| `--tag-with-git-branch` | `tag_with_git_branch` |
-| `PACT_DIRS_OR_FILES` | `pact_dir` |
-| `--consumer-app-version` | `version` |
-| `n/a` | `consumer_name` |
-
-### Verifying Pacts Against a Service
-
-In addition to writing Pacts for Python consumers, you can also verify those Pacts against a provider of any language. There are two ways to do this.
-
-#### Verifier CLI
-
-After installing pact-python a `pact-verifier` application should be available. To get details about its use you can call it with the help argument:
-
-```bash
-pact-verifier --help
-```
-
-The simplest example is verifying a server with locally stored Pact files and no provider states:
-
-```bash
-pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/consumer-provider.json
-```
-
-Which will immediately invoke the Pact verifier, making HTTP requests to the server located at `http://localhost:8080` based on the Pacts in `./pacts/consumer-provider.json` and reporting the results.
-
-There are several options for configuring how the Pacts are verified:
-
--   **`--provider-base-url`**
-
-    Required. Defines the URL of the server to make requests to when verifying the Pacts.
-
--   **`--pact-url`**
-
-    Required if --pact-urls not specified. The location of a Pact file you want to verify. This can be a URL to a [Pact Broker] or a local path, to provide multiple files, specify multiple arguments.
-
-    ```console
-    pact-verifier --provider-base-url=http://localhost:8080 --pact-url=./pacts/one.json --pact-url=./pacts/two.json
-    ```
-
--   **`--pact-urls`**
-
-    Required if --pact-url not specified. The location of the Pact files you want to verify. This can be a URL to a [Pact Broker] or one or more local paths, separated by a comma.
-
--   **`--provider-states-url`**
-
-    _DEPRECATED AFTER v 0.6.0._ The URL where your provider application will produce the list of available provider states. The verifier calls this URL to ensure the Pacts specify valid states before making the HTTP requests.
-
--   **`--provider-states-setup-url`**
-
-    The URL which should be called to setup a specific provider state before a Pact is verified. This URL will be called with a POST request, and the JSON body `{consumer: 'Consumer name', state: 'a thing exists'}`.
-
--   **`--pact-broker-url`**
-
-    Base URl for the Pact Broker instance to publish pacts to. Can also be specified via the environment variable `PACT_BROKER_BASE_URL`.
-
--   **`--pact-broker-username`**
-
-    The username to use when contacting the Pact Broker. Can also be specified via the environment variable `PACT_BROKER_USERNAME`.
-
--   **`--pact-broker-password`**
-
-    The password to use when contacting the Pact Broker. You can also specify this value as the environment variable `PACT_BROKER_PASSWORD`.
-
--   **`--pact-broker-token`**
-
-    The bearer token to use when contacting the Pact Broker. You can also specify this value as the environment variable `PACT_BROKER_TOKEN`.
-
--   **`--consumer-version-tag`**
-
-    Retrieve the latest pacts with this consumer version tag. Used in conjunction with `--provider`. May be specified multiple times.
-
--   **`--consumer-version-selector`**
-
-    You can also retrieve pacts with consumer version selector, a more flexible approach in specifying which pacts you need. May be specified multiple times. Read more about selectors [here](https://docs.pact.io/pact_broker/advanced_topics/consumer_version_selectors/).
-
--   **`--provider-version-tag`**
-
-    Tag to apply to the provider application version. May be specified multiple times.
-
--   **`--provider-version-branch`**
-
-    Branch to apply to the provider application version.
-
--   **`--custom-provider-header`**
-
-    Header to add to provider state set up and pact verification requests e.g.`Authorization: Basic cGFjdDpwYWN0`
-    May be specified multiple times.
-
--   **`-t, --timeout`**
-
-    The duration in seconds we should wait to confirm that the verification process was successful. Defaults to 30.
-
--   **`-a, --provider-app-version`**
-
-    The provider application version. Required for publishing verification results.
-
--   **`-r, --publish-verification-results`**
-
-    Publish verification results to the broker.
-
-#### Verifier Python API
-
-You can use the Verifier class. This allows you to write native python code and the test framework of your choice.
-
-```python
-verifier = Verifier(provider='UserService',
-                    provider_base_url=PACT_URL)
-
-# Using a local pact file
-
-success, logs = verifier.verify_pacts('./userserviceclient-userservice.json')
-assert success == 0
-
-# Using a pact broker
-
-- For OSS Pact Broker, use broker_username / broker_password
-- For PactFlow Pact Broker, use broker_token
-
-success, logs = verifier.verify_with_broker(
-    # broker_username=PACT_BROKER_USERNAME,
-    # broker_password=PACT_BROKER_PASSWORD,
-    broker_url=PACT_BROKER_URL,
-    broker_token=PACT_BROKER_TOKEN,
-    publish_version=APPLICATION_VERSION,
-    publish_verification_results=True,
-    verbose=True,
-    provider_version_branch=PROVIDER_BRANCH,
-    enable_pending=True,
-)
-assert success == 0
-```
-
-The parameters for this differ slightly in naming from their CLI equivalents:
-
-| CLI                              | native Python                  |
-| -------------------------------- | ------------------------------ |
-| `--log-dir`                      | `log_dir`                      |
-| `--log-level`                    | `log_level`                    |
-| `--provider-app-version`         | `provider_app_version`         |
-| `--headers`                      | `custom_provider_headers`      |
-| `--consumer-version-tag`         | `consumer_tags`                |
-| `--provider-version-tag`         | `provider_tags`                |
-| `--provider-states-setup-url`    | `provider_states_setup_url`    |
-| `--verbose`                      | `verbose`                      |
-| `--consumer-version-selector`    | `consumer_selectors`           |
-| `--publish-verification-results` | `publish_verification_results` |
-| `--provider-version-branch`      | `provider_version_branch`      |
-
-You can see more details in the examples
-
--   [Message Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_03_message_provider.py)
--   [Flask Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_flask.py)
--   [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_fastapi.py)
-
-#### Provider States
-
-In many cases, your contracts will need very specific data to exist on the provider to pass successfully. If you are fetching a user profile, that user needs to exist, if querying a list of records, one or more records needs to exist. To support decoupling the testing of the consumer and provider, Pact offers the idea of provider states to communicate from the consumer what data should exist on the provider.
-
-When setting up the testing of a provider you will also need to setup the management of these provider states. The Pact verifier does this by making additional HTTP requests to the `--provider-states-setup-url` you provide. This URL could be on the provider application or a separate one. Some strategies for managing state include:
-
--   Having endpoints in your application that are not active in production that create and delete your datastore state
--   A separate application that has access to the same datastore to create and delete, like a separate App Engine module or Docker container pointing to the same datastore
--   A standalone application that can start and stop the other server with different datastore states
-
-For more information about provider states, refer to the [Pact documentation] on [Provider States].
-
-## Development
-
-<!-- Absolute link for rendering page in docs.pact.io -->
-
-Please read [CONTRIBUTING.md](https://github.com/pact-foundation/pact-python/blob/master/CONTRIBUTING.md)
-
-To setup a development environment:
-
-1.  If you want to run tests for all Python versions, install 2.7, 3.3, 3.4, 3.5, and 3.6 from source or using a tool like [pyenv]
-2.  Its recommended to create a Python [virtualenv] for the project
-
-To setup the environment, run tests, and package the application, run: `make release`
-
-If you are just interested in packaging pact-python so you can install it using pip: `make package`
-
-This creates a `dist/pact-python-N.N.N.tar.gz` file, where the Ns are the current version. From there you can use pip to install it:
-
-`pip install ./dist/pact-python-N.N.N.tar.gz`
-
-### Offline Installation of Standalone Packages
-
-Although all Ruby standalone applications are predownloaded into the wheel artifact, it may be useful, for development, purposes to install custom Ruby binaries. In which case, use the `bin-path` flag.
-
-```console
-pip install pact-python --bin-path=/absolute/path/to/folder/containing/pact/binaries/for/your/os
-```
-
-Pact binaries can be found at [Pact Ruby Releases](https://github.com/pact-foundation/pact-ruby-standalone/releases).
-
-### Testing
-
-This project has unit and end to end tests, which can both be run from make:
-
-Unit: `make test`
-
-End to end: `make e2e`
-
-### Contact
-
-Join us in slack: [![slack](https://slack.pact.io/badge.svg)](https://slack.pact.io)
-
-or
-
--   Twitter: [@pact_up](https://twitter.com/pact_up)
--   Stack Overflow: [stackoverflow.com/questions/tagged/pact](https://stackoverflow.com/questions/tagged/pact)
-
-[context manager]: https://en.wikibooks.org/wiki/Python_Programming/Context_Managers
-[Pact Broker]: https://docs.pact.io/pact_broker
-[Pact documentation]: https://docs.pact.io/
-[Pact specification]: https://github.com/pact-foundation/pact-specification
-[Provider States]: https://docs.pact.io/getting_started/provider_states
-[pyenv]: https://github.com/pyenv/pyenv
-[virtualenv]: http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/
+[![Table of contributors](https://contrib.rocks/image?repo=pact-foundation/pact-python)](https://github.com/pact-foundation/pact-python/graphs/contributors)
