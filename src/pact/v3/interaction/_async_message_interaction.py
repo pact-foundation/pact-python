@@ -1,18 +1,11 @@
 """
-Pact between a consumer and a provider.
-
-This module defines the classes that are used to define a Pact between a
-consumer and a provider. It defines the interactions between the two parties,
-and provides the functionality to verify that the interactions are satisfied.
-
-For the roles of consumer and provider, see the documentation for the
-`pact.v3.service` module.
+Asynchronous message interaction.
 """
 
 from __future__ import annotations
 
 import pact.v3.ffi
-from pact.v3.interaction import Interaction
+from pact.v3.interaction._base import Interaction
 
 
 class AsyncMessageInteraction(Interaction):
@@ -23,6 +16,10 @@ class AsyncMessageInteraction(Interaction):
     and a provider. It defines the kind of messages a consumer can accept, and
     the is agnostic of the underlying protocol, be it a message queue, Apache
     Kafka, or some other asynchronous protocol.
+
+    !!! warning
+
+        This class is not yet fully implemented and is not yet usable.
     """
 
     def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:

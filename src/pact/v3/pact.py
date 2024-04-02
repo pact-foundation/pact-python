@@ -5,8 +5,59 @@ This module defines the classes that are used to define a Pact between a
 consumer and a provider. It defines the interactions between the two parties,
 and provides the functionality to verify that the interactions are satisfied.
 
-For the roles of consumer and provider, see the documentation for the
-`pact.v3.service` module.
+As Pact is a consumer-driven contract testing tool, the consumer is responsible
+for defining the interactions between the two parties. The provider is then
+responsible for ensuring that these interactions are satisfied.
+
+## Usage
+
+The main class in this module is the [`Pact`][pact.v3.Pact] class. This class
+defines the Pact between the consumer and the provider. It is responsible for
+defining the interactions between the two parties.
+
+The general usage of this module is as follows:
+
+```python
+from pact.v3 import Pact
+import aiohttp
+
+
+pact = Pact("consumer", "provider")
+
+interaction = pact.upon_receiving("a basic request")
+interaction.given("user 123 exists")
+interaction.with_request("GET", "/user/123")
+interaction.will_respond_with(200)
+interaction.with_header("Content-Type", "application/json")
+interaction.with_body({"id": 123, "name": "Alice"})
+
+with pact.serve() as srv:
+    async with aiohttp.ClientSession(srv.url) as session:
+        async with session.get("/user/123") as resp:
+            assert resp.status == 200
+            assert resp.headers["Content-Type"] == "application/json"
+            data = await resp.json()
+            assert data == {"id": 123, "name": "Alice"}
+```
+
+The repeated calls to `interaction` can be chained together to define the
+interaction in a more concise manner:
+
+```python
+pact = Pact("consumer", "provider")
+
+(
+    pact.upon_receiving("a basic request")
+    .given("user 123 exists")
+    .with_request("GET", "/user/123")
+    .will_respond_with(200)
+    .with_header("Content-Type", "application/json")
+    .with_body({"id": 123, "name": "Alice"})
+)
+```
+
+Note that the parentheses are required to ensure that the method chaining works
+correctly, as this form of method chaining is not typical in Python.
 """
 
 from __future__ import annotations
@@ -19,9 +70,9 @@ from typing import TYPE_CHECKING, Any, Literal, Set, overload
 from yarl import URL
 
 import pact.v3.ffi
-from pact.v3.interaction.async_message_interaction import AsyncMessageInteraction
-from pact.v3.interaction.http_interaction import HttpInteraction
-from pact.v3.interaction.sync_message_interaction import SyncMessageInteraction
+from pact.v3.interaction._async_message_interaction import AsyncMessageInteraction
+from pact.v3.interaction._http_interaction import HttpInteraction
+from pact.v3.interaction._sync_message_interaction import SyncMessageInteraction
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -44,9 +95,15 @@ class Pact:
     central class in Pact's framework, and is responsible for defining the
     interactions between the two parties.
 
-    One Pact instance should be created for each provider that a consumer
-    interacts with. This instance can then be used to define the interactions
-    between the two parties.
+    One `Pact` instance should be created for each provider that a consumer
+    interacts with. The methods on this class are used to define the broader
+    attributes of the Pact, such as the consumer and provider names, the Pact
+    specification, any plugins that are used, and any metadata that is attached
+    to the Pact.
+
+    Each interaction between the consumer and the provider is defined through
+    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
+    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
     """
 
     def __init__(
@@ -210,8 +267,6 @@ class Pact:
     ) -> HttpInteraction | AsyncMessageInteraction | SyncMessageInteraction:
         """
         Create a new Interaction.
-
-        This is an alias for [`interaction(...)`][pact.v3.Pact.interaction].
 
         Args:
             description:
@@ -404,6 +459,8 @@ class MismatchesError(Exception):
         super().__init__(f"Mismatched interaction (count: {len(mismatches)})")
         self._mismatches = mismatches
 
+    # TODO: Replace the list of dicts with a more structured object.
+    # https://github.com/pact-foundation/pact-python/issues/644
     @property
     def mismatches(self) -> list[dict[str, Any]]:
         """
@@ -417,8 +474,35 @@ class PactServer:
     Pact Server.
 
     This class handles the lifecycle of the Pact mock server. It is responsible
-    for starting the mock server when the Pact is entered into a `with` block,
-    and stopping the mock server when the block is exited.
+    for starting the mock server when the Pact is entered into a [`with`
+    block](https://docs.python.org/3/reference/compound_stmts.html#with), and
+    stopping the mock server when the block is exited.
+
+    Note that the server should not be started directly, but rather through the
+    [`serve(...)`][pact.v3.Pact.serve] method of a [`Pact`][pact.v3.Pact]:
+
+    ```python
+    pact = Pact("consumer", "provider")
+    # Define interactions...
+    with pact.serve() as srv:
+        ...
+    ```
+
+    The URL for the server can be accessed through its
+    [`url`][pact.v3.pact.PactServer.url] attribute, which will be required in
+    order to point the consumer client to the mock server:
+
+    ```python
+    pact = Pact("consumer", "provider")
+    with pact.serve() as srv:
+        api_client = MyApiClient(srv.url)
+        # Test the client...
+    ```
+
+    If the server is instantiated with `raises=True` (the default), then the
+    server will raise a `MismatchesError` if there are mismatches in any of the
+    interactions. If `raises=False`, then the mismatches must be handled
+    manually.
     """
 
     def __init__(  # noqa: PLR0913
@@ -434,17 +518,6 @@ class PactServer:
     ) -> None:
         """
         Initialise a new Pact Server.
-
-        This function should not be called directly. Instead, a Pact Server
-        should be created using the
-        [`serve(...)`][pact.v3.Pact.serve] method of a
-        [`Pact`][pact.v3.Pact] instance:
-
-        ```python
-        pact = Pact("consumer", "provider")
-        with pact.serve(...) as srv:
-            ...
-        ```
 
         Args:
             pact_handle:
@@ -520,6 +593,10 @@ class PactServer:
         Whether or not the server has been matched.
 
         This is `True` if the server has been matched, and `False` otherwise.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
         """
         if not self._handle:
             msg = "The server is not running."
@@ -533,6 +610,10 @@ class PactServer:
 
         This is a string containing the mismatches between the Pact and the
         server. If there are no mismatches, then this is an empty string.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
         """
         if not self._handle:
             msg = "The server is not running."
@@ -547,6 +628,10 @@ class PactServer:
         This is a string containing the logs from the server. If there are no
         logs, then this is `None`. For this to be populated, the logging must
         be configured to make use of the internal buffer.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
         """
         if not self._handle:
             msg = "The server is not running."
@@ -645,6 +730,13 @@ class PactServer:
 
             overwrite:
                 Whether or not to overwrite the file if it already exists.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
+
+            ValueError:
+                If the path specified is not a directory.
         """
         if not self._handle:
             msg = "The server is not running."

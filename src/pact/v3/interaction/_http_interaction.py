@@ -1,12 +1,5 @@
 """
-Pact between a consumer and a provider.
-
-This module defines the classes that are used to define a Pact between a
-consumer and a provider. It defines the interactions between the two parties,
-and provides the functionality to verify that the interactions are satisfied.
-
-For the roles of consumer and provider, see the documentation for the
-`pact.v3.service` module.
+HTTP interaction.
 """
 
 from __future__ import annotations
@@ -15,7 +8,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Iterable, Literal
 
 import pact.v3.ffi
-from pact.v3.interaction import Interaction
+from pact.v3.interaction._base import Interaction
 
 if TYPE_CHECKING:
     try:
@@ -31,14 +24,44 @@ class HttpInteraction(Interaction):
     This class defines a synchronous HTTP interaction between a consumer and a
     provider. It defines a specific request that the consumer makes to the
     provider, and the response that the provider should return.
+
+    This class provides a simple way to define the request and response for an
+    HTTP interaction. As many elements are shared between the request and
+    response, this class provides a common interface for both. The functions
+    intelligently determine whether the element should be added to the request
+    or the response based on whether
+    [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
+    has been called.
+
+    For example, the following two interactions are equivalent:
+
+    ```python
+    (
+        pact.upon_receiving("a request")
+        .with_request("GET", "/")
+        .with_header("X-Foo", "bar")
+        .will_respond_with(200)
+        .with_header("X-Hello", "world")
+    )
+    ```
+
+    ```python
+    (
+        pact.upon_receiving("a request")
+        .with_request("GET", "/")
+        .will_respond_with(200)
+        .with_header("X-Foo", "bar", part="Request")
+        .with_header("X-Hello", "world", part="Response")
+    )
+    ```
     """
 
     def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
         """
         Initialise a new HTTP Interaction.
 
-        This function should not be called directly. Instead, an Interaction
-        should be created using the
+        This class should not be instantiated directly. Instead, an
+        `HttpInteraction` should be created using the
         [`upon_receiving(...)`][pact.v3.Pact.upon_receiving] method of a
         [`Pact`][pact.v3.Pact] instance.
         """
@@ -163,7 +186,8 @@ class HttpInteraction(Interaction):
 
         If the value of the header is expected to be a JSON object and clashes
         with the above syntax, then it is recommended to make use of the
-        [`set_header(...)`][pact.v3.Interaction.set_header] method instead.
+        [`set_header(...)`][pact.v3.interaction.HttpInteraction.set_header]
+        method instead.
 
         Args:
             name:
@@ -177,7 +201,7 @@ class HttpInteraction(Interaction):
                 response. If `None`, then the function intelligently determines
                 whether the header should be added to the request or the
                 response, based on whether the
-                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         interaction_part = self._parse_interaction_part(part)
@@ -201,24 +225,23 @@ class HttpInteraction(Interaction):
         """
         Add multiple headers to the request.
 
-        Note that due to the requirement of Python dictionaries to
-        have unique keys, it is _not_ possible to specify a header multiple
-        times to create a multi-valued header. Instead, you may:
+        Note that due to the requirement of Python dictionaries to have unique
+        keys, it is _not_ possible to specify a header multiple times to create
+        a multi-valued header. Instead, you may:
 
         -   Use an alternative data structure. Any iterable of key-value pairs
             is accepted, including a list of tuples, a list of lists, or a
             dictionary view.
 
         -   Make multiple calls to
-            [`with_header(...)`][pact.v3.Interaction.with_header] or
-            [`with_headers(...)`][pact.v3.Interaction.with_headers].
+            [`with_header(...)`][pact.v3.interaction.HttpInteraction.with_header]
+            or
+            [`with_headers(...)`][pact.v3.interaction.HttpInteraction.with_headers].
 
         -   Specify the multiple values in a JSON object of the form:
 
-            ```python
-            (
-                pact.upon_receiving("a request")
-                .with_headers({
+            ```python (
+                pact.upon_receiving("a request") .with_headers({
                     "X-Foo": json.dumps({
                         "value": ["bar", "baz"],
                     }),
@@ -226,8 +249,9 @@ class HttpInteraction(Interaction):
             )
             ```
 
-        See [`with_header(...)`][pact.v3.Interaction.with_header] for more
-        information.
+        See
+        [`with_header(...)`][pact.v3.interaction.HttpInteraction.with_header]
+        for more information.
 
         Args:
             headers:
@@ -238,7 +262,7 @@ class HttpInteraction(Interaction):
                 response. If `None`, then the function intelligently determines
                 whether the header should be added to the request or the
                 response, based on whether the
-                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         if isinstance(headers, dict):
@@ -256,8 +280,9 @@ class HttpInteraction(Interaction):
         r"""
         Add a header to the request.
 
-        Unlike [`with_header(...)`][pact.v3.Interaction.with_header], this
-        function does no additional processing of the header value. This is
+        Unlike
+        [`with_header(...)`][pact.v3.interaction.HttpInteraction.with_header],
+        this function does no additional processing of the header value. This is
         useful for headers that contain a JSON object.
 
         Args:
@@ -272,7 +297,7 @@ class HttpInteraction(Interaction):
                 response. If `None`, then the function intelligently determines
                 whether the header should be added to the request or the
                 response, based on whether the
-                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         pact.v3.ffi.set_header(
@@ -293,11 +318,11 @@ class HttpInteraction(Interaction):
 
         This function intelligently determines whether the header should be
         added to the request or the response, based on whether the
-        [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with] method
-        has been called.
+        [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
+        method has been called.
 
-        See [`set_header(...)`][pact.v3.Interaction.set_header] for more
-        information.
+        See [`set_header(...)`][pact.v3.interaction.HttpInteraction.set_header] for
+        more information.
 
         Args:
             headers:
@@ -308,7 +333,7 @@ class HttpInteraction(Interaction):
                 response. If `None`, then the function intelligently determines
                 whether the header should be added to the request or the
                 response, based on whether the
-                [`will_respond_with(...)`][pact.v3.Interaction.will_respond_with]
+                [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         if isinstance(headers, dict):
@@ -392,7 +417,8 @@ class HttpInteraction(Interaction):
         """
         Add multiple query parameters to the request.
 
-        See [`with_query_parameter(...)`][pact.v3.Interaction.with_query_parameter]
+        See
+        [`with_query_parameter(...)`][pact.v3.interaction.HttpInteraction.with_query_parameter]
         for more information.
 
         Args:
@@ -411,8 +437,8 @@ class HttpInteraction(Interaction):
 
         Ideally, this function is called once all of the request information has
         been set. This allows functions such as
-        [`with_header(...)`][pact.v3.Interaction.with_header] to intelligently
-        determine whether this is a request or response header.
+        [`with_header(...)`][pact.v3.interaction.HttpInteraction.with_header]
+        to intelligently determine whether this is a request or response header.
 
         Alternatively, the `part` argument can be used to explicitly specify
         whether the header should be added to the request or the response.
