@@ -1,11 +1,21 @@
 default: true
+
+# Do not enforce line length
+line-length: false
+
+# Adjust list indentation for 4 spaces
 list-marker-space:
   ul_single: 3
   ul_multi: 3
   ol_single: 2
   ol_multi: 2
-line-length: false
 ul-indent:
   indent: 4
+
+# Require fenced code blocks
 code-block-style:
   style: fenced
+
+# Disable checking for reference links, as MkDocs generates additional ones that
+# are not visible to MarkdownLint.
+reference-links-images: false
