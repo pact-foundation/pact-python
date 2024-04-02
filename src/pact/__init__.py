@@ -1,15 +1,15 @@
 """Python methods for interactive with a Pact Mock Service."""
-from .broker import Broker
-from .consumer import Consumer
-from .matchers import EachLike, Like, SomethingLike, Term, Format
-from .message_consumer import MessageConsumer
-from .message_pact import MessagePact
-from .message_provider import MessageProvider
-from .pact import Pact
-from .provider import Provider
-from .verifier import Verifier
+from pact.broker import Broker
+from pact.consumer import Consumer
+from pact.matchers import EachLike, Like, SomethingLike, Term, Format
+from pact.message_consumer import MessageConsumer
+from pact.message_pact import MessagePact
+from pact.message_provider import MessageProvider
+from pact.pact import Pact
+from pact.provider import Provider
+from pact.verifier import Verifier
 
-from .__version__ import __version__, __version_tuple__
+from pact.__version__ import __version__, __version_tuple__
 
 __url__ = "https://github.com/pactflow/accord"
 __license__ = "MIT"
