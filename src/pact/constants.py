@@ -10,14 +10,6 @@ import shutil
 import warnings
 from pathlib import Path
 
-__all__ = [
-    "BROKER_CLIENT_PATH",
-    "MESSAGE_PATH",
-    "MOCK_SERVICE_PATH",
-    "VERIFIER_PATH",
-]
-
-
 _USE_SYSTEM_BINS = os.getenv("PACT_USE_SYSTEM_BINS", "").upper() in ("TRUE", "YES")
 _BIN_DIR = Path(__file__).parent.resolve() / "bin"
 
