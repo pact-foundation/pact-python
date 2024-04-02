@@ -2,7 +2,7 @@
 
 Pact Python is made available through both GitHub releases and PyPI. The GitHub releases also come with a summary of changes and contributions since the last release.
 
-The entire process is automated through the [build](https://github.com/pact-foundation/pact-python/actions?query=workflow%3Abuild) GitHub Action. A description of the process is provided [below](#build-pipeline).
+The entire process is automated through the [build](https://github.com/pact-foundation/pact-python/actions/workflows/build.yml?query=branch%3Amaster) GitHub Action. A description of the process is provided [below](#build-pipeline).
 
 ## Versioning
 
@@ -44,6 +44,6 @@ The publish step uses the `pypi` GitHub environment, and is gated behind a manua
 -   Generating a changelog based on the conventional commits since the latest release.
 -   Generating a new GitHub release with the changelog.
 -   Uploading the source distribution and wheels to PyPI.
--   Creating a PR to update the `CHANGELOD.md` file with the new release notes.
+-   Creating a PR to update the `CHANGELOG.md` file with the new release notes.
 
 While the generated changelog should be accurate, it may require some manual adjustments on the release page and in the PR.
