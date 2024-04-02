@@ -5,6 +5,64 @@ The Verifier is used to verify that a provider meets the expectations of a
 consumer. This is done by replaying interactions from the consumer against the
 provider, and ensuring that the provider's responses match the expectations set
 by the consumer.
+
+The interactions to be verified can be sourced either from local Pact files or
+from a Pact Broker. The Verifier can be configured to filter interactions based
+on their description and state, and to set the provider information and
+transports.
+
+When performing the verification, Pact will replay the interactions from the
+consumer against the provider and ensure that the provider's responses match the
+expectations set by the consumer.
+
+!!! info
+
+    The interface provided by this module could be improved. If you have any
+    suggestions, please consider creating a new [GitHub
+    discussion](https://github.com/pact-foundation/pact-python/discussions) or
+    reaching out over [Slack](https://slack.pact.io).
+
+## Usage
+
+The general usage of the Verifier is as follows:
+
+```python
+from pact.v3 import Verifier
+
+
+# In the case of local Pact files
+verifier = Verifier().set_info("My Provider", url="http://localhost:8080")
+verifier.add_source("pact/to/pacts/")
+verifier.verify()
+
+# In the case of a Pact Broker
+verifier = Verifier().set_info("My Provider", url="http://localhost:8080")
+verifier.broker_source("https://broker.example.com/")
+verifier.verify()
+```
+
+## State Handling
+
+In general, the consumer will write interactions assuming that the provider is
+in a certain state. For example, a consumer requesting information about a user
+with ID `123` will have specified `given("user with ID 123 exists")`. It is the
+responsibility of the provider to ensure that this state is met before the
+interaction is replayed.
+
+In order to change the provider's internal state, Pact relies on a callback
+endpoint. The specific manner in which this endpoint is implemented is up to the
+provider as it is highly dependent on the provider's architecture.
+
+One common approach is to define the endpoint during testing only, and for the
+endpoint to [mock][unittest.mock] the expected calls to the database and/or
+external services. This allows the provider to be tested in isolation from the
+rest of the system, and assertions can be made about the calls made to the
+endpoint.
+
+An alternative approach might be to run a dedicated service which is responsible
+for writing to the database such that the provider can retrieve the expected
+data. This approach is more complex, but could be useful in cases where test
+databases are already in use.
 """
 
 from __future__ import annotations
@@ -76,9 +134,9 @@ class Verifier:
         HTTP(S) transport method is always added.
 
         For a provider which uses other protocols (such as message queues), the
-        [`add_provider_transport`][pact.v3.verifier.Verifier.add_provider_transport]
-        must be used. This method can be called multiple times to add multiple
-        transport methods.
+        [`add_transport`][pact.v3.verifier.Verifier.add_transport] must be used.
+        This method can be called multiple times to add multiple transport
+        methods.
 
         Args:
             name:
@@ -160,7 +218,8 @@ class Verifier:
 
         If the provider supports multiple transport methods, or non-HTTP(S)
         methods, this method allows these additional transport methods to be
-        added. It can be called multiple times to add multiple transport methods.
+        added. It can be called multiple times to add multiple transport
+        methods.
 
         As some transport methods may not use ports, paths or schemes, these
         parameters are optional.
@@ -171,10 +230,10 @@ class Verifier:
 
                 -   `http` for communications over HTTP(S). Note that when
                     setting up the provider information in
-                    [`set_provider_info`][pact.v3.verifier.Verifier.set_provider_info],
-                    a HTTP transport method is always added and it is unlikely
-                    that an additional HTTP transport method will be needed
-                    unless the provider is running on additional ports.
+                    [`set_info`][pact.v3.verifier.Verifier.set_info], a HTTP
+                    transport method is always added and it is unlikely that an
+                    additional HTTP transport method will be needed unless the
+                    provider is running on additional ports.
 
                 -   `message` for non-plugin synchronous message-based
                     communications.
@@ -278,7 +337,7 @@ class Verifier:
 
         Args:
             url:
-                The URL to which a `POST` request will be made to change the
+                The URL to which a `GET` request will be made to change the
                 provider's internal state.
 
             teardown:
