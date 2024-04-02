@@ -4,7 +4,7 @@ Flask provider example.
 This modules defines a simple
 [provider](https://docs.pact.io/getting_started/terminology#service-provider)
 which will be tested with Pact in the [provider
-test](../tests/test_01_provider_flask.py). As Pact is a consumer-driven
+test][examples.tests.test_01_provider_flask]. As Pact is a consumer-driven
 framework, the consumer defines the contract which the provider must then
 satisfy.
 
@@ -29,9 +29,9 @@ app = Flask(__name__)
 As this is a simple example, we'll use a simple dict to represent a database.
 This would be replaced with a real database in a real application.
 
-When testing the provider in a real application, the calls to the database
-would be mocked out to avoid the need for a real database. An example of this
-can be found in the [test suite](../tests/test_01_provider_flask.py).
+When testing the provider in a real application, the calls to the database would
+be mocked out to avoid the need for a real database. An example of this can be
+found in the [test suite][examples.tests.test_01_provider_flask].
 """
 FAKE_DB: Dict[int, Dict[str, Any]] = {}
 

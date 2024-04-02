@@ -4,13 +4,13 @@ Simple Consumer Implementation.
 This modules defines a simple
 [consumer](https://docs.pact.io/getting_started/terminology#service-consumer)
 which will be tested with Pact in the [consumer
-test](../tests/test_00_consumer.py). As Pact is a consumer-driven framework, the
-consumer defines the interactions which the provider must then satisfy.
+test][examples.tests.test_00_consumer]. As Pact is a consumer-driven framework,
+the consumer defines the interactions which the provider must then satisfy.
 
 The consumer is the application which makes requests to another service (the
 provider) and receives a response to process. In this example, we have a simple
-[`User`](User) class and the consumer fetches a user's information from a HTTP
-endpoint.
+[`User`][examples.src.consumer.User] class and the consumer fetches a user's
+information from a HTTP endpoint.
 
 Note that the code in this module is agnostic of Pact. The `pact-python`
 dependency only appears in the tests. This is because the consumer is not

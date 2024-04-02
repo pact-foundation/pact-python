@@ -67,10 +67,10 @@ sequenceDiagram
 
 In the first stage, the consumer defines a number of interactions in the form below. Pact sets up a mock server that will respond to the requests as defined by the consumer. All these interactions, containing both the request and expected response, are all sent to the Pact Broker.
 
-> Given {provider state} \
-> Upon receiving {description} \
-> With {request} \
-> Will respond with {response}
+> Given {provider state} </br>
+> Upon receiving {description} </br>
+> With {request} </br>
+> Will respond with {response} </br>
 
 In the second stage, the provider retrieves the interactions from the Pact Broker. It then sets up a mock client that will make the requests as defined by the consumer. Pact then verifies that the responses from the provider match the expected responses defined by the consumer.
 
@@ -78,7 +78,7 @@ In this way, Pact is consumer driven and can ensure that the provider is compati
 
 ### Consumer
 
-The consumer in this example is a simple Python script that makes a HTTP GET request to a server. It is defined in [`src/consumer.py`](src/consumer.py). The tests for the consumer are defined in [`tests/test_00_consumer.py`](tests/test_00_consumer.py). Each interaction is defined using the format mentioned above. Programmatically, this looks like:
+The consumer in this example is a simple Python script that makes a HTTP GET request to a server. It is defined in [`src/consumer.py`][examples.src.consumer]. The tests for the consumer are defined in [`tests/test_00_consumer.py`][examples.tests.test_00_consumer]. Each interaction is defined using the format mentioned above. Programmatically, this looks like:
 
 ```py
 expected: dict[str, Any] = {
@@ -97,7 +97,7 @@ expected: dict[str, Any] = {
 
 ### Provider
 
-This example showcases to different providers, one written in Flask and one written in FastAPI. Both are simple Python web servers that respond to a HTTP GET request. The Flask provider is defined in [`src/flask.py`](src/flask.py) and the FastAPI provider is defined in [`src/fastapi.py`](src/fastapi.py). The tests for the providers are defined in [`tests/test_01_provider_flask.py`](tests/test_01_provider_flask.py) and [`tests/test_01_provider_fastapi.py`](tests/test_01_provider_fastapi.py).
+This example showcases to different providers, one written in Flask and one written in FastAPI. Both are simple Python web servers that respond to a HTTP GET request. The Flask provider is defined in [`src/flask.py`][examples.src.flask] and the FastAPI provider is defined in [`src/fastapi.py`][examples.src.fastapi]. The tests for the providers are defined in [`tests/test_01_provider_flask.py`][examples.tests.test_01_provider_flask] and [`tests/test_01_provider_fastapi.py`][examples.tests.test_01_provider_fastapi].
 
 Unlike the consumer side, the provider side is responsible to responding to the interactions defined by the consumers. In this regard, the provider testing is rather simple:
 
