@@ -124,6 +124,8 @@ def process_python(
     ignore: list[str] | None = None,
     destination_mapping: list[tuple[str, str]] | None = None,
     python_mapping: list[tuple[str, str]] | None = None,
+    *,
+    ignore_private: bool = True,
 ) -> None:
     """
     Process the Python files in the given directory.
@@ -141,7 +143,8 @@ def process_python(
             The source directory to process.
 
         ignore:
-            A list of patterns to ignore. This uses the same syntax as `.gitignore`.
+            A list of patterns to ignore. This uses the same syntax as
+            `.gitignore`.
 
         destination_mapping:
             List of tuples containing the source and destination paths to map.
@@ -153,6 +156,11 @@ def process_python(
             identifiers to map. Note that the list is processed in order, with
             later mappings applied after earlier mappings. This is applied
             idependently of the `destination_mapping` argument.
+
+        ignore_private:
+            Whether to ignore private modules (those starting with an underscore
+            `_`, with the exception of special file names such as `__init__.py`
+            and `__main__.py`).
     """
     ignore_spec = PathSpec.from_lines("gitwildmatch", ignore or [])
     files = sorted(
@@ -166,6 +174,13 @@ def process_python(
     )
 
     for file in files:
+        if (
+            ignore_private
+            and file.name.startswith("_")
+            and file.stem not in ["__init__", "__main__"]
+        ):
+            continue
+
         destination = map_destination(
             file,
             [(Path(a).parts, Path(b).parts) for a, b in destination_mapping or []],
