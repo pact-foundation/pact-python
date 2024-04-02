@@ -7,3 +7,5 @@ list-marker-space:
 line-length: false
 ul-indent:
   indent: 4
+code-block-style:
+  style: fenced
