@@ -6,6 +6,9 @@ repo_url: https://github.com/pact-foundation/pact-python
 
 edit_uri: edit/develop/docs
 
+hooks:
+  - docs/scripts/rewrite-docs-links.py
+
 plugins:
   - search
   - literate-nav:
