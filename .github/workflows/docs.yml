@@ -5,7 +5,8 @@ on:
 
 env:
   STABLE_PYTHON_VERSION: "3.12"
-  PYTEST_ADDOPTS: --color=yes
+  FORCE_COLOR: "1"
+  HATCH_VERBOSE: "1"
 
 jobs:
   build:
