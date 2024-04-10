@@ -16,7 +16,8 @@ concurrency:
 
 env:
   STABLE_PYTHON_VERSION: "3.12"
-  HATCH_VERBOSE: 1
+  HATCH_VERBOSE: "1"
+  FORCE_COLOR: "1"
   CIBW_BUILD_FRONTEND: build
 
 jobs:
