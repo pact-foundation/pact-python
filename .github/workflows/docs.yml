@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
         with:
           python-version: ${{ env.STABLE_PYTHON_VERSION }}
           cache: pip
@@ -34,7 +34,7 @@ jobs:
           hatch run mkdocs build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@a753861a5debcf57bf8b404356158c8e1e33150c # v2
         with:
           path: site
 
@@ -56,4 +56,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@de14547edc9944350dc0481aa5b7afb08e75f254 # v2
