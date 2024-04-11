@@ -24,7 +24,6 @@ jobs:
       Tests py${{ matrix.python-version }} on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
 
     services:
       broker:
@@ -45,28 +44,29 @@ jobs:
         os: [ubuntu-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         experimental: [false]
-        include:
-          - # Run tests against the next Python version, but no need for the full list of OSes.
-            os: ubuntu-latest
-            python-version: "3.13.0-alpha.0 - 3.13"
-            experimental: true
+        # Disable for now as hatch cannot be installed on 3.13
+        # include:
+        #   - # Run tests against the next Python version, but no need for the full list of OSes.
+        #     os: ubuntu-latest
+        #     python-version: "3.13.0-alpha.0 - 3.13"
+        #     experimental: true
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
           submodules: true
 
-      - name: Apply temporary definitions update
-        shell: bash
-        run: |
-          cd tests/v3/compatibility_suite
-          patch -p1 -d definition < definition-update.diff
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+
+      - name: Apply temporary definitions update
+        shell: bash
+        run: |
+          cd tests/v3/compatibility_suite
+          patch -p1 -d definition < definition-update.diff
 
       - name: Install Hatch
         run: pip install --upgrade hatch
@@ -84,7 +84,11 @@ jobs:
           done
 
       - name: Run tests
-        run: hatch run test --broker-url=http://pactbroker:pactbroker@localhost:9292 --container
+        shell: bash
+        run: |
+          hatch run test \
+            --broker-url=http://pactbroker:pactbroker@localhost:9292 \
+            --container
 
       - name: Upload coverage
         # TODO: Configure code coverage monitoring
