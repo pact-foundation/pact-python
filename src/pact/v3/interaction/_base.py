@@ -354,11 +354,37 @@ class Interaction(abc.ABC):
                 Value for the comment. This must be encodable using
                 [`json.dumps(...)`][json.dumps], or an existing JSON string. The
                 value of `None` will remove the comment with the given key.
+
+        # Warning
+
+        This function will overwrite any existing comment with the same key. In
+        particular, the `text` key is used by `add_text_comment`.
         """
         if isinstance(value, str) or value is None:
             pact.v3.ffi.set_comment(self._handle, key, value)
         else:
             pact.v3.ffi.set_comment(self._handle, key, json.dumps(value))
+        return self
+
+    def add_text_comment(self, comment: str) -> Self:
+        """
+        Add a text comment for the interaction.
+
+        This is used by V4 interactions to set arbitrary text comments for the
+        interaction.
+
+        Args:
+            comment:
+                Text of the comment.
+
+        # Warning
+
+        Internally, the comments are appended to an array under the `text`
+        comment key. Care should be taken to ensure that conflicts are not
+        introduced by
+        [`set_comment`][pact.v3.interaction.Interaction.set_comment].
+        """
+        pact.v3.ffi.add_text_comment(self._handle, comment)
         return self
 
     def test_name(
