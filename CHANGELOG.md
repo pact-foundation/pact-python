@@ -1,3 +1,22 @@
+## v2.2.0 (2024-04-11)
+
+### Feat
+
+-   upgrade FFI to 0.4.19
+-   **v3**: add verbose mismatches
+-   **v3**: add verifier class
+
+### Fix
+
+-   **v3**: strip embedded user/password from urls
+-   **v3**: allow optional publish options
+-   delay pytest 8.1
+
+### Refactor
+
+-   remove relative imports
+-   **tests**: move parse_headers/matching_rules out of class
+
 ## v2.1.3 (2024-03-07)
 
 ### Fix
