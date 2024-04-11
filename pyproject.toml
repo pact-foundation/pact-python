@@ -89,7 +89,7 @@ devel-test = [
   "pytest-cov        ~=5.0",
   "testcontainers    ~=3.0",
 ]
-devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.3.5"]
+devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.3.6"]
 
 ################################################################################
 ## Hatch Build Configuration
