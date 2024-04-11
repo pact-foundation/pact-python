@@ -58,6 +58,9 @@ plugins:
             show_signature: true
             show_signature_annotations: true
   - social
+  - blog:
+      blog_toc: true
+      post_excerpt: required
 
 markdown_extensions:
   # Python Markdown

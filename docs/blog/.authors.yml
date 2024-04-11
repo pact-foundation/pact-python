@@ -1,0 +1,10 @@
+authors:
+  JP-Ellis:
+    name: Joshua Ellis
+    description: |
+      Joshua Ellis is a software engineer at SmartBear and open-source
+      contributor. He has been helping upgrade the Pact Python library to
+      v3 which will make use of the Rust FFI library.
+    avatar: https://gravatar.com/avatar/d82f8662c8eadcbfef09de9872b3f060ce4ead0fbae2e58a94435f31fcd00e55?s=512
+    slug: jp-ellis
+    url: https://jpellis.me
