@@ -68,12 +68,12 @@ devel-types = [
   "types-requests ~=2.0",
 ]
 devel-docs = [
-  "mkdocs               ~= 1.5",
-  "mkdocs-material      ~= 9.4",
-  "mkdocs_gen_files     ~= 0.5",
-  "mkdocs-literate-nav  ~= 0.6",
-  "mkdocs-section-index ~= 0.3",
-  "mkdocstrings[python] ~= 0.23",
+  "mkdocs                   ~= 1.5",
+  "mkdocs-material[imaging] ~= 9.4",
+  "mkdocs_gen_files         ~= 0.5",
+  "mkdocs-literate-nav      ~= 0.6",
+  "mkdocs-section-index     ~= 0.3",
+  "mkdocstrings[python]     ~= 0.23",
 ]
 devel-test = [
   "aiohttp[speedups] ~=3.0",

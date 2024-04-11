@@ -57,6 +57,7 @@ plugins:
             annotations_path: brief
             show_signature: true
             show_signature_annotations: true
+  - social
 
 markdown_extensions:
   # Python Markdown
