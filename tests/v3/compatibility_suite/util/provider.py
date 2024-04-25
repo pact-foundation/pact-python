@@ -291,7 +291,7 @@ class Provider:
         Start the provider.
         """
         url = URL(f"http://localhost:{_find_free_port()}")
-        sys.stderr.write("Starting provider on %s\n" % url)
+        sys.stderr.write(f"Starting provider on {url}\n")
         for endpoint in self.app.url_map.iter_rules():
             sys.stderr.write(f"  * {endpoint}\n")
 
