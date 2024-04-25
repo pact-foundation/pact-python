@@ -98,14 +98,23 @@ jobs:
       Tests py${{ matrix.python-version }} on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
 
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        experimental: [false]
+        # Python 3.8 and 3.9 aren't supported on macos-latest (ARM)
+        exclude:
+          - os: macos-latest
+            python-version: "3.8"
+          - os: macos-latest
+            python-version: "3.9"
+        include:
+          - os: macos-13
+            python-version: "3.8"
+          - os: macos-13
+            python-version: "3.9"
 
     steps:
       - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4
