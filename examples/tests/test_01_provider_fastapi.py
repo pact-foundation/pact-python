@@ -36,6 +36,8 @@ from yarl import URL
 from examples.src.fastapi import app
 from pact import Verifier
 
+import time
+
 PROVIDER_URL = URL("http://localhost:8080")
 
 
@@ -145,6 +147,7 @@ def test_against_broker(broker: URL, verifier: Verifier) -> None:
 
     For an example of the consumer's contract, see the consumer's tests.
     """
+    time.sleep(3)
     code, _ = verifier.verify_with_broker(
         broker_url=str(broker),
         # Despite the auth being set in the broker URL, we still need to pass

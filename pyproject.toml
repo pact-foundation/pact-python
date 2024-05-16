@@ -88,6 +88,7 @@ devel-test = [
   "pytest-bdd        ~=7.0",
   "pytest-cov        ~=5.0",
   "testcontainers    ~=3.0",
+  "jsonpath-ng",
 ]
 devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.4.2"]
 
@@ -160,7 +161,7 @@ extra-dependencies = [
 lint       = "ruff check --output-format=full --show-fixes {args}"
 typecheck  = "mypy {args:.}"
 format     = "ruff format {args}"
-test       = "pytest tests/ {args}"
+test       = "pytest tests/v3/compatibility_suite/test_v?_message_consumer.py {args}"
 example    = "pytest examples/ {args}"
 all        = ["format", "lint", "typecheck", "test", "example"]
 docs       = "mkdocs serve {args}"

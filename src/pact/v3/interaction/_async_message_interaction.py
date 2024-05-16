@@ -3,6 +3,8 @@ Asynchronous message interaction.
 """
 
 from __future__ import annotations
+from typing import Callable
+import json
 
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
@@ -22,7 +24,11 @@ class AsyncMessageInteraction(Interaction):
         This class is not yet fully implemented and is not yet usable.
     """
 
-    def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
+    def __init__(
+        self,
+        pact_handle: pact.v3.ffi.PactHandle,
+        description: str
+    ) -> None:
         """
         Initialise a new Asynchronous Message Interaction.
 
@@ -55,3 +61,40 @@ class AsyncMessageInteraction(Interaction):
     @property
     def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
         return pact.v3.ffi.InteractionPart.REQUEST
+
+    def with_content(self, content: dict[str, Any], content_type='application/json') -> Self:
+        """
+        Set the content of the message.
+
+        Args:
+            content:
+                The content of the message, as a dictionary.
+
+        Returns:
+            The current instance of the interaction.
+        """
+        pact.v3.ffi.message_with_contents(
+            self._handle,
+            content_type,
+            json.dumps(content),
+            0
+        )
+        return self
+
+    def with_metadata(self, metadata: dict[str, Any]) -> Self:
+        """
+        Set the metadata of the message.
+
+        Args:
+            metadata:
+                The metadata of the message, as a dictionary.
+
+        Returns:
+            The current instance of the interaction.
+        """
+        [
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
+            for k, v in metadata.items()
+        ]
+        return self
+

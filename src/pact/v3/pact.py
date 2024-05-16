@@ -277,15 +277,39 @@ class Pact:
                 Type of interaction. Defaults to `HTTP`. This must be one of
                 `HTTP`, `Async`, or `Sync`.
         """
+        newInteraction = None
         if interaction == "HTTP":
-            return HttpInteraction(self._handle, description)
-        if interaction == "Async":
-            return AsyncMessageInteraction(self._handle, description)
-        if interaction == "Sync":
-            return SyncMessageInteraction(self._handle, description)
+            newInteraction = HttpInteraction(self._handle, description)
+        elif interaction == "Async":
+            newInteraction = AsyncMessageInteraction(self._handle, description)
+        elif interaction == "Sync":
+            newInteraction = SyncMessageInteraction(self._handle, description)
+        else:
+            msg = f"Invalid interaction type: {interaction}"
+            raise ValueError(msg)
+        self._interactions.add(newInteraction)
+        return newInteraction
 
-        msg = f"Invalid interaction type: {interaction}"
-        raise ValueError(msg)
+    def verify(self, handler) -> list[dict[str, Any]]:
+        processed_messages = []
+        for interaction in self._interactions:
+            msg_iter = pact.v3.ffi.pact_handle_get_message_iter(self._handle)
+            for msg in msg_iter:
+                processed_messages.append({
+                    "description": msg.description,
+                    "contents": msg.contents,
+                    "metadata": msg.metadata,
+                })
+                try:
+                    async_message = context = {}
+                    if msg.contents is not None:
+                        async_message = json.loads(msg.contents)
+                    if msg.metadata is not None:
+                        context = msg.metadata
+                    handler(async_message, context)
+                except Exception as e:
+                    raise e
+        return processed_messages
 
     def serve(  # noqa: PLR0913
         self,
@@ -441,6 +465,54 @@ class Pact:
             directory,
             overwrite=overwrite,
         )
+
+    def write_message_file(
+        self,
+        directory: Path | str | None = None,
+        *,
+        overwrite: bool = False,
+    ) -> None:
+        """
+        Write out the pact to a file.
+
+        This function should be called once all of the consumer tests have been
+        run. It writes the Pact to a file, which can then be used to validate
+        the provider.
+
+        Args:
+            directory:
+                The directory to write the pact to. If the directory does not
+                exist, it will be created. The filename will be
+                automatically generated from the underlying Pact.
+
+            overwrite:
+                If set to True, the file will be overwritten if it already
+                exists. Otherwise, the contents of the file will be merged with
+                the existing file.
+        """
+        if directory is None:
+            directory = Path.cwd()
+        pact.v3.ffi.write_message_pact_file(
+            self._handle,
+            directory,
+            overwrite=overwrite,
+        )
+
+    def get_provider_states(self):
+        """
+        Get the provider states for the interaction.
+
+        Returns:
+            A list of provider states for the interaction.
+        """
+        provider_state_data = []
+        for message in pact.v3.ffi.pact_handle_get_message_iter(self._handle):
+            for provider_state in pact.v3.ffi.message_get_provider_state_iter(message):
+                provider_state_data.append({
+                    'name': provider_state.name,
+                    'params': provider_state.parameters
+                })
+        return provider_state_data
 
 
 class MismatchesError(Exception):
@@ -754,3 +826,4 @@ class PactServer:
             str(directory),
             overwrite=overwrite,
         )
+

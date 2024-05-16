@@ -178,25 +178,216 @@ class MatchingRuleKeyValuePair: ...
 class MatchingRuleResult: ...
 
 
-class Message: ...
+class Message:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Message
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct Message *":
+            msg = (
+                "ptr must be a struct Message, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "Message"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"Message({self._ptr!r})"
+
+    @property
+    def description(self) -> str:
+        return ffi.string(lib.pactffi_message_get_description(self._ptr)).decode('utf-8')
+
+    @property
+    def contents(self) -> str:
+        _contents = lib.pactffi_message_get_contents(self._ptr)
+        if _contents != ffi.NULL:
+            return ffi.string(lib.pactffi_message_get_contents(self._ptr)).decode('utf-8')
+        return None
+
+    @property
+    def metadata(self) -> list[MessageMetadataPair]:
+        return [{m.key: m.value} for m in message_get_metadata_iter(self)]
 
 
 class MessageContents: ...
 
 
-class MessageHandle: ...
+class MessageHandle:
+    """
+    Handle to a Message.
+
+    [Rust
+    `MessageHandle`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/mock_server/handles/struct.MessageHandle.html)
+    """
+
+    def __init__(self, ref: int) -> None:
+        """
+        Initialise a new Message Handle.
+
+        Args:
+            ref:
+                Reference to the Message Handle.
+        """
+        self._ref: int = ref
+
+    def __str__(self) -> str:
+        """
+        String representation of the Message Handle.
+        """
+        return f"MessageHandle({self._ref})"
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Message Handle.
+        """
+        return f"MessageHandle({self._ref!r})"
 
 
-class MessageMetadataIterator: ...
+class MessageMetadataIterator:
+    """
+    Iterator over a Message's metadata
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Message Metadata Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageMetadataIterator *":
+            msg = (
+                "ptr must be a struct MessageMetadataIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageMetadataIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageMetadataIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Message Metadata Iterator.
+        """
+        message_metadata_iter_delete(self)
+
+    def __iter__(self) -> MessageMetadataIterator:
+        return self
+
+    def __next__(self) -> MessageMetadataPair:
+        """
+        Get the next interaction from the iterator.
+        """
+        msg = message_metadata_iter_next(self)
+        if msg == ffi.NULL:
+            raise StopIteration
+        return MessageMetadataPair(msg)
 
 
-class MessageMetadataPair: ...
+
+class MessageMetadataPair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new MessageMetadataPair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageMetadataPair *":
+            msg = (
+                "ptr must be a struct MessageMetadataPair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageMetadataPair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageMetadataPair({self._ptr!r})"
+
+    @property
+    def key(self) -> str:
+        return ffi.string(self._ptr.key).decode('utf-8')
+
+    @property
+    def value(self) -> str:
+        return ffi.string(self._ptr.value).decode('utf-8')
 
 
 class MessagePact: ...
 
 
-class MessagePactHandle: ...
+class MessagePactHandle:
+    """
+    Handle to a Pact.
+
+    [Rust
+    `PactHandle`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/mock_server/handles/struct.PactHandle.html)
+    """
+
+    def __init__(self, ref: int) -> None:
+        """
+        Initialise a new Message Pact Handle.
+
+        Args:
+            ref:
+                Rust library reference to the Pact Handle.
+        """
+        self._ref: int = ref
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Message Pact Handle.
+        """
+        cleanup_plugins(self)
+        free_message_pact_handle(self)
+
+    def __str__(self) -> str:
+        """
+        String representation of the Message Pact Handle.
+        """
+        return f"MessagePactHandle({self._ref})"
+
+    def __repr__(self) -> str:
+        """
+        String representation of the Message Pact Handle.
+        """
+        return f"MessagePactHandle({self._ref!r})"
+
 
 
 class MessagePactMessageIterator: ...
@@ -351,6 +542,9 @@ class PactInteractionIterator:
         Destructor for the Pact Interaction Iterator.
         """
         pact_interaction_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        return self
 
     def __next__(self) -> PactInteraction:
         """
@@ -517,16 +711,185 @@ class PactSyncMessageIterator:
 class Provider: ...
 
 
-class ProviderState: ...
+class ProviderState:
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new ProviderState
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderState *":
+            msg = (
+                "ptr must be a struct ProviderState, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderState"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderState({self._ptr!r})"
+
+    @property
+    def name(self) -> str:
+        return ffi.string(lib.pactffi_provider_state_get_name(self._ptr)).decode('utf-8')
+
+    @property
+    def parameters(self) -> list[ProviderStateParamPair]:
+        return [{p.key: p.value} for p in provider_state_get_param_iter(self)]
 
 
-class ProviderStateIterator: ...
+class ProviderStateIterator:
+    """
+    Iterator over an interactions ProviderStates
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Provider State Iterator
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderStateIterator *":
+            msg = (
+                "ptr must be a struct ProviderStateIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderStateIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderStateIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Iterator.
+        """
+        provider_state_iter_delete(self)
+
+    def __iter__(self) -> ProviderStateIterator:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> ProviderStateParamPair:
+        """
+        Get the next message from the iterator.
+        """
+        return provider_state_iter_next(self)
 
 
-class ProviderStateParamIterator: ...
+class ProviderStateParamIterator:
+    """
+    Iterator over a Provider States Parameters
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Provider State Param Iterator
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderStateParamIterator *":
+            msg = (
+                "ptr must be a struct ProviderStateParamIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderStateParamIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderStateParamIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Param Iterator.
+        """
+        provider_state_param_iter_delete(self)
+
+    def __iter__(self) -> ProviderStateParamIterator:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> ProviderStateParam:
+        """
+        Get the next message from the iterator.
+        """
+        return provider_state_param_iter_next(self)
 
 
-class ProviderStateParamPair: ...
+class ProviderStateParamPair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new ProviderStateParamPair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderStateParamPair *":
+            msg = (
+                "ptr must be a struct ProviderStateParamPair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderStateParamPair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderStateParamPair({self._ptr!r})"
+
+    @property
+    def key(self) -> str:
+        return ffi.string(self._ptr.key).decode('utf-8')
+
+    @property
+    def value(self) -> str:
+        return ffi.string(self._ptr.value).decode('utf-8')
 
 
 class SynchronousHttp: ...
@@ -3033,7 +3396,6 @@ def pact_message_iter_next(iter: PactMessageIterator) -> Message:
     ptr = lib.pactffi_pact_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
     return Message(ptr)
 
 
@@ -3207,7 +3569,11 @@ def message_new_from_json(
 
     If the JSON string is invalid or not UTF-8 encoded, returns a NULL.
     """
-    raise NotImplementedError
+    return lib.pactffi_message_new_from_json(
+        ffi.new('unsigned int *', index)[0],
+        ffi.new('char[]', json_str.encode("utf-8")),
+        spec_version,
+    )
 
 
 def message_new_from_body(body: str, content_type: str) -> Message:
@@ -3436,7 +3802,7 @@ def message_get_provider_state_iter(message: Message) -> ProviderStateIterator:
 
     Returns NULL if an error occurs.
     """
-    raise NotImplementedError
+    return ProviderStateIterator(lib.pactffi_message_get_provider_state_iter(message._ptr))
 
 
 def provider_state_iter_next(iter: ProviderStateIterator) -> ProviderState:
@@ -3457,7 +3823,10 @@ def provider_state_iter_next(iter: ProviderStateIterator) -> ProviderState:
 
     Returns NULL if an error occurs.
     """
-    raise NotImplementedError
+    provider_state = lib.pactffi_provider_state_iter_next(iter._ptr)
+    if provider_state == ffi.NULL:
+        raise StopIteration
+    return ProviderState(provider_state)
 
 
 def provider_state_iter_delete(iter: ProviderStateIterator) -> None:
@@ -3493,7 +3862,7 @@ def message_find_metadata(message: Message, key: str) -> str:
     This function may fail if the provided `key` string contains invalid UTF-8,
     or if the Rust string contains embedded null ('\0') bytes.
     """
-    raise NotImplementedError
+    return ffi.string(lib.pactffi_message_find_metadata(message._ptr, key.encode('utf-8')))
 
 
 def message_insert_metadata(message: Message, key: str, value: str) -> int:
@@ -3536,7 +3905,10 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
 
     If no further data is present, returns NULL.
     """
-    raise NotImplementedError
+    message_metadata = lib.pactffi_message_metadata_iter_next(iter._ptr)
+    if message_metadata == ffi.NULL:
+        raise StopIteration
+    return message_metadata
 
 
 def message_get_metadata_iter(message: Message) -> MessageMetadataIterator:
@@ -3561,7 +3933,7 @@ def message_get_metadata_iter(message: Message) -> MessageMetadataIterator:
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return MessageMetadataIterator(lib.pactffi_message_get_metadata_iter(message._ptr))
 
 
 def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
@@ -3571,7 +3943,7 @@ def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
     [Rust
     `pactffi_message_metadata_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_metadata_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_message_metadata_iter_delete(iter._ptr)
 
 
 def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
@@ -3922,7 +4294,7 @@ def provider_state_get_param_iter(
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return ProviderStateParamIterator(lib.pactffi_provider_state_get_param_iter(provider_state._ptr))
 
 
 def provider_state_param_iter_next(
@@ -3947,7 +4319,10 @@ def provider_state_param_iter_next(
 
     Returns NULL if there's no further elements or the iterator is NULL.
     """
-    raise NotImplementedError
+    provider_state_param = lib.pactffi_provider_state_param_iter_next(iter._ptr)
+    if provider_state_param == ffi.NULL:
+        raise StopIteration
+    return ProviderStateParamPair(provider_state_param)
 
 
 def provider_state_delete(provider_state: ProviderState) -> None:
@@ -3967,7 +4342,7 @@ def provider_state_param_iter_delete(iter: ProviderStateParamIterator) -> None:
     [Rust
     `pactffi_provider_state_param_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_param_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_provider_state_param_iter_delete(iter._ptr)
 
 
 def provider_state_param_pair_delete(pair: ProviderStateParamPair) -> None:
@@ -4711,15 +5086,10 @@ def write_pact_file(
         return
     if ret == 1:
         msg = (
-            f"The function panicked while writing the Pact for {mock_server_handle} in"
-            f" {directory}."
-        )
-    elif ret == 2:  # noqa: PLR2004
-        msg = (
             f"The Pact file for {mock_server_handle} could not be written in"
             f" {directory}."
         )
-    elif ret == 3:  # noqa: PLR2004
+    elif ret == 2:  # noqa: PLR2004
         msg = f"The Pact for the {mock_server_handle} was not found."
     else:
         msg = (
@@ -6052,7 +6422,12 @@ def new_message_pact(consumer_name: str, provider_name: str) -> MessagePactHandl
     Returns a new `MessagePactHandle`. The handle will need to be freed with the
     `pactffi_free_message_pact_handle` function to release its resources.
     """
-    raise NotImplementedError
+    return MessagePactHandle(
+        lib.pactffi_new_message_pact(
+            consumer_name.encode("utf-8"),
+            provider_name.encode("utf-8"),
+        ),
+    )
 
 
 def new_message(pact: MessagePactHandle, description: str) -> MessageHandle:
@@ -6067,7 +6442,12 @@ def new_message(pact: MessagePactHandle, description: str) -> MessageHandle:
 
     Returns a new `MessageHandle`.
     """
-    raise NotImplementedError
+    return MessageHandle(
+        lib.pactffi_new_message(
+            pact._ref,
+            description.encode("utf-8"),
+        ),
+    )
 
 
 def message_expects_to_receive(message: MessageHandle, description: str) -> None:
@@ -6085,15 +6465,24 @@ def message_expects_to_receive(message: MessageHandle, description: str) -> None
 
 def message_given(message: MessageHandle, description: str) -> None:
     """
-    Adds a provider state to the Interaction.
+    Adds a provider state to the Message
 
     [Rust
-    `pactffi_message_given`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_given)
+    `pactffi_given`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_given)
 
-    * `description` - The provider state description. It needs to be unique for
-      each message
+    Args:
+        message:
+            Handle to the Message.
+
+        description:
+            The provider state description. It needs to be unique.
+
+    Raises:
+        RuntimeError: If the provider state could not be specified.
     """
-    raise NotImplementedError
+    # message_given does not return anything,
+    # so we can't check for errors
+    lib.pactffi_message_given(message._ref, description.encode("utf-8"))
 
 
 def message_given_with_param(
@@ -6103,22 +6492,57 @@ def message_given_with_param(
     value: str,
 ) -> None:
     """
-    Adds a provider state to the Message with a parameter key and value.
+    Adds a parameter key and value to a provider state to the Message.
+
+    If the provider state does not exist, a new one will be created, otherwise
+    the parameter will be merged into the existing one. The parameter value will
+    be parsed as JSON.
 
     [Rust
-    `pactffi_message_given_with_param`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_given_with_param)
+    `pactffi_given_with_param`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_given_with_param)
 
-    * `description` - The provider state description. It needs to be unique.
-    * `name` - Parameter name.
-    * `value` - Parameter value.
+    Args:
+        message:
+            Handle to the Message.
+
+        description:
+            The provider state description.
+
+        name:
+            Parameter name.
+
+        value:
+            Parameter value as JSON.
+
+    Raises:
+        RuntimeError: If the interaction state could not be updated.
+
+    # Errors
+
+    Returns EXIT_FAILURE (1) if the interaction or Pact can't be modified (i.e.
+    the mock server for it has already started).
+
+    Returns 2 and sets the error message (which can be retrieved with
+    `pactffi_get_error_message`) if the parameter values con't be parsed as
+    JSON.
+
+    Returns 3 if any of the C strings are not valid.
+
     """
-    raise NotImplementedError
+    # message_given_with_param does not return anything,
+    # so we can't check for errors
+    lib.pactffi_message_given_with_param(
+        message._ref,
+        description.encode("utf-8"),
+        name.encode("utf-8"),
+        value.encode("utf-8"),
+    )
 
 
 def message_with_contents(
     message_handle: MessageHandle,
     content_type: str,
-    body: List[int],
+    body: str,
     size: int,
 ) -> None:
     """
@@ -6144,7 +6568,12 @@ def message_with_contents(
     * `size` - number of bytes in the message body to read. This is not required
       for text bodies (JSON, XML, etc.).
     """
-    raise NotImplementedError
+    lib.pactffi_message_with_contents(
+        message_handle._ref,
+        content_type.encode("utf-8"),
+        body.encode("utf-8"),
+        size
+    )
 
 
 def message_with_metadata(message_handle: MessageHandle, key: str, value: str) -> None:
@@ -6201,7 +6630,11 @@ def message_with_metadata_v2(
 
     See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
     """
-    raise NotImplementedError
+    lib.pactffi_message_with_metadata_v2(
+        message_handle._ref,
+        key.encode("utf-8"),
+        value.encode("utf-8"),
+    )
 
 
 def message_reify(message_handle: MessageHandle) -> OwnedString:
@@ -6221,7 +6654,7 @@ def message_reify(message_handle: MessageHandle) -> OwnedString:
     from a Rust function that has a Tokio runtime in its call stack can result
     in a deadlock.
     """
-    raise NotImplementedError
+    return OwnedString(lib.pactffi_message_reify(message_handle._ref))
 
 
 def write_message_pact_file(
@@ -6256,6 +6689,31 @@ def write_message_pact_file(
     | 1 | The pact file was not able to be written |
     | 2 | The message pact for the given handle was not found |
     """
+    ret: int = lib.pactffi_write_message_pact_file(
+        pact._ref,
+        str(directory).encode("utf-8"),
+        overwrite,
+    )
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = (
+            f"The function panicked while writing the Pact for {mock_server_handle} in"
+            f" {directory}."
+        )
+    elif ret == 2:  # noqa: PLR2004
+        msg = (
+            f"The Pact file for {mock_server_handle} could not be written in"
+            f" {directory}."
+        )
+    elif ret == 3:  # noqa: PLR2004
+        msg = f"The Pact for the {mock_server_handle} was not found."
+    else:
+        msg = (
+            "An unknown error occurred while writing the Pact for"
+            f" {mock_server_handle} in {directory}."
+        )
+    raise RuntimeError(msg)
     raise NotImplementedError
 
 
@@ -6362,7 +6820,14 @@ def free_message_pact_handle(pact: MessagePactHandle) -> int:
       that it was previously deleted.
 
     """
-    raise NotImplementedError
+    ret: int = lib.pactffi_free_message_pact_handle(pact._ref)
+    if ret == 0:
+        return
+    if ret == 1:
+        msg = f"{pact} is not valid or does not refer to a valid Pact."
+    else:
+        msg = f"There was an unknown error freeing {pact}."
+    raise RuntimeError(msg)
 
 
 def verify(args: str) -> int:
