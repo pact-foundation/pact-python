@@ -114,6 +114,8 @@ theme:
     repo: fontawesome/brands/github
 
   features:
+    - content.code.annotate
+    - content.code.copy
     - content.tooltips
     - navigation.indexes
     - navigation.instant
