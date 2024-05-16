@@ -14,7 +14,7 @@ from pytest_bdd import (
 )
 
 from tests.v3.compatibility_suite.util import string_to_int
-from pact.v3.pact import AsyncMessageInteraction, Pact
+from pact.v3.pact import AsyncMessageInteraction, MessagePact as Pact
 
 PactInteraction = namedtuple("PactInteraction", ["pact", "interaction"])
 
@@ -116,7 +116,7 @@ def the_pact_file_for_the_test_is_generated(
     pact_interaction: PactInteraction
 ):
     """the Pact file for the test is generated."""
-    pact_interaction.pact.write_message_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
+    pact_interaction.pact.write_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
     with open(os.path.join(TEST_PACT_FILE_DIRECTORY, 'message_consumer-message_provider.json')) as file:
         yield json.load(file)
     os.remove(os.path.join(TEST_PACT_FILE_DIRECTORY, 'message_consumer-message_provider.json'))

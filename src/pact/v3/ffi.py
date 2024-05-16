@@ -498,7 +498,35 @@ class PactServerHandle:
         return self._ref
 
 
-class PactInteraction: ...
+class PactInteraction:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Interaction.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactInteraction *":
+            msg = (
+                "ptr must be a struct PactInteraction, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactInteraction"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactInteraction({self._ptr!r})"
+
 
 
 class PactInteractionIterator:
@@ -543,7 +571,7 @@ class PactInteractionIterator:
         """
         pact_interaction_iter_delete(self)
 
-    def __iter__(self) -> Self:
+    def __iter__(self) -> PactInteractionIterator:
         return self
 
     def __next__(self) -> PactInteraction:
@@ -1736,7 +1764,7 @@ def pact_model_interaction_iterator(pact: Pact) -> PactInteractionIterator:
 
     # Errors On any error, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    return PactInteractionIterator(lib.pactffi_pact_model_interaction_iterator(pact))
 
 
 def pact_spec_version(pact: Pact) -> PactSpecification:
@@ -3457,7 +3485,6 @@ def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction
     ptr = lib.pactffi_pact_interaction_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
     return PactInteraction(ptr)
 
 
@@ -5233,7 +5260,7 @@ def pact_handle_to_pointer(pact: PactHandle) -> Pact:
     The returned Pact model must be freed with the `pactffi_pact_model_delete`
     function when no longer needed.
     """
-    raise NotImplementedError
+    return lib.pactffi_pact_handle_to_pointer(pact._ref)
 
 
 def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
