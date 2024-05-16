@@ -383,38 +383,6 @@ class BasePact:
             overwrite=overwrite,
         )
 
-    def write_message_file(
-        self,
-        directory: Path | str | None = None,
-        *,
-        overwrite: bool = False,
-    ) -> None:
-        """
-        Write out the pact to a file.
-
-        This function should be called once all of the consumer tests have been
-        run. It writes the Pact to a file, which can then be used to validate
-        the provider.
-
-        Args:
-            directory:
-                The directory to write the pact to. If the directory does not
-                exist, it will be created. The filename will be
-                automatically generated from the underlying Pact.
-
-            overwrite:
-                If set to True, the file will be overwritten if it already
-                exists. Otherwise, the contents of the file will be merged with
-                the existing file.
-        """
-        if directory is None:
-            directory = Path.cwd()
-        pact.v3.ffi.write_message_pact_file(
-            self._handle,
-            directory,
-            overwrite=overwrite,
-        )
-
 
 class Pact(BasePact):
 
