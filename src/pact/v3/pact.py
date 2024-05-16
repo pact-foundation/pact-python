@@ -87,7 +87,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Pact:
+class BasePact:
     """
     A Pact between a consumer and a provider.
 
@@ -277,98 +277,15 @@ class Pact:
                 Type of interaction. Defaults to `HTTP`. This must be one of
                 `HTTP`, `Async`, or `Sync`.
         """
-        newInteraction = None
         if interaction == "HTTP":
-            newInteraction = HttpInteraction(self._handle, description)
+            return HttpInteraction(self._handle, description)
         elif interaction == "Async":
-            newInteraction = AsyncMessageInteraction(self._handle, description)
+            return AsyncMessageInteraction(self._handle, description)
         elif interaction == "Sync":
-            newInteraction = SyncMessageInteraction(self._handle, description)
-        else:
-            msg = f"Invalid interaction type: {interaction}"
-            raise ValueError(msg)
-        self._interactions.add(newInteraction)
-        return newInteraction
+            return SyncMessageInteraction(self._handle, description)
 
-    def verify(self, handler) -> list[dict[str, Any]]:
-        processed_messages = []
-        for interaction in self._interactions:
-            msg_iter = pact.v3.ffi.pact_handle_get_message_iter(self._handle)
-            for msg in msg_iter:
-                processed_messages.append({
-                    "description": msg.description,
-                    "contents": msg.contents,
-                    "metadata": msg.metadata,
-                })
-                try:
-                    async_message = context = {}
-                    if msg.contents is not None:
-                        async_message = json.loads(msg.contents)
-                    if msg.metadata is not None:
-                        context = msg.metadata
-                    handler(async_message, context)
-                except Exception as e:
-                    raise e
-        return processed_messages
-
-    def serve(  # noqa: PLR0913
-        self,
-        addr: str = "localhost",
-        port: int = 0,
-        transport: str = "http",
-        transport_config: str | None = None,
-        *,
-        raises: bool = True,
-        verbose: bool = True,
-    ) -> PactServer:
-        """
-        Return a mock server for the Pact.
-
-        This function configures a mock server for the Pact. The mock server
-        is then started when the Pact is entered into a `with` block:
-
-        ```python
-        pact = Pact("consumer", "provider")
-        with pact.serve() as srv:
-            ...
-        ```
-
-        Args:
-            addr:
-                Address to bind the mock server to. Defaults to `localhost`.
-
-            port:
-                Port to bind the mock server to. Defaults to `0`, which will
-                select a random port.
-
-            transport:
-                Transport to use for the mock server. Defaults to `HTTP`.
-
-            transport_config:
-                Configuration for the transport. This is specific to the
-                transport being used and should be a JSON string.
-
-            raises:
-                Whether to raise an exception if there are mismatches between
-                the Pact and the server. If set to `False`, then the mismatches
-                must be handled manually.
-
-            verbose:
-                Whether or not to print the mismatches to the logger. This works
-                independently of `raises`.
-
-        Returns:
-            A [`PactServer`][pact.v3.pact.PactServer] instance.
-        """
-        return PactServer(
-            self._handle,
-            addr,
-            port,
-            transport,
-            transport_config,
-            raises=raises,
-            verbose=verbose,
-        )
+        msg = f"Invalid interaction type: {interaction}"
+        raise ValueError(msg)
 
     def messages(self) -> pact.v3.ffi.PactMessageIterator:
         """
@@ -498,6 +415,71 @@ class Pact:
             overwrite=overwrite,
         )
 
+
+class Pact(BasePact):
+
+    def serve(  # noqa: PLR0913
+        self,
+        addr: str = "localhost",
+        port: int = 0,
+        transport: str = "http",
+        transport_config: str | None = None,
+        *,
+        raises: bool = True,
+        verbose: bool = True,
+    ) -> PactServer:
+        """
+        Return a mock server for the Pact.
+
+        This function configures a mock server for the Pact. The mock server
+        is then started when the Pact is entered into a `with` block:
+
+        ```python
+        pact = Pact("consumer", "provider")
+        with pact.serve() as srv:
+            ...
+        ```
+
+        Args:
+            addr:
+                Address to bind the mock server to. Defaults to `localhost`.
+
+            port:
+                Port to bind the mock server to. Defaults to `0`, which will
+                select a random port.
+
+            transport:
+                Transport to use for the mock server. Defaults to `HTTP`.
+
+            transport_config:
+                Configuration for the transport. This is specific to the
+                transport being used and should be a JSON string.
+
+            raises:
+                Whether to raise an exception if there are mismatches between
+                the Pact and the server. If set to `False`, then the mismatches
+                must be handled manually.
+
+            verbose:
+                Whether or not to print the mismatches to the logger. This works
+                independently of `raises`.
+
+        Returns:
+            A [`PactServer`][pact.v3.pact.PactServer] instance.
+        """
+        return PactServer(
+            self._handle,
+            addr,
+            port,
+            transport,
+            transport_config,
+            raises=raises,
+            verbose=verbose,
+        )
+
+
+
+class MessagePact(BasePact):
     def get_provider_states(self):
         """
         Get the provider states for the interaction.
@@ -513,6 +495,28 @@ class Pact:
                     'params': provider_state.parameters
                 })
         return provider_state_data
+
+    def verify(self, handler) -> list[dict[str, Any]]:
+        processed_messages = []
+        _mutable_pact = pact.v3.ffi.pact_handle_to_pointer(self._handle)
+        for interaction in pact.v3.ffi.pact_model_interaction_iterator(_mutable_pact):
+            msg_iter = pact.v3.ffi.pact_handle_get_message_iter(self._handle)
+            for msg in msg_iter:
+                processed_messages.append({
+                    "description": msg.description,
+                    "contents": msg.contents,
+                    "metadata": msg.metadata,
+                })
+                try:
+                    async_message = context = {}
+                    if msg.contents is not None:
+                        async_message = json.loads(msg.contents)
+                    if msg.metadata is not None:
+                        context = msg.metadata
+                    handler(async_message, context)
+                except Exception as e:
+                    raise e
+        return processed_messages
 
 
 class MismatchesError(Exception):

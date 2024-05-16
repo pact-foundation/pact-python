@@ -19,7 +19,7 @@ from pytest_bdd import (
     when,
 )
 
-from pact.v3.pact import AsyncMessageInteraction, Pact
+from pact.v3.pact import AsyncMessageInteraction, MessagePact as Pact
 from tests.v3.compatibility_suite.util import parse_markdown_table
 
 logger = logging.getLogger(__name__)
@@ -287,7 +287,7 @@ def the_message_is_successfully_processed(
     def handler(async_message, context):
         received_payload['data'] = ReceivedPayload(async_message, context)
     pact_interaction.pact.verify(handler)
-    pact_interaction.pact.write_message_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
+    pact_interaction.pact.write_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
     with open(os.path.join(TEST_PACT_FILE_DIRECTORY, 'message_consumer-message_provider.json')) as file:
         yield PactResult(received_payload['data'], json.load(file), None)
     os.remove(os.path.join(TEST_PACT_FILE_DIRECTORY, 'message_consumer-message_provider.json'))

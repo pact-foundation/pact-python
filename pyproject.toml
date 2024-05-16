@@ -161,7 +161,7 @@ extra-dependencies = [
 lint       = "ruff check --output-format=full --show-fixes {args}"
 typecheck  = "mypy {args:.}"
 format     = "ruff format {args}"
-test       = "pytest tests/v3/compatibility_suite/test_v?_message_consumer.py {args}"
+test       = "pytest tests/ {args}"
 example    = "pytest examples/ {args}"
 all        = ["format", "lint", "typecheck", "test", "example"]
 docs       = "mkdocs serve {args}"
