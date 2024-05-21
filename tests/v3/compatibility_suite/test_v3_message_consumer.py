@@ -1,3 +1,4 @@
+"""V3 Message consumer feature tests."""
 from __future__ import annotations
 
 import json

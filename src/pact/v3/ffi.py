@@ -920,7 +920,47 @@ class ProviderStateParamPair:
         return ffi.string(self._ptr.value).decode('utf-8')
 
 
-class SynchronousHttp: ...
+class SynchronousHttp:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new SynchronousHttp.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct SynchronousHttp *":
+            msg = (
+                "ptr must be a struct SynchronousHttp, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "SynchronousHttp"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"SynchronousHttp({self._ptr!r})"
+
+    @property
+    def request_contents(self) -> str:
+        contents = lib.pactffi_sync_http_get_request_contents(self._ptr)
+        if contents != ffi.NULL:
+            return ffi.string(contents).decode('utf-8')
+
+    @property
+    def response_contents(self) -> str:
+        contents = lib.pactffi_sync_http_get_response_contents(self._ptr)
+        if contents != ffi.NULL:
+            return ffi.string(contents).decode('utf-8')
+
 
 
 class SynchronousMessage: ...
@@ -1037,7 +1077,7 @@ class InteractionPart(Enum):
         """
         Information-rich string representation of the Interaction Part.
         """
-        return f"InteractionPath.{self.name}"
+        return f"InteractionPart.{self.name}"
 
 
 class LevelFilter(Enum):
@@ -1343,7 +1383,7 @@ def init_with_log_level(level: str = "INFO") -> None:
 
     Exported functions are inherently unsafe.
     """
-    raise NotImplementedError
+    lib.pactffi_init_with_log_level(level.encode("utf-8"))
 
 
 def enable_ansi_support() -> None:
@@ -2940,7 +2980,7 @@ def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
 
     If the interaction is NULL, returns NULL.
     """
-    raise NotImplementedError
+    return lib.pactffi_sync_http_get_request(interaction)
 
 
 def sync_http_get_request_contents(interaction: SynchronousHttp) -> str:
@@ -3461,7 +3501,6 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
     ptr = lib.pactffi_pact_sync_http_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
     return SynchronousHttp(ptr)
 
 
@@ -6569,7 +6608,7 @@ def message_given_with_param(
 def message_with_contents(
     message_handle: MessageHandle,
     content_type: str,
-    body: str,
+    body: str | bytes,
     size: int,
 ) -> None:
     """
@@ -6595,10 +6634,12 @@ def message_with_contents(
     * `size` - number of bytes in the message body to read. This is not required
       for text bodies (JSON, XML, etc.).
     """
+    if isinstance(body, str):
+        body = body.encode("utf-8")
     lib.pactffi_message_with_contents(
         message_handle._ref,
         content_type.encode("utf-8"),
-        body.encode("utf-8"),
+        body,
         size
     )
 

@@ -62,7 +62,7 @@ class AsyncMessageInteraction(Interaction):
     def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
         return pact.v3.ffi.InteractionPart.REQUEST
 
-    def with_content(self, content: dict[str, Any], content_type='application/json') -> Self:
+    def with_content(self, content: dict[str, Any] | str, content_type='application/json') -> Self:
         """
         Set the content of the message.
 
@@ -73,11 +73,14 @@ class AsyncMessageInteraction(Interaction):
         Returns:
             The current instance of the interaction.
         """
+        if isinstance(content, dict):
+            content = json.dumps(content)
+
         pact.v3.ffi.message_with_contents(
             self._handle,
             content_type,
-            json.dumps(content),
-            0
+            content,
+            len(content)
         )
         return self
 

@@ -53,6 +53,7 @@ from tests.v3.compatibility_suite.util import (
     parse_headers,
     parse_markdown_table,
     serialize,
+    FIXTURES_ROOT,
 )
 
 if TYPE_CHECKING:
@@ -136,6 +137,7 @@ class Provider:
                 called `interactions.pkl`. This file must contain a list of
                 [`InteractionDefinition`] objects.
         """
+        self._messages = {}
         self.provider_dir = Path(provider_dir)
         if not self.provider_dir.is_dir():
             msg = f"Directory {self.provider_dir} does not exist"
@@ -284,7 +286,25 @@ class Provider:
             interactions: list[InteractionDefinition] = pickle.load(f)  # noqa: S301
 
         for interaction in interactions:
-            interaction.add_to_flask(app)
+            if interaction.is_async_message:
+                self._messages.update({ interaction.path[1:]: interaction })
+            else:
+                interaction.add_to_flask(app)
+
+        @app.route("/message_handler", methods=["POST"])
+        def handle_messages() -> flask.Response:
+            body = json.loads(request.data.decode('utf-8'))
+            message = self._messages.get(body.get('description', ''))
+            if message:
+                return message.create_message_response()
+            else:
+                return flask.Response(
+                    response=json.dumps({"error": f"Message {body.get('description')} not found"}),
+                    status=404,
+                    headers={"Content-Type": "application/json"},
+                    content_type="application/json",
+                    direct_passthrough=True,
+                )
 
     def run(self) -> None:
         """
@@ -1036,6 +1056,8 @@ def the_verification_results_will_contain_a_error(
             mismatch_type = "HeaderMismatch"
         elif error == "Body had differences":
             mismatch_type = "BodyMismatch"
+        elif error == "Metadata had differences":
+            mismatch_type = "MetadataMismatch"
         elif error == "State change request failed":
             assert "One or more of the setup state change handlers has failed" in [
                 error["mismatch"]["message"] for error in verifier.results["errors"]
