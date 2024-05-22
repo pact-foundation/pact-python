@@ -558,7 +558,7 @@ class InteractionDefinition:
         pact: Pact,
         name: str,
         interaction_type: typing.Literal["HTTP", "Sync", "Async"] = "HTTP"
-    ) -> None:  # noqa: C901, PLR0912, PLR0915
+    ) -> None:
         """
         Add the interaction to the pact.
 
@@ -651,24 +651,24 @@ class InteractionDefinition:
 
         if self.response_body:
             if self.is_async_message:
-                if self.response_body.mime_type == 'application/xml':
+                if self.response_body.mime_type == "application/xml":
                     def element_to_json(element):
                         json_dict = {
-                            'name': element.tag,
+                            "name": element.tag,
                         }
                         if element.attrib:
-                            json_dict['attributes'] = element.attrib
+                            json_dict["attributes"] = element.attrib
                         if len(element):
-                            json_dict['children'] = [element_to_json(child) for child in element]
+                            json_dict["children"] = [element_to_json(child) for child in element]
                         else:
-                            json_dict['children'] = [ { 'content': element.text } ]
+                            json_dict["children"] = [ { "content": element.text } ]
                         return json_dict
                     try:
                         # try to parse the content as XML
                         # it _may_ be JSON, so it's ok if this errors
                         self.response_body.string  = json.dumps(
                             {
-                                'root': element_to_json(
+                                "root": element_to_json(
                                     ElementTree.fromstring(self.response_body.string)
                                 )
                             }
@@ -783,10 +783,10 @@ class InteractionDefinition:
     def create_message_response(self) -> flask.Response:
         if self.metadata:
             self.response_headers.add(
-                'Pact-Message-Metadata',
+                "Pact-Message-Metadata",
                 base64.b64encode(
-                    json.dumps(self.metadata).encode('utf-8')
-                ).decode('utf-8')
+                    json.dumps(self.metadata).encode("utf-8")
+                ).decode("utf-8")
             )
         return flask.Response(
             response=self.response_body.bytes or self.response_body.string or None
