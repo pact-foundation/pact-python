@@ -53,7 +53,6 @@ from tests.v3.compatibility_suite.util import (
     parse_headers,
     parse_markdown_table,
     serialize,
-    FIXTURES_ROOT,
 )
 
 if TYPE_CHECKING:
@@ -293,8 +292,8 @@ class Provider:
 
         @app.route("/message_handler", methods=["POST"])
         def handle_messages() -> flask.Response:
-            body = json.loads(request.data.decode('utf-8'))
-            message = self._messages.get(body.get('description', ''))
+            body = json.loads(request.data.decode("utf-8"))
+            message = self._messages.get(body.get("description", ""))
             if message:
                 return message.create_message_response()
             else:
