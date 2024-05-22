@@ -15,6 +15,7 @@ steps for the compatibility suite tests.
 from __future__ import annotations
 
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
@@ -86,6 +87,13 @@ if a step is run multiple times.
 All scenarios which make use of the Pact broker should set this to `True` at the
 start of the scenario.
 """
+
+VERIFIER_ERROR_MAP: dict[str,str] = {
+    "Response status did not match": "StatusMismatch",
+    "Headers had differences": "HeaderMismatch",
+    "Body had differences": "BodyMismatch",
+    "Metadata had differences": "MetadataMismatch",
+}
 
 
 def next_version() -> str:
@@ -296,14 +304,15 @@ class Provider:
             message = self._messages.get(body.get("description", ""))
             if message:
                 return message.create_message_response()
-            else:
-                return flask.Response(
-                    response=json.dumps({"error": f"Message {body.get('description')} not found"}),
-                    status=404,
-                    headers={"Content-Type": "application/json"},
-                    content_type="application/json",
-                    direct_passthrough=True,
-                )
+            return flask.Response(
+                response=json.dumps(
+                    {"error": f"Message {body.get('description')} not found"}
+                ),
+                status=404,
+                headers={"Content-Type": "application/json"},
+                content_type="application/json",
+                direct_passthrough=True,
+            )
 
     def run(self) -> None:
         """
@@ -595,6 +604,38 @@ def a_provider_is_started_that_returns_the_responses_from_interactions_with_chan
             pickle.dump(defns, pkl_file)
 
         yield from start_provider(temp_dir)
+
+
+def a_provider_is_started_that_can_generate_the_message(
+    stacklevel: int = 1,
+) -> None:
+    @given(
+        parsers.parse(
+            'a provider is started that can generate the "{name}" message with "{body}"'
+        ),
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        temp_dir: Path,
+        name: str,
+        body: str,
+    ) -> None:
+        interaction_definitions = []
+        if ( temp_dir / "interactions.pkl").exists():
+            with (temp_dir / "interactions.pkl").open("rb") as pkl_file:
+                interaction_definitions = pickle.load(pkl_file) # noqa: S301
+
+        body = body.replace('\\"', '"')
+        interaction_definition = InteractionDefinition(
+            method="POST",
+            path=f"/{name}",
+            is_async_message=True,
+            response_body=body
+        )
+        interaction_definitions.append(interaction_definition)
+        with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
+            pickle.dump(interaction_definitions, pkl_file)
+
 
 
 def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # noqa: C901
@@ -1004,6 +1045,33 @@ def the_verification_is_run(
         return verifier, None
 
 
+def the_verification_is_run_with_start_context(
+    stacklevel: int = 1,
+) -> tuple[Verifier, Exception | None]:
+    @when(
+        "the verification is run",
+        target_fixture="verifier_result",
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        verifier: Verifier,
+        temp_dir: Path,
+    ) -> tuple[Verifier, Exception | None]:
+        """Run the verification."""
+        start_provider_context_manager = contextmanager(start_provider)
+
+        with start_provider_context_manager(temp_dir) as provider_url:
+            verifier.set_state(
+                provider_url / "_test" / "callback",
+                teardown=True,
+            )
+            verifier.set_info("provider", url=f"{provider_url}/message_handler")
+            try:
+                verifier.verify()
+            except Exception as e:  # noqa: BLE001
+                return verifier, e
+            return verifier, None
+
 ################################################################################
 ## Then
 ################################################################################
@@ -1049,20 +1117,13 @@ def the_verification_results_will_contain_a_error(
         verifier = verifier_result[0]
         logger.debug("Verification results: %s", json.dumps(verifier.results, indent=2))
 
-        if error == "Response status did not match":
-            mismatch_type = "StatusMismatch"
-        elif error == "Headers had differences":
-            mismatch_type = "HeaderMismatch"
-        elif error == "Body had differences":
-            mismatch_type = "BodyMismatch"
-        elif error == "Metadata had differences":
-            mismatch_type = "MetadataMismatch"
-        elif error == "State change request failed":
-            assert "One or more of the setup state change handlers has failed" in [
-                error["mismatch"]["message"] for error in verifier.results["errors"]
-            ]
-            return
-        else:
+        mismatch_type = VERIFIER_ERROR_MAP.get(error)
+        if not mismatch_type:
+            if error == "State change request failed":
+                assert "One or more of the setup state change handlers has failed" in [
+                    error["mismatch"]["message"] for error in verifier.results["errors"]
+                ]
+                return
             msg = f"Unknown error type: {error}"
             raise ValueError(msg)
 

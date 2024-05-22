@@ -29,18 +29,23 @@ import logging
 import sys
 import typing
 from collections.abc import Collection, Mapping
+from contextlib import suppress
 from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any
-from xml.etree import ElementTree
 
 import flask
+from defusedxml import ElementTree
 from flask import request
 from multidict import MultiDict
 from typing_extensions import Self
 from yarl import URL
 
 if typing.TYPE_CHECKING:
+    from pact.v3.interaction import (
+        AsyncMessageInteraction,
+        Interaction,
+    )
     from pact.v3.pact import Pact
 
 logger = logging.getLogger(__name__)
@@ -297,7 +302,7 @@ class InteractionDefinition:
             self.bytes: bytes | None = None
             self.mime_type: str | None = None
 
-            if type(data) == bytes:
+            if isinstance(data, bytes):
                 self.bytes = data
                 return
 
@@ -323,7 +328,6 @@ class InteractionDefinition:
 
             self.bytes = data.encode("utf-8")
             self.string = data
-            self.mime_type = "text/plain"
 
         def __repr__(self) -> str:
             """
@@ -342,7 +346,7 @@ class InteractionDefinition:
             This is used to parse the fixture files that contain additional
             metadata about the body (such as the content type).
             """
-            etree = ElementTree.parse(fixture)  # noqa: S314
+            etree = ElementTree.parse(fixture)
             root = etree.getroot()
             if not root or root.tag != "body":
                 msg = "Invalid XML fixture document"
@@ -457,6 +461,7 @@ class InteractionDefinition:
         self.matching_rules: str | None = None
         self.response_matching_rules: str | None = None
         self.metadata: dict[str, Any] | None = None
+        self.is_pending: bool = kwargs.pop("is_pending", False)
 
         self.update(**kwargs)
 
@@ -553,6 +558,82 @@ class InteractionDefinition:
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
 
+    def _add_body(
+        self,
+        body: InteractionDefinition.Body,
+        interaction: Interaction
+    ) -> None:
+        if body.string:
+            logger.info(
+                "with_body(%s, %s)",
+                truncate(body.string),
+                body.mime_type,
+            )
+            interaction.with_body(
+                body.string,
+                body.mime_type,
+            )
+        elif body.bytes:
+            logger.info(
+                "with_binary_file(%s, %s)",
+                truncate(body.bytes),
+                body.mime_type,
+            )
+            interaction.with_binary_body(
+                body.bytes,
+                body.mime_type,
+            )
+        else:
+            msg = "Unexpected body definition"
+            raise RuntimeError(msg)
+
+    def _add_async_message_to_pact(
+        self,
+        interaction: AsyncMessageInteraction,
+    ) -> None:
+        if self.response_body.mime_type == "application/xml":
+            def _element_to_json(
+                element: ElementTree.Element
+            ) -> dict[str, Any]:
+                json_dict = {
+                    "name": element.tag,
+                }
+                if element.attrib:
+                    json_dict["attributes"] = element.attrib
+                if len(element):
+                    json_dict["children"] = [
+                        _element_to_json(child) for child in element
+                    ]
+                else:
+                    json_dict["children"] = [ { "content": element.text } ]
+                return json_dict
+            with suppress(ElementTree.ParseError):
+                # try to parse the content as XML
+                # it _may_ be JSON, so it's ok if this errors
+                self.response_body.string  = json.dumps(
+                    {
+                        "root": _element_to_json(
+                            ElementTree.fromstring(self.response_body.string)
+                        )
+                    }
+                )
+
+        logger.info(
+            "with_content(%s, %s)",
+            truncate(
+                self.response_body.string
+                if self.response_body.string
+                else self.response_body.bytes
+            ),
+            self.response_body.mime_type,
+        )
+        interaction.with_content(
+            self.response_body.string
+            if self.response_body.string
+            else self.response_body.bytes,
+            self.response_body.mime_type
+        )
+
     def add_to_pact(
         self,
         pact: Pact,
@@ -591,8 +672,9 @@ class InteractionDefinition:
             interaction.set_pending(pending=True)
 
         if self.text_comments:
-            logger.info("set_comment(text, %s)", self.text_comments)
-            interaction.set_comment("text", self.text_comments)
+            for comment in self.text_comments:
+                logger.info("add_text_comment(%s)", comment)
+                interaction.add_text_comment(comment)
 
         for key, value in self.comments.items():
             logger.info("set_comment(%s, %s)", key, value)
@@ -612,29 +694,7 @@ class InteractionDefinition:
             interaction.with_headers(self.headers.items())
 
         if self.body:
-            if self.body.string:
-                logger.info(
-                    "with_body(%s, %s)",
-                    truncate(self.body.string),
-                    self.body.mime_type,
-                )
-                interaction.with_body(
-                    self.body.string,
-                    self.body.mime_type,
-                )
-            elif self.body.bytes:
-                logger.info(
-                    "with_binary_file(%s, %s)",
-                    truncate(self.body.bytes),
-                    self.body.mime_type,
-                )
-                interaction.with_binary_body(
-                    self.body.bytes,
-                    self.body.mime_type,
-                )
-            else:
-                msg = "Unexpected body definition"
-                raise RuntimeError(msg)
+            self._add_body(self.body, interaction)
 
         if self.matching_rules:
             logger.info("with_matching_rules(%s)", self.matching_rules)
@@ -651,63 +711,9 @@ class InteractionDefinition:
 
         if self.response_body:
             if self.is_async_message:
-                if self.response_body.mime_type == "application/xml":
-                    def element_to_json(element):
-                        json_dict = {
-                            "name": element.tag,
-                        }
-                        if element.attrib:
-                            json_dict["attributes"] = element.attrib
-                        if len(element):
-                            json_dict["children"] = [element_to_json(child) for child in element]
-                        else:
-                            json_dict["children"] = [ { "content": element.text } ]
-                        return json_dict
-                    try:
-                        # try to parse the content as XML
-                        # it _may_ be JSON, so it's ok if this errors
-                        self.response_body.string  = json.dumps(
-                            {
-                                "root": element_to_json(
-                                    ElementTree.fromstring(self.response_body.string)
-                                )
-                            }
-                        )
-                    except ElementTree.ParseError:
-                        pass
-
-                logger.info(
-                    "with_content(%s, %s)",
-                    truncate(self.response_body.string if self.response_body.string else self.response_body.bytes),
-                    self.response_body.mime_type,
-                )
-                interaction.with_content(
-                    self.response_body.string if self.response_body.string else self.response_body.bytes,
-                    self.response_body.mime_type,
-                )
-            elif self.response_body.string:
-                logger.info(
-                    "with_body(%s, %s)",
-                    truncate(self.response_body.string),
-                    self.response_body.mime_type,
-                )
-                interaction.with_body(
-                    self.response_body.string,
-                    self.response_body.mime_type,
-                )
-            elif self.response_body.bytes:
-                logger.info(
-                    "with_binary_file(%s, %s)",
-                    truncate(self.response_body.bytes),
-                    self.response_body.mime_type,
-                )
-                interaction.with_binary_body(
-                    self.response_body.bytes,
-                    self.response_body.mime_type,
-                )
+                self._add_async_message_to_pact(interaction)
             else:
-                msg = "Unexpected body definition"
-                raise RuntimeError(msg)
+                self._add_body(self.response_body, interaction)
 
         if self.response_matching_rules:
             logger.info("with_matching_rules(%s)", self.response_matching_rules)
@@ -716,6 +722,10 @@ class InteractionDefinition:
         if self.metadata:
             for key, value in self.metadata.items():
                 interaction.with_metadata({key: value})
+
+        if self.is_pending:
+            logger.info("set_pending(True)")
+            interaction.set_pending(pending=True)
 
     def add_to_flask(self, app: flask.Flask) -> None:
         """
@@ -781,6 +791,7 @@ class InteractionDefinition:
         )
 
     def create_message_response(self) -> flask.Response:
+        """Creates a flask response for an async message."""
         if self.metadata:
             self.response_headers.add(
                 "Pact-Message-Metadata",
