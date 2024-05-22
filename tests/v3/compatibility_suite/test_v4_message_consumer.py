@@ -1,9 +1,8 @@
 """Message consumer feature tests."""
+from __future__ import annotations
+
 import json
-import os
-import pytest
-from collections import namedtuple
-from typing import Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from pytest_bdd import (
     given,
@@ -13,49 +12,49 @@ from pytest_bdd import (
     when,
 )
 
+from pact.v3.pact import AsyncMessageInteraction
+from pact.v3.pact import MessagePact as Pact
 from tests.v3.compatibility_suite.util import string_to_int
-from pact.v3.pact import AsyncMessageInteraction, MessagePact as Pact
 
-PactInteraction = namedtuple("PactInteraction", ["pact", "interaction"])
+if TYPE_CHECKING:
+    from pathlib import Path
 
-TEST_PACT_FILE_DIRECTORY = os.path.join(os.path.dirname(__file__), 'pacts')
+
+class PactInteraction(NamedTuple):
+    """Holder class for Pact and Interaction."""
+    pact: Pact
+    interaction: AsyncMessageInteraction
+
 
 @scenario(
-    'definition/features/V4/message_consumer.feature',
-    'Sets the type for the interaction'
+    "definition/features/V4/message_consumer.feature",
+    "Sets the type for the interaction"
 )
-def test_sets_the_type_for_the_interaction():
+def test_sets_the_type_for_the_interaction() -> None:
     """Sets the type for the interaction."""
 
 
 @scenario(
-    'definition/features/V4/message_consumer.feature',
-    'Supports adding comments'
+    "definition/features/V4/message_consumer.feature",
+    "Supports adding comments"
 )
-def test_supports_adding_comments():
+def test_supports_adding_comments() -> None:
     """Supports adding comments."""
 
 
-@pytest.fixture(autouse=True)
-def handle_pact_file_directory():
-    if not os.path.exists(TEST_PACT_FILE_DIRECTORY):
-        os.mkdir(TEST_PACT_FILE_DIRECTORY)
-    yield
-    os.rmdir(TEST_PACT_FILE_DIRECTORY)
-
 @scenario(
-    'definition/features/V4/message_consumer.feature',
-    'Supports specifying a key for the interaction'
+    "definition/features/V4/message_consumer.feature",
+    "Supports specifying a key for the interaction"
 )
-def test_supports_specifying_a_key_for_the_interaction():
+def test_supports_specifying_a_key_for_the_interaction() -> None:
     """Supports specifying a key for the interaction."""
 
 
 @scenario(
-    'definition/features/V4/message_consumer.feature',
-    'Supports specifying the interaction is pending'
+    "definition/features/V4/message_consumer.feature",
+    "Supports specifying the interaction is pending"
 )
-def test_supports_specifying_the_interaction_is_pending():
+def test_supports_specifying_the_interaction_is_pending() -> None:
     """Supports specifying the interaction is pending."""
 
 
@@ -70,12 +69,14 @@ def test_supports_specifying_the_interaction_is_pending():
 def a_comment_is_added_to_the_message_interaction(
     pact_interaction: PactInteraction,
     comment: str
-):
-    """a comment "{comment}" is added to the message interaction."""
+) -> None:
+    """A comment "{comment}" is added to the message interaction."""
     pact_interaction.interaction.add_text_comment(comment)
 
 
-@given(parsers.re(r'a key of "(?P<key>[^"]+)" is specified for the message interaction'))
+@given(parsers.re(
+    r'a key of "(?P<key>[^"]+)" is specified for the message interaction')
+)
 def a_key_is_specified_for_the_http_interaction(
     pact_interaction: PactInteraction,
     key: str,
@@ -85,21 +86,21 @@ def a_key_is_specified_for_the_http_interaction(
 
 
 @given(
-    'a message interaction is being defined for a consumer test',
-    target_fixture='pact_interaction'
+    "a message interaction is being defined for a consumer test",
+    target_fixture="pact_interaction"
 )
-def a_message_interaction_is_being_defined_for_a_consumer_test():
-    """a message integration is being defined for a consumer test."""
-    pact = Pact("message_consumer", "message_provider")
+def a_message_interaction_is_being_defined_for_a_consumer_test() -> None:
+    """A message integration is being defined for a consumer test."""
+    pact = Pact("consumer", "provider")
     pact.with_specification("V4")
     yield PactInteraction(pact, pact.upon_receiving("a request", "Async"))
 
 
-@given('the message interaction is marked as pending')
+@given("the message interaction is marked as pending")
 def the_message_interaction_is_marked_as_pending(
     pact_interaction: PactInteraction
-):
-    """the message interaction is marked as pending."""
+) -> None:
+    """The message interaction is marked as pending."""
     pact_interaction.interaction.set_pending(pending=True)
 
 
@@ -109,17 +110,20 @@ def the_message_interaction_is_marked_as_pending(
 
 
 @when(
-    'the Pact file for the test is generated',
-    target_fixture='pact_data'
+    "the Pact file for the test is generated",
+    target_fixture="pact_data"
 )
 def the_pact_file_for_the_test_is_generated(
-    pact_interaction: PactInteraction
-):
-    """the Pact file for the test is generated."""
-    pact_interaction.pact.write_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
-    with open(os.path.join(TEST_PACT_FILE_DIRECTORY, 'message_consumer-message_provider.json')) as file:
+    pact_interaction: PactInteraction,
+    temp_dir: Path
+) -> None:
+    """The Pact file for the test is generated."""
+    (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+    pact_interaction.pact.write_file(temp_dir / "pacts")
+    with (
+        temp_dir / "pacts" / "consumer-provider.json"
+    ).open() as file:
         yield json.load(file)
-    os.remove(os.path.join(TEST_PACT_FILE_DIRECTORY, 'message_consumer-message_provider.json'))
 
 
 ################################################################################
