@@ -2,10 +2,8 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
-import pytest
 from pytest_bdd import (
     given,
     parsers,
@@ -18,21 +16,15 @@ from pact.v3.pact import AsyncMessageInteraction
 from pact.v3.pact import MessagePact as Pact
 from tests.v3.compatibility_suite.util import string_to_int
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 class PactInteraction(NamedTuple):
     """Holder class for Pact and Interaction."""
     pact: Pact
     interaction: AsyncMessageInteraction
 
-
-TEST_PACT_FILE_DIRECTORY = Path(Path(__file__).parent / "pacts")
-
-@pytest.fixture(autouse=True)
-def _handle_pact_file_directory() -> None:
-    if not TEST_PACT_FILE_DIRECTORY.exists():
-        TEST_PACT_FILE_DIRECTORY.mkdir()
-    yield
-    TEST_PACT_FILE_DIRECTORY.rmdir()
 
 @scenario(
     "definition/features/V4/message_consumer.feature",
@@ -99,7 +91,7 @@ def a_key_is_specified_for_the_http_interaction(
 )
 def a_message_interaction_is_being_defined_for_a_consumer_test() -> None:
     """A message integration is being defined for a consumer test."""
-    pact = Pact("message_consumer", "message_provider")
+    pact = Pact("consumer", "provider")
     pact.with_specification("V4")
     yield PactInteraction(pact, pact.upon_receiving("a request", "Async"))
 
@@ -122,15 +114,16 @@ def the_message_interaction_is_marked_as_pending(
     target_fixture="pact_data"
 )
 def the_pact_file_for_the_test_is_generated(
-    pact_interaction: PactInteraction
+    pact_interaction: PactInteraction,
+    temp_dir: Path
 ) -> None:
     """The Pact file for the test is generated."""
-    pact_interaction.pact.write_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
+    (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+    pact_interaction.pact.write_file(temp_dir / "pacts")
     with (
-        TEST_PACT_FILE_DIRECTORY / "message_consumer-message_provider.json"
+        temp_dir / "pacts" / "consumer-provider.json"
     ).open() as file:
         yield json.load(file)
-    (TEST_PACT_FILE_DIRECTORY / "message_consumer-message_provider.json").unlink()
 
 
 ################################################################################

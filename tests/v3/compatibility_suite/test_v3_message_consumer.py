@@ -8,7 +8,6 @@ import re
 from pathlib import Path
 from typing import Any, Generator, NamedTuple
 
-import pytest
 from jsonpath_ng import parse
 from pytest_bdd import (
     given,
@@ -60,16 +59,6 @@ class TestFailedError(Exception):
         super().__init__("Test failed")
 
 NUM_RE = re.compile(r"^-?[.0-9]+$")
-
-TEST_PACT_FILE_DIRECTORY = Path(Path(__file__).parent / "pacts")
-
-
-@pytest.fixture(autouse=True)
-def _handle_pact_file_directory() -> None:
-    if not TEST_PACT_FILE_DIRECTORY.exists():
-        TEST_PACT_FILE_DIRECTORY.mkdir()
-    yield
-    TEST_PACT_FILE_DIRECTORY.rmdir()
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
@@ -140,7 +129,7 @@ def a_message_integration_is_being_defined_for_a_consumer_test() -> (
     Generator[tuple[Pact, AsyncMessageInteraction], Any, None]
 ):
     """A message integration is being defined for a consumer test."""
-    pact = Pact("message_consumer", "message_provider")
+    pact = Pact("consumer", "provider")
     pact.with_specification("V3")
     yield PactInteraction(pact, pact.upon_receiving("a request", "Async"))
 
@@ -269,7 +258,8 @@ def the_message_is_not_successfully_processed_with_an_exception(
     target_fixture="pact_result"
 )
 def the_message_is_successfully_processed(
-    pact_interaction: PactInteraction
+    pact_interaction: PactInteraction,
+    temp_dir: Path
 ) -> None:
     """The message is successfully processed."""
     received_payload = {"data": None}
@@ -279,12 +269,12 @@ def the_message_is_successfully_processed(
     ) -> None:
         received_payload["data"] = ReceivedPayload(async_message, context)
     pact_interaction.pact.verify(handler)
-    pact_interaction.pact.write_file(TEST_PACT_FILE_DIRECTORY, overwrite=True)
+    (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+    pact_interaction.pact.write_file(temp_dir / "pacts")
     with (
-        TEST_PACT_FILE_DIRECTORY / "message_consumer-message_provider.json"
+        temp_dir / "pacts" / "consumer-provider.json"
     ).open() as file:
         yield PactResult(received_payload["data"], json.load(file), None)
-    Path(TEST_PACT_FILE_DIRECTORY / "message_consumer-message_provider.json").unlink()
 
 
 ################################################################################
@@ -293,18 +283,22 @@ def the_message_is_successfully_processed(
 
 
 @then("a Pact file for the message interaction will NOT have been written")
-def a_pact_file_for_the_message_interaction_will_not_have_been_written() -> None:
+def a_pact_file_for_the_message_interaction_will_not_have_been_written(
+    temp_dir: Path
+) -> None:
     """A Pact file for the message interaction will NOT have been written."""
     assert not Path(
-        TEST_PACT_FILE_DIRECTORY / "message_consumer-message_provider.json"
+        temp_dir / "pacts" / "consumer-provider.json"
     ).exists()
 
 
 @then("a Pact file for the message interaction will have been written")
-def a_pact_file_for_the_message_interaction_will_have_been_written() -> None:
+def a_pact_file_for_the_message_interaction_will_have_been_written(
+    temp_dir: Path
+) -> None:
     """A Pact file for the message interaction will have been written."""
     assert Path(
-        TEST_PACT_FILE_DIRECTORY / "message_consumer-message_provider.json"
+        temp_dir / "pacts" / "consumer-provider.json"
     ).exists()
 
 

@@ -5,7 +5,6 @@ import json
 import logging
 import pickle
 import re
-from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -14,7 +13,6 @@ from pytest_bdd import (
     given,
     parsers,
     scenario,
-    when,
 )
 
 from pact.v3.pact import Pact
@@ -24,10 +22,11 @@ from tests.v3.compatibility_suite.util import (
     parse_markdown_table,
 )
 from tests.v3.compatibility_suite.util.provider import (
-    start_provider,
+    a_provider_is_started_that_can_generate_the_message,
     the_provider_state_callback_will_be_called_after_the_verification_is_run,
     the_provider_state_callback_will_be_called_before_the_verification_is_run,
     the_provider_state_callback_will_receive_a_setup_call,
+    the_verification_is_run_with_start_context,
     the_verification_results_will_contain_a_error,
     the_verification_will_be_successful,
 )
@@ -191,6 +190,7 @@ def test_verifying_multiple_pact_files() -> None:
 ## Given
 ################################################################################
 
+
 @given(
     parsers.re(
         r'a Pact file for "(?P<name>[^"]+)" is to be verified with the following:\n'
@@ -246,6 +246,9 @@ def a_pact_file_for_is_to_be_verified(
         is_async_message=True,
         response_body=fixture,
     )
+    # for plain text message, the mime type needs to be set
+    if not re.match(r"^(file:|JSON:)", fixture):
+        interaction_definition.response_body.mime_type = "text/html;charset=utf-8"
     interaction_definition.add_to_pact(pact, name, "Async")
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact.write_file(temp_dir / "pacts")
@@ -319,33 +322,7 @@ def a_pact_file_for_is_to_be_verified_with_the_following_metadata(
     pact.write_file(temp_dir / "pacts")
     verifier.add_source(temp_dir / "pacts")
 
-
-@given(
-    parsers.parse(
-        'a provider is started that can generate the "{name}" message with "{body}"'
-    ),
-)
-def a_provider_is_started_that_can_generate_the_message(
-    temp_dir: Path,
-    name: str,
-    body: str,
-) -> None:
-    interaction_definitions = []
-    if ( temp_dir / "interactions.pkl").exists():
-        with (temp_dir / "interactions.pkl").open("rb") as pkl_file:
-            interaction_definitions = pickle.load(pkl_file) # noqa: S301
-
-    body = body.replace('\\"', '"')
-    interaction_definition = InteractionDefinition(
-        method="POST",
-        path=f"/{name}",
-        is_async_message=True,
-        response_body=body
-    )
-    interaction_definitions.append(interaction_definition)
-    with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-        pickle.dump(interaction_definitions, pkl_file)
-
+a_provider_is_started_that_can_generate_the_message()
 
 @given(
     parsers.re(
@@ -398,30 +375,8 @@ def a_provider_state_callback_is_configured() -> None:
 ################################################################################
 
 
-start_provider_context_manager = contextmanager(start_provider)
+the_verification_is_run_with_start_context()
 
-@when(
-    "the verification is run",
-    target_fixture="verifier_result",
-)
-def the_verification_is_run(
-    verifier: Verifier,
-    temp_dir: Path,
-) -> tuple[Verifier, Exception | None]:
-    """
-    Run the verification.
-    """
-    with start_provider_context_manager(temp_dir) as provider_url:
-        verifier.set_state(
-            provider_url / "_test" / "callback",
-            teardown=True,
-        )
-        verifier.set_info("provider", url=f"{provider_url}/message_handler")
-        try:
-            verifier.verify()
-        except Exception as e:  # noqa: BLE001
-            return verifier, e
-        return verifier, None
 
 ################################################################################
 ## Then
