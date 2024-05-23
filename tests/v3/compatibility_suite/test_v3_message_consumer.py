@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import ast
 import json
-import logging
 import re
 from pathlib import Path
 from typing import Any, Generator, NamedTuple
@@ -21,7 +20,6 @@ from pact.v3.pact import AsyncMessageInteraction
 from pact.v3.pact import MessagePact as Pact
 from tests.v3.compatibility_suite.util import FIXTURES_ROOT, parse_markdown_table
 
-logger = logging.getLogger(__name__)
 
 class PactInteraction(NamedTuple):
     """Holder class for Pact and Interaction."""
@@ -248,7 +246,7 @@ def the_message_is_not_successfully_processed_with_an_exception(
         received_payload["data"] = ReceivedPayload(async_message, context)
         raise TestFailedError
     try:
-        pact_interaction.pact.verify(fail)
+        pact_interaction.interaction.verify(fail)
     except Exception as e: # noqa: BLE001
         return PactResult(received_payload["data"], None, e)
 
@@ -268,7 +266,7 @@ def the_message_is_successfully_processed(
         context: dict[Any, Any],
     ) -> None:
         received_payload["data"] = ReceivedPayload(async_message, context)
-    pact_interaction.pact.verify(handler)
+    pact_interaction.interaction.verify(handler)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact_interaction.pact.write_file(temp_dir / "pacts")
     with (
@@ -481,10 +479,7 @@ def the_received_message_content_type_will_be(
     content_type: str,
 ) -> None:
     """The received message content type will be "application/json"."""
-    assert any(
-        context.get("contentType") == content_type
-        for context in pact_result.received_payload.context
-    )
+    assert pact_result.received_payload.context.get("contentType") == content_type
 
 @then(
     parsers.re(
@@ -499,10 +494,10 @@ def the_received_message_metadata_will_contain_replaced_with(
 ) -> None:
     """The received message metadata will contain "ID" replaced with an "integer"."""
     found = False
-    for metadata in pact_result.received_payload.context:
-        if metadata.get(key):
-            assert compare_type(expected_type, metadata[key])
-            found = True
+    metadata = pact_result.received_payload.context
+    if metadata.get(key):
+        assert compare_type(expected_type, metadata[key])
+        found = True
     assert found
 
 
@@ -523,15 +518,10 @@ def the_received_message_metadata_will_contain(
         value = value.replace("JSON: ", "")
         value = value.replace('\\"', '"')
         value = json.loads(value)
-    for metadata in pact_result.received_payload.context:
-        if metadata.get(key):
-            if isinstance(value, dict):
-                assert json.loads(metadata[key]) == value
-            elif NUM_RE.match(metadata[key]):
-                assert ast.literal_eval(metadata[key]) == value
-            else:
-                assert metadata[key] == value
-            found = True
+    metadata = pact_result.received_payload.context
+    if metadata.get(key):
+        assert metadata[key] == value
+        found = True
     assert found
 
 

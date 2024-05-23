@@ -65,7 +65,13 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Set, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Set,
+    overload,
+)
 
 from yarl import URL
 
@@ -279,9 +285,9 @@ class BasePact:
         """
         if interaction == "HTTP":
             return HttpInteraction(self._handle, description)
-        elif interaction == "Async":
+        if interaction == "Async":
             return AsyncMessageInteraction(self._handle, description)
-        elif interaction == "Sync":
+        if interaction == "Sync":
             return SyncMessageInteraction(self._handle, description)
 
         msg = f"Invalid interaction type: {interaction}"
@@ -385,6 +391,23 @@ class BasePact:
 
 
 class Pact(BasePact):
+    """
+    A Pact between a consumer and a provider.
+
+    This class defines a Pact between a consumer and a provider. It is the
+    central class in Pact's framework, and is responsible for defining the
+    interactions between the two parties.
+
+    One `Pact` instance should be created for each provider that a consumer
+    interacts with. The methods on this class are used to define the broader
+    attributes of the Pact, such as the consumer and provider names, the Pact
+    specification, any plugins that are used, and any metadata that is attached
+    to the Pact.
+
+    Each interaction between the consumer and the provider is defined through
+    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
+    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
+    """
 
     def serve(  # noqa: PLR0913
         self,
@@ -446,45 +469,40 @@ class Pact(BasePact):
         )
 
 
-
 class MessagePact(BasePact):
-    def get_provider_states(self):
+    """
+    A Message Pact between a consumer and a provider.
+
+    This class defines a Pact between a consumer and a provider for an
+    asynchronous message pattern. It is the central class in Pact's framework,
+    and is responsible for defining the interactions between the two parties.
+
+    One `Pact` instance should be created for each provider that a consumer
+    interacts with. The methods on this class are used to define the broader
+    attributes of the Pact, such as the consumer and provider names, the Pact
+    specification, any plugins that are used, and any metadata that is attached
+    to the Pact.
+
+    Each interaction between the consumer and the provider is defined through
+    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
+    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
+    """
+
+    def get_provider_states(self) -> list[dict[str, Any]]:
         """
         Get the provider states for the interaction.
 
         Returns:
             A list of provider states for the interaction.
         """
-        provider_state_data = []
-        for message in pact.v3.ffi.pact_handle_get_message_iter(self._handle):
-            for provider_state in pact.v3.ffi.message_get_provider_state_iter(message):
-                provider_state_data.append({
-                    'name': provider_state.name,
-                    'params': provider_state.parameters
-                })
-        return provider_state_data
-
-    def verify(self, handler) -> list[dict[str, Any]]:
-        processed_messages = []
-        _mutable_pact = pact.v3.ffi.pact_handle_to_pointer(self._handle)
-        for interaction in pact.v3.ffi.pact_model_interaction_iterator(_mutable_pact):
-            msg_iter = pact.v3.ffi.pact_handle_get_message_iter(self._handle)
-            for msg in msg_iter:
-                processed_messages.append({
-                    "description": msg.description,
-                    "contents": msg.contents,
-                    "metadata": msg.metadata,
-                })
-                try:
-                    async_message = context = {}
-                    if msg.contents is not None:
-                        async_message = json.loads(msg.contents)
-                    if msg.metadata is not None:
-                        context = msg.metadata
-                    handler(async_message, context)
-                except Exception as e:
-                    raise e
-        return processed_messages
+        return [
+            {
+                "name": provider_state.name,
+                "params": provider_state.parameters,
+            }
+            for message in pact.v3.ffi.pact_handle_get_message_iter(self._handle)
+            for provider_state in pact.v3.ffi.message_get_provider_state_iter(message)
+        ]
 
 
 class MismatchesError(Exception):
@@ -798,4 +816,3 @@ class PactServer:
             str(directory),
             overwrite=overwrite,
         )
-
