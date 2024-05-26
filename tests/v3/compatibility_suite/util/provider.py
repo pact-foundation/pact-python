@@ -15,7 +15,6 @@ steps for the compatibility suite tests.
 from __future__ import annotations
 
 import sys
-from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
@@ -1058,7 +1057,7 @@ def the_verification_is_run_with_start_context(
         temp_dir: Path,
     ) -> tuple[Verifier, Exception | None]:
         """Run the verification."""
-        start_provider_context_manager = contextmanager(start_provider)
+        start_provider_context_manager = contextlib.contextmanager(start_provider)
 
         with start_provider_context_manager(temp_dir) as provider_url:
             verifier.set_state(

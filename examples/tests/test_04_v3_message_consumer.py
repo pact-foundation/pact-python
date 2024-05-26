@@ -108,6 +108,20 @@ def test_async_message_handler_write(
         pact.upon_receiving("a write request", "Async")
         .given("a request to write test.txt")
         .with_content(async_message)
+        .with_matching_rules(
+            {
+              "body": {
+                "$.path": {
+                  "combine": "AND",
+                  "matchers": [
+                    {
+                      "match": "type"
+                    }
+                  ]
+                }
+              }
+            }
+        )
         .verify(pact_handler)
     )
     actual_handler.fs.write.assert_called_once_with(  # type: ignore[attr-defined]
@@ -129,17 +143,30 @@ def test_async_message_handler_read(
     async_message = {
         "action": "READ",
         "path": "my_file.txt",
-        "contents": "Hello, world!",
     }
-    actual_handler.fs.read.return_value = async_message["contents"]
+    actual_handler.fs.read.return_value = "Hello, world!"
     processed_message: AsyncMessagePactResult = (
         pact.upon_receiving("a read request", "Async")
         .given("a request to read test.txt")
         .with_content(async_message)
+        .with_matching_rules(
+            {
+              "body": {
+                "$.path": {
+                  "combine": "AND",
+                  "matchers": [
+                    {
+                      "match": "type"
+                    }
+                  ]
+                }
+              }
+            }
+        )
         .verify(pact_handler)
     )
     actual_handler.fs.read.assert_called_once_with(  # type: ignore[attr-defined]
         "my_file.txt",
     )
     assert processed_message is not None
-    assert processed_message.response == async_message["contents"]
+    assert processed_message.response == "Hello, world!"
