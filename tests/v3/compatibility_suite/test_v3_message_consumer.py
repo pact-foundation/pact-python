@@ -7,7 +7,6 @@ import re
 from pathlib import Path
 from typing import Any, Generator, NamedTuple
 
-from jsonpath_ng import parse
 from pytest_bdd import (
     given,
     parsers,
@@ -55,8 +54,6 @@ class TestFailedError(Exception):
     def __init__(self) -> None:
         """Initialize the TestFailedError."""
         super().__init__("Test failed")
-
-NUM_RE = re.compile(r"^-?[.0-9]+$")
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
@@ -421,10 +418,9 @@ def the_message_contents_will_have_been_replaced_with(
     expected_type: str,
 ) -> None:
     """The message contents for "$.one" will have been replaced with an "integer"."""
-    path = parse(replace_token)
-    values = [match.value for match in path.find(pact_result.received_payload.message)]
-    for v in values:
-        assert compare_type(expected_type, v)
+    elem_key = replace_token.split(".")[1]
+    value = pact_result.received_payload.message.get(elem_key)
+    assert compare_type(expected_type, value)
 
 
 @then(
@@ -578,19 +574,14 @@ def _build_body_generator(
     body_json: dict[str, Any]
 ) -> None:
     for k, v in generator_json["body"].items():
-        path = parse(k)
-        current_values = [match.value for match in path.find(body_json)]
-        matches = path.find(body_json)
-        for i, _ in enumerate(matches):
-            generator_type = v["type"]
-            del v["type"]
-            replacement_value = {
-                "value": current_values[i],
-                "pact:matcher:type": "notEmpty",
-                "pact:generator:type": generator_type,
-            }
-            replacement_value.update(v)
-            matches[i].full_path.update(body_json, replacement_value)
+        elem_name = k.split(".")[1]
+        body_elem = body_json.get(elem_name)
+        replace_value = {
+            "pact:generator:type": v["type"],
+            "pact:matcher:type": "notEmpty",
+            "value": body_elem,
+        }
+        body_json.update({elem_name: replace_value})
 
 def _build_metadata_generator(
     generator_json: dict[str, Any],
