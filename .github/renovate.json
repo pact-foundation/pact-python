@@ -8,5 +8,11 @@
     "enabled": true
   },
   "prHourlyLimit": 0,
-  "prConcurrentLimit": 0
+  "prConcurrentLimit": 0,
+  "packageRules": [
+    {
+      "groupName": "Ruff",
+      "matchPackageNames": ["astral-sh/ruff-pre-commit", "devel/ruff"]
+    }
+  ]
 }
