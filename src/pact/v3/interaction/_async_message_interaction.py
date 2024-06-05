@@ -13,6 +13,22 @@ import pact.v3.ffi
 from pact.v3.interaction._base import AsyncMessagePactResult, Interaction
 
 
+class VerificationError(Exception):
+    """
+    Error raised when the verification of an interaction fails.
+    """
+
+    def __init__(self, message: str) -> None:
+        """
+        Initialise a new VerificationError.
+
+        Args:
+            message:
+                The error message.
+        """
+        super().__init__(message)
+
+
 class AsyncMessageInteraction(Interaction):
     """
     An asynchronous message interaction.
@@ -62,7 +78,9 @@ class AsyncMessageInteraction(Interaction):
     def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
         return pact.v3.ffi.InteractionPart.REQUEST
 
-    def with_content(self, content: dict[str, Any] | str, content_type='application/json') -> Self:
+    def with_content(
+        self, content: dict[str, Any] | str, content_type: str="application/json"
+    ) -> Self:
         """
         Set the content of the message.
 
@@ -80,10 +98,7 @@ class AsyncMessageInteraction(Interaction):
             content = json.dumps(content)
 
         pact.v3.ffi.message_with_contents(
-            self._handle,
-            content_type,
-            content,
-            len(content)
+            self._handle, content_type, content, len(content)
         )
         return self
 
@@ -98,22 +113,18 @@ class AsyncMessageInteraction(Interaction):
         Returns:
             The current instance of the interaction.
         """
-        [
+        for k, v in metadata.items():
             pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
-            for k, v in metadata.items()
-        ]
         return self
-
-    def reify(self) -> str:
-        return pact.v3.ffi.message_reify(self._handle)
 
     def verify(
         self, handler: Callable[[dict[str, Any], dict[str, Any]], Any]
     ) -> AsyncMessagePactResult:
-        reified_msg = self.reify()
+        reified_msg = pact.v3.ffi.message_reify(self._handle)
         if not reified_msg:
-            return []
-        msg = json.loads(reified_msg)
+            msg = {"description": self._description}
+        else:
+            msg = json.loads(reified_msg)
         processed_message = AsyncMessagePactResult(
             description=msg.get("description"),
             contents=msg.get("contents"),
