@@ -575,7 +575,7 @@ class ProviderState:
         return provider_state_get_name(self)
 
     @property
-    def parameters(self) -> list[ProviderStateParamPair]:
+    def parameters(self) -> dict[str, str]:
         """
         Provider State parameters.
         """

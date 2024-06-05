@@ -468,6 +468,8 @@ class Pact(BasePact):
             verbose=verbose,
         )
 
+HttpPact = Pact
+
 
 class MessagePact(BasePact):
     """
@@ -495,14 +497,12 @@ class MessagePact(BasePact):
         Returns:
             A list of provider states for the interaction.
         """
-        return [
-            {
-                "name": provider_state.name,
-                "params": provider_state.parameters,
-            }
-            for message in pact.v3.ffi.pact_handle_get_message_iter(self._handle)
-            for provider_state in pact.v3.ffi.message_get_provider_state_iter(message)
-        ]
+        for message in pact.v3.ffi.pact_handle_get_message_iter(self._handle):
+            for provider_state in pact.v3.ffi.message_get_provider_state_iter(message):
+                yield {
+                    "name": provider_state.name,
+                    "params": provider_state.parameters,
+                }
 
 
 class MismatchesError(Exception):
