@@ -5,7 +5,9 @@ Asynchronous message interaction.
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Self
+from typing import Any, Callable
+
+from typing_extensions import Self
 
 import pact.v3.ffi
 from pact.v3.interaction._base import AsyncMessagePactResult, Interaction
