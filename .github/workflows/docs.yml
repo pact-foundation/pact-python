@@ -2,6 +2,13 @@ name: docs
 
 on:
   push:
+    tags:
+      - v*
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 env:
   STABLE_PYTHON_VERSION: "3.12"
@@ -41,7 +48,7 @@ jobs:
   publish:
     name: Publish docs
 
-    if: github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
 
     needs: build
     runs-on: ubuntu-latest
