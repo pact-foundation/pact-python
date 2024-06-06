@@ -70,8 +70,8 @@ done in a staged manner to give everyone the opportunity to migrate.
 
 import warnings
 
-from pact.v3.pact import Pact  # noqa: F401
-from pact.v3.verifier import Verifier  # noqa: F401
+from pact.v3.pact import Pact
+from pact.v3.verifier import Verifier
 
 warnings.warn(
     "The `pact.v3` module is not yet stable. Use at your own risk, and expect "
@@ -79,3 +79,5 @@ warnings.warn(
     stacklevel=2,
     category=ImportWarning,
 )
+
+__all__ = ["Pact", "Verifier"]
