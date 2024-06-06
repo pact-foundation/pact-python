@@ -14,13 +14,12 @@ from typing import (
     Any,
     Dict,
     Generator,
-    Union,
 )
 from unittest.mock import MagicMock
 
 import pytest
-
 from examples.src.message import Handler
+
 from pact.v3.pact import MessagePact as Pact
 
 if TYPE_CHECKING:
@@ -74,7 +73,7 @@ def pact() -> Generator[Pact, None, None]:
 
 
 @pytest.fixture()
-def handler() -> tuple[Handler, Callable[Dict[str, Any], Union[str, None]]]:
+def handler() -> tuple[Handler, Callable[[Dict[str, Any], Dict[str, Any]], str | None]]:
     handler = Handler()
     handler.fs = MagicMock()
 
@@ -92,7 +91,13 @@ def handler() -> tuple[Handler, Callable[Dict[str, Any], Union[str, None]]]:
 
 def test_async_message_handler_write(
     pact: Pact,
-    handler: tuple[Handler, Callable[Dict[str, Any], Union[str, None]]],
+    handler: tuple[
+        Handler,
+        Callable[
+            [Dict[str, Any], Dict[str, Any]],
+            str | None,
+        ],
+    ],
 ) -> None:
     """
     Create a pact between the message handler and the message provider.
@@ -120,7 +125,13 @@ def test_async_message_handler_write(
 
 def test_async_message_handler_read(
     pact: Pact,
-    handler: tuple[Handler, Callable[Dict[str, Any], Union[str, None]]],
+    handler: tuple[
+        Handler,
+        Callable[
+            [Dict[str, Any], Dict[str, Any]],
+            str | None,
+        ],
+    ],
 ) -> None:
     """
     Create a pact between the message handler and the message provider.
