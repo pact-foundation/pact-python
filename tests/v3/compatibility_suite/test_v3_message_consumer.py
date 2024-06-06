@@ -1,11 +1,12 @@
 """V3 Message consumer feature tests."""
+
 from __future__ import annotations
 
 import ast
 import json
 import re
 from pathlib import Path
-from typing import Any, Generator, NamedTuple
+from typing import Any, Generator, NamedTuple, Tuple
 
 from pytest_bdd import (
     given,
@@ -15,49 +16,59 @@ from pytest_bdd import (
     when,
 )
 
-from pact.v3.pact import AsyncMessageInteraction
-from pact.v3.pact import MessagePact as Pact
+from pact.v3.pact import AsyncMessageInteraction, Pact
 from tests.v3.compatibility_suite.util import FIXTURES_ROOT, parse_markdown_table
 
 
 class PactInteraction(NamedTuple):
     """Holder class for Pact and Interaction."""
+
     pact: Pact
     interaction: AsyncMessageInteraction
 
 
 class PactResult(NamedTuple):
     """Holder class for Pact Result objects."""
-    received_payload: dict[str, Any]
+
+    received_payload: ReceivedPayload
     pact_data: dict[str, Any] | None
-    error: str | None
+    error: Exception | None
+
 
 class ReceivedPayload(NamedTuple):
     """Holder class for Message Received Payload."""
-    message: any
-    context: any
+
+    message: Any
+    context: Any
+
 
 class UnknownTypeError(Exception):
     """Unknown type error."""
+
     def __init__(self, expected_type: str) -> None:
         """Initialize the UnknownTypeError."""
         super().__init__(f"Unknown type: {expected_type}")
 
+
 class UnknownGeneratorCategoryError(Exception):
     """Unknown type error."""
+
     def __init__(self, generator_category: str) -> None:
         """Initialize the UnknownGeneratorCategoryError."""
         super().__init__(f"Unknown generator category: {generator_category}")
 
+
 class TestFailedError(Exception):
     """Test failed error."""
+
     def __init__(self) -> None:
         """Initialize the TestFailedError."""
         super().__init__("Test failed")
 
+
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "Supports arbitrary message metadata"
+    "Supports arbitrary message metadata",
 )
 def test_supports_arbitrary_message_metadata() -> None:
     """Supports arbitrary message metadata."""
@@ -65,7 +76,7 @@ def test_supports_arbitrary_message_metadata() -> None:
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "Supports data for provider states"
+    "Supports data for provider states",
 )
 def test_supports_data_for_provider_states() -> None:
     """Supports data for provider states."""
@@ -73,7 +84,7 @@ def test_supports_data_for_provider_states() -> None:
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "Supports specifying provider states"
+    "Supports specifying provider states",
 )
 def test_supports_specifying_provider_states() -> None:
     """Supports specifying provider states."""
@@ -81,7 +92,7 @@ def test_supports_specifying_provider_states() -> None:
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "Supports the use of generators with message metadata"
+    "Supports the use of generators with message metadata",
 )
 def test_supports_the_use_of_generators_with_message_metadata() -> None:
     """Supports the use of generators with message metadata."""
@@ -89,7 +100,7 @@ def test_supports_the_use_of_generators_with_message_metadata() -> None:
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "Supports the use of generators with the message body"
+    "Supports the use of generators with the message body",
 )
 def test_supports_the_use_of_generators_with_the_message_body() -> None:
     """Supports the use of generators with the message body."""
@@ -97,7 +108,7 @@ def test_supports_the_use_of_generators_with_the_message_body() -> None:
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "When all messages are successfully processed"
+    "When all messages are successfully processed",
 )
 def test_when_all_messages_are_successfully_processed() -> None:
     """When all messages are successfully processed."""
@@ -105,7 +116,7 @@ def test_when_all_messages_are_successfully_processed() -> None:
 
 @scenario(
     "definition/features/V3/message_consumer.feature",
-    "When not all messages are successfully processed"
+    "When not all messages are successfully processed",
 )
 def test_when_not_all_messages_are_successfully_processed() -> None:
     """When not all messages are successfully processed."""
@@ -118,7 +129,7 @@ def test_when_not_all_messages_are_successfully_processed() -> None:
 
 @given(
     "a message integration is being defined for a consumer test",
-    target_fixture="pact_interaction"
+    target_fixture="pact_interaction",
 )
 def a_message_integration_is_being_defined_for_a_consumer_test() -> (
     Generator[tuple[Pact, AsyncMessageInteraction], Any, None]
@@ -137,25 +148,21 @@ def _a_message_is_defined() -> None:
 @given(
     parsers.re(
         r'a provider state "(?P<state>[^"]+)" for the message '
-        r'is specified with the following data:\n(?P<table>.+)',
+        r"is specified with the following data:\n(?P<table>.+)",
         re.DOTALL,
     ),
     converters={"table": parse_markdown_table},
 )
 def a_provider_state_for_the_message_is_specified_with_the_following_data(
-    pact_interaction: PactInteraction,
-    state: str,
-    table: list[dict[str, Any]]
+    pact_interaction: PactInteraction, state: str, table: list[dict[str, Any]]
 ) -> None:
     """A provider state for the message is specified with the following data."""
     for parameters in table:
-        state_params = { k: ast.literal_eval(v) for k, v in parameters.items() }
+        state_params = {k: ast.literal_eval(v) for k, v in parameters.items()}
         pact_interaction.interaction.given(state, parameters=state_params)
 
 
-@given(
-    parsers.re(r'a provider state "(?P<state>[^"]+)" for the message is specified')
-)
+@given(parsers.re(r'a provider state "(?P<state>[^"]+)" for the message is specified'))
 def a_provider_state_for_the_message_is_specified(
     pact_interaction: PactInteraction,
     state: str,
@@ -166,26 +173,23 @@ def a_provider_state_for_the_message_is_specified(
 
 @given(
     parsers.re(
-        "the message contains the following "
-        "metadata:\n(?P<table>.+)", re.DOTALL
+        "the message contains the following " "metadata:\n(?P<table>.+)", re.DOTALL
     ),
     converters={"table": parse_markdown_table},
 )
 def the_message_contains_the_following_metadata(
-    pact_interaction: PactInteraction,
-    table: list[dict[str, Any]]
+    pact_interaction: PactInteraction, table: list[dict[str, Any]]
 ) -> None:
     """The message contains the following metadata."""
     for metadata in table:
-        if metadata.get("value","").startswith("JSON: "):
+        if metadata.get("value", "").startswith("JSON: "):
             metadata["value"] = metadata["value"].replace("JSON:", "")
         pact_interaction.interaction.with_metadata({metadata["key"]: metadata["value"]})
 
 
 @given(
     parsers.re(
-        "the message is configured with the following:\n"
-        "(?P<table>.+)", re.DOTALL
+        "the message is configured with the following:\n" "(?P<table>.+)", re.DOTALL
     ),
     converters={"table": parse_markdown_table},
 )
@@ -203,7 +207,7 @@ def the_message_is_configured_with_the_following(
             _build_metadata_generator(generator_json, metadata_json)
         else:
             raise UnknownGeneratorCategoryError(category)
-    pact_interaction.interaction.with_content(body_json)
+    pact_interaction.interaction.with_content(json.dumps(body_json))
     for k, v in metadata_json.items():
         v_str = v
         if isinstance(v, dict):
@@ -215,11 +219,10 @@ def the_message_is_configured_with_the_following(
     parsers.re('the message payload contains the "(?P<json_doc>[^"]+)" JSON document')
 )
 def the_message_payload_contains_the_basic_json_document(
-    pact_interaction: PactInteraction,
-    json_doc: str
+    pact_interaction: PactInteraction, json_doc: str
 ) -> None:
     """The message payload contains the "basic" JSON document."""
-    pact_interaction.interaction.with_content(read_json(f"{json_doc}.json"))
+    pact_interaction.interaction.with_content(json.dumps(read_json(f"{json_doc}.json")))
 
 
 ################################################################################
@@ -229,46 +232,43 @@ def the_message_payload_contains_the_basic_json_document(
 
 @when(
     'the message is NOT successfully processed with a "Test failed" exception',
-    target_fixture="pact_result"
+    target_fixture="pact_result",
 )
 def the_message_is_not_successfully_processed_with_an_exception(
-    pact_interaction: PactInteraction
-) -> None:
+    pact_interaction: PactInteraction,
+) -> PactResult:
     """The message is NOT successfully processed with a "Test failed" exception."""
     # using a dict here because it's mutable
-    received_payload = {"data": None}
-    def fail(
-        async_message: str | dict[any: any], context: dict[any: any]
-    ) -> None:
+    received_payload: dict[str, ReceivedPayload] = {}
+
+    def fail(async_message: str | dict[Any, Any], context: dict[Any, Any]) -> None:
         received_payload["data"] = ReceivedPayload(async_message, context)
         raise TestFailedError
+
     try:
         pact_interaction.interaction.verify(fail)
-    except Exception as e: # noqa: BLE001
+        return PactResult(received_payload["data"], None, None)
+    except Exception as e:  # noqa: BLE001
         return PactResult(received_payload["data"], None, e)
 
 
-@when(
-    "the message is successfully processed",
-    target_fixture="pact_result"
-)
+@when("the message is successfully processed", target_fixture="pact_result")
 def the_message_is_successfully_processed(
-    pact_interaction: PactInteraction,
-    temp_dir: Path
-) -> None:
+    pact_interaction: PactInteraction, temp_dir: Path
+) -> Generator[PactResult, Any, None]:
     """The message is successfully processed."""
-    received_payload = {"data": None}
+    received_payload: dict[str, ReceivedPayload] = {}
+
     def handler(
         async_message: str | dict[Any, Any],
         context: dict[Any, Any],
     ) -> None:
         received_payload["data"] = ReceivedPayload(async_message, context)
+
     pact_interaction.interaction.verify(handler)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact_interaction.pact.write_file(temp_dir / "pacts")
-    with (
-        temp_dir / "pacts" / "consumer-provider.json"
-    ).open() as file:
+    with (temp_dir / "pacts" / "consumer-provider.json").open() as file:
         yield PactResult(received_payload["data"], json.load(file), None)
 
 
@@ -279,27 +279,21 @@ def the_message_is_successfully_processed(
 
 @then("a Pact file for the message interaction will NOT have been written")
 def a_pact_file_for_the_message_interaction_will_not_have_been_written(
-    temp_dir: Path
+    temp_dir: Path,
 ) -> None:
     """A Pact file for the message interaction will NOT have been written."""
-    assert not Path(
-        temp_dir / "pacts" / "consumer-provider.json"
-    ).exists()
+    assert not Path(temp_dir / "pacts" / "consumer-provider.json").exists()
 
 
 @then("a Pact file for the message interaction will have been written")
 def a_pact_file_for_the_message_interaction_will_have_been_written(
-    temp_dir: Path
+    temp_dir: Path,
 ) -> None:
     """A Pact file for the message interaction will have been written."""
-    assert Path(
-        temp_dir / "pacts" / "consumer-provider.json"
-    ).exists()
+    assert Path(temp_dir / "pacts" / "consumer-provider.json").exists()
 
 
-@then(
-    parsers.re(r'the consumer test error will be "(?P<error>[^"]+)"')
-)
+@then(parsers.re(r'the consumer test error will be "(?P<error>[^"]+)"'))
 def the_consumer_test_error_will_be_test_failed(
     pact_result: PactResult,
     error: str,
@@ -309,18 +303,14 @@ def the_consumer_test_error_will_be_test_failed(
 
 
 @then("the consumer test will have failed")
-def the_consumer_test_will_have_failed(
-    pact_result: PactResult
-) -> None:
+def the_consumer_test_will_have_failed(pact_result: PactResult) -> None:
     """The consumer test will have failed."""
     assert type(pact_result.error) == TestFailedError
     assert pact_result.pact_data is None
 
 
 @then("the consumer test will have passed")
-def the_consumer_test_will_have_passed(
-    pact_result: PactResult
-) -> None:
+def the_consumer_test_will_have_passed(pact_result: PactResult) -> None:
     """The consumer test will have passed."""
     assert pact_result.error is None
     assert pact_result.pact_data is not None
@@ -328,7 +318,7 @@ def the_consumer_test_will_have_passed(
 
 @then(
     parsers.re(
-        r'the first message in the Pact file will contain '
+        r"the first message in the Pact file will contain "
         'provider state "(?P<state>[^"]+)"'
     )
 )
@@ -337,15 +327,19 @@ def the_first_message_in_the_pact_file_will_contain_provider_state(
     state: str,
 ) -> None:
     """The first message in the Pact file will contain provider state."""
-    assert state in [
-        provider_state["name"]
-        for provider_state in pact_result.pact_data["messages"][0]["providerStates"]
-    ]
+    if not pact_result.pact_data:
+        msg = "No pact data found"
+        raise RuntimeError(msg)
+    messages = pact_result.pact_data["messages"]
+    if not isinstance(messages, list) or not messages:
+        msg = "No messages found"
+        raise RuntimeError(msg)
+    assert state in messages[0]["providerStates"]
 
 
 @then(
     parsers.re(
-        r'the first message in the pact file content type '
+        r"the first message in the pact file content type "
         'will be "(?P<content_type>[^"]+)"'
     )
 )
@@ -354,8 +348,14 @@ def the_first_message_in_the_pact_file_content_type_will_be(
     content_type: str,
 ) -> None:
     """The first message in the pact file content type will be "application/json"."""
-    messages: list[dict[str, Any]] = pact_result.pact_data["messages"]
-    assert messages[0]["metadata"]["contentType"] == content_type
+    if not pact_result.pact_data:
+        msg = "No pact data found"
+        raise RuntimeError(msg)
+    messages: list[dict[str, dict[str, Any]]] = pact_result.pact_data["messages"]
+    if not isinstance(messages, list) or not messages:
+        msg = "No messages found"
+        raise RuntimeError(msg)
+    assert messages[0].get("metadata", {}).get("contentType") == content_type
 
 
 @then(
@@ -370,40 +370,57 @@ def the_first_message_in_the_pact_file_will_contain(
     state_count: int,
 ) -> None:
     """The first message in the pact file will contain 1 provider state."""
-    assert len(pact_result.pact_data["messages"][0]["providerStates"]) == state_count
+    if not pact_result.pact_data:
+        msg = "No pact data found"
+        raise RuntimeError(msg)
+    messages: list[dict[str, list[Any]]] = pact_result.pact_data["messages"]
+    if not isinstance(messages, list) or not messages:
+        msg = "No messages found"
+        raise RuntimeError(msg)
+    assert len(messages[0].get("providerStates", [])) == state_count
 
 
 @then(
     parsers.re(
-        'the first message in the pact file will contain '
+        "the first message in the pact file will contain "
         'the "(?P<json_doc>[^"]+)" document'
     )
 )
 def the_first_message_in_the_pact_file_will_contain_the_basic_json_document(
-    pact_result: PactResult,
-    json_doc: str
+    pact_result: PactResult, json_doc: str
 ) -> None:
     """The first message in the pact file will contain the "basic.json" document."""
-    assert pact_result.pact_data["messages"][0]["contents"] == read_json(json_doc)
+    if not pact_result.pact_data:
+        msg = "No pact data found"
+        raise RuntimeError(msg)
+    messages: list[dict[str, Any]] = pact_result.pact_data["messages"]
+    if not isinstance(messages, list) or not messages:
+        msg = "No messages found"
+        raise RuntimeError(msg)
+    assert messages[0]["contents"] == read_json(json_doc)
 
 
 @then(
     parsers.re(
-        r'the first message in the pact file will contain '
+        r"the first message in the pact file will contain "
         r'the message metadata "(?P<key>[^"]+)" == "(?P<value>[^"\\]*(?:\\.[^"\\]*)*)"'
     )
 )
 def the_first_message_in_the_pact_file_will_contain_the_message_metadata(
     pact_result: PactResult,
     key: str,
-    value: any,
+    value: Any,  # noqa: ANN401
 ) -> None:
     """The first message in the pact file will contain the message metadata."""
     if value.startswith("JSON: "):
         value = value.replace("JSON: ", "")
         value = value.replace('\\"', '"')
         value = json.loads(value)
-    assert pact_result.pact_data["messages"][0]["metadata"][key] == value
+    if not pact_result.pact_data:
+        msg = "No pact data found"
+        raise RuntimeError(msg)
+    messages: list[dict[str, dict[str, Any]]] = pact_result.pact_data["messages"]
+    assert messages[0]["metadata"][key] == value
 
 
 @then(
@@ -433,13 +450,17 @@ def the_pact_file_will_contain_message_interaction(
     interaction_count: int,
 ) -> None:
     """The pact file will contain 1 message interaction."""
-    assert len(pact_result.pact_data["messages"]) == interaction_count
+    if not pact_result.pact_data:
+        msg = "No pact data found"
+        raise RuntimeError(msg)
+    messages: list[Any] = pact_result.pact_data["messages"]
+    assert len(messages) == interaction_count
 
 
 @then(
     parsers.re(
         r'the provider state "(?P<state>[^"]+)" for the message '
-        r'will contain the following parameters:\n(?P<parameters>.+)',
+        r"will contain the following parameters:\n(?P<parameters>.+)",
         re.DOTALL,
     ),
     converters={"parameters": parse_markdown_table},
@@ -458,7 +479,7 @@ def the_provider_state_for_the_message_will_contain_the_following_parameters(
             break
     # if we have provider_state_params, we found the expected provider state name
     assert provider_state_params is not None
-    found = { k: False for k in expected_params }
+    found = {k: False for k in expected_params}
     for k, v in expected_params.items():
         for provider_state_param in provider_state_params:
             if provider_state_param.get(k):
@@ -466,6 +487,7 @@ def the_provider_state_for_the_message_will_contain_the_following_parameters(
                 found[k] = True
                 break
     assert all(found.values())
+
 
 @then(
     parsers.re(r'the received message content type will be "(?P<content_type>[^"]+)"')
@@ -476,6 +498,7 @@ def the_received_message_content_type_will_be(
 ) -> None:
     """The received message content type will be "application/json"."""
     assert pact_result.received_payload.context.get("contentType") == content_type
+
 
 @then(
     parsers.re(
@@ -499,22 +522,23 @@ def the_received_message_metadata_will_contain_replaced_with(
 
 @then(
     parsers.re(
-        r'the received message metadata will contain '
+        r"the received message metadata will contain "
         r'"(?P<key>[^"]+)" == "(?P<value>[^"\\]*(?:\\.[^"\\]*)*)"'
     )
 )
 def the_received_message_metadata_will_contain(
     pact_result: PactResult,
     key: str,
-    value: any,
+    value: Any,  # noqa: ANN401
 ) -> None:
     """The received message metadata will contain "Origin" == "Some Text"."""
-    found = False
     if value.startswith("JSON: "):
         value = value.replace("JSON: ", "")
         value = value.replace('\\"', '"')
         value = json.loads(value)
     metadata = pact_result.received_payload.context
+
+    found = False
     if metadata.get(key):
         assert metadata[key] == value
         found = True
@@ -523,13 +547,12 @@ def the_received_message_metadata_will_contain(
 
 @then(
     parsers.re(
-        r'the received message payload will contain '
+        r"the received message payload will contain "
         'the "(?P<json_doc>[^"]+)" JSON document'
     )
 )
 def the_received_message_payload_will_contain_the_basic_json_document(
-    pact_result: PactResult,
-    json_doc: str
+    pact_result: PactResult, json_doc: str
 ) -> None:
     """The received message payload will contain the "basic" JSON document."""
     assert pact_result.received_payload.message == read_json(f"{json_doc}.json")
@@ -542,6 +565,7 @@ def read_json(file: str) -> dict[str, Any]:
 
 def compare_type(expected_type: str, t: str | int | None) -> bool:
     if expected_type == "integer":
+        assert t is not None
         try:
             int(t)
         except ValueError:
@@ -551,8 +575,8 @@ def compare_type(expected_type: str, t: str | int | None) -> bool:
 
 
 def _build_message_data(
-    table: list[dict[str, Any]]
-) -> (dict[str, Any], dict[str, Any], dict[str, Any]):
+    table: list[dict[str, Any]],
+) -> Tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     body_json = generator_json = metadata_json = {}
     for entry in table:
         for k, v in entry.items():
@@ -569,9 +593,9 @@ def _build_message_data(
                 metadata_json = json.loads(v)
     return body_json, generator_json, metadata_json
 
+
 def _build_body_generator(
-    generator_json: dict[str, Any],
-    body_json: dict[str, Any]
+    generator_json: dict[str, Any], body_json: dict[str, Any]
 ) -> None:
     for k, v in generator_json["body"].items():
         elem_name = k.split(".")[1]
@@ -583,14 +607,14 @@ def _build_body_generator(
         }
         body_json.update({elem_name: replace_value})
 
+
 def _build_metadata_generator(
-    generator_json: dict[str, Any],
-    metadata_json: dict[str, Any]
+    generator_json: dict[str, Any], metadata_json: dict[str, Any]
 ) -> None:
     for k in generator_json["metadata"]:
         metadata = metadata_json[k]
         if not isinstance(metadata, dict):
-            metadata = { "value": metadata }
+            metadata = {"value": metadata}
             metadata_json[k] = metadata
         generator_data = generator_json["metadata"][k]
         metadata.update({

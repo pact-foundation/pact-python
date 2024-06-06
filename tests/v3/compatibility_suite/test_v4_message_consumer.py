@@ -1,8 +1,9 @@
 """Message consumer feature tests."""
+
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, Generator, NamedTuple
 
 from pytest_bdd import (
     given,
@@ -12,8 +13,7 @@ from pytest_bdd import (
     when,
 )
 
-from pact.v3.pact import AsyncMessageInteraction
-from pact.v3.pact import MessagePact as Pact
+from pact.v3.pact import AsyncMessageInteraction, Pact
 from tests.v3.compatibility_suite.util import string_to_int
 
 if TYPE_CHECKING:
@@ -22,29 +22,27 @@ if TYPE_CHECKING:
 
 class PactInteraction(NamedTuple):
     """Holder class for Pact and Interaction."""
+
     pact: Pact
     interaction: AsyncMessageInteraction
 
 
 @scenario(
     "definition/features/V4/message_consumer.feature",
-    "Sets the type for the interaction"
+    "Sets the type for the interaction",
 )
 def test_sets_the_type_for_the_interaction() -> None:
     """Sets the type for the interaction."""
 
 
-@scenario(
-    "definition/features/V4/message_consumer.feature",
-    "Supports adding comments"
-)
+@scenario("definition/features/V4/message_consumer.feature", "Supports adding comments")
 def test_supports_adding_comments() -> None:
     """Supports adding comments."""
 
 
 @scenario(
     "definition/features/V4/message_consumer.feature",
-    "Supports specifying a key for the interaction"
+    "Supports specifying a key for the interaction",
 )
 def test_supports_specifying_a_key_for_the_interaction() -> None:
     """Supports specifying a key for the interaction."""
@@ -52,7 +50,7 @@ def test_supports_specifying_a_key_for_the_interaction() -> None:
 
 @scenario(
     "definition/features/V4/message_consumer.feature",
-    "Supports specifying the interaction is pending"
+    "Supports specifying the interaction is pending",
 )
 def test_supports_specifying_the_interaction_is_pending() -> None:
     """Supports specifying the interaction is pending."""
@@ -67,15 +65,14 @@ def test_supports_specifying_the_interaction_is_pending() -> None:
     parsers.re(r'a comment "(?P<comment>[^"]+)" is added to the message interaction')
 )
 def a_comment_is_added_to_the_message_interaction(
-    pact_interaction: PactInteraction,
-    comment: str
+    pact_interaction: PactInteraction, comment: str
 ) -> None:
     """A comment "{comment}" is added to the message interaction."""
     pact_interaction.interaction.add_text_comment(comment)
 
 
-@given(parsers.re(
-    r'a key of "(?P<key>[^"]+)" is specified for the message interaction')
+@given(
+    parsers.re(r'a key of "(?P<key>[^"]+)" is specified for the message interaction')
 )
 def a_key_is_specified_for_the_http_interaction(
     pact_interaction: PactInteraction,
@@ -87,9 +84,11 @@ def a_key_is_specified_for_the_http_interaction(
 
 @given(
     "a message interaction is being defined for a consumer test",
-    target_fixture="pact_interaction"
+    target_fixture="pact_interaction",
 )
-def a_message_interaction_is_being_defined_for_a_consumer_test() -> None:
+def a_message_interaction_is_being_defined_for_a_consumer_test() -> (
+    Generator[PactInteraction, Any, None]
+):
     """A message integration is being defined for a consumer test."""
     pact = Pact("consumer", "provider")
     pact.with_specification("V4")
@@ -98,7 +97,7 @@ def a_message_interaction_is_being_defined_for_a_consumer_test() -> None:
 
 @given("the message interaction is marked as pending")
 def the_message_interaction_is_marked_as_pending(
-    pact_interaction: PactInteraction
+    pact_interaction: PactInteraction,
 ) -> None:
     """The message interaction is marked as pending."""
     pact_interaction.interaction.set_pending(pending=True)
@@ -109,20 +108,14 @@ def the_message_interaction_is_marked_as_pending(
 ################################################################################
 
 
-@when(
-    "the Pact file for the test is generated",
-    target_fixture="pact_data"
-)
+@when("the Pact file for the test is generated", target_fixture="pact_data")
 def the_pact_file_for_the_test_is_generated(
-    pact_interaction: PactInteraction,
-    temp_dir: Path
-) -> None:
+    pact_interaction: PactInteraction, temp_dir: Path
+) -> Generator[Any, Any, None]:
     """The Pact file for the test is generated."""
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact_interaction.pact.write_file(temp_dir / "pacts")
-    with (
-        temp_dir / "pacts" / "consumer-provider.json"
-    ).open() as file:
+    with (temp_dir / "pacts" / "consumer-provider.json").open() as file:
         yield json.load(file)
 
 
@@ -155,6 +148,7 @@ def the_interaction_in_the_pact_file_will_have_a_key_of(
     else:
         assert interaction[key] == value
 
+
 @then(
     parsers.re(
         r"the (?P<num>[^ ]+) interaction in the Pact file"
@@ -172,4 +166,3 @@ def the_interaction_in_the_pact_file_will_container_provider_states(
     assert len(pact_data["interactions"]) >= num
     interaction = pact_data["interactions"][num - 1]
     assert interaction["type"] == interaction_type
-

@@ -99,7 +99,7 @@ class AsyncMessageInteraction(Interaction):
             The current instance of the interaction.
         """
         pact.v3.ffi.message_with_contents(
-            self._handle,
+            self._handle,  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
             content_type,
             content,
         )
@@ -144,15 +144,15 @@ class AsyncMessageInteraction(Interaction):
             The current instance of the interaction.
         """
         for k, v in (__metadata or {}).items():
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
         for k, v in kwargs.items():
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
         return self
 
     def verify(
         self, handler: Callable[[Any, dict[str, Any]], Any]
     ) -> AsyncMessageInteractionResult | None:
-        reified_msg = pact.v3.ffi.message_reify(self._handle)
+        reified_msg = pact.v3.ffi.message_reify(self._handle)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
         if not reified_msg:
             return None
         result = AsyncMessageInteractionResult(**json.loads(reified_msg))

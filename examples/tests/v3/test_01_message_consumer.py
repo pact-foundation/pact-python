@@ -7,6 +7,7 @@ and the message provider.
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import (
@@ -20,7 +21,7 @@ from unittest.mock import MagicMock
 import pytest
 from examples.src.message import Handler
 
-from pact.v3.pact import MessagePact as Pact
+from pact.v3.pact import Pact
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -104,7 +105,7 @@ def test_async_message_handler_write(
     Create a pact between the message handler and the message provider.
     """
     actual_handler, pact_handler = handler
-    actual_handler.fs.write.return_value = None
+    actual_handler.fs.write.return_value = None  # type: ignore[attr-defined]
     async_message = {
         "action": "WRITE",
         "path": "my_file.txt",
@@ -113,7 +114,7 @@ def test_async_message_handler_write(
     processed_message = (
         pact.upon_receiving("a write request", "Async")
         .given("a request to write test.txt")
-        .with_content(async_message)
+        .with_content(json.dumps(async_message))
         .verify(pact_handler)
     )
     actual_handler.fs.write.assert_called_once_with(  # type: ignore[attr-defined]
@@ -143,11 +144,11 @@ def test_async_message_handler_read(
         "path": "my_file.txt",
         "contents": "Hello, world!",
     }
-    actual_handler.fs.read.return_value = async_message["contents"]
+    actual_handler.fs.read.return_value = async_message["contents"]  # type: ignore[attr-defined]
     processed_message = (
         pact.upon_receiving("a read request", "Async")
         .given("a request to read test.txt")
-        .with_content(async_message)
+        .with_content(json.dumps(async_message))
         .verify(pact_handler)
     )
     actual_handler.fs.read.assert_called_once_with(  # type: ignore[attr-defined]

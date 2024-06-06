@@ -579,7 +579,7 @@ class ProviderState:
         """
         Provider State parameters.
         """
-        return [{p.key: p.value} for p in provider_state_get_param_iter(self)]
+        return {p.key: p.value for p in provider_state_get_param_iter(self)}
 
 
 class ProviderStateIterator:
@@ -627,7 +627,7 @@ class ProviderStateIterator:
         """
         return self
 
-    def __next__(self) -> ProviderStateParamPair:
+    def __next__(self) -> ProviderState:
         """
         Get the next message from the iterator.
         """
@@ -720,14 +720,20 @@ class ProviderStateParamPair:
         """
         Provider State Param key.
         """
-        return ffi.string(self._ptr.key).decode("utf-8")
+        s = ffi.string(self._ptr.key)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
 
     @property
     def value(self) -> str:
         """
         Provider State Param value.
         """
-        return ffi.string(self._ptr.value).decode("utf-8")
+        s = ffi.string(self._ptr.value)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
 
 
 class SynchronousHttp: ...
@@ -4100,9 +4106,10 @@ def provider_state_get_name(provider_state: ProviderState) -> str:
 
     If the provider_state param is NULL, this returns NULL.
     """
-    return ffi.string(lib.pactffi_provider_state_get_name(provider_state._ptr)).decode(
-        "utf-8"
-    )
+    s = ffi.string(lib.pactffi_provider_state_get_name(provider_state._ptr))
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def provider_state_get_param_iter(
@@ -6355,7 +6362,7 @@ def message_with_contents(
     """
     body = body.encode("utf-8") if isinstance(body, str) else body
     lib.pactffi_message_with_contents(
-        message_handle._ref,
+        message_handle._ref,  # type: ignore[attr-defined] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
         content_type.encode("utf-8"),
         body,
         len(body),
@@ -6404,7 +6411,7 @@ def message_with_metadata_v2(
     See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
     """
     lib.pactffi_message_with_metadata_v2(
-        message_handle._ref,
+        message_handle._ref,  # type: ignore[attr-defined] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
         key.encode("utf-8"),
         value.encode("utf-8"),
     )
@@ -6420,7 +6427,7 @@ def message_reify(message_handle: MessageHandle) -> OwnedString:
     Reification is the process of stripping away any matchers, and returning the
     original contents.
     """
-    return OwnedString(lib.pactffi_message_reify(message_handle._ref))
+    return OwnedString(lib.pactffi_message_reify(message_handle._ref))  # type: ignore[attr-defined] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
 
 
 def write_message_pact_file(
