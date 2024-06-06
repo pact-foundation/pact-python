@@ -46,7 +46,6 @@ class AsyncMessageInteraction(Interaction):
                 Pact.
         """
         super().__init__(description)
-        self._pact_handle = pact_handle
         self.__handle = pact.v3.ffi.new_message_interaction(pact_handle, description)
 
     @property
