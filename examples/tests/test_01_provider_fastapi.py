@@ -94,6 +94,7 @@ def verifier() -> Generator[Verifier, Any, None]:
         provider_base_url=str(PROVIDER_URL),
     )
     proc.start()
+    time.sleep(2)
     yield verifier
     proc.kill()
 
@@ -146,7 +147,6 @@ def test_against_broker(broker: URL, verifier: Verifier) -> None:
 
     For an example of the consumer's contract, see the consumer's tests.
     """
-    time.sleep(2) # give the broker time to start
     code, _ = verifier.verify_with_broker(
         broker_url=str(broker),
         # Despite the auth being set in the broker URL, we still need to pass
