@@ -105,30 +105,54 @@ class AsyncMessageInteraction(Interaction):
         )
         return self
 
-    def with_metadata(self, metadata: dict[str, Any]) -> Self:
+    def with_metadata(
+        self,
+        __metadata: dict[str, str] | None = None,
+        /,
+        **kwargs: str,
+    ) -> Self:
         """
         Set the metadata of the message.
 
+        This function may either be called with a single dictionary of metadata,
+        or with keyword arguments that are the key-value pairs of the metadata
+        (or a combination therefore):
+
+        ```python
+        interaction.with_metadata({"key": "value", "key two": "value two"})
+        interaction.with_metadata(foo="bar", baz="qux")
+        ```
+
+        !!! note
+
+            The implementation treats the key `__metadata` as a special case.
+            Should there ever be a need to set metadata with the key
+            `__metadata`, it is must be passed through as a dictionary:
+
+            ```python
+            interaction.with_metadata({"__metadata": "value"})
+            ```
+
         Args:
             metadata:
-                The metadata of the message, as a dictionary.
+                Dictionary of metadata keys and associated values.
+
+            **kwargs:
+                Additional metadata key-value pairs.
 
         Returns:
             The current instance of the interaction.
         """
-        [
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
-            for k, v in metadata.items()
-        ]
+        for k, v in (__metadata or {}).items():
+            pact.v3.ffi.message_with_metadata(self._handle, k, v)
+        for k, v in kwargs.items():
+            pact.v3.ffi.message_with_metadata(self._handle, k, v)
         return self
-
-    def reify(self) -> str:
-        return pact.v3.ffi.message_reify(self._handle)
 
     def verify(
         self, handler: Callable[[Any, dict[str, Any]], Any]
     ) -> AsyncMessageInteractionResult | None:
-        reified_msg = self.reify()
+        reified_msg = pact.v3.ffi.message_reify(self._handle)
         if not reified_msg:
             return None
         result = AsyncMessageInteractionResult(**json.loads(reified_msg))
