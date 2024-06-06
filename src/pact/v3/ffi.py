@@ -6362,19 +6362,6 @@ def message_with_contents(
     )
 
 
-def message_with_metadata(message_handle: MessageHandle, key: str, value: str) -> None:
-    """
-    Adds expected metadata to the Message.
-
-    [Rust
-    `pactffi_message_with_metadata`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_with_metadata)
-
-    * `key` - metadata key
-    * `value` - metadata value.
-    """
-    raise NotImplementedError
-
-
 def message_with_metadata_v2(
     message_handle: MessageHandle,
     key: str,

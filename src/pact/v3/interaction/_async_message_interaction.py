@@ -144,9 +144,9 @@ class AsyncMessageInteraction(Interaction):
             The current instance of the interaction.
         """
         for k, v in (__metadata or {}).items():
-            pact.v3.ffi.message_with_metadata(self._handle, k, v)
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
         for k, v in kwargs.items():
-            pact.v3.ffi.message_with_metadata(self._handle, k, v)
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)
         return self
 
     def verify(
