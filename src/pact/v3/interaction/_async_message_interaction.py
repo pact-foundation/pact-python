@@ -73,23 +73,35 @@ class AsyncMessageInteraction(Interaction):
         return pact.v3.ffi.InteractionPart.REQUEST
 
     def with_content(
-        self, content: dict[str, Any], content_type: str = "application/json"
+        self,
+        content: str | bytes,
+        content_type: str = "text/plain",
     ) -> Self:
         """
         Set the content of the message.
 
         Args:
             content:
-                The content of the message, as a dictionary.
+                The message content, as a string or bytes.
+
+                This can be any content that the consumer expects to receive,
+                whether it be plain text, JSON, XML, or some binary format.
+
+                Binary payloads are encoded as base64 strings when serialised.
+
+                JSON payloads may embeded [JSON matching
+                rules](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
 
             content_type:
-                The content type of the message. Defaults to `"application/json"`.
+                The content type of the message.
 
         Returns:
             The current instance of the interaction.
         """
         pact.v3.ffi.message_with_contents(
-            self._handle, content_type, json.dumps(content), 0
+            self._handle,
+            content_type,
+            content,
         )
         return self
 

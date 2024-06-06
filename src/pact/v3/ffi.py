@@ -6330,8 +6330,7 @@ def message_given_with_param(
 def message_with_contents(
     message_handle: MessageHandle,
     content_type: str,
-    body: List[int],
-    size: int,
+    body: str | bytes,
 ) -> None:
     """
     Adds the contents of the Message.
@@ -6342,22 +6341,24 @@ def message_with_contents(
     Accepts JSON, binary and other payload types. Binary data will be base64
     encoded when serialised.
 
-    Note: For text bodies (plain text, JSON or XML), you can pass in a C string
-    (NULL terminated) and the size of the body is not required (it will be
-    ignored). For binary bodies, you need to specify the number of bytes in the
-    body.
+    Args:
+        message_handle:
+            Handle to the Message.
 
-    * `content_type` - The content type of the body. Defaults to `text/plain`,
-      supports JSON structures with matchers and binary data.
-    * `body` - The body contents as bytes. For text payloads (JSON, XML, etc.),
-      a C string can be used and matching rules can be embedded in the body.
-    * `content_type` - Expected content type (e.g. application/json,
-      application/octet-stream)
-    * `size` - number of bytes in the message body to read. This is not required
-      for text bodies (JSON, XML, etc.).
+        body:
+            The body contents. For JSON payloads, matching rules can be embedded
+            in the body. See [JSON matching
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
+
+        content_type:
+            The content type of the body.
     """
+    body = body.encode("utf-8") if isinstance(body, str) else body
     lib.pactffi_message_with_contents(
-        message_handle._ref, content_type.encode("utf-8"), body.encode("utf-8"), size
+        message_handle._ref,
+        content_type.encode("utf-8"),
+        body,
+        len(body),
     )
 
 
