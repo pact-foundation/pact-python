@@ -6431,13 +6431,6 @@ def message_reify(message_handle: MessageHandle) -> OwnedString:
 
     Reification is the process of stripping away any matchers, and returning the
     original contents.
-
-    # Safety
-
-    The returned string needs to be deallocated with the `free_string` function.
-    This function must only ever be called from a foreign language. Calling it
-    from a Rust function that has a Tokio runtime in its call stack can result
-    in a deadlock.
     """
     return OwnedString(lib.pactffi_message_reify(message_handle._ref))
 
