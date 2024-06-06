@@ -25,7 +25,6 @@ from pact.v3.pact import MessagePact as Pact
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from pact.v3.interaction import AsyncMessagePactResult
 
 log = logging.getLogger(__name__)
 
@@ -80,9 +79,11 @@ def handler() -> tuple[Handler, Callable[[Dict[str, Any], Dict[str, Any]], str |
     # need a function to accept the params
     # the pact will send in during verify
     # and call the actual function under test
-    def pact_handler(msg: dict[str, Any], context: dict[str, Any]) -> Union[str, None]:
-        log.info("Processing message: ",
-                 extra={ "processed_message": msg, "context": context})
+    def pact_handler(msg: Dict[str, Any], context: Dict[str, Any]) -> str | None:
+        log.info(
+            "Processing message: ",
+            extra={"processed_message": msg, "context": context},
+        )
         return handler.process(msg)
 
     log.info("Handler created")
@@ -109,7 +110,7 @@ def test_async_message_handler_write(
         "path": "my_file.txt",
         "contents": "Hello, world!",
     }
-    processed_message: AsyncMessagePactResult = (
+    processed_message = (
         pact.upon_receiving("a write request", "Async")
         .given("a request to write test.txt")
         .with_content(async_message)
@@ -143,7 +144,7 @@ def test_async_message_handler_read(
         "contents": "Hello, world!",
     }
     actual_handler.fs.read.return_value = async_message["contents"]
-    processed_message: AsyncMessagePactResult = (
+    processed_message = (
         pact.upon_receiving("a read request", "Async")
         .given("a request to read test.txt")
         .with_content(async_message)

@@ -5,12 +5,13 @@ Asynchronous message interaction.
 from __future__ import annotations
 
 import json
-from typing import Any, Callable
+from dataclasses import dataclass
+from typing import Any, Callable, Dict
 
 from typing_extensions import Self
 
 import pact.v3.ffi
-from pact.v3.interaction._base import AsyncMessagePactResult, Interaction
+from pact.v3.interaction._base import Interaction
 
 
 class AsyncMessageInteraction(Interaction):
@@ -104,23 +105,24 @@ class AsyncMessageInteraction(Interaction):
         return pact.v3.ffi.message_reify(self._handle)
 
     def verify(
-        self, handler: Callable[[dict[str, Any], dict[str, Any]], Any]
-    ) -> AsyncMessagePactResult:
+        self, handler: Callable[[Any, dict[str, Any]], Any]
+    ) -> AsyncMessageInteractionResult | None:
         reified_msg = self.reify()
         if not reified_msg:
-            return []
-        msg = json.loads(reified_msg)
-        processed_message = AsyncMessagePactResult(
-            description=msg.get("description"),
-            contents=msg.get("contents"),
-            metadata=msg.get("metadata"),
-            response=None,
-        )
-        async_message = context = {}
-        if msg.get("contents") is not None:
-            async_message = msg["contents"]
-        if msg.get("metadata") is not None:
-            context = msg["metadata"]
-        response: any = handler(async_message, context)
-        processed_message.response = response
-        return processed_message
+            return None
+        result = AsyncMessageInteractionResult(**json.loads(reified_msg))
+        response = handler(result.contents or {}, result.metadata or {})
+        result.response = response
+        return result
+
+
+@dataclass
+class AsyncMessageInteractionResult:
+    """
+    Result of the message verification.
+    """
+
+    description: str
+    contents: str | None = None
+    metadata: Dict[str, str] | None = None
+    response: Any | None = None
