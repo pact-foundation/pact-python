@@ -68,6 +68,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generator,
     Literal,
     Set,
     overload,
@@ -93,7 +94,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class BasePact:
+class Pact:
     """
     A Pact between a consumer and a provider.
 
@@ -293,6 +294,65 @@ class BasePact:
         msg = f"Invalid interaction type: {interaction}"
         raise ValueError(msg)
 
+    def serve(  # noqa: PLR0913
+        self,
+        addr: str = "localhost",
+        port: int = 0,
+        transport: str = "http",
+        transport_config: str | None = None,
+        *,
+        raises: bool = True,
+        verbose: bool = True,
+    ) -> PactServer:
+        """
+        Return a mock server for the Pact.
+
+        This function configures a mock server for the Pact. The mock server
+        is then started when the Pact is entered into a `with` block:
+
+        ```python
+        pact = Pact("consumer", "provider")
+        with pact.serve() as srv:
+            ...
+        ```
+
+        Args:
+            addr:
+                Address to bind the mock server to. Defaults to `localhost`.
+
+            port:
+                Port to bind the mock server to. Defaults to `0`, which will
+                select a random port.
+
+            transport:
+                Transport to use for the mock server. Defaults to `HTTP`.
+
+            transport_config:
+                Configuration for the transport. This is specific to the
+                transport being used and should be a JSON string.
+
+            raises:
+                Whether to raise an exception if there are mismatches between
+                the Pact and the server. If set to `False`, then the mismatches
+                must be handled manually.
+
+            verbose:
+                Whether or not to print the mismatches to the logger. This works
+                independently of `raises`.
+
+        Returns:
+            A [`PactServer`][pact.v3.pact.PactServer] instance.
+        """
+        return PactServer(
+            self._handle,
+            addr,
+            port,
+            transport,
+            transport_config,
+            raises=raises,
+            verbose=verbose,
+        )
+
     def messages(self) -> pact.v3.ffi.PactMessageIterator:
         """
         Iterate over the messages in the Pact.
@@ -389,108 +449,7 @@ class BasePact:
             overwrite=overwrite,
         )
 
-
-class Pact(BasePact):
-    """
-    A Pact between a consumer and a provider.
-
-    This class defines a Pact between a consumer and a provider. It is the
-    central class in Pact's framework, and is responsible for defining the
-    interactions between the two parties.
-
-    One `Pact` instance should be created for each provider that a consumer
-    interacts with. The methods on this class are used to define the broader
-    attributes of the Pact, such as the consumer and provider names, the Pact
-    specification, any plugins that are used, and any metadata that is attached
-    to the Pact.
-
-    Each interaction between the consumer and the provider is defined through
-    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
-    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
-    """
-
-    def serve(  # noqa: PLR0913
-        self,
-        addr: str = "localhost",
-        port: int = 0,
-        transport: str = "http",
-        transport_config: str | None = None,
-        *,
-        raises: bool = True,
-        verbose: bool = True,
-    ) -> PactServer:
-        """
-        Return a mock server for the Pact.
-
-        This function configures a mock server for the Pact. The mock server
-        is then started when the Pact is entered into a `with` block:
-
-        ```python
-        pact = Pact("consumer", "provider")
-        with pact.serve() as srv:
-            ...
-        ```
-
-        Args:
-            addr:
-                Address to bind the mock server to. Defaults to `localhost`.
-
-            port:
-                Port to bind the mock server to. Defaults to `0`, which will
-                select a random port.
-
-            transport:
-                Transport to use for the mock server. Defaults to `HTTP`.
-
-            transport_config:
-                Configuration for the transport. This is specific to the
-                transport being used and should be a JSON string.
-
-            raises:
-                Whether to raise an exception if there are mismatches between
-                the Pact and the server. If set to `False`, then the mismatches
-                must be handled manually.
-
-            verbose:
-                Whether or not to print the mismatches to the logger. This works
-                independently of `raises`.
-
-        Returns:
-            A [`PactServer`][pact.v3.pact.PactServer] instance.
-        """
-        return PactServer(
-            self._handle,
-            addr,
-            port,
-            transport,
-            transport_config,
-            raises=raises,
-            verbose=verbose,
-        )
-
-HttpPact = Pact
-
-
-class MessagePact(BasePact):
-    """
-    A Message Pact between a consumer and a provider.
-
-    This class defines a Pact between a consumer and a provider for an
-    asynchronous message pattern. It is the central class in Pact's framework,
-    and is responsible for defining the interactions between the two parties.
-
-    One `Pact` instance should be created for each provider that a consumer
-    interacts with. The methods on this class are used to define the broader
-    attributes of the Pact, such as the consumer and provider names, the Pact
-    specification, any plugins that are used, and any metadata that is attached
-    to the Pact.
-
-    Each interaction between the consumer and the provider is defined through
-    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
-    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
-    """
-
-    def get_provider_states(self) -> list[dict[str, Any]]:
+    def get_provider_states(self) -> Generator[dict[str, Any], Any, None]:
         """
         Get the provider states for the interaction.
 
