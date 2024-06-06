@@ -456,7 +456,7 @@ class Pact:
         Returns:
             A list of provider states for the interaction.
         """
-        for message in pact.v3.ffi.pact_handle_get_message_iter(self._handle):
+        for message in self.messages():
             for provider_state in pact.v3.ffi.message_get_provider_state_iter(message):
                 yield {
                     "name": provider_state.name,
