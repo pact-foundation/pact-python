@@ -615,12 +615,6 @@ class ProviderStateIterator:
         """
         return f"ProviderStateIterator({self._ptr!r})"
 
-    def __del__(self) -> None:
-        """
-        Destructor for the Provider State Iterator.
-        """
-        provider_state_iter_delete(self)
-
     def __iter__(self) -> ProviderStateIterator:
         """
         Return the iterator itself.

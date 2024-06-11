@@ -171,3 +171,5 @@ class AsyncMessageInteractionResult:
     contents: str | None = None
     metadata: Dict[str, str] | None = None
     response: Any | None = None
+    generators: Dict[str, Any] | None = None
+    matchingRules: Dict[str, Any] | None = None

@@ -269,7 +269,7 @@ def the_message_is_successfully_processed(
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact_interaction.pact.write_file(temp_dir / "pacts")
     with (temp_dir / "pacts" / "consumer-provider.json").open() as file:
-        yield PactResult(received_payload["data"], json.load(file), None)
+        yield PactResult(received_payload.get("data"), json.load(file), None)
 
 
 ################################################################################
@@ -334,7 +334,12 @@ def the_first_message_in_the_pact_file_will_contain_provider_state(
     if not isinstance(messages, list) or not messages:
         msg = "No messages found"
         raise RuntimeError(msg)
-    assert state in messages[0]["providerStates"]
+    found = False
+    for provider_state in messages[0]["providerStates"]:
+        if state in list(provider_state.values()):
+            found = True
+            break
+    assert found
 
 
 @then(
@@ -436,7 +441,7 @@ def the_message_contents_will_have_been_replaced_with(
 ) -> None:
     """The message contents for "$.one" will have been replaced with an "integer"."""
     elem_key = replace_token.split(".")[1]
-    value = pact_result.received_payload.message.get(elem_key)
+    value = json.loads(pact_result.received_payload.message).get(elem_key)
     assert compare_type(expected_type, value)
 
 
@@ -481,11 +486,8 @@ def the_provider_state_for_the_message_will_contain_the_following_parameters(
     assert provider_state_params is not None
     found = {k: False for k in expected_params}
     for k, v in expected_params.items():
-        for provider_state_param in provider_state_params:
-            if provider_state_param.get(k):
-                assert ast.literal_eval(provider_state_param[k]) == v
-                found[k] = True
-                break
+        assert ast.literal_eval(provider_state_params.get(k)) == v
+        found[k] = True
     assert all(found.values())
 
 
@@ -497,6 +499,7 @@ def the_received_message_content_type_will_be(
     content_type: str,
 ) -> None:
     """The received message content type will be "application/json"."""
+    import pdb; pdb.set_trace()
     assert pact_result.received_payload.context.get("contentType") == content_type
 
 
@@ -555,7 +558,7 @@ def the_received_message_payload_will_contain_the_basic_json_document(
     pact_result: PactResult, json_doc: str
 ) -> None:
     """The received message payload will contain the "basic" JSON document."""
-    assert pact_result.received_payload.message == read_json(f"{json_doc}.json")
+    assert json.loads(pact_result.received_payload.message) == read_json(f"{json_doc}.json")
 
 
 def read_json(file: str) -> dict[str, Any]:
