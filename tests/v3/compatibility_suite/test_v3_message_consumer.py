@@ -499,7 +499,6 @@ def the_received_message_content_type_will_be(
     content_type: str,
 ) -> None:
     """The received message content type will be "application/json"."""
-    import pdb; pdb.set_trace()
     assert pact_result.received_payload.context.get("contentType") == content_type
 
 
