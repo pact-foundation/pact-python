@@ -4,10 +4,6 @@ Asynchronous message interaction.
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
-from typing import Any, Callable, Dict
-
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
 
@@ -69,28 +65,3 @@ class AsyncMessageInteraction(Interaction):
         consumer of the message does not send any responses.
         """
         return pact.v3.ffi.InteractionPart.REQUEST
-
-    def verify(
-        self, handler: Callable[[Any, dict[str, Any]], Any]
-    ) -> AsyncMessageInteractionResult | None:
-        reified_msg = pact.v3.ffi.message_reify(self._handle)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
-        if not reified_msg:
-            return None
-        result = AsyncMessageInteractionResult(**json.loads(reified_msg))
-        response = handler(result.contents or {}, result.metadata or {})
-        result.response = response
-        return result
-
-
-@dataclass
-class AsyncMessageInteractionResult:
-    """
-    Result of the message verification.
-    """
-
-    description: str
-    contents: str | None = None
-    metadata: Dict[str, str] | None = None
-    response: Any | None = None
-    generators: Dict[str, Any] | None = None
-    matching_rules: Dict[str, Any] | None = None
