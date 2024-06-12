@@ -327,6 +327,11 @@ class Interaction(abc.ABC):
         interaction.with_metadata(foo="bar", baz="qux")
         ```
 
+        The value of `None` will remove the metadata key from the interaction.
+        This is distinct from using an empty string or a string containing the
+        JSON `null` value, which will set the metadata key to an empty string or
+        the JSON `null` value, respectively.
+
         !!! note
 
             There are two special keys which cannot be used as keyword
@@ -353,10 +358,21 @@ class Interaction(abc.ABC):
         Returns:
             The current instance of the interaction.
         """
+        part = self._parse_interaction_part(__part)
         for k, v in (__metadata or {}).items():
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
+            pact.v3.ffi.with_metadata(
+                self._handle,
+                k,
+                v,
+                part,
+            )
         for k, v in kwargs.items():
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
+            pact.v3.ffi.with_metadata(
+                self._handle,
+                k,
+                v,
+                part,
+            )
         return self
 
     def with_multipart_file(  # noqa: PLR0913
