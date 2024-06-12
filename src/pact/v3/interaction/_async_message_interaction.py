@@ -105,50 +105,6 @@ class AsyncMessageInteraction(Interaction):
         )
         return self
 
-    def with_metadata(
-        self,
-        __metadata: dict[str, str] | None = None,
-        /,
-        **kwargs: str,
-    ) -> Self:
-        """
-        Set the metadata of the message.
-
-        This function may either be called with a single dictionary of metadata,
-        or with keyword arguments that are the key-value pairs of the metadata
-        (or a combination therefore):
-
-        ```python
-        interaction.with_metadata({"key": "value", "key two": "value two"})
-        interaction.with_metadata(foo="bar", baz="qux")
-        ```
-
-        !!! note
-
-            The implementation treats the key `__metadata` as a special case.
-            Should there ever be a need to set metadata with the key
-            `__metadata`, it is must be passed through as a dictionary:
-
-            ```python
-            interaction.with_metadata({"__metadata": "value"})
-            ```
-
-        Args:
-            metadata:
-                Dictionary of metadata keys and associated values.
-
-            **kwargs:
-                Additional metadata key-value pairs.
-
-        Returns:
-            The current instance of the interaction.
-        """
-        for k, v in (__metadata or {}).items():
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
-        for k, v in kwargs.items():
-            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
-        return self
-
     def verify(
         self, handler: Callable[[Any, dict[str, Any]], Any]
     ) -> AsyncMessageInteractionResult | None:

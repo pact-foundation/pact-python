@@ -308,6 +308,57 @@ class Interaction(abc.ABC):
         )
         return self
 
+    def with_metadata(
+        self,
+        __metadata: dict[str, str] | None = None,
+        __part: Literal["Request", "Response"] | None = None,
+        /,
+        **kwargs: str,
+    ) -> Self:
+        """
+        Set metadata for the interaction.
+
+        This function may either be called with a single dictionary of metadata,
+        or with keyword arguments that are the key-value pairs of the metadata
+        (or a combination therefore):
+
+        ```python
+        interaction.with_metadata({"key": "value", "key two": "value two"})
+        interaction.with_metadata(foo="bar", baz="qux")
+        ```
+
+        !!! note
+
+            There are two special keys which cannot be used as keyword
+            arguments: `__metadata` and `__part`. Should there ever be a need
+            to set metadata with one of these keys, they must be passed through
+            as a dictionary:
+
+            ```python
+            interaction.with_metadata({"__metadata": "value", "__part": 1})
+            ```
+
+        Args:
+            ___metadata:
+                Dictionary of metadata keys and associated values.
+
+            __part:
+                Whether the metadata should be added to the request or the
+                response. If `None`, then the function intelligently determines
+                whether the body should be added to the request or the response.
+
+            **kwargs:
+                Additional metadata key-value pairs.
+
+        Returns:
+            The current instance of the interaction.
+        """
+        for k, v in (__metadata or {}).items():
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
+        for k, v in kwargs.items():
+            pact.v3.ffi.message_with_metadata_v2(self._handle, k, v)  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
+        return self
+
     def with_multipart_file(  # noqa: PLR0913
         self,
         part_name: str,

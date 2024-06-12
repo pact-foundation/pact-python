@@ -5594,6 +5594,74 @@ def with_pact_metadata(
         raise RuntimeError(msg)
 
 
+def with_metadata(
+    interaction: InteractionHandle,
+    key: str,
+    value: str,
+    part: InteractionPart,
+) -> None:
+    r"""
+    Adds metadata to the interaction.
+
+    Metadata is only relevant for message interactions to provide additional
+    information about the message, such as the queue name, message type, tags,
+    timestamps, etc.
+
+    * `key` - metadata key
+    * `value` - metadata value, supports JSON structures with matchers and
+      generators. Passing a `NULL` point will remove the metadata key instead.
+    * `part` - the part of the interaction to add the metadata to (only
+     relevant for synchronous message interactions).
+
+    Returns `true` if the metadata was added successfully, `false` otherwise.
+
+    To include matching rules for the value, include the matching rule JSON
+    format with the value as a single JSON document. I.e.
+
+    ```python with_metadata(
+        handle, "TagData", json.dumps({
+            "value": {"ID": "sjhdjkshsdjh", "weight": 100.5},
+            "pact:matcher:type": "type",
+        }),
+    )
+    ```
+
+    See
+    [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md)
+
+    # Note
+
+    For HTTP interactions, use [`with_header_v2`][pact.v3.ffi.with_header_v2]
+    instead. This function will not have any effect on HTTP interactions and
+    returns `false`.
+
+    For synchronous message interactions, the `part` parameter is required to
+    specify whether the metadata should be added to the request or response
+    part. For responses which can have multiple messages, the metadata will be
+    set on all response messages. This also requires for responses to have been
+    defined in the interaction.
+
+    The [`with_body`][pact.v3.ffi.with_body] will also contribute to the
+    metadata of the message (both sync and async) by setting the key
+    `contentType` with the content type of the message.
+
+    # Safety
+
+    The key and value parameters must be valid pointers to NULL terminated
+    strings, or `NULL` for the value parameter if the metadata key should be
+    removed.
+    """
+    success: bool = lib.pactffi_with_metadata(
+        interaction._ref,
+        key.encode("utf-8"),
+        value.encode("utf-8"),
+        part.value,
+    )
+    if not success:
+        msg = f"Failed to set metadata for {interaction} with {key}={value}"
+        raise RuntimeError(msg)
+
+
 def with_header_v2(
     interaction: InteractionHandle,
     part: InteractionPart,
