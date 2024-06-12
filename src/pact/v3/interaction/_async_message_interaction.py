@@ -8,8 +8,6 @@ import json
 from dataclasses import dataclass
 from typing import Any, Callable, Dict
 
-from typing_extensions import Self
-
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
 
@@ -71,39 +69,6 @@ class AsyncMessageInteraction(Interaction):
         consumer of the message does not send any responses.
         """
         return pact.v3.ffi.InteractionPart.REQUEST
-
-    def with_content(
-        self,
-        content: str | bytes,
-        content_type: str = "text/plain",
-    ) -> Self:
-        """
-        Set the content of the message.
-
-        Args:
-            content:
-                The message content, as a string or bytes.
-
-                This can be any content that the consumer expects to receive,
-                whether it be plain text, JSON, XML, or some binary format.
-
-                Binary payloads are encoded as base64 strings when serialised.
-
-                JSON payloads may embeded [JSON matching
-                rules](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
-
-            content_type:
-                The content type of the message.
-
-        Returns:
-            The current instance of the interaction.
-        """
-        pact.v3.ffi.message_with_contents(
-            self._handle,  # type: ignore[arg-type] # TODO: Check InteractionHandle vs MessageHandle # noqa: TD003
-            content_type,
-            content,
-        )
-        return self
 
     def verify(
         self, handler: Callable[[Any, dict[str, Any]], Any]

@@ -207,7 +207,7 @@ def the_message_is_configured_with_the_following(
             _build_metadata_generator(generator_json, metadata_json)
         else:
             raise UnknownGeneratorCategoryError(category)
-    pact_interaction.interaction.with_content(json.dumps(body_json))
+    pact_interaction.interaction.with_body(json.dumps(body_json))
     for k, v in metadata_json.items():
         v_str = v
         if isinstance(v, dict):
@@ -222,7 +222,7 @@ def the_message_payload_contains_the_basic_json_document(
     pact_interaction: PactInteraction, json_doc: str
 ) -> None:
     """The message payload contains the "basic" JSON document."""
-    pact_interaction.interaction.with_content(json.dumps(read_json(f"{json_doc}.json")))
+    pact_interaction.interaction.with_body(json.dumps(read_json(f"{json_doc}.json")))
 
 
 ################################################################################
@@ -557,7 +557,9 @@ def the_received_message_payload_will_contain_the_basic_json_document(
     pact_result: PactResult, json_doc: str
 ) -> None:
     """The received message payload will contain the "basic" JSON document."""
-    assert json.loads(pact_result.received_payload.message) == read_json(f"{json_doc}.json")
+    assert json.loads(pact_result.received_payload.message) == read_json(
+        f"{json_doc}.json"
+    )
 
 
 def read_json(file: str) -> dict[str, Any]:

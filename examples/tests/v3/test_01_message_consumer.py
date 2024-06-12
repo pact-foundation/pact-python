@@ -41,7 +41,7 @@ def pact() -> Generator[Pact, None, None]:
     are taken.
 
     The verify method takes a function as an argument. This function
-    will be called with one or two arguments - the value of `with_content` and
+    will be called with one or two arguments - the value of `with_body` and
     the contents of `with_metadata` if provided.
 
     If the function under test does not take those parameters, you can create
@@ -58,7 +58,7 @@ def pact() -> Generator[Pact, None, None]:
             .with_specification("V3")
             .upon_receiving("a request", "Async") \
             .given("a request to write test.txt") \
-            .with_content(msg) \
+            .with_body(msg) \
             .with_metadata({"Content-Type": "application/json"})
             .verify(pact_handler)
     )
@@ -114,7 +114,7 @@ def test_async_message_handler_write(
     processed_message = (
         pact.upon_receiving("a write request", "Async")
         .given("a request to write test.txt")
-        .with_content(json.dumps(async_message))
+        .with_body(json.dumps(async_message))
         .verify(pact_handler)
     )
     actual_handler.fs.write.assert_called_once_with(  # type: ignore[attr-defined]
@@ -148,7 +148,7 @@ def test_async_message_handler_read(
     processed_message = (
         pact.upon_receiving("a read request", "Async")
         .given("a request to read test.txt")
-        .with_content(json.dumps(async_message))
+        .with_body(json.dumps(async_message))
         .verify(pact_handler)
     )
     actual_handler.fs.read.assert_called_once_with(  # type: ignore[attr-defined]
