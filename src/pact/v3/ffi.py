@@ -90,6 +90,7 @@ import typing
 import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, Literal
+from typing import Generator as GeneratorType
 
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
@@ -135,19 +136,237 @@ Options.
 # to inform the type checker of the existence of these types.
 
 
-class AsynchronousMessage: ...
+class AsynchronousMessage:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Asynchronous Message.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct AsynchronousMessage *":
+            msg = (
+                "ptr must be a struct AsynchronousMessage, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "AsynchronousMessage"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"AsynchronousMessage({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the AsynchronousMessage.
+        """
+        async_message_delete(self)
+
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return async_message_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from async_message_get_provider_state_iter(self)
+
+    @property
+    def contents(self) -> MessageContents | None:
+        """
+        The contents of the message.
+
+        This may be `None` if the message has no contents.
+        """
+        return async_message_get_contents(self)
 
 
 class Consumer: ...
 
 
-class Generator: ...
+class Generator:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a generator value.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct Generator *":
+            msg = "ptr must be a struct Generator, got" f" {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "Generator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"Generator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Generator.
+        """
+
+    @property
+    def json(self) -> dict[str, Any]:
+        """
+        Dictionary representation of the generator.
+        """
+        return json.loads(generator_to_json(self))
+
+    def generate_string(self, context: dict[str, Any] | None = None) -> str:
+        """
+        Generate a string from the generator.
+
+        Args:
+            context:
+                JSON payload containing any generator context. For example:
+
+                -   The context for a `MockServerURL` generator should contain
+                    details about the running mock server.
+                -   The context for a `ProviderStateGenerator` should contain
+                    the values returned from the provider state callback
+                    function.
+        """
+        return generator_generate_string(self, json.dumps(context or {}))
+
+    def generate_integer(self, context: dict[str, Any] | None = None) -> int:
+        """
+        Generate an integer from the generator.
+
+        Args:
+            context:
+                JSON payload containing any generator context. For example:
+
+                -   The context for a `ProviderStateGenerator` should contain
+                    the values returned from the provider state callback
+                    function.
+        """
+        return generator_generate_integer(self, json.dumps(context or {}))
 
 
-class GeneratorCategoryIterator: ...
+class GeneratorCategoryIterator:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new generator category iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct GeneratorCategoryIterator *":
+            msg = (
+                "ptr must be a struct GeneratorCategoryIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "GeneratorCategoryIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"GeneratorCategoryIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the GeneratorCategoryIterator.
+        """
+        generators_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> GeneratorKeyValuePair:
+        """
+        Get the next generator category from the iterator.
+        """
+        return generators_iter_next(self)
 
 
-class GeneratorKeyValuePair: ...
+class GeneratorKeyValuePair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct GeneratorKeyValuePair *":
+            msg = (
+                "ptr must be a struct GeneratorKeyValuePair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "GeneratorKeyValuePair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"GeneratorKeyValuePair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the GeneratorKeyValuePair.
+        """
+        generators_iter_pair_delete(self)
+
+    @property
+    def path(self) -> str:
+        """
+        Generator path.
+        """
+        s = ffi.string(self._ptr.path)
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def generator(self) -> Generator:
+        """
+        Generator value.
+        """
+        return Generator(self._ptr.generator)
 
 
 class HttpRequest: ...
@@ -187,10 +406,86 @@ class InteractionHandle:
         return f"InteractionHandle({self._ref!r})"
 
 
-class MatchingRule: ...
+class MatchingRule:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MatchingRule *":
+            msg = "ptr must be a struct MatchingRule, got" f" {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MatchingRule"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MatchingRule({self._ptr!r})"
+
+    @property
+    def json(self) -> dict[str, Any]:
+        """
+        Dictionary representation of the matching rule.
+        """
+        return json.loads(matching_rule_to_json(self))
 
 
-class MatchingRuleCategoryIterator: ...
+class MatchingRuleCategoryIterator:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MatchingRuleCategoryIterator *":
+            msg = (
+                "ptr must be a struct MatchingRuleCategoryIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MatchingRuleCategoryIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MatchingRuleCategoryIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the MatchingRuleCategoryIterator.
+        """
+        matching_rules_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> MatchingRuleKeyValuePair:
+        """
+        Get the next generator category from the iterator.
+        """
+        return matching_rules_iter_next(self)
 
 
 class MatchingRuleDefinitionResult: ...
@@ -199,7 +494,57 @@ class MatchingRuleDefinitionResult: ...
 class MatchingRuleIterator: ...
 
 
-class MatchingRuleKeyValuePair: ...
+class MatchingRuleKeyValuePair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MatchingRuleKeyValuePair *":
+            msg = (
+                "ptr must be a struct MatchingRuleKeyValuePair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MatchingRuleKeyValuePair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MatchingRuleKeyValuePair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the MatchingRuleKeyValuePair.
+        """
+        matching_rules_iter_pair_delete(self)
+
+    @property
+    def path(self) -> str:
+        """
+        Matching Rule path.
+        """
+        s = ffi.string(self._ptr.path)
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def matching_rule(self) -> MatchingRule:
+        """
+        Matching Rule value.
+        """
+        return MatchingRule(self._ptr.matching_rule)
 
 
 class MatchingRuleResult: ...
@@ -231,14 +576,218 @@ class Message:
         """
         return f"Message({self._ptr!r})"
 
+    def __del__(self) -> None:
+        """
+        Destructor for the Message.
+        """
+        message_delete(self)
 
-class MessageContents: ...
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return message_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from message_get_provider_state_iter(self)
+
+    @property
+    def contents(self) -> str | bytes | None:
+        """
+        The contents of the message.
+        """
+        return message_get_contents(self) or message_get_contents_bin(self)
+
+    def metadata(self) -> GeneratorType[MessageMetadataPair, None, None]:
+        """
+        Metadata associated with this message.
+        """
+        yield from message_get_metadata_iter(self)
 
 
-class MessageMetadataIterator: ...
+class MessageContents:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a Message Contents.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageContents *":
+            msg = (
+                "ptr must be a struct MessageContents, got" f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageContents"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageContents({self._ptr!r})"
+
+    @property
+    def contents(self) -> str | bytes | None:
+        """
+        Get the contents of the message.
+        """
+        return message_contents_get_contents_str(
+            self
+        ) or message_contents_get_contents_bin(self)
+
+    @property
+    def metadata(self) -> GeneratorType[MessageMetadataPair, None, None]:
+        """
+        Get the metadata for the message contents.
+        """
+        yield from message_contents_get_metadata_iter(self)
+
+    def matching_rules(
+        self,
+        category: GeneratorCategoryOptions | GeneratorCategory,
+    ) -> GeneratorType[MatchingRuleKeyValuePair, None, None]:
+        """
+        Get the matching rules for the message contents.
+        """
+        if isinstance(category, str):
+            category = GeneratorCategory(category.upper())
+        yield from message_contents_get_matching_rule_iter(self, category)
+
+    def generators(
+        self,
+        category: GeneratorCategoryOptions | GeneratorCategory,
+    ) -> GeneratorType[GeneratorKeyValuePair, None, None]:
+        """
+        Get the generators for the message contents.
+        """
+        if isinstance(category, str):
+            category = GeneratorCategory(category.upper())
+        yield from message_contents_get_generators_iter(self, category)
 
 
-class MessageMetadataPair: ...
+class MessageMetadataIterator:
+    """
+    Iterator over an interaction's metadata.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Message Metadata Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageMetadataIterator *":
+            msg = (
+                "ptr must be a struct MessageMetadataIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageMetadataIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageMetadataIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Interaction Iterator.
+        """
+        message_metadata_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> MessageMetadataPair:
+        """
+        Get the next interaction from the iterator.
+        """
+        return message_metadata_iter_next(self)
+
+
+class MessageMetadataPair:
+    """
+    A metadata key-value pair.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Message Metadata Pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageMetadataPair *":
+            msg = (
+                "ptr must be a struct MessageMetadataPair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageMetadataPair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageMetadataPair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Interaction Iterator.
+        """
+        message_metadata_pair_delete(self)
+
+    @property
+    def key(self) -> str:
+        """
+        Metadata key.
+        """
+        s = ffi.string(self._ptr.key)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def value(self) -> str:
+        """
+        Metadata value.
+        """
+        s = ffi.string(self._ptr.value)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
 
 
 class MessagePact: ...
@@ -266,6 +815,58 @@ class MismatchesIterator: ...
 
 
 class Pact: ...
+
+
+class PactAsyncMessageIterator:
+    """
+    Iterator over a Pact's asynchronous messages.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Asynchronous Message Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactAsyncMessageIterator *":
+            msg = (
+                "ptr must be a struct PactAsyncMessageIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactAsyncMessageIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactAsyncMessageIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Synchronous Message Iterator.
+        """
+        pact_async_message_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> AsynchronousMessage:
+        """
+        Get the next message from the iterator.
+        """
+        return pact_async_message_iter_next(self)
 
 
 class PactHandle:
@@ -639,6 +1240,12 @@ class ProviderStateIterator:
         """
         return f"ProviderStateIterator({self._ptr!r})"
 
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Iterator.
+        """
+        provider_state_iter_delete(self)
+
     def __iter__(self) -> ProviderStateIterator:
         """
         Return the iterator itself.
@@ -733,6 +1340,12 @@ class ProviderStateParamPair:
         """
         return f"ProviderStateParamPair({self._ptr!r})"
 
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Param Pair.
+        """
+        provider_state_param_pair_delete(self)
+
     @property
     def key(self) -> str:
         """
@@ -754,10 +1367,140 @@ class ProviderStateParamPair:
         return s
 
 
-class SynchronousHttp: ...
+class SynchronousHttp:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Synchronous HTTP Interaction.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct SynchronousHttp *":
+            msg = (
+                "ptr must be a struct SynchronousHttp, got" f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "SynchronousHttp"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"SynchronousHttp({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the SynchronousHttp.
+        """
+        sync_http_delete(self)
+
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return sync_http_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from sync_http_get_provider_state_iter(self)
+
+    @property
+    def request_contents(self) -> str | bytes | None:
+        """
+        The contents of the request.
+        """
+        return sync_http_get_request_contents(
+            self
+        ) or sync_http_get_request_contents_bin(self)
+
+    @property
+    def response_contents(self) -> str | bytes | None:
+        """
+        The contents of the response.
+        """
+        return sync_http_get_response_contents(
+            self
+        ) or sync_http_get_response_contents_bin(self)
 
 
-class SynchronousMessage: ...
+class SynchronousMessage:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Synchronous Message.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct SynchronousMessage *":
+            msg = (
+                "ptr must be a struct SynchronousMessage, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "SynchronousMessage"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"SynchronousMessage({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the SynchronousMessage.
+        """
+        sync_message_delete(self)
+
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return sync_message_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from sync_message_get_provider_state_iter(self)
+
+    @property
+    def request_contents(self) -> MessageContents:
+        """
+        The contents of the message.
+        """
+        return sync_message_get_request_contents(self)
+
+    @property
+    def response_contents(self) -> GeneratorType[MessageContents, None, None]:
+        """
+        The contents of the responses.
+        """
+        yield from (
+            sync_message_get_response_contents(self, i)
+            for i in range(sync_message_get_number_responses(self))
+        )
 
 
 class VerifierHandle:
@@ -1642,27 +2385,19 @@ def async_message_delete(message: AsynchronousMessage) -> None:
 
     [Rust `pactffi_async_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_async_message_delete(message)
 
 
-def async_message_get_contents(message: AsynchronousMessage) -> MessageContents:
+def async_message_get_contents(message: AsynchronousMessage) -> MessageContents | None:
     """
     Get the message contents of an `AsynchronousMessage` as a `MessageContents` pointer.
 
     [Rust
     `pactffi_async_message_get_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_get_contents)
 
-    # Safety
-
-    The data pointed to by the pointer this function returns will be deleted
-    when the message is deleted. Trying to use if after the message is deleted
-    will result in undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL.
+    If the message contents are missing, this function will return `None`.
     """
-    raise NotImplementedError
+    return MessageContents(lib.pactffi_async_message_get_contents(message))
 
 
 def async_message_get_contents_str(message: AsynchronousMessage) -> str:
@@ -1799,21 +2534,14 @@ def async_message_get_description(message: AsynchronousMessage) -> str:
     [Rust
     `pactffi_async_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_get_description)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the
-    `AsynchronousMessage`.
-
-    # Errors
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the Rust string contains embedded null ('\0')
-    bytes.
+    Raises:
+        RuntimeError: If the description cannot be retrieved.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_async_message_get_description(message)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the description from the message."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def async_message_set_description(
@@ -1878,12 +2606,10 @@ def async_message_get_provider_state_iter(
     # Safety
 
     The underlying data must not change during iteration.
-
-    # Error Handling
-
-    Returns NULL if an error occurs.
     """
-    raise NotImplementedError
+    return ProviderStateIterator(
+        lib.pactffi_async_message_get_provider_state_iter(message)
+    )
 
 
 def consumer_get_name(consumer: Consumer) -> str:
@@ -1955,26 +2681,23 @@ def pact_consumer_delete(consumer: Consumer) -> None:
     raise NotImplementedError
 
 
-def message_contents_get_contents_str(contents: MessageContents) -> str:
+def message_contents_get_contents_str(contents: MessageContents) -> str | None:
     """
     Get the message contents in string form.
 
-    [Rust `pactffi_message_contents_get_contents_str`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_str)
+    [Rust
+    `pactffi_message_contents_get_contents_str`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_str)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    The returned string can outlive the message.
-
-    # Error Handling
-
-    If the message contents is NULL, returns NULL. If the body of the message
-    is missing, then this function also returns NULL. This means there's
-    no mechanism to differentiate with this function call alone between
-    a NULL message and a missing message body.
+    If the message has no contents or contain invalid UTF-8 characters, this
+    function will return `None`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_contents_get_contents_str(contents._ptr)
+    if ptr == ffi.NULL:
+        return None
+    s = ffi.string(ptr)
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def message_contents_set_contents_str(
@@ -2015,38 +2738,27 @@ def message_contents_get_contents_length(contents: MessageContents) -> int:
 
     [Rust `pactffi_message_contents_get_contents_length`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_length)
 
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the message is NULL, returns 0. If the body of the message
-    is missing, then this function also returns 0.
+    If the message has not contents, this function will return 0.
     """
-    raise NotImplementedError
+    return lib.pactffi_message_contents_get_contents_length(contents._ptr)
 
 
-def message_contents_get_contents_bin(contents: MessageContents) -> str:
+def message_contents_get_contents_bin(contents: MessageContents) -> bytes | None:
     """
     Get the contents of a message as a pointer to an array of bytes.
 
     [Rust
     `pactffi_message_contents_get_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_bin)
 
-    # Safety
-
-    The number of bytes in the buffer will be returned by
-    `pactffi_message_contents_get_contents_length`. It is safe to use the
-    pointer while the message is not deleted or changed. Using the pointer after
-    the message is mutated or deleted may lead to undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL. If the body of the message is missing,
-    then this function also returns NULL.
+    If the message has no contents, this function will return `None`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_contents_get_contents_bin(contents._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return ffi.buffer(
+        ptr,
+        lib.pactffi_message_contents_get_contents_length(contents._ptr),
+    )[:]
 
 
 def message_contents_set_contents_bin(
@@ -2108,7 +2820,9 @@ def message_contents_get_metadata_iter(
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return MessageMetadataIterator(
+        lib.pactffi_message_contents_get_metadata_iter(contents._ptr)
+    )
 
 
 def message_contents_get_matching_rule_iter(
@@ -2149,7 +2863,9 @@ def message_contents_get_matching_rule_iter(
 
     On failure, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    return MatchingRuleCategoryIterator(
+        lib.pactffi_message_contents_get_matching_rule_iter(contents._ptr, category)
+    )
 
 
 def request_contents_get_matching_rule_iter(
@@ -2248,7 +2964,9 @@ def message_contents_get_generators_iter(
 
     On failure, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    return GeneratorCategoryIterator(
+        lib.pactffi_message_contents_get_generators_iter(contents, category)
+    )
 
 
 def request_contents_get_generators_iter(
@@ -2650,7 +3368,7 @@ def generator_to_json(generator: Generator) -> str:
     This function will fail if it is passed a NULL pointer, or the owner of the
     generator has been deleted.
     """
-    raise NotImplementedError
+    return OwnedString(lib.pactffi_generator_to_json(generator._ptr))
 
 
 def generator_generate_string(generator: Generator, context_json: str) -> str:
@@ -2668,7 +3386,14 @@ def generator_generate_string(generator: Generator, context_json: str) -> str:
 
     If anything goes wrong, it will return a NULL pointer.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_generator_generate_string(
+        generator._ptr,
+        context_json.encode("utf-8"),
+    )
+    s = ffi.string(ptr)
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def generator_generate_integer(generator: Generator, context_json: str) -> int:
@@ -2685,7 +3410,10 @@ def generator_generate_integer(generator: Generator, context_json: str) -> int:
     If anything goes wrong or the generator is not a type that can generate an
     integer value, it will return a zero value.
     """
-    raise NotImplementedError
+    return lib.pactffi_generator_generate_integer(
+        generator._ptr,
+        context_json.encode("utf-8"),
+    )
 
 
 def generators_iter_delete(iter: GeneratorCategoryIterator) -> None:
@@ -2695,7 +3423,7 @@ def generators_iter_delete(iter: GeneratorCategoryIterator) -> None:
     [Rust
     `pactffi_generators_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_generators_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_generators_iter_delete(iter._ptr)
 
 
 def generators_iter_next(iter: GeneratorCategoryIterator) -> GeneratorKeyValuePair:
@@ -2717,7 +3445,10 @@ def generators_iter_next(iter: GeneratorCategoryIterator) -> GeneratorKeyValuePa
 
     If no further data is present, returns NULL.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_generators_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return GeneratorKeyValuePair(ptr)
 
 
 def generators_iter_pair_delete(pair: GeneratorKeyValuePair) -> None:
@@ -2727,7 +3458,7 @@ def generators_iter_pair_delete(pair: GeneratorKeyValuePair) -> None:
     [Rust
     `pactffi_generators_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_generators_iter_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_generators_iter_pair_delete(pair._ptr)
 
 
 def sync_http_new() -> SynchronousHttp:
@@ -2777,7 +3508,7 @@ def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
     raise NotImplementedError
 
 
-def sync_http_get_request_contents(interaction: SynchronousHttp) -> str:
+def sync_http_get_request_contents(interaction: SynchronousHttp) -> str | None:
     """
     Get the request contents of a `SynchronousHttp` interaction in string form.
 
@@ -2797,7 +3528,13 @@ def sync_http_get_request_contents(interaction: SynchronousHttp) -> str:
     mechanism to differentiate with this function call alone between a NULL body
     and a missing body.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_request_contents(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    s = ffi.string(ptr)
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def sync_http_set_request_contents(
@@ -2848,7 +3585,7 @@ def sync_http_get_request_contents_length(interaction: SynchronousHttp) -> int:
     If the interaction is NULL, returns 0. If the body of the request is
     missing, then this function also returns 0.
     """
-    raise NotImplementedError
+    return lib.pactffi_sync_http_get_request_contents_length(interaction._ptr)
 
 
 def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes:
@@ -2870,7 +3607,13 @@ def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes:
     If the interaction is NULL, returns NULL. If the body of the request is
     missing, then this function also returns NULL.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_request_contents_bin(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return ffi.buffer(
+        ptr,
+        sync_http_get_request_contents_length(interaction),
+    )[:]
 
 
 def sync_http_set_request_contents_bin(
@@ -2925,7 +3668,7 @@ def sync_http_get_response(interaction: SynchronousHttp) -> HttpResponse:
     raise NotImplementedError
 
 
-def sync_http_get_response_contents(interaction: SynchronousHttp) -> str:
+def sync_http_get_response_contents(interaction: SynchronousHttp) -> str | None:
     """
     Get the response contents of a `SynchronousHttp` interaction in string form.
 
@@ -2946,7 +3689,13 @@ def sync_http_get_response_contents(interaction: SynchronousHttp) -> str:
     NULL. This means there's no mechanism to differentiate with this function
     call alone between a NULL body and a missing body.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_response_contents(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    s = ffi.string(ptr)
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def sync_http_set_response_contents(
@@ -2997,10 +3746,10 @@ def sync_http_get_response_contents_length(interaction: SynchronousHttp) -> int:
     If the interaction is NULL or the index is not valid, returns 0. If the body
     of the response is missing, then this function also returns 0.
     """
-    raise NotImplementedError
+    return lib.pactffi_sync_http_get_response_contents_length(interaction._ptr)
 
 
-def sync_http_get_response_contents_bin(interaction: SynchronousHttp) -> bytes:
+def sync_http_get_response_contents_bin(interaction: SynchronousHttp) -> bytes | None:
     """
     Get the response contents of a `SynchronousHttp` interaction as bytes.
 
@@ -3019,7 +3768,13 @@ def sync_http_get_response_contents_bin(interaction: SynchronousHttp) -> bytes:
     If the interaction is NULL, returns NULL. If the body of the response is
     missing, then this function also returns NULL.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_response_contents_bin(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return ffi.buffer(
+        ptr,
+        sync_http_get_response_contents_length(interaction),
+    )[:]
 
 
 def sync_http_set_response_contents_bin(
@@ -3075,7 +3830,10 @@ def sync_http_get_description(interaction: SynchronousHttp) -> str:
     This function may fail if the Rust string contains embedded null ('\0')
     bytes.
     """
-    raise NotImplementedError
+    s = ffi.string(lib.pactffi_sync_http_get_description(interaction._ptr))
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def sync_http_set_description(interaction: SynchronousHttp, description: str) -> int:
@@ -3144,7 +3902,9 @@ def sync_http_get_provider_state_iter(
 
     Returns NULL if an error occurs.
     """
-    raise NotImplementedError
+    return ProviderStateIterator(
+        lib.pactffi_sync_http_get_provider_state_iter(interaction._ptr)
+    )
 
 
 def pact_interaction_as_synchronous_http(
@@ -3261,6 +4021,29 @@ def pact_message_iter_next(iter: PactMessageIterator) -> Message:
     return Message(ptr)
 
 
+def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> AsynchronousMessage:
+    """
+    Get the next asynchronous message from the iterator.
+
+    [Rust
+    `pactffi_pact_async_message_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_async_message_iter_next)
+    """
+    ptr = lib.pactffi_pact_async_message_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return AsynchronousMessage(ptr)
+
+
+def pact_async_message_iter_delete(iter: PactAsyncMessageIterator) -> None:
+    """
+    Free the iterator when you're done using it.
+
+    [Rust
+    `pactffi_pact_async_message_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_async_message_iter_delete)
+    """
+    lib.pactffi_pact_async_message_iter_delete(iter._ptr)
+
+
 def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMessage:
     """
     Get the next synchronous request/response message from the V4 pact.
@@ -3271,7 +4054,6 @@ def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMes
     ptr = lib.pactffi_pact_sync_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
     return SynchronousMessage(ptr)
 
 
@@ -3347,7 +4129,7 @@ def matching_rule_to_json(rule: MatchingRule) -> str:
     This function will fail if it is passed a NULL pointer, or the iterator that
     owns the value of the matching rule has been deleted.
     """
-    raise NotImplementedError
+    return OwnedString(lib.pactffi_matching_rule_to_json(rule._ptr))
 
 
 def matching_rules_iter_delete(iter: MatchingRuleCategoryIterator) -> None:
@@ -3357,7 +4139,7 @@ def matching_rules_iter_delete(iter: MatchingRuleCategoryIterator) -> None:
     [Rust
     `pactffi_matching_rules_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_matching_rules_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_matching_rules_iter_delete(iter._ptr)
 
 
 def matching_rules_iter_next(
@@ -3381,7 +4163,7 @@ def matching_rules_iter_next(
 
     If no further data is present, returns NULL.
     """
-    raise NotImplementedError
+    return MatchingRuleKeyValuePair(lib.pactffi_matching_rules_iter_next(iter._ptr))
 
 
 def matching_rules_iter_pair_delete(pair: MatchingRuleKeyValuePair) -> None:
@@ -3391,7 +4173,7 @@ def matching_rules_iter_pair_delete(pair: MatchingRuleKeyValuePair) -> None:
     [Rust
     `pactffi_matching_rules_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_matching_rules_iter_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_matching_rules_iter_pair_delete(pair._ptr)
 
 
 def message_new() -> Message:
@@ -3459,7 +4241,7 @@ def message_delete(message: Message) -> None:
     [Rust
     `pactffi_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_message_delete(message._ptr)
 
 
 def message_get_contents(message: Message) -> OwnedString | None:
@@ -3469,23 +4251,14 @@ def message_get_contents(message: Message) -> OwnedString | None:
     [Rust
     `pactffi_message_get_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete` and can
-    outlive the message. This function must only ever be called from a foreign
-    language. Calling it from a Rust function that has a Tokio runtime in its
-    call stack can result in a deadlock.
-
-    The returned string can outlive the message.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL. If the body of the message is missing,
-    then this function also returns NULL. This means there's no mechanism to
-    differentiate with this function call alone between a NULL message and a
-    missing message body.
+    Returns `None` if the message is NULL or the body is missing. As a result,
+    there is no way to differentiate between a NULL message and a missing body
+    from this method.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_get_contents(message._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return OwnedString(ptr)
 
 
 def message_set_contents(message: Message, contents: str, content_type: str) -> None:
@@ -3517,38 +4290,20 @@ def message_get_contents_length(message: Message) -> int:
     [Rust
     `pactffi_message_get_contents_length`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents_length)
 
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the message is NULL, returns 0. If the body of the message is missing,
-    then this function also returns 0.
+    This function may return 0 if the message is NULL or the body is missing.
     """
-    raise NotImplementedError
+    return lib.pactffi_message_get_contents_length(message._ptr)
 
 
-def message_get_contents_bin(message: Message) -> str:
+def message_get_contents_bin(message: Message) -> bytes | None:
     """
     Get the contents of a `Message` as a pointer to an array of bytes.
 
     [Rust
     `pactffi_message_get_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents_bin)
-
-    # Safety
-
-    The number of bytes in the buffer will be returned by
-    `pactffi_message_get_contents_length`. It is safe to use the pointer while
-    the message is not deleted or changed. Using the pointer after the message
-    is mutated or deleted may lead to undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL. If the body of the message is missing,
-    then this function also returns NULL.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_get_contents_bin(message._ptr)
+    return ffi.buffer(ptr, message_get_contents_length(message._ptr))[:]
 
 
 def message_set_contents_bin(
@@ -3584,12 +4339,6 @@ def message_get_description(message: Message) -> OwnedString:
     [Rust
     `pactffi_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_description)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the `Message`.
-
     # Errors
 
     On failure, this function will return a NULL pointer.
@@ -3597,7 +4346,11 @@ def message_get_description(message: Message) -> OwnedString:
     This function may fail if the Rust string contains embedded null ('\0')
     bytes.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_get_description(message._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get description"
+        raise ValueError(msg)
+    return OwnedString(ptr)
 
 
 def message_set_description(message: Message, description: str) -> int:
@@ -3696,7 +4449,7 @@ def provider_state_iter_delete(iter: ProviderStateIterator) -> None:
     [Rust
     `pactffi_provider_state_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_provider_state_iter_delete(iter._ptr)
 
 
 def message_find_metadata(message: Message, key: str) -> str:
@@ -3765,7 +4518,7 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
 
     If no further data is present, returns NULL.
     """
-    raise NotImplementedError
+    return MessageMetadataPair(lib.pactffi_message_metadata_iter_next(iter._ptr))
 
 
 def message_get_metadata_iter(message: Message) -> MessageMetadataIterator:
@@ -3790,7 +4543,7 @@ def message_get_metadata_iter(message: Message) -> MessageMetadataIterator:
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    raise NotImplementedError
+    return MessageMetadataIterator(lib.pactffi_message_get_metadata_iter(message._ptr))
 
 
 def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
@@ -3800,7 +4553,7 @@ def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
     [Rust
     `pactffi_message_metadata_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_metadata_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_message_metadata_iter_delete(iter._ptr)
 
 
 def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
@@ -3810,7 +4563,7 @@ def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
     [Rust
     `pactffi_message_metadata_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_metadata_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_message_metadata_pair_delete(pair._ptr)
 
 
 def message_pact_new_from_json(file_name: str, json_str: str) -> MessagePact:
@@ -4242,7 +4995,7 @@ def sync_message_delete(message: SynchronousMessage) -> None:
     [Rust
     `pactffi_sync_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_sync_message_delete(message._ptr)
 
 
 def sync_message_get_request_contents_str(message: SynchronousMessage) -> str:
@@ -4673,7 +5426,9 @@ def sync_message_get_provider_state_iter(
 
     Returns NULL if an error occurs.
     """
-    raise NotImplementedError
+    return ProviderStateIterator(
+        lib.pactffi_sync_message_get_provider_state_iter(message._ptr)
+    )
 
 
 def string_delete(string: OwnedString) -> None:
@@ -5512,6 +6267,24 @@ def with_query_parameter_v2(
     )
     ```
 
+    For query parameters with no value, two distinct formats are provided:
+
+    1.  Parameters with blank values, as specified by `?foo=&bar=`, require an
+        empty string:
+
+        ```python
+        with_query_parameter_v2(handle, "foo", 0, "")
+        with_query_parameter_v2(handle, "bar", 0, "")
+        ```
+
+    2.  Parameters with no associated value, as specified by `?foo&bar`, require
+        a NULL pointer:
+
+        ```python
+        with_query_parameter_v2(handle, "foo", 0, None)
+        with_query_parameter_v2(handle, "bar", 0, None)
+        ```
+
     Args:
         interaction:
             Handle to the Interaction.
@@ -6292,6 +7065,32 @@ def pact_handle_get_message_iter(pact: PactHandle) -> PactMessageIterator:
     ('\0') bytes.
     """
     return PactMessageIterator(lib.pactffi_pact_handle_get_message_iter(pact._ref))
+
+
+def pact_handle_get_async_message_iter(pact: PactHandle) -> PactAsyncMessageIterator:
+    r"""
+    Get an iterator over all the asynchronous messages of the Pact.
+
+    The returned iterator needs to be freed with
+    `pactffi_pact_sync_message_iter_delete`.
+
+    [Rust
+    `pactffi_pact_handle_get_sync_message_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_handle_get_sync_message_iter)
+
+    # Safety
+
+    The iterator contains a copy of the Pact, so it is always safe to use.
+
+    # Error Handling
+
+    On failure, this function will return a NULL pointer.
+
+    This function may fail if any of the Rust strings contain embedded null
+    ('\0') bytes.
+    """
+    return PactAsyncMessageIterator(
+        lib.pactffi_pact_handle_get_async_message_iter(pact._ref),
+    )
 
 
 def pact_handle_get_sync_message_iter(pact: PactHandle) -> PactSyncMessageIterator:
