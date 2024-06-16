@@ -64,6 +64,7 @@ from __future__ import annotations
 
 import json
 import logging
+import typing
 import warnings
 from pathlib import Path
 from typing import (
@@ -433,6 +434,14 @@ class Pact:
         """
         errors: list[tuple[(int, str, Exception)]] = []
         for idx, message in enumerate(self.interactions(kind)):
+            if TYPE_CHECKING:
+                # This is required to ensure that the type checker knows what
+                # type `message` is.
+                message = typing.cast(
+                    pact.v3.ffi.SynchronousMessage | pact.v3.ffi.AsynchronousMessage,
+                    message,
+                )
+
             request = (
                 message.contents
                 if isinstance(message, pact.v3.ffi.AsynchronousMessage)

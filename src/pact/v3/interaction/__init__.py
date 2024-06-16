@@ -70,10 +70,7 @@ since the client does not care about this information, it should not be included
 in the interaction.
 """
 
-from pact.v3.interaction._async_message_interaction import (
-    AsyncMessageInteraction,
-    AsyncMessageInteractionResult,
-)
+from pact.v3.interaction._async_message_interaction import AsyncMessageInteraction
 from pact.v3.interaction._base import Interaction
 from pact.v3.interaction._http_interaction import HttpInteraction
 from pact.v3.interaction._sync_message_interaction import SyncMessageInteraction
@@ -82,6 +79,5 @@ __all__ = [
     "Interaction",
     "HttpInteraction",
     "AsyncMessageInteraction",
-    "AsyncMessageInteractionResult",
     "SyncMessageInteraction",
 ]

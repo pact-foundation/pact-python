@@ -127,6 +127,16 @@ Type alias for the string literals which represent the Generator Category
 Options.
 """
 
+MatchingRuleCategoryOptions = Literal[
+    "METHOD",   "method",
+    "PATH",     "path",
+    "HEADER",   "header",
+    "QUERY",    "query",
+    "BODY",     "body",
+    "STATUS",   "status",
+    "CONTENTS", "contents",
+    "METADATA", "metadata",
+]  # fmt: skip
 
 ################################################################################
 # Classes
@@ -356,7 +366,7 @@ class GeneratorKeyValuePair:
         """
         Generator path.
         """
-        s = ffi.string(self._ptr.path)
+        s = ffi.string(self._ptr.path)  # type: ignore[attr-defined]
         if isinstance(s, bytes):
             s = s.decode("utf-8")
         return s
@@ -366,7 +376,7 @@ class GeneratorKeyValuePair:
         """
         Generator value.
         """
-        return Generator(self._ptr.generator)
+        return Generator(self._ptr.generator)  # type: ignore[attr-defined]
 
 
 class HttpRequest: ...
@@ -534,7 +544,7 @@ class MatchingRuleKeyValuePair:
         """
         Matching Rule path.
         """
-        s = ffi.string(self._ptr.path)
+        s = ffi.string(self._ptr.path)  # type: ignore[attr-defined]
         if isinstance(s, bytes):
             s = s.decode("utf-8")
         return s
@@ -544,7 +554,7 @@ class MatchingRuleKeyValuePair:
         """
         Matching Rule value.
         """
-        return MatchingRule(self._ptr.matching_rule)
+        return MatchingRule(self._ptr.matching_rule)  # type: ignore[attr-defined]
 
 
 class MatchingRuleResult: ...
@@ -657,13 +667,13 @@ class MessageContents:
 
     def matching_rules(
         self,
-        category: GeneratorCategoryOptions | GeneratorCategory,
+        category: MatchingRuleCategoryOptions | MatchingRuleCategory,
     ) -> GeneratorType[MatchingRuleKeyValuePair, None, None]:
         """
         Get the matching rules for the message contents.
         """
         if isinstance(category, str):
-            category = GeneratorCategory(category.upper())
+            category = MatchingRuleCategory(category.upper())
         yield from message_contents_get_matching_rule_iter(self, category)
 
     def generators(
@@ -3588,7 +3598,7 @@ def sync_http_get_request_contents_length(interaction: SynchronousHttp) -> int:
     return lib.pactffi_sync_http_get_request_contents_length(interaction._ptr)
 
 
-def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes:
+def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes | None:
     """
     Get the request contents of a `SynchronousHttp` interaction as bytes.
 
@@ -4303,7 +4313,7 @@ def message_get_contents_bin(message: Message) -> bytes | None:
     `pactffi_message_get_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents_bin)
     """
     ptr = lib.pactffi_message_get_contents_bin(message._ptr)
-    return ffi.buffer(ptr, message_get_contents_length(message._ptr))[:]
+    return ffi.buffer(ptr, message_get_contents_length(message))[:]
 
 
 def message_set_contents_bin(
