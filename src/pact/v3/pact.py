@@ -378,27 +378,27 @@ class Pact:
     def interactions(
         self,
         kind: Literal["HTTP"],
-    ) -> pact.v3.ffi.PactSyncHttpIterator: ...
+    ) -> Generator[pact.v3.ffi.SynchronousHttp, None, None]: ...
 
     @overload
     def interactions(
         self,
         kind: Literal["Sync"],
-    ) -> pact.v3.ffi.PactSyncMessageIterator: ...
+    ) -> Generator[pact.v3.ffi.SynchronousMessage, None, None]: ...
 
     @overload
     def interactions(
         self,
         kind: Literal["Async"],
-    ) -> pact.v3.ffi.PactMessageIterator: ...
+    ) -> Generator[pact.v3.ffi.AsynchronousMessage, None, None]: ...
 
     def interactions(
         self,
         kind: str = "HTTP",
     ) -> (
-        pact.v3.ffi.PactSyncHttpIterator
-        | pact.v3.ffi.PactSyncMessageIterator
-        | pact.v3.ffi.PactMessageIterator
+        Generator[pact.v3.ffi.SynchronousHttp, None, None]
+        | Generator[pact.v3.ffi.SynchronousMessage, None, None]
+        | Generator[pact.v3.ffi.AsynchronousMessage, None, None]
     ):
         """
         Return an iterator over the Pact's interactions.
@@ -409,11 +409,11 @@ class Pact:
         # TODO: Add an iterator for `All` interactions.
         # https://github.com/pact-foundation/pact-python/issues/451
         if kind == "HTTP":
-            return pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
+            yield from pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
         if kind == "Sync":
-            return pact.v3.ffi.pact_handle_get_sync_message_iter(self._handle)
+            yield from pact.v3.ffi.pact_handle_get_sync_message_iter(self._handle)
         if kind == "Async":
-            return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
+            yield from pact.v3.ffi.pact_handle_get_async_message_iter(self._handle)
         msg = f"Unknown interaction type: {kind}"
         raise ValueError(msg)
 
