@@ -490,20 +490,6 @@ class Pact:
             overwrite=overwrite,
         )
 
-    def get_provider_states(self) -> Generator[dict[str, Any], Any, None]:
-        """
-        Get the provider states for the interaction.
-
-        Returns:
-            A list of provider states for the interaction.
-        """
-        for message in self.messages():
-            for provider_state in pact.v3.ffi.message_get_provider_state_iter(message):
-                yield {
-                    "name": provider_state.name,
-                    "params": provider_state.parameters,
-                }
-
 
 class MismatchesError(Exception):
     """
