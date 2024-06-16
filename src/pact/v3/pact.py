@@ -64,10 +64,12 @@ from __future__ import annotations
 
 import json
 import logging
+import warnings
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Generator,
     Literal,
     Set,
@@ -395,6 +397,66 @@ class Pact:
             yield from pact.v3.ffi.pact_handle_get_async_message_iter(self._handle)
         msg = f"Unknown interaction type: {kind}"
         raise ValueError(msg)
+
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+    ) -> None:
+        """
+        Verify message interactions.
+
+        This function is used to ensure that the consumer is able to handle the
+        messages that are defined in the Pact. The `handler` function is called
+        for each message in the Pact.
+
+        The end-user is responsible for defining the `handler` function and
+        verifying that the messages are handled correctly. For example, if the
+        handler is meant to call an API, then the API call should be mocked out
+        and once the verification is complete, the mock should be verified. Any
+        exceptions raised by the handler will be caught and reported as
+        mismatches.
+
+        Args:
+            handler:
+                The function that will be called for each message in the Pact.
+
+                The first argument to the function is the message body, either as
+                a string or byte array.
+
+                The second argument is the metadata for the message. If there
+                is no metadata, then this will be an empty dictionary.
+
+            kind:
+                The type of message interaction. This must be one of `Async`
+                or `Sync`.
+        """
+        errors: list[tuple[(int, str, Exception)]] = []
+        for idx, message in enumerate(self.interactions(kind)):
+            request = (
+                message.contents
+                if isinstance(message, pact.v3.ffi.AsynchronousMessage)
+                else message.request_contents
+            )
+
+            if request is None:
+                warnings.warn(f"Message {idx} has no contents", stacklevel=2)
+                continue
+
+            body = request.contents
+            metadata = {pair.key: pair.value for pair in request.metadata}
+
+            try:
+                handler(body, metadata)
+            except Exception as e:  # noqa: BLE001
+                errors.append((idx, message.description, e))
+
+        if errors:
+            msg = "\n".join(
+                f"Message {index}: {description}: {e}"
+                for index, description, e in errors
+            )
+            raise AssertionError(msg)
 
     def write_file(
         self,
