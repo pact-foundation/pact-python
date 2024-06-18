@@ -7011,6 +7011,44 @@ def with_matching_rules(
         raise RuntimeError(msg)
 
 
+def with_generators(
+    interaction: InteractionHandle,
+    part: InteractionPart,
+    generators: str,
+) -> None:
+    """
+    Add generators to the interaction.
+
+    [Rust
+    `pactffi_with_generators`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_with_generators)
+
+    This function can be called multiple times, in which case the generators
+    will be combined (provide they don't clash).
+
+    For synchronous messages which allow multiple responses, the generators will
+    be added to all the responses.
+
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        part:
+            Request or response part (if applicable).
+
+        generators:
+            JSON string of the generators to add to the interaction.
+
+    """
+    success: bool = lib.pactffi_with_generators(
+        interaction._ref,
+        part.value,
+        generators.encode("utf-8"),
+    )
+    if not success:
+        msg = f"Unable to set generators for {interaction}."
+        raise RuntimeError(msg)
+
+
 def with_multipart_file_v2(  # noqa: PLR0913
     interaction: InteractionHandle,
     part: InteractionPart,

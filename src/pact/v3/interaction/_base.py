@@ -551,3 +551,36 @@ class Interaction(abc.ABC):
             rules,
         )
         return self
+
+    def with_generators(
+        self,
+        generators: dict[str, Any] | str,
+        part: Literal["Request", "Response"] | None = None,
+    ) -> Self:
+        """
+        Add generators to the interaction.
+
+        Generators are used to adjust how parts of the request or response are
+        generated when the Pact is being tested. This can be useful for fields
+        that vary each time the request is made, such as a timestamp.
+
+        Args:
+            generators:
+                Generators to add to the interaction. This must be encodable using
+                [`json.dumps(...)`][json.dumps], or a string.
+
+            part:
+                Whether the generators should be added to the request or the
+                response. If `None`, then the function intelligently determines
+                whether the generators should be added to the request or the
+                response.
+        """
+        if isinstance(generators, dict):
+            generators = json.dumps(generators)
+
+        pact.v3.ffi.with_generators(
+            self._handle,
+            self._parse_interaction_part(part),
+            generators,
+        )
+        return self
