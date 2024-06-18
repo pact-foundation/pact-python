@@ -1227,7 +1227,7 @@ class ProviderState:
         """
         Nice string representation.
         """
-        return "ProviderState"
+        return "ProviderState({self.name!r})"
 
     def __repr__(self) -> str:
         """
@@ -2677,7 +2677,11 @@ def async_message_get_provider_state(
     This function may fail if the index requested is out of bounds, or if any of
     the Rust strings contain embedded null ('\0') bytes.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_async_message_get_provider_state(message._ptr, index)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the provider state from the message."
+        raise RuntimeError(msg)
+    return ProviderState(ptr)
 
 
 def async_message_get_provider_state_iter(
@@ -8052,9 +8056,11 @@ def verifier_broker_source_with_selectors(  # noqa: PLR0913
         password.encode("utf-8") if password else ffi.NULL,
         token.encode("utf-8") if token else ffi.NULL,
         enable_pending,
-        include_wip_pacts_since.isoformat().encode("utf-8")
-        if include_wip_pacts_since
-        else ffi.NULL,
+        (
+            include_wip_pacts_since.isoformat().encode("utf-8")
+            if include_wip_pacts_since
+            else ffi.NULL
+        ),
         [ffi.new("char[]", t.encode("utf-8")) for t in provider_tags],
         len(provider_tags),
         provider_branch.encode("utf-8") if provider_branch else ffi.NULL,
