@@ -89,7 +89,7 @@ import logging
 import typing
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Literal
+from typing import TYPE_CHECKING, Any, List, Literal, Tuple
 from typing import Generator as GeneratorType
 
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
@@ -202,6 +202,7 @@ class AsynchronousMessage:
         Optional provider state for the interaction.
         """
         yield from async_message_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
 
     @property
     def contents(self) -> MessageContents | None:
@@ -620,6 +621,7 @@ class Message:
         Optional provider state for the interaction.
         """
         yield from message_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
 
     @property
     def contents(self) -> str | bytes | None:
@@ -692,6 +694,7 @@ class MessageContents:
         Get the metadata for the message contents.
         """
         yield from message_contents_get_metadata_iter(self)
+        return  # Ensures that the parent object outlives the generator
 
     def matching_rules(
         self,
@@ -703,6 +706,7 @@ class MessageContents:
         if isinstance(category, str):
             category = MatchingRuleCategory(category.upper())
         yield from message_contents_get_matching_rule_iter(self, category)
+        return  # Ensures that the parent object outlives the generator
 
     def generators(
         self,
@@ -714,6 +718,7 @@ class MessageContents:
         if isinstance(category, str):
             category = GeneratorCategory(category.upper())
         yield from message_contents_get_generators_iter(self, category)
+        return  # Ensures that the parent object outlives the generator
 
 
 class MessageMetadataIterator:
@@ -1237,12 +1242,15 @@ class ProviderState:
         """
         return provider_state_get_name(self)
 
-    @property
-    def parameters(self) -> dict[str, str]:
+    def parameters(self) -> GeneratorType[Tuple[str, str], None, None]:
         """
         Provider State parameters.
+
+        This is a generator that yields key-value pairs.
         """
-        return {p.key: p.value for p in provider_state_get_param_iter(self)}
+        for p in provider_state_get_param_iter(self):
+            yield p.key, p.value
+        return  # Ensures that the parent object outlives the generator
 
 
 class ProviderStateIterator:
@@ -1460,6 +1468,7 @@ class SynchronousHttp:
         Optional provider state for the interaction.
         """
         yield from sync_http_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
 
     @property
     def request_contents(self) -> str | bytes | None:
@@ -1536,6 +1545,7 @@ class SynchronousMessage:
         Optional provider state for the interaction.
         """
         yield from sync_message_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
 
     @property
     def request_contents(self) -> MessageContents:
@@ -1553,6 +1563,7 @@ class SynchronousMessage:
             sync_message_get_response_contents(self, i)
             for i in range(sync_message_get_number_responses(self))
         )
+        return  # Ensures that the parent object outlives the generator
 
 
 class VerifierHandle:
