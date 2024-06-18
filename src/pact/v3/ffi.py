@@ -2437,7 +2437,7 @@ def async_message_delete(message: AsynchronousMessage) -> None:
 
     [Rust `pactffi_async_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_delete)
     """
-    lib.pactffi_async_message_delete(message)
+    lib.pactffi_async_message_delete(message._ptr)
 
 
 def async_message_get_contents(message: AsynchronousMessage) -> MessageContents | None:
@@ -2449,7 +2449,7 @@ def async_message_get_contents(message: AsynchronousMessage) -> MessageContents 
 
     If the message contents are missing, this function will return `None`.
     """
-    return MessageContents(lib.pactffi_async_message_get_contents(message))
+    return MessageContents(lib.pactffi_async_message_get_contents(message._ptr))
 
 
 def async_message_get_contents_str(message: AsynchronousMessage) -> str:
@@ -2589,7 +2589,7 @@ def async_message_get_description(message: AsynchronousMessage) -> str:
     Raises:
         RuntimeError: If the description cannot be retrieved.
     """
-    ptr = lib.pactffi_async_message_get_description(message)
+    ptr = lib.pactffi_async_message_get_description(message._ptr)
     if ptr == ffi.NULL:
         msg = "Unable to get the description from the message."
         raise RuntimeError(msg)
@@ -2660,7 +2660,7 @@ def async_message_get_provider_state_iter(
     The underlying data must not change during iteration.
     """
     return ProviderStateIterator(
-        lib.pactffi_async_message_get_provider_state_iter(message)
+        lib.pactffi_async_message_get_provider_state_iter(message._ptr)
     )
 
 
@@ -2888,9 +2888,11 @@ def message_contents_get_metadata_iter(
     This function may fail if any of the Rust strings contain embedded null
     ('\0') bytes.
     """
-    return MessageMetadataIterator(
-        lib.pactffi_message_contents_get_metadata_iter(contents._ptr)
-    )
+    ptr = lib.pactffi_message_contents_get_metadata_iter(contents._ptr)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the metadata iterator from the message contents."
+        raise RuntimeError(msg)
+    return MessageMetadataIterator(ptr)
 
 
 def message_contents_get_matching_rule_iter(
@@ -4585,7 +4587,10 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
 
     If no further data is present, returns NULL.
     """
-    return MessageMetadataPair(lib.pactffi_message_metadata_iter_next(iter._ptr))
+    ptr = lib.pactffi_message_metadata_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return MessageMetadataPair(ptr)
 
 
 def message_get_metadata_iter(message: Message) -> MessageMetadataIterator:
@@ -5034,7 +5039,7 @@ def provider_state_param_pair_delete(pair: ProviderStateParamPair) -> None:
     [Rust
     `pactffi_provider_state_param_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_param_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_provider_state_param_pair_delete(pair._ptr)
 
 
 def sync_message_new() -> SynchronousMessage:
