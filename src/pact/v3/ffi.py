@@ -147,13 +147,18 @@ MatchingRuleCategoryOptions = Literal[
 
 
 class AsynchronousMessage:
-    def __init__(self, ptr: cffi.FFI.CData) -> None:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
         """
         Initialise a new Asynchronous Message.
 
         Args:
             ptr:
                 CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
         """
         if ffi.typeof(ptr).cname != "struct AsynchronousMessage *":
             msg = (
@@ -162,6 +167,7 @@ class AsynchronousMessage:
             )
             raise TypeError(msg)
         self._ptr = ptr
+        self._owned = owned
 
     def __str__(self) -> str:
         """
@@ -179,7 +185,8 @@ class AsynchronousMessage:
         """
         Destructor for the AsynchronousMessage.
         """
-        async_message_delete(self)
+        if not self._owned:
+            async_message_delete(self)
 
     @property
     def description(self) -> str:
@@ -561,18 +568,24 @@ class MatchingRuleResult: ...
 
 
 class Message:
-    def __init__(self, ptr: cffi.FFI.CData) -> None:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
         """
         Initialise a new Message.
 
         Args:
             ptr:
                 CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
         """
         if ffi.typeof(ptr).cname != "struct Message *":
             msg = "ptr must be a struct Message, got" f" {ffi.typeof(ptr).cname}"
             raise TypeError(msg)
         self._ptr = ptr
+        self._owned = owned
 
     def __str__(self) -> str:
         """
@@ -590,7 +603,8 @@ class Message:
         """
         Destructor for the Message.
         """
-        message_delete(self)
+        if not self._owned:
+            message_delete(self)
 
     @property
     def description(self) -> str:
@@ -619,16 +633,22 @@ class Message:
         Metadata associated with this message.
         """
         yield from message_get_metadata_iter(self)
+        return  # Ensures that the parent object outlives the generator
 
 
 class MessageContents:
-    def __init__(self, ptr: cffi.FFI.CData) -> None:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = True) -> None:
         """
         Initialise a Message Contents.
 
         Args:
             ptr:
                 CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
         """
         if ffi.typeof(ptr).cname != "struct MessageContents *":
             msg = (
@@ -636,6 +656,7 @@ class MessageContents:
             )
             raise TypeError(msg)
         self._ptr = ptr
+        self._owned = owned
 
     def __str__(self) -> str:
         """
@@ -648,6 +669,13 @@ class MessageContents:
         Debugging representation.
         """
         return f"MessageContents({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the MessageContents.
+        """
+        if not self._owned:
+            message_contents_delete(self)
 
     @property
     def contents(self) -> str | bytes | None:
@@ -1378,13 +1406,18 @@ class ProviderStateParamPair:
 
 
 class SynchronousHttp:
-    def __init__(self, ptr: cffi.FFI.CData) -> None:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
         """
         Initialise a new Synchronous HTTP Interaction.
 
         Args:
             ptr:
                 CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
         """
         if ffi.typeof(ptr).cname != "struct SynchronousHttp *":
             msg = (
@@ -1392,6 +1425,7 @@ class SynchronousHttp:
             )
             raise TypeError(msg)
         self._ptr = ptr
+        self._owned = owned
 
     def __str__(self) -> str:
         """
@@ -1409,7 +1443,8 @@ class SynchronousHttp:
         """
         Destructor for the SynchronousHttp.
         """
-        sync_http_delete(self)
+        if not self._owned:
+            sync_http_delete(self)
 
     @property
     def description(self) -> str:
@@ -1446,13 +1481,18 @@ class SynchronousHttp:
 
 
 class SynchronousMessage:
-    def __init__(self, ptr: cffi.FFI.CData) -> None:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
         """
         Initialise a new Synchronous Message.
 
         Args:
             ptr:
                 CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
         """
         if ffi.typeof(ptr).cname != "struct SynchronousMessage *":
             msg = (
@@ -1461,6 +1501,7 @@ class SynchronousMessage:
             )
             raise TypeError(msg)
         self._ptr = ptr
+        self._owned = owned
 
     def __str__(self) -> str:
         """
@@ -1478,7 +1519,8 @@ class SynchronousMessage:
         """
         Destructor for the SynchronousMessage.
         """
-        sync_message_delete(self)
+        if not self._owned:
+            sync_message_delete(self)
 
     @property
     def description(self) -> str:
@@ -2689,6 +2731,22 @@ def pact_consumer_delete(consumer: Consumer) -> None:
     [Rust `pactffi_pact_consumer_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_consumer_delete)
     """
     raise NotImplementedError
+
+
+def message_contents_delete(contents: MessageContents) -> None:
+    """
+    Delete the message contents instance.
+
+    This should only be called on a message contents that require deletion.
+    The function creating the message contents should document whether it
+    requires deletion.
+
+    Deleting a message content which is associated with an interaction
+    will result in undefined behaviour.
+
+    [Rust `pactffi_message_contents_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_delete)
+    """
+    lib.pactffi_message_contents_delete(contents._ptr)
 
 
 def message_contents_get_contents_str(contents: MessageContents) -> str | None:
@@ -4028,7 +4086,7 @@ def pact_message_iter_next(iter: PactMessageIterator) -> Message:
     ptr = lib.pactffi_pact_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    return Message(ptr)
+    return Message(ptr, owned=True)
 
 
 def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> AsynchronousMessage:
@@ -4041,7 +4099,7 @@ def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> Asynchronous
     ptr = lib.pactffi_pact_async_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    return AsynchronousMessage(ptr)
+    return AsynchronousMessage(ptr, owned=True)
 
 
 def pact_async_message_iter_delete(iter: PactAsyncMessageIterator) -> None:
@@ -4064,7 +4122,7 @@ def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMes
     ptr = lib.pactffi_pact_sync_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    return SynchronousMessage(ptr)
+    return SynchronousMessage(ptr, owned=True)
 
 
 def pact_sync_message_iter_delete(iter: PactSyncMessageIterator) -> None:
@@ -4087,8 +4145,7 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
     ptr = lib.pactffi_pact_sync_http_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
-    return SynchronousHttp(ptr)
+    return SynchronousHttp(ptr, owned=True)
 
 
 def pact_sync_http_iter_delete(iter: PactSyncHttpIterator) -> None:
