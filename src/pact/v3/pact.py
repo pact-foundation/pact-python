@@ -71,7 +71,9 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Dict,
     Generator,
+    List,
     Literal,
     Set,
     overload,
@@ -95,6 +97,94 @@ if TYPE_CHECKING:
         from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
+
+
+class InteractionVerificationError(Exception):
+    """
+    Exception raised due during the verification of an interaction.
+    """
+
+    def __init__(self, description: str, error: Exception) -> None:
+        """
+        Initialise a new InteractionVerificationError.
+
+        Args:
+            description:
+                Description of the interaction that failed verification.
+
+            error: Error that occurred during the verification of the
+                interaction.
+        """
+        super().__init__(f"Error verifying interaction: {description}")
+        self._description = description
+        self._error = error
+
+    @property
+    def description(self) -> str:
+        """
+        Description of the interaction that failed verification.
+        """
+        return self._description
+
+    @property
+    def error(self) -> Exception:
+        """
+        Error that occurred during the verification of the interaction.
+        """
+        return self._error
+
+
+class PactVerificationError(Exception):
+    """
+    Exception raised due to errors in the verification of the Pact.
+
+    This is raised when performing manual verification of the Pact, as opposed
+    to the automatic verification that is performed by the mock server.
+    """
+
+    def __init__(self, errors: list[InteractionVerificationError]) -> None:
+        """
+        Initialise a new PactVerificationError.
+
+        Args:
+            errors:
+                Errors that occurred during the verification of the Pact.
+        """
+        super().__init__(f"Error verifying Pact (count: {len(errors)})")
+        self._errors = errors
+
+    @property
+    def errors(self) -> list[InteractionVerificationError]:
+        """
+        Errors that occurred during the verification of the Pact.
+        """
+        return self._errors
+
+
+class MismatchesError(Exception):
+    """
+    Exception raised when there are mismatches between the Pact and the server.
+    """
+
+    def __init__(self, mismatches: list[dict[str, Any]]) -> None:
+        """
+        Initialise a new MismatchesError.
+
+        Args:
+            mismatches:
+                Mismatches between the Pact and the server.
+        """
+        super().__init__(f"Mismatched interaction (count: {len(mismatches)})")
+        self._mismatches = mismatches
+
+    # TODO: Replace the list of dicts with a more structured object.
+    # https://github.com/pact-foundation/pact-python/issues/644
+    @property
+    def mismatches(self) -> list[dict[str, Any]]:
+        """
+        Mismatches between the Pact and the server.
+        """
+        return self._mismatches
 
 
 class Pact:
@@ -399,11 +489,30 @@ class Pact:
         msg = f"Unknown interaction type: {kind}"
         raise ValueError(msg)
 
+    @overload
     def verify(
         self,
-        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        handler: Callable[[str | bytes | None, Dict[str, str]], None],
         kind: Literal["Async", "Sync"],
-    ) -> None:
+        *,
+        raises: Literal[True] = True,
+    ) -> None: ...
+    @overload
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: Literal[False],
+    ) -> List[InteractionVerificationError]: ...
+
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: bool = True,
+    ) -> List[InteractionVerificationError] | None:
         """
         Verify message interactions.
 
@@ -431,9 +540,14 @@ class Pact:
             kind:
                 The type of message interaction. This must be one of `Async`
                 or `Sync`.
+
+            raises:
+                Whether or not to raise an exception if the handler fails to
+                process a message. If set to `False`, then the function will
+                return a list of errors.
         """
-        errors: list[tuple[(int, str, Exception)]] = []
-        for idx, message in enumerate(self.interactions(kind)):
+        errors: List[InteractionVerificationError] = []
+        for message in self.interactions(kind):
             if TYPE_CHECKING:
                 # This is required to ensure that the type checker knows what
                 # type `message` is.
@@ -442,14 +556,19 @@ class Pact:
                     message,
                 )
 
-            request = (
-                message.contents
-                if isinstance(message, pact.v3.ffi.AsynchronousMessage)
-                else message.request_contents
-            )
+            if isinstance(message, pact.v3.ffi.SynchronousMessage):
+                request = message.request_contents
+            elif isinstance(message, pact.v3.ffi.AsynchronousMessage):
+                request = message.contents
+            else:
+                msg = f"Unknown message type: {type(message).__name__}"
+                raise TypeError(msg)
 
             if request is None:
-                warnings.warn(f"Message {idx} has no contents", stacklevel=2)
+                warnings.warn(
+                    f"Message '{message.description}' has no contents",
+                    stacklevel=2,
+                )
                 continue
 
             body = request.contents
@@ -458,14 +577,13 @@ class Pact:
             try:
                 handler(body, metadata)
             except Exception as e:  # noqa: BLE001
-                errors.append((idx, message.description, e))
+                errors.append(InteractionVerificationError(message.description, e))
 
-        if errors:
-            msg = "\n".join(
-                f"Message {index}: {description}: {e}"
-                for index, description, e in errors
-            )
-            raise AssertionError(msg)
+        if raises:
+            if errors:
+                raise PactVerificationError(errors)
+            return None
+        return errors
 
     def write_file(
         self,
@@ -498,32 +616,6 @@ class Pact:
             directory,
             overwrite=overwrite,
         )
-
-
-class MismatchesError(Exception):
-    """
-    Exception raised when there are mismatches between the Pact and the server.
-    """
-
-    def __init__(self, mismatches: list[dict[str, Any]]) -> None:
-        """
-        Initialise a new MismatchesError.
-
-        Args:
-            mismatches:
-                Mismatches between the Pact and the server.
-        """
-        super().__init__(f"Mismatched interaction (count: {len(mismatches)})")
-        self._mismatches = mismatches
-
-    # TODO: Replace the list of dicts with a more structured object.
-    # https://github.com/pact-foundation/pact-python/issues/644
-    @property
-    def mismatches(self) -> list[dict[str, Any]]:
-        """
-        Mismatches between the Pact and the server.
-        """
-        return self._mismatches
 
 
 class PactServer:
