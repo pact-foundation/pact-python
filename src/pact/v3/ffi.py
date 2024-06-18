@@ -211,7 +211,7 @@ class AsynchronousMessage:
 
         This may be `None` if the message has no contents.
         """
-        return async_message_get_contents(self)
+        return async_message_generate_contents(self)
 
 
 class Consumer: ...
@@ -1552,7 +1552,7 @@ class SynchronousMessage:
         """
         The contents of the message.
         """
-        return sync_message_get_request_contents(self)
+        return sync_message_generate_request_contents(self)
 
     @property
     def response_contents(self) -> GeneratorType[MessageContents, None, None]:
@@ -1560,7 +1560,7 @@ class SynchronousMessage:
         The contents of the responses.
         """
         yield from (
-            sync_message_get_response_contents(self, i)
+            sync_message_generate_response_contents(self, i)
             for i in range(sync_message_get_number_responses(self))
         )
         return  # Ensures that the parent object outlives the generator
@@ -2461,6 +2461,28 @@ def async_message_get_contents(message: AsynchronousMessage) -> MessageContents 
     If the message contents are missing, this function will return `None`.
     """
     return MessageContents(lib.pactffi_async_message_get_contents(message._ptr))
+
+
+def async_message_generate_contents(
+    message: AsynchronousMessage,
+) -> MessageContents | None:
+    """
+    Get the message contents of an `AsynchronousMessage` as a `MessageContents` pointer.
+
+    This function differs from `async_message_get_contents` in
+    that it will process the message contents for any generators or matchers
+    that are present in the message in order to generate the actual message
+    contents as would be received by the consumer.
+
+    [Rust
+    `pactffi_async_message_generate_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_generate_contents)
+
+    If the message contents are missing, this function will return `None`.
+    """
+    return MessageContents(
+        lib.pactffi_async_message_generate_contents(message._ptr),
+        owned=False,
+    )
 
 
 def async_message_get_contents_str(message: AsynchronousMessage) -> str:
@@ -5229,6 +5251,36 @@ def sync_message_get_request_contents(message: SynchronousMessage) -> MessageCon
     raise NotImplementedError
 
 
+def sync_message_generate_request_contents(
+    message: SynchronousMessage,
+) -> MessageContents:
+    """
+    Get the request contents of an `SynchronousMessage` as a `MessageContents`.
+
+    This function differs from `pactffi_sync_message_get_request_contents` in
+    that it will process the message contents for any generators or matchers
+    that are present in the message in order to generate the actual message
+    contents as would be received by the consumer.
+
+    [Rust
+    `pactffi_sync_message_generate_request_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_request_contents)
+
+    # Safety
+
+    The data pointed to by the pointer this function returns will be deleted
+    when the message is deleted. Trying to use if after the message is deleted
+    will result in undefined behaviour.
+
+    # Error Handling
+
+    If the message is NULL, returns NULL.
+    """
+    return MessageContents(
+        lib.pactffi_sync_message_generate_request_contents(message._ptr),
+        owned=False,
+    )
+
+
 def sync_message_get_number_responses(message: SynchronousMessage) -> int:
     """
     Get the number of response messages in the `SynchronousMessage`.
@@ -5417,6 +5469,38 @@ def sync_message_get_response_contents(
     If the message is NULL or the index is not valid, returns NULL.
     """
     raise NotImplementedError
+
+
+def sync_message_generate_response_contents(
+    message: SynchronousMessage,
+    index: int,
+) -> MessageContents:
+    """
+    Get the response contents of an `SynchronousMessage` as a `MessageContents`.
+
+    This function differs from
+    `sync_message_get_response_contents` in that it will process
+    the message contents for any generators or matchers that are present in
+    the message in order to generate the actual message contents as would be
+    received by the consumer.
+
+    [Rust
+    `pactffi_sync_message_generate_response_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_response_contents)
+
+    # Safety
+
+    The data pointed to by the pointer this function returns will be deleted
+    when the message is deleted. Trying to use if after the message is deleted
+    will result in undefined behaviour.
+
+    # Error Handling
+
+    If the message is NULL or the index is not valid, returns NULL.
+    """
+    return MessageContents(
+        lib.pactffi_sync_message_generate_response_contents(message._ptr, index),
+        owned=False,
+    )
 
 
 def sync_message_get_description(message: SynchronousMessage) -> str:
