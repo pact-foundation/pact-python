@@ -73,86 +73,98 @@ def pact() -> Generator[Pact, None, None]:
 
 
 @pytest.fixture()
-def handler() -> tuple[Handler, Callable[[Dict[str, Any], Dict[str, Any]], str | None]]:
+def handler() -> Handler:
+    """
+    Fixture for the Handler.
+
+    This fixture mocks the filesystem calls in the handler, so that we can
+    verify that the handler is calling the filesystem correctly.
+    """
     handler = Handler()
     handler.fs = MagicMock()
+    handler.fs.write.return_value = None
+    handler.fs.read.return_value = "Hello world!"
+    return handler
 
-    # need a function to accept the params
-    # the pact will send in during verify
-    # and call the actual function under test
-    def pact_handler(msg: Dict[str, Any], context: Dict[str, Any]) -> str | None:
+
+@pytest.fixture()
+def verifier(
+    handler: Handler,
+) -> Generator[Callable[[str | bytes | None, Dict[str, Any]], None], Any, None]:
+    """
+    Verifier function for the Pact.
+
+    This function is passed to the `verify` method of the Pact object. It is
+    responsible for taking in the messages (along with the context/metadata)
+    and ensuring that the consumer is able to process the message correctly.
+
+    In our case, we deserialize the message and pass it to the (pre-mocked)
+    handler for processing. We then verify that the underlying filesystem
+    calls were made as expected.
+    """
+    assert isinstance(handler.fs, MagicMock), "Handler filesystem not mocked"
+
+    def _verifier(msg: str | bytes | None, context: Dict[str, Any]) -> None:
+        assert msg is not None, "Message is None"
+        data = json.loads(msg)
         log.info(
             "Processing message: ",
-            extra={"processed_message": msg, "context": context},
+            extra={"input": msg, "processed_message": data, "context": context},
         )
-        return handler.process(msg)
+        handler.process(data)
 
-    log.info("Handler created")
-    return handler, pact_handler
+    yield _verifier
+
+    assert handler.fs.mock_calls, "Handler did not call the filesystem"
 
 
 def test_async_message_handler_write(
     pact: Pact,
-    handler: tuple[
-        Handler,
-        Callable[
-            [Dict[str, Any], Dict[str, Any]],
-            str | None,
-        ],
-    ],
+    handler: Handler,
+    verifier: Callable[[str | bytes | None, Dict[str, Any]], None],
 ) -> None:
     """
     Create a pact between the message handler and the message provider.
     """
-    actual_handler, pact_handler = handler
-    actual_handler.fs.write.return_value = None  # type: ignore[attr-defined]
-    async_message = {
-        "action": "WRITE",
-        "path": "my_file.txt",
-        "contents": "Hello, world!",
-    }
-    processed_message = (
+    assert isinstance(handler.fs, MagicMock), "Handler filesystem not mocked"
+
+    (
         pact.upon_receiving("a write request", "Async")
         .given("a request to write test.txt")
-        .with_body(json.dumps(async_message))
-        .verify(pact_handler)
+        .with_body(
+            json.dumps({
+                "action": "WRITE",
+                "path": "my_file.txt",
+                "contents": "Hello, world!",
+            })
+        )
     )
-    actual_handler.fs.write.assert_called_once_with(  # type: ignore[attr-defined]
-        async_message["path"],
-        async_message["contents"],
-    )
-    assert processed_message is not None
-    assert processed_message.response is None
+    pact.verify(verifier, "Async")
+
+    handler.fs.write.assert_called_once_with("my_file.txt", "Hello, world!")
 
 
 def test_async_message_handler_read(
     pact: Pact,
-    handler: tuple[
-        Handler,
-        Callable[
-            [Dict[str, Any], Dict[str, Any]],
-            str | None,
-        ],
-    ],
+    handler: Handler,
+    verifier: Callable[[str | bytes | None, Dict[str, Any]], None],
 ) -> None:
     """
     Create a pact between the message handler and the message provider.
     """
-    actual_handler, pact_handler = handler
-    async_message = {
-        "action": "READ",
-        "path": "my_file.txt",
-        "contents": "Hello, world!",
-    }
-    actual_handler.fs.read.return_value = async_message["contents"]  # type: ignore[attr-defined]
-    processed_message = (
+    assert isinstance(handler.fs, MagicMock), "Handler filesystem not mocked"
+
+    (
         pact.upon_receiving("a read request", "Async")
         .given("a request to read test.txt")
-        .with_body(json.dumps(async_message))
-        .verify(pact_handler)
+        .with_body(
+            json.dumps({
+                "action": "READ",
+                "path": "my_file.txt",
+                "contents": "Hello, world!",
+            })
+        )
     )
-    actual_handler.fs.read.assert_called_once_with(  # type: ignore[attr-defined]
-        "my_file.txt",
-    )
-    assert processed_message is not None
-    assert processed_message.response == async_message["contents"]
+    pact.verify(verifier, "Async")
+
+    handler.fs.read.assert_called_once_with("my_file.txt")
