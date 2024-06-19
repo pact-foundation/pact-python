@@ -36,7 +36,7 @@ PACT_BIN_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases
 
 # Latest version available at:
 # https://github.com/pact-foundation/pact-reference/releases
-PACT_LIB_VERSION = os.getenv("PACT_LIB_VERSION", "0.4.19")
+PACT_LIB_VERSION = os.getenv("PACT_LIB_VERSION", "0.4.21")
 PACT_LIB_URL = "https://github.com/pact-foundation/pact-reference/releases/download/libpact_ffi-v{version}/{prefix}pact_ffi-{os}-{machine}.{ext}"
 
 
@@ -256,7 +256,7 @@ class PactBuildHook(BuildHookInterface[Any]):
         if platform.startswith("macosx"):
             os = "macos"
             if platform.endswith("arm64"):
-                machine = "aarch64-apple-darwin"
+                machine = "aarch64"
             elif platform.endswith("x86_64"):
                 machine = "x86_64"
             else:
@@ -274,6 +274,8 @@ class PactBuildHook(BuildHookInterface[Any]):
 
             if platform.endswith("amd64"):
                 machine = "x86_64"
+            elif platform.endswith(("arm64", "aarch64")):
+                machine = "aarch64"
             else:
                 raise UnsupportedPlatformError(platform)
             return PACT_LIB_URL.format(
