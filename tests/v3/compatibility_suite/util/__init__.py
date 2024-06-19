@@ -31,7 +31,7 @@ import typing
 from collections.abc import Collection, Mapping
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any
+from typing import Any, Generic, NamedTuple, TypeVar
 from xml.etree import ElementTree
 
 import flask
@@ -46,6 +46,21 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 SUITE_ROOT = Path(__file__).parent.parent / "definition"
 FIXTURES_ROOT = SUITE_ROOT / "fixtures"
+
+_T = TypeVar("_T")
+
+
+class PactInteractionTuple(NamedTuple, Generic[_T]):
+    """
+    Pact and interaction tuple.
+
+    A number of steps in the compatibility suite require one or both of a `Pact`
+    and an `Interaction` subclass. This named tuple is used to pass these
+    objects around more easily.
+    """
+
+    pact: Pact
+    interaction: _T
 
 
 def string_to_int(word: str) -> int:

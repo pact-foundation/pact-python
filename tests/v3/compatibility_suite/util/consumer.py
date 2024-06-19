@@ -17,6 +17,7 @@ from yarl import URL
 from pact.v3 import Pact
 from tests.v3.compatibility_suite.util import (
     FIXTURES_ROOT,
+    PactInteractionTuple,
     parse_markdown_table,
     string_to_int,
     truncate,
@@ -201,10 +202,10 @@ def the_pact_file_for_the_test_is_generated(stacklevel: int = 1) -> None:
     )
     def _(
         temp_dir: Path,
-        pact_interaction: tuple[Pact, HttpInteraction],
+        pact_interaction: PactInteractionTuple[HttpInteraction],
     ) -> dict[str, Any]:
         """The Pact file for the test is generated."""
-        pact_interaction[0].write_file(temp_dir)
+        pact_interaction.pact.write_file(temp_dir)
         with (temp_dir / "consumer-provider.json").open("r") as file:
             return json.load(file)
 

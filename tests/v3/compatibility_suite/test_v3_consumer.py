@@ -10,7 +10,7 @@ from typing import Any, Generator
 from pytest_bdd import given, parsers, scenario, then
 
 from pact.v3.pact import HttpInteraction, Pact
-from tests.v3.compatibility_suite.util import parse_markdown_table
+from tests.v3.compatibility_suite.util import PactInteractionTuple, parse_markdown_table
 from tests.v3.compatibility_suite.util.consumer import (
     the_pact_file_for_the_test_is_generated,
 )
@@ -48,21 +48,21 @@ def test_supports_data_for_provider_states() -> None:
     target_fixture="pact_interaction",
 )
 def an_integration_is_being_defined_for_a_consumer_test() -> (
-    Generator[tuple[Pact, HttpInteraction], Any, None]
+    Generator[PactInteractionTuple[HttpInteraction], Any, None]
 ):
     """An integration is being defined for a consumer test."""
     pact = Pact("consumer", "provider")
     pact.with_specification("V3")
-    yield (pact, pact.upon_receiving("a request"))
+    yield PactInteractionTuple(pact, pact.upon_receiving("a request"))
 
 
 @given(parsers.re(r'a provider state "(?P<state>[^"]+)" is specified'))
 def a_provider_state_is_specified(
-    pact_interaction: tuple[Pact, HttpInteraction],
+    pact_interaction: PactInteractionTuple[HttpInteraction],
     state: str,
 ) -> None:
     """A provider state is specified."""
-    pact_interaction[1].given(state)
+    pact_interaction.interaction.given(state)
 
 
 @given(
@@ -74,7 +74,7 @@ def a_provider_state_is_specified(
     converters={"table": parse_markdown_table},
 )
 def a_provider_state_is_specified_with_the_following_data(
-    pact_interaction: tuple[Pact, HttpInteraction],
+    pact_interaction: PactInteractionTuple[HttpInteraction],
     state: str,
     table: list[dict[str, Any]],
 ) -> None:
@@ -93,7 +93,7 @@ def a_provider_state_is_specified_with_the_following_data(
             elif value.replace(".", "", 1).isdigit():
                 row[key] = float(value)
 
-    pact_interaction[1].given(state, parameters=table[0])
+    pact_interaction.interaction.given(state, parameters=table[0])
 
 
 ################################################################################
