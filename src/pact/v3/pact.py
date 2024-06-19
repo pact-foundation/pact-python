@@ -466,7 +466,7 @@ class Pact:
 
     def interactions(
         self,
-        kind: str = "HTTP",
+        kind: Literal["HTTP", "Sync", "Async"] = "HTTP",
     ) -> (
         Generator[pact.v3.ffi.SynchronousHttp, None, None]
         | Generator[pact.v3.ffi.SynchronousMessage, None, None]
@@ -482,12 +482,14 @@ class Pact:
         # https://github.com/pact-foundation/pact-python/issues/451
         if kind == "HTTP":
             yield from pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
-        if kind == "Sync":
+        elif kind == "Sync":
             yield from pact.v3.ffi.pact_handle_get_sync_message_iter(self._handle)
-        if kind == "Async":
+        elif kind == "Async":
             yield from pact.v3.ffi.pact_handle_get_async_message_iter(self._handle)
-        msg = f"Unknown interaction type: {kind}"
-        raise ValueError(msg)
+        else:
+            msg = f"Unknown interaction type: {kind}"
+            raise ValueError(msg)
+        return  # Ensures that the parent object outlives the generator
 
     @overload
     def verify(
