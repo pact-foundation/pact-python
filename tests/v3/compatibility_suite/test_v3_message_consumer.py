@@ -217,7 +217,7 @@ def the_message_is_configured_with_the_following(
             pact_interaction.interaction.with_generators(file.read_text())
 
     if metadata := config.pop("metadata", None):
-        data: dict[str, Any] = json.loads(metadata)
+        data = json.loads(metadata)
         pact_interaction.interaction.with_metadata({
             k: json.dumps(v) for k, v in data.items()
         })
@@ -543,9 +543,9 @@ def the_provider_state_for_the_message_will_contain_the_following_parameters(
 
     assert len(message["providerStates"]) > 0, "At least one provider state is expected"
     provider_states = message["providerStates"]
-    for provider_state in provider_states:
-        if provider_state["name"] == state:
-            assert expected == provider_state["params"]
+    for provider_state_dict in provider_states:
+        if provider_state_dict["name"] == state:
+            assert expected == provider_state_dict["params"]
             break
     else:
         msg = f"Provider state not found in Pact file: {state}"
@@ -562,7 +562,7 @@ def the_provider_state_for_the_message_will_contain_the_following_parameters(
                 assert expected == provider_state_params
                 break
         else:
-            msg = f"Provider state not found: {provider_state}"
+            msg = f"Provider state not found: {state}"
             raise ValueError(msg)
         break
     else:
