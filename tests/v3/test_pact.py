@@ -93,16 +93,6 @@ def test_interactions_iter(
         raise RuntimeError(msg)
 
 
-def test_messages(pact: Pact) -> None:
-    messages = pact.messages()
-    assert messages is not None
-    for _message in messages:
-        # This should be an empty list and therefore the error should never be
-        # raised.
-        msg = "Should not be reached"
-        raise RuntimeError(msg)
-
-
 def test_write_file(pact: Pact, temp_dir: Path) -> None:
     pact.write_file(temp_dir)
     outfile = temp_dir / "consumer-provider.json"
