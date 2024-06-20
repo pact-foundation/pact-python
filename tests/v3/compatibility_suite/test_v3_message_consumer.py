@@ -6,8 +6,7 @@ import ast
 import json
 import logging
 import re
-from pathlib import Path
-from typing import Any, List, NamedTuple
+from typing import TYPE_CHECKING, Any, List, NamedTuple
 
 from pytest_bdd import (
     given,
@@ -17,12 +16,19 @@ from pytest_bdd import (
     when,
 )
 
-from pact.v3.pact import AsyncMessageInteraction, InteractionVerificationError, Pact
 from tests.v3.compatibility_suite.util import (
     FIXTURES_ROOT,
     PactInteractionTuple,
     parse_markdown_table,
 )
+from tests.v3.compatibility_suite.util.consumer import (
+    a_message_integration_is_being_defined_for_a_consumer_test,
+)
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pact.v3.pact import AsyncMessageInteraction, InteractionVerificationError
 
 logger = logging.getLogger(__name__)
 
@@ -122,20 +128,7 @@ def test_supports_the_use_of_generators_with_message_metadata() -> None:
 ################################################################################
 
 
-@given(
-    "a message integration is being defined for a consumer test",
-    target_fixture="pact_interaction",
-)
-def a_message_integration_is_being_defined_for_a_consumer_test() -> (
-    PactInteractionTuple[AsyncMessageInteraction]
-):
-    """A message integration is being defined for a consumer test."""
-    pact = Pact("consumer", "provider")
-    pact.with_specification("V3")
-    return PactInteractionTuple(
-        pact,
-        pact.upon_receiving("an asynchronous message", "Async"),
-    )
+a_message_integration_is_being_defined_for_a_consumer_test("V3")
 
 
 @given(
@@ -321,7 +314,7 @@ def a_pact_file_for_the_message_interaction_will_maybe_have_been_written(
     success: bool,  # noqa: FBT001
 ) -> None:
     """A Pact file for the message interaction will maybe have been written."""
-    assert Path(temp_dir / "pacts" / "consumer-provider.json").exists() == success
+    assert (temp_dir / "pacts" / "consumer-provider.json").exists() == success
 
 
 @then(parsers.re(r'the consumer test error will be "(?P<error>[^"]+)"'))

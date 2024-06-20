@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 import requests
-from pytest_bdd import parsers, then, when
+from pytest_bdd import given, parsers, then, when
 from yarl import URL
 
 from pact.v3 import Pact
@@ -27,10 +27,40 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from pathlib import Path
 
-    from pact.v3.pact import HttpInteraction, PactServer
+    from pact.v3.interaction._async_message_interaction import AsyncMessageInteraction
+    from pact.v3.pact import PactServer
     from tests.v3.compatibility_suite.util import InteractionDefinition
 
 logger = logging.getLogger(__name__)
+
+################################################################################
+## Given
+################################################################################
+
+
+def a_message_integration_is_being_defined_for_a_consumer_test(
+    version: str,
+    stacklevel: int = 1,
+) -> None:
+    @given(
+        parsers.re(
+            r"a message (integration|interaction) "
+            r"is being defined for a consumer test"
+        ),
+        target_fixture="pact_interaction",
+        stacklevel=stacklevel + 1,
+    )
+    def _() -> PactInteractionTuple[AsyncMessageInteraction]:
+        """
+        A message integration is being defined for a consumer test.
+        """
+        pact = Pact("consumer", "provider")
+        pact.with_specification(version)
+        return PactInteractionTuple(
+            pact,
+            pact.upon_receiving("an asynchronous message", "Async"),
+        )
+
 
 ################################################################################
 ## When
@@ -202,7 +232,7 @@ def the_pact_file_for_the_test_is_generated(stacklevel: int = 1) -> None:
     )
     def _(
         temp_dir: Path,
-        pact_interaction: PactInteractionTuple[HttpInteraction],
+        pact_interaction: PactInteractionTuple[Any],
     ) -> dict[str, Any]:
         """The Pact file for the test is generated."""
         pact_interaction.pact.write_file(temp_dir)
