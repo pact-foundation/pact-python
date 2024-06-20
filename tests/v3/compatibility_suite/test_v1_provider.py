@@ -93,7 +93,7 @@ def test_incorrect_request_is_made_to_provider() -> None:
 )
 def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
     """Verifying a simple HTTP request via a Pact broker."""
-    reset_broker_var.set(True)  # noqa: FBT003
+    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -107,7 +107,7 @@ def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
 )
 def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> None:
     """Verifying a simple HTTP request via a Pact broker with publishing."""
-    reset_broker_var.set(True)  # noqa: FBT003
+    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -121,7 +121,7 @@ def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> 
 )
 def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
     """Verifying multiple Pact files via a Pact broker."""
-    reset_broker_var.set(True)  # noqa: FBT003
+    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -135,7 +135,7 @@ def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
 )
 def test_incorrect_request_is_made_to_provider_via_a_pact_broker() -> None:
     """Incorrect request is made to provider via a Pact broker."""
-    reset_broker_var.set(True)  # noqa: FBT003
+    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(

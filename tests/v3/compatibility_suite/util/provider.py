@@ -786,7 +786,7 @@ def a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker(
         if reset_broker_var.get():
             logger.debug("Resetting Pact broker")
             pact_broker.reset()
-            reset_broker_var.set(False)  # noqa: FBT003
+            reset_broker_var.set(False)
         pact_broker.publish(pacts_dir)
         verifier.broker_source(pact_broker.url)
         yield pact_broker
