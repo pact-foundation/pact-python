@@ -89,7 +89,7 @@ import logging
 import typing
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Literal
 
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
@@ -103,6 +103,43 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+################################################################################
+# Type aliases
+################################################################################
+# The following type aliases provide a nicer interface for end-users of the
+# library, especially when it comes to [`Enum`][Enum] classes which offers
+# support for string literals as alternative values.
+
+GeneratorCategoryOptions = Literal[
+    "METHOD",   "method",
+    "PATH",     "path",
+    "HEADER",   "header",
+    "QUERY",    "query",
+    "BODY",     "body",
+    "STATUS",   "status",
+    "METADATA", "metadata",
+]  # fmt: skip
+"""
+Generator Category Options.
+
+Type alias for the string literals which represent the Generator Category
+Options.
+"""
+
+MatchingRuleCategoryOptions = Literal[
+    "METHOD",   "method",
+    "PATH",     "path",
+    "HEADER",   "header",
+    "QUERY",    "query",
+    "BODY",     "body",
+    "STATUS",   "status",
+    "CONTENTS", "contents",
+    "METADATA", "metadata",
+]  # fmt: skip
+
+################################################################################
+# Classes
+################################################################################
 # The follow types are classes defined in the Rust code. Ultimately, a Python
 # alternative should be implemented, but for now, the follow lines only serve
 # to inform the type checker of the existence of these types.
