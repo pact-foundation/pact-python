@@ -193,21 +193,6 @@ class MessageMetadataIterator: ...
 class MessageMetadataPair: ...
 
 
-class MessagePact: ...
-
-
-class MessagePactHandle: ...
-
-
-class MessagePactMessageIterator: ...
-
-
-class MessagePactMetadataIterator: ...
-
-
-class MessagePactMetadataTriple: ...
-
-
 class Mismatch: ...
 
 
@@ -218,6 +203,58 @@ class MismatchesIterator: ...
 
 
 class Pact: ...
+
+
+class PactAsyncMessageIterator:
+    """
+    Iterator over a Pact's asynchronous messages.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Asynchronous Message Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct PactAsyncMessageIterator *":
+            msg = (
+                "ptr must be a struct PactAsyncMessageIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactAsyncMessageIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactAsyncMessageIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Synchronous Message Iterator.
+        """
+        pact_async_message_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> AsynchronousMessage:
+        """
+        Get the next message from the iterator.
+        """
+        return pact_async_message_iter_next(self)
 
 
 class PactHandle:
@@ -1438,6 +1475,28 @@ def async_message_get_contents(message: AsynchronousMessage) -> MessageContents:
     If the message is NULL, returns NULL.
     """
     raise NotImplementedError
+
+
+def async_message_generate_contents(
+    message: AsynchronousMessage,
+) -> MessageContents | None:
+    """
+    Get the message contents of an `AsynchronousMessage` as a `MessageContents` pointer.
+
+    This function differs from `async_message_get_contents` in
+    that it will process the message contents for any generators or matchers
+    that are present in the message in order to generate the actual message
+    contents as would be received by the consumer.
+
+    [Rust
+    `pactffi_async_message_generate_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_generate_contents)
+
+    If the message contents are missing, this function will return `None`.
+    """
+    return MessageContents(
+        lib.pactffi_async_message_generate_contents(message._ptr),
+        owned=False,
+    )
 
 
 def async_message_get_contents_str(message: AsynchronousMessage) -> str:
@@ -3037,6 +3096,29 @@ def pact_message_iter_next(iter: PactMessageIterator) -> Message:
     return Message(ptr)
 
 
+def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> AsynchronousMessage:
+    """
+    Get the next asynchronous message from the iterator.
+
+    [Rust
+    `pactffi_pact_async_message_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_async_message_iter_next)
+    """
+    ptr = lib.pactffi_pact_async_message_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return AsynchronousMessage(ptr, owned=True)
+
+
+def pact_async_message_iter_delete(iter: PactAsyncMessageIterator) -> None:
+    """
+    Free the iterator when you're done using it.
+
+    [Rust
+    `pactffi_pact_async_message_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_async_message_iter_delete)
+    """
+    lib.pactffi_pact_async_message_iter_delete(iter._ptr)
+
+
 def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMessage:
     """
     Get the next synchronous request/response message from the V4 pact.
@@ -3584,229 +3666,6 @@ def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
     raise NotImplementedError
 
 
-def message_pact_new_from_json(file_name: str, json_str: str) -> MessagePact:
-    """
-    Construct a new `MessagePact` from the JSON string.
-
-    The provided file name is used when generating error messages.
-
-    [Rust
-    `pactffi_message_pact_new_from_json`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_new_from_json)
-
-    # Safety
-
-    The `file_name` and `json_str` parameters must both be valid UTF-8 encoded
-    strings.
-
-    # Error Handling
-
-    On error, this function will return a null pointer.
-    """
-    raise NotImplementedError
-
-
-def message_pact_delete(message_pact: MessagePact) -> None:
-    """
-    Delete the `MessagePact` being pointed to.
-
-    [Rust
-    `pactffi_message_pact_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_delete)
-    """
-    raise NotImplementedError
-
-
-def message_pact_get_consumer(message_pact: MessagePact) -> Consumer:
-    """
-    Get a pointer to the Consumer struct inside the MessagePact.
-
-    This is a mutable borrow: The caller may mutate the Consumer through this
-    pointer.
-
-    [Rust
-    `pactffi_message_pact_get_consumer`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_get_consumer)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    This function will only fail if it is passed a NULL pointer. In the case of
-    error, a NULL pointer will be returned.
-    """
-    raise NotImplementedError
-
-
-def message_pact_get_provider(message_pact: MessagePact) -> Provider:
-    """
-    Get a pointer to the Provider struct inside the MessagePact.
-
-    This is a mutable borrow: The caller may mutate the Provider through this
-    pointer.
-
-    [Rust
-    `pactffi_message_pact_get_provider`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_get_provider)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    This function will only fail if it is passed a NULL pointer. In the case of
-    error, a NULL pointer will be returned.
-    """
-    raise NotImplementedError
-
-
-def message_pact_get_message_iter(
-    message_pact: MessagePact,
-) -> MessagePactMessageIterator:
-    r"""
-    Get an iterator over the messages of a message pact.
-
-    [Rust
-    `pactffi_message_pact_get_message_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_get_message_iter)
-
-    # Safety
-
-    This iterator carries a pointer to the message pact, and must not outlive
-    the message pact.
-
-    The message pact messages also must not be modified during iteration. If
-    they are, the old iterator must be deleted and a new iterator created.
-
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if any of the Rust strings contain embedded null
-    ('\0') bytes.
-    """
-    raise NotImplementedError
-
-
-def message_pact_message_iter_next(iter: MessagePactMessageIterator) -> Message:
-    """
-    Get the next message from the message pact.
-
-    [Rust
-    `pactffi_message_pact_message_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_message_iter_next)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    This function will return a NULL pointer if passed a NULL pointer or if an
-    error occurs.
-    """
-    raise NotImplementedError
-
-
-def message_pact_message_iter_delete(iter: MessagePactMessageIterator) -> None:
-    """
-    Delete the iterator.
-
-    [Rust
-    `pactffi_message_pact_message_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_message_iter_delete)
-    """
-    raise NotImplementedError
-
-
-def message_pact_find_metadata(message_pact: MessagePact, key1: str, key2: str) -> str:
-    r"""
-    Get a copy of the metadata value indexed by `key1` and `key2`.
-
-    [Rust
-    `pactffi_message_pact_find_metadata`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_find_metadata)
-
-    # Safety
-
-    Since it is a copy, the returned string may safely outlive the `Message`.
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    The returned pointer will be NULL if the metadata does not contain the given
-    key, or if an error occurred.
-
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the provided `key1` or `key2` strings contains
-    invalid UTF-8, or if the Rust string contains embedded null ('\0') bytes.
-    """
-    raise NotImplementedError
-
-
-def message_pact_get_metadata_iter(
-    message_pact: MessagePact,
-) -> MessagePactMetadataIterator:
-    r"""
-    Get an iterator over the metadata of a message pact.
-
-    [Rust
-    `pactffi_message_pact_get_metadata_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_get_metadata_iter)
-
-    # Safety
-
-    This iterator carries a pointer to the message pact, and must not outlive
-    the message pact.
-
-    The message pact metadata also must not be modified during iteration. If it
-    is, the old iterator must be deleted and a new iterator created.
-
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if any of the Rust strings contain embedded null
-    ('\0') bytes.
-    """
-    raise NotImplementedError
-
-
-def message_pact_metadata_iter_next(
-    iter: MessagePactMetadataIterator,
-) -> MessagePactMetadataTriple:
-    """
-    Get the next triple out of the iterator, if possible.
-
-    [Rust
-    `pactffi_message_pact_metadata_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_metadata_iter_next)
-
-    # Safety
-
-    This operation is invalid if the underlying data has been changed during
-    iteration.
-
-    # Error Handling
-
-    Returns null if no next element is present.
-    """
-    raise NotImplementedError
-
-
-def message_pact_metadata_iter_delete(iter: MessagePactMetadataIterator) -> None:
-    """
-    Free the metadata iterator when you're done using it.
-
-    [Rust `pactffi_message_pact_metadata_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_metadata_iter_delete)
-    """
-    raise NotImplementedError
-
-
-def message_pact_metadata_triple_delete(triple: MessagePactMetadataTriple) -> None:
-    """
-    Free a triple returned from `pactffi_message_pact_metadata_iter_next`.
-
-    [Rust `pactffi_message_pact_metadata_triple_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_pact_metadata_triple_delete)
-    """
-    raise NotImplementedError
-
-
 def provider_get_name(provider: Provider) -> str:
     r"""
     Get a copy of this provider's name.
@@ -4156,6 +4015,36 @@ def sync_message_get_request_contents(message: SynchronousMessage) -> MessageCon
     raise NotImplementedError
 
 
+def sync_message_generate_request_contents(
+    message: SynchronousMessage,
+) -> MessageContents:
+    """
+    Get the request contents of an `SynchronousMessage` as a `MessageContents`.
+
+    This function differs from `pactffi_sync_message_get_request_contents` in
+    that it will process the message contents for any generators or matchers
+    that are present in the message in order to generate the actual message
+    contents as would be received by the consumer.
+
+    [Rust
+    `pactffi_sync_message_generate_request_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_request_contents)
+
+    # Safety
+
+    The data pointed to by the pointer this function returns will be deleted
+    when the message is deleted. Trying to use if after the message is deleted
+    will result in undefined behaviour.
+
+    # Error Handling
+
+    If the message is NULL, returns NULL.
+    """
+    return MessageContents(
+        lib.pactffi_sync_message_generate_request_contents(message._ptr),
+        owned=False,
+    )
+
+
 def sync_message_get_number_responses(message: SynchronousMessage) -> int:
     """
     Get the number of response messages in the `SynchronousMessage`.
@@ -4344,6 +4233,38 @@ def sync_message_get_response_contents(
     If the message is NULL or the index is not valid, returns NULL.
     """
     raise NotImplementedError
+
+
+def sync_message_generate_response_contents(
+    message: SynchronousMessage,
+    index: int,
+) -> MessageContents:
+    """
+    Get the response contents of an `SynchronousMessage` as a `MessageContents`.
+
+    This function differs from
+    `sync_message_get_response_contents` in that it will process
+    the message contents for any generators or matchers that are present in
+    the message in order to generate the actual message contents as would be
+    received by the consumer.
+
+    [Rust
+    `pactffi_sync_message_generate_response_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_response_contents)
+
+    # Safety
+
+    The data pointed to by the pointer this function returns will be deleted
+    when the message is deleted. Trying to use if after the message is deleted
+    will result in undefined behaviour.
+
+    # Error Handling
+
+    If the message is NULL or the index is not valid, returns NULL.
+    """
+    return MessageContents(
+        lib.pactffi_sync_message_generate_response_contents(message._ptr, index),
+        owned=False,
+    )
 
 
 def sync_message_get_description(message: SynchronousMessage) -> str:
@@ -5275,6 +5196,24 @@ def with_query_parameter_v2(
     )
     ```
 
+    For query parameters with no value, two distinct formats are provided:
+
+    1.  Parameters with blank values, as specified by `?foo=&bar=`, require an
+        empty string:
+
+        ```python
+        with_query_parameter_v2(handle, "foo", 0, "")
+        with_query_parameter_v2(handle, "bar", 0, "")
+        ```
+
+    2.  Parameters with no associated value, as specified by `?foo&bar`, require
+        a NULL pointer:
+
+        ```python
+        with_query_parameter_v2(handle, "foo", 0, None)
+        with_query_parameter_v2(handle, "bar", 0, None)
+        ```
+
     Args:
         interaction:
             Handle to the Interaction.
@@ -5381,6 +5320,74 @@ def with_pact_metadata(
     )
     if not success:
         msg = f"Failed to set Pact metadata for {pact} with {namespace}.{name}={value}"
+        raise RuntimeError(msg)
+
+
+def with_metadata(
+    interaction: InteractionHandle,
+    key: str,
+    value: str,
+    part: InteractionPart,
+) -> None:
+    r"""
+    Adds metadata to the interaction.
+
+    Metadata is only relevant for message interactions to provide additional
+    information about the message, such as the queue name, message type, tags,
+    timestamps, etc.
+
+    * `key` - metadata key
+    * `value` - metadata value, supports JSON structures with matchers and
+      generators. Passing a `NULL` point will remove the metadata key instead.
+    * `part` - the part of the interaction to add the metadata to (only
+     relevant for synchronous message interactions).
+
+    Returns `true` if the metadata was added successfully, `false` otherwise.
+
+    To include matching rules for the value, include the matching rule JSON
+    format with the value as a single JSON document. I.e.
+
+    ```python with_metadata(
+        handle, "TagData", json.dumps({
+            "value": {"ID": "sjhdjkshsdjh", "weight": 100.5},
+            "pact:matcher:type": "type",
+        }),
+    )
+    ```
+
+    See
+    [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md)
+
+    # Note
+
+    For HTTP interactions, use [`with_header_v2`][pact.v3.ffi.with_header_v2]
+    instead. This function will not have any effect on HTTP interactions and
+    returns `false`.
+
+    For synchronous message interactions, the `part` parameter is required to
+    specify whether the metadata should be added to the request or response
+    part. For responses which can have multiple messages, the metadata will be
+    set on all response messages. This also requires for responses to have been
+    defined in the interaction.
+
+    The [`with_body`][pact.v3.ffi.with_body] will also contribute to the
+    metadata of the message (both sync and async) by setting the key
+    `contentType` with the content type of the message.
+
+    # Safety
+
+    The key and value parameters must be valid pointers to NULL terminated
+    strings, or `NULL` for the value parameter if the metadata key should be
+    removed.
+    """
+    success: bool = lib.pactffi_with_metadata(
+        interaction._ref,
+        key.encode("utf-8"),
+        value.encode("utf-8"),
+        part.value,
+    )
+    if not success:
+        msg = f"Failed to set metadata for {interaction} with {key}={value}"
         raise RuntimeError(msg)
 
 
@@ -5766,6 +5773,44 @@ def with_matching_rules(
         raise RuntimeError(msg)
 
 
+def with_generators(
+    interaction: InteractionHandle,
+    part: InteractionPart,
+    generators: str,
+) -> None:
+    """
+    Add generators to the interaction.
+
+    [Rust
+    `pactffi_with_generators`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_with_generators)
+
+    This function can be called multiple times, in which case the generators
+    will be combined (provide they don't clash).
+
+    For synchronous messages which allow multiple responses, the generators will
+    be added to all the responses.
+
+    Args:
+        interaction:
+            Handle to the Interaction.
+
+        part:
+            Request or response part (if applicable).
+
+        generators:
+            JSON string of the generators to add to the interaction.
+
+    """
+    success: bool = lib.pactffi_with_generators(
+        interaction._ref,
+        part.value,
+        generators.encode("utf-8"),
+    )
+    if not success:
+        msg = f"Unable to set generators for {interaction}."
+        raise RuntimeError(msg)
+
+
 def with_multipart_file_v2(  # noqa: PLR0913
     interaction: InteractionHandle,
     part: InteractionPart,
@@ -5989,6 +6034,32 @@ def pact_handle_get_message_iter(pact: PactHandle) -> PactMessageIterator:
     return PactMessageIterator(lib.pactffi_pact_handle_get_message_iter(pact._ref))
 
 
+def pact_handle_get_async_message_iter(pact: PactHandle) -> PactAsyncMessageIterator:
+    r"""
+    Get an iterator over all the asynchronous messages of the Pact.
+
+    The returned iterator needs to be freed with
+    `pactffi_pact_sync_message_iter_delete`.
+
+    [Rust
+    `pactffi_pact_handle_get_sync_message_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_handle_get_sync_message_iter)
+
+    # Safety
+
+    The iterator contains a copy of the Pact, so it is always safe to use.
+
+    # Error Handling
+
+    On failure, this function will return a NULL pointer.
+
+    This function may fail if any of the Rust strings contain embedded null
+    ('\0') bytes.
+    """
+    return PactAsyncMessageIterator(
+        lib.pactffi_pact_handle_get_async_message_iter(pact._ref),
+    )
+
+
 def pact_handle_get_sync_message_iter(pact: PactHandle) -> PactSyncMessageIterator:
     r"""
     Get an iterator over all the synchronous messages of the Pact.
@@ -6037,249 +6108,6 @@ def pact_handle_get_sync_http_iter(pact: PactHandle) -> PactSyncHttpIterator:
     ('\0') bytes.
     """
     return PactSyncHttpIterator(lib.pactffi_pact_handle_get_sync_http_iter(pact._ref))
-
-
-def new_message_pact(consumer_name: str, provider_name: str) -> MessagePactHandle:
-    """
-    Creates a new Pact Message model and returns a handle to it.
-
-    [Rust
-    `pactffi_new_message_pact`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_new_message_pact)
-
-    * `consumer_name` - The name of the consumer for the pact.
-    * `provider_name` - The name of the provider for the pact.
-
-    Returns a new `MessagePactHandle`. The handle will need to be freed with the
-    `pactffi_free_message_pact_handle` function to release its resources.
-    """
-    raise NotImplementedError
-
-
-def new_message(pact: MessagePactHandle, description: str) -> MessageHandle:
-    """
-    Creates a new Message and returns a handle to it.
-
-    [Rust
-    `pactffi_new_message`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_new_message)
-
-    * `description` - The message description. It needs to be unique for each
-      Message.
-
-    Returns a new `MessageHandle`.
-    """
-    raise NotImplementedError
-
-
-def message_expects_to_receive(message: MessageHandle, description: str) -> None:
-    """
-    Sets the description for the Message.
-
-    [Rust
-    `pactffi_message_expects_to_receive`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_expects_to_receive)
-
-    * `description` - The message description. It needs to be unique for each
-      message.
-    """
-    raise NotImplementedError
-
-
-def message_given(message: MessageHandle, description: str) -> None:
-    """
-    Adds a provider state to the Interaction.
-
-    [Rust
-    `pactffi_message_given`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_given)
-
-    * `description` - The provider state description. It needs to be unique for
-      each message
-    """
-    raise NotImplementedError
-
-
-def message_given_with_param(
-    message: MessageHandle,
-    description: str,
-    name: str,
-    value: str,
-) -> None:
-    """
-    Adds a provider state to the Message with a parameter key and value.
-
-    [Rust
-    `pactffi_message_given_with_param`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_given_with_param)
-
-    * `description` - The provider state description. It needs to be unique.
-    * `name` - Parameter name.
-    * `value` - Parameter value.
-    """
-    raise NotImplementedError
-
-
-def message_with_contents(
-    message_handle: MessageHandle,
-    content_type: str,
-    body: List[int],
-    size: int,
-) -> None:
-    """
-    Adds the contents of the Message.
-
-    [Rust
-    `pactffi_message_with_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_with_contents)
-
-    Accepts JSON, binary and other payload types. Binary data will be base64
-    encoded when serialised.
-
-    Note: For text bodies (plain text, JSON or XML), you can pass in a C string
-    (NULL terminated) and the size of the body is not required (it will be
-    ignored). For binary bodies, you need to specify the number of bytes in the
-    body.
-
-    * `content_type` - The content type of the body. Defaults to `text/plain`,
-      supports JSON structures with matchers and binary data.
-    * `body` - The body contents as bytes. For text payloads (JSON, XML, etc.),
-      a C string can be used and matching rules can be embedded in the body.
-    * `content_type` - Expected content type (e.g. application/json,
-      application/octet-stream)
-    * `size` - number of bytes in the message body to read. This is not required
-      for text bodies (JSON, XML, etc.).
-    """
-    raise NotImplementedError
-
-
-def message_with_metadata(message_handle: MessageHandle, key: str, value: str) -> None:
-    """
-    Adds expected metadata to the Message.
-
-    [Rust
-    `pactffi_message_with_metadata`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_with_metadata)
-
-    * `key` - metadata key
-    * `value` - metadata value.
-    """
-    raise NotImplementedError
-
-
-def message_with_metadata_v2(
-    message_handle: MessageHandle,
-    key: str,
-    value: str,
-) -> None:
-    """
-    Adds expected metadata to the Message.
-
-    [Rust
-    `pactffi_message_with_metadata_v2`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_with_metadata_v2)
-
-    Args:
-        message_handle:
-            Handle to the Message.
-
-        key:
-            Metadata key.
-
-        value:
-            Metadata value.
-
-            This may be a simple string in which case it will be used as-is, or
-            it may be a [JSON matching
-            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
-
-    To include matching rules for the metadata, include the matching rule JSON
-    format with the value as a single JSON document. I.e.
-
-    ```python
-    message_with_metadata_v2(
-        handle,
-        "contentType",
-        json.dumps({
-            "pact:matcher:type": "regex",
-            "regex": "text/.*",
-        }),
-    )
-    ```
-
-    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
-    """
-    raise NotImplementedError
-
-
-def message_reify(message_handle: MessageHandle) -> OwnedString:
-    """
-    Reifies the given message.
-
-    [Rust
-    `pactffi_message_reify`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_reify)
-
-    Reification is the process of stripping away any matchers, and returning the
-    original contents.
-
-    # Safety
-
-    The returned string needs to be deallocated with the `free_string` function.
-    This function must only ever be called from a foreign language. Calling it
-    from a Rust function that has a Tokio runtime in its call stack can result
-    in a deadlock.
-    """
-    raise NotImplementedError
-
-
-def write_message_pact_file(
-    pact: MessagePactHandle,
-    directory: str,
-    *,
-    overwrite: bool,
-) -> int:
-    """
-    External interface to write out the message pact file.
-
-    This function should be called if all the consumer tests have passed. The
-    directory to write the file to is passed as the second parameter. If a NULL
-    pointer is passed, the current working directory is used.
-
-    [Rust
-    `pactffi_write_message_pact_file`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_write_message_pact_file)
-
-    If overwrite is true, the file will be overwritten with the contents of the
-    current pact. Otherwise, it will be merged with any existing pact file.
-
-    Returns 0 if the pact file was successfully written. Returns a positive code
-    if the file can not be written, or there is no mock server running on that
-    port or the function panics.
-
-    # Errors
-
-    Errors are returned as positive values.
-
-    | Error | Description |
-    |-------|-------------|
-    | 1 | The pact file was not able to be written |
-    | 2 | The message pact for the given handle was not found |
-    """
-    raise NotImplementedError
-
-
-def with_message_pact_metadata(
-    pact: MessagePactHandle,
-    namespace_: str,
-    name: str,
-    value: str,
-) -> None:
-    """
-    Sets the additional metadata on the Pact file.
-
-    Common uses are to add the client library details such as the name and
-    version
-
-    [Rust
-    `pactffi_with_message_pact_metadata`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_with_message_pact_metadata)
-
-    * `pact` - Handle to a Pact model
-    * `namespace` - the top level metadat key to set any key values on
-    * `name` - the key to set
-    * `value` - the value to set
-    """
-    raise NotImplementedError
 
 
 def pact_handle_write_file(
@@ -6345,24 +6173,6 @@ def free_pact_handle(pact: PactHandle) -> None:
     else:
         msg = f"There was an unknown error freeing {pact}."
     raise RuntimeError(msg)
-
-
-def free_message_pact_handle(pact: MessagePactHandle) -> int:
-    """
-    Delete a Pact handle and free the resources used by it.
-
-    [Rust
-    `pactffi_free_message_pact_handle`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_free_message_pact_handle)
-
-    # Error Handling
-
-    On failure, this function will return a positive integer value.
-
-    * `1` - The handle is not valid or does not refer to a valid Pact. Could be
-      that it was previously deleted.
-
-    """
-    raise NotImplementedError
 
 
 def verify(args: str) -> int:
@@ -6912,9 +6722,11 @@ def verifier_broker_source_with_selectors(  # noqa: PLR0913
         password.encode("utf-8") if password else ffi.NULL,
         token.encode("utf-8") if token else ffi.NULL,
         enable_pending,
-        include_wip_pacts_since.isoformat().encode("utf-8")
-        if include_wip_pacts_since
-        else ffi.NULL,
+        (
+            include_wip_pacts_since.isoformat().encode("utf-8")
+            if include_wip_pacts_since
+            else ffi.NULL
+        ),
         [ffi.new("char[]", t.encode("utf-8")) for t in provider_tags],
         len(provider_tags),
         provider_branch.encode("utf-8") if provider_branch else ffi.NULL,
