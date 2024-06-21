@@ -135,8 +135,11 @@ jobs:
           - os: ubuntu-20.04
             archs: aarch64
             build: musllinux
-          - os: macos-12
+          - os: macos-14
             archs: arm64
+            build: ""
+          - os: windows-2019
+            archs: ARM64
             build: ""
 
     steps:
