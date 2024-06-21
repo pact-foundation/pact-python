@@ -93,6 +93,7 @@ import typing
 import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, Literal
+from typing import Generator as GeneratorType
 
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
@@ -148,7 +149,72 @@ MatchingRuleCategoryOptions = Literal[
 # to inform the type checker of the existence of these types.
 
 
-class AsynchronousMessage: ...
+class AsynchronousMessage:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
+        """
+        Initialise a new Asynchronous Message.
+
+        Args:
+            ptr:
+                CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
+        """
+        if ffi.typeof(ptr).cname != "struct AsynchronousMessage *":
+            msg = (
+                "ptr must be a struct AsynchronousMessage, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "AsynchronousMessage"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"AsynchronousMessage({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the AsynchronousMessage.
+        """
+        if not self._owned:
+            async_message_delete(self)
+
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return async_message_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from async_message_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
+
+    @property
+    def contents(self) -> MessageContents | None:
+        """
+        The contents of the message.
+
+        This may be `None` if the message has no contents.
+        """
+        return async_message_generate_contents(self)
 
 
 class Consumer: ...
@@ -1494,27 +1560,19 @@ def async_message_delete(message: AsynchronousMessage) -> None:
 
     [Rust `pactffi_async_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_async_message_delete(message._ptr)
 
 
-def async_message_get_contents(message: AsynchronousMessage) -> MessageContents:
+def async_message_get_contents(message: AsynchronousMessage) -> MessageContents | None:
     """
     Get the message contents of an `AsynchronousMessage` as a `MessageContents` pointer.
 
     [Rust
     `pactffi_async_message_get_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_get_contents)
 
-    # Safety
-
-    The data pointed to by the pointer this function returns will be deleted
-    when the message is deleted. Trying to use if after the message is deleted
-    will result in undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL.
+    If the message contents are missing, this function will return `None`.
     """
-    raise NotImplementedError
+    return MessageContents(lib.pactffi_async_message_get_contents(message._ptr))
 
 
 def async_message_generate_contents(
@@ -1673,21 +1731,14 @@ def async_message_get_description(message: AsynchronousMessage) -> str:
     [Rust
     `pactffi_async_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_get_description)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the
-    `AsynchronousMessage`.
-
-    # Errors
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the Rust string contains embedded null ('\0')
-    bytes.
+    Raises:
+        RuntimeError: If the description cannot be retrieved.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_async_message_get_description(message._ptr)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the description from the message."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def async_message_set_description(
@@ -1738,7 +1789,11 @@ def async_message_get_provider_state(
     This function may fail if the index requested is out of bounds, or if any of
     the Rust strings contain embedded null ('\0') bytes.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_async_message_get_provider_state(message._ptr, index)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the provider state from the message."
+        raise RuntimeError(msg)
+    return ProviderState(ptr)
 
 
 def async_message_get_provider_state_iter(
@@ -1752,12 +1807,10 @@ def async_message_get_provider_state_iter(
     # Safety
 
     The underlying data must not change during iteration.
-
-    # Error Handling
-
-    Returns NULL if an error occurs.
     """
-    raise NotImplementedError
+    return ProviderStateIterator(
+        lib.pactffi_async_message_get_provider_state_iter(message._ptr)
+    )
 
 
 def consumer_get_name(consumer: Consumer) -> str:
