@@ -220,13 +220,174 @@ class AsynchronousMessage:
 class Consumer: ...
 
 
-class Generator: ...
+class Generator:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a generator value.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct Generator *":
+            msg = "ptr must be a struct Generator, got" f" {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "Generator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"Generator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Generator.
+        """
+
+    @property
+    def json(self) -> dict[str, Any]:
+        """
+        Dictionary representation of the generator.
+        """
+        return json.loads(generator_to_json(self))
+
+    def generate_string(self, context: dict[str, Any] | None = None) -> str:
+        """
+        Generate a string from the generator.
+
+        Args:
+            context:
+                JSON payload containing any generator context. For example:
+
+                -   The context for a `MockServerURL` generator should contain
+                    details about the running mock server.
+                -   The context for a `ProviderStateGenerator` should contain
+                    the values returned from the provider state callback
+                    function.
+        """
+        return generator_generate_string(self, json.dumps(context or {}))
+
+    def generate_integer(self, context: dict[str, Any] | None = None) -> int:
+        """
+        Generate an integer from the generator.
+
+        Args:
+            context:
+                JSON payload containing any generator context. For example:
+
+                -   The context for a `ProviderStateGenerator` should contain
+                    the values returned from the provider state callback
+                    function.
+        """
+        return generator_generate_integer(self, json.dumps(context or {}))
 
 
-class GeneratorCategoryIterator: ...
+class GeneratorCategoryIterator:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new generator category iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct GeneratorCategoryIterator *":
+            msg = (
+                "ptr must be a struct GeneratorCategoryIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "GeneratorCategoryIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"GeneratorCategoryIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the GeneratorCategoryIterator.
+        """
+        generators_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> GeneratorKeyValuePair:
+        """
+        Get the next generator category from the iterator.
+        """
+        return generators_iter_next(self)
 
 
-class GeneratorKeyValuePair: ...
+class GeneratorKeyValuePair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct GeneratorKeyValuePair *":
+            msg = (
+                "ptr must be a struct GeneratorKeyValuePair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "GeneratorKeyValuePair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"GeneratorKeyValuePair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the GeneratorKeyValuePair.
+        """
+        generators_iter_pair_delete(self)
+
+    @property
+    def path(self) -> str:
+        """
+        Generator path.
+        """
+        s = ffi.string(self._ptr.path)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def generator(self) -> Generator:
+        """
+        Generator value.
+        """
+        return Generator(self._ptr.generator)  # type: ignore[attr-defined]
 
 
 class HttpRequest: ...
@@ -2175,7 +2336,9 @@ def message_contents_get_generators_iter(
 
     On failure, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    return GeneratorCategoryIterator(
+        lib.pactffi_message_contents_get_generators_iter(contents, category)
+    )
 
 
 def request_contents_get_generators_iter(
@@ -2577,7 +2740,7 @@ def generator_to_json(generator: Generator) -> str:
     This function will fail if it is passed a NULL pointer, or the owner of the
     generator has been deleted.
     """
-    raise NotImplementedError
+    return OwnedString(lib.pactffi_generator_to_json(generator._ptr))
 
 
 def generator_generate_string(generator: Generator, context_json: str) -> str:
@@ -2595,7 +2758,14 @@ def generator_generate_string(generator: Generator, context_json: str) -> str:
 
     If anything goes wrong, it will return a NULL pointer.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_generator_generate_string(
+        generator._ptr,
+        context_json.encode("utf-8"),
+    )
+    s = ffi.string(ptr)
+    if isinstance(s, bytes):
+        s = s.decode("utf-8")
+    return s
 
 
 def generator_generate_integer(generator: Generator, context_json: str) -> int:
@@ -2612,7 +2782,10 @@ def generator_generate_integer(generator: Generator, context_json: str) -> int:
     If anything goes wrong or the generator is not a type that can generate an
     integer value, it will return a zero value.
     """
-    raise NotImplementedError
+    return lib.pactffi_generator_generate_integer(
+        generator._ptr,
+        context_json.encode("utf-8"),
+    )
 
 
 def generators_iter_delete(iter: GeneratorCategoryIterator) -> None:
@@ -2622,7 +2795,7 @@ def generators_iter_delete(iter: GeneratorCategoryIterator) -> None:
     [Rust
     `pactffi_generators_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_generators_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_generators_iter_delete(iter._ptr)
 
 
 def generators_iter_next(iter: GeneratorCategoryIterator) -> GeneratorKeyValuePair:
@@ -2644,7 +2817,10 @@ def generators_iter_next(iter: GeneratorCategoryIterator) -> GeneratorKeyValuePa
 
     If no further data is present, returns NULL.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_generators_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return GeneratorKeyValuePair(ptr)
 
 
 def generators_iter_pair_delete(pair: GeneratorKeyValuePair) -> None:
@@ -2654,7 +2830,7 @@ def generators_iter_pair_delete(pair: GeneratorKeyValuePair) -> None:
     [Rust
     `pactffi_generators_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_generators_iter_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_generators_iter_pair_delete(pair._ptr)
 
 
 def sync_http_new() -> SynchronousHttp:
