@@ -19,8 +19,8 @@ from typing import (
 from unittest.mock import MagicMock
 
 import pytest
-from examples.src.message import Handler
 
+from examples.src.message import Handler
 from pact.v3.pact import Pact
 
 if TYPE_CHECKING:
