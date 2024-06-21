@@ -427,10 +427,86 @@ class InteractionHandle:
         return f"InteractionHandle({self._ref!r})"
 
 
-class MatchingRule: ...
+class MatchingRule:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MatchingRule *":
+            msg = "ptr must be a struct MatchingRule, got" f" {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MatchingRule"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MatchingRule({self._ptr!r})"
+
+    @property
+    def json(self) -> dict[str, Any]:
+        """
+        Dictionary representation of the matching rule.
+        """
+        return json.loads(matching_rule_to_json(self))
 
 
-class MatchingRuleCategoryIterator: ...
+class MatchingRuleCategoryIterator:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MatchingRuleCategoryIterator *":
+            msg = (
+                "ptr must be a struct MatchingRuleCategoryIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MatchingRuleCategoryIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MatchingRuleCategoryIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the MatchingRuleCategoryIterator.
+        """
+        matching_rules_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> MatchingRuleKeyValuePair:
+        """
+        Get the next generator category from the iterator.
+        """
+        return matching_rules_iter_next(self)
 
 
 class MatchingRuleDefinitionResult: ...
@@ -439,7 +515,57 @@ class MatchingRuleDefinitionResult: ...
 class MatchingRuleIterator: ...
 
 
-class MatchingRuleKeyValuePair: ...
+class MatchingRuleKeyValuePair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new key-value generator pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MatchingRuleKeyValuePair *":
+            msg = (
+                "ptr must be a struct MatchingRuleKeyValuePair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MatchingRuleKeyValuePair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MatchingRuleKeyValuePair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the MatchingRuleKeyValuePair.
+        """
+        matching_rules_iter_pair_delete(self)
+
+    @property
+    def path(self) -> str:
+        """
+        Matching Rule path.
+        """
+        s = ffi.string(self._ptr.path)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def matching_rule(self) -> MatchingRule:
+        """
+        Matching Rule value.
+        """
+        return MatchingRule(self._ptr.matching_rule)  # type: ignore[attr-defined]
 
 
 class MatchingRuleResult: ...
@@ -3474,7 +3600,7 @@ def matching_rule_to_json(rule: MatchingRule) -> str:
     This function will fail if it is passed a NULL pointer, or the iterator that
     owns the value of the matching rule has been deleted.
     """
-    raise NotImplementedError
+    return OwnedString(lib.pactffi_matching_rule_to_json(rule._ptr))
 
 
 def matching_rules_iter_delete(iter: MatchingRuleCategoryIterator) -> None:
@@ -3484,7 +3610,7 @@ def matching_rules_iter_delete(iter: MatchingRuleCategoryIterator) -> None:
     [Rust
     `pactffi_matching_rules_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_matching_rules_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_matching_rules_iter_delete(iter._ptr)
 
 
 def matching_rules_iter_next(
@@ -3508,7 +3634,7 @@ def matching_rules_iter_next(
 
     If no further data is present, returns NULL.
     """
-    raise NotImplementedError
+    return MatchingRuleKeyValuePair(lib.pactffi_matching_rules_iter_next(iter._ptr))
 
 
 def matching_rules_iter_pair_delete(pair: MatchingRuleKeyValuePair) -> None:
@@ -3518,7 +3644,7 @@ def matching_rules_iter_pair_delete(pair: MatchingRuleKeyValuePair) -> None:
     [Rust
     `pactffi_matching_rules_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_matching_rules_iter_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_matching_rules_iter_pair_delete(pair._ptr)
 
 
 def message_new() -> Message:
