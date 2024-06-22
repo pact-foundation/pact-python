@@ -571,13 +571,7 @@ class MatchingRuleKeyValuePair:
 class MatchingRuleResult: ...
 
 
-class Message: ...
-
-
 class MessageContents: ...
-
-
-class MessageHandle: ...
 
 
 class MessageMetadataIterator: ...
@@ -787,57 +781,6 @@ class PactInteractionIterator:
         Get the next interaction from the iterator.
         """
         return pact_interaction_iter_next(self)
-
-
-class PactMessageIterator:
-    """
-    Iterator over a Pact's asynchronous messages.
-    """
-
-    def __init__(self, ptr: cffi.FFI.CData) -> None:
-        """
-        Initialise a new Pact Message Iterator.
-
-        Args:
-            ptr:
-                CFFI data structure.
-        """
-        if ffi.typeof(ptr).cname != "struct PactMessageIterator *":
-            msg = (
-                f"ptr must be a struct PactMessageIterator, got {ffi.typeof(ptr).cname}"
-            )
-            raise TypeError(msg)
-        self._ptr = ptr
-
-    def __str__(self) -> str:
-        """
-        Nice string representation.
-        """
-        return "PactMessageIterator"
-
-    def __repr__(self) -> str:
-        """
-        Debugging representation.
-        """
-        return f"PactMessageIterator({self._ptr!r})"
-
-    def __del__(self) -> None:
-        """
-        Destructor for the Pact Message Iterator.
-        """
-        pact_message_iter_delete(self)
-
-    def __iter__(self) -> Self:
-        """
-        Return the iterator itself.
-        """
-        return self
-
-    def __next__(self) -> Message:
-        """
-        Get the next message from the iterator.
-        """
-        return pact_message_iter_next(self)
 
 
 class PactSyncHttpIterator:
@@ -1435,18 +1378,6 @@ def log_message(
         log_level.name.encode("utf-8"),
         message.encode("utf-8"),
     )
-
-
-def match_message(msg_1: Message, msg_2: Message) -> Mismatches:
-    """
-    Match a pair of messages, producing a collection of mismatches.
-
-    If the messages match, the returned collection will be empty.
-
-    [Rust
-    `pactffi_match_message`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_match_message)
-    """
-    raise NotImplementedError
 
 
 def mismatches_get_iter(mismatches: Mismatches) -> MismatchesIterator:
@@ -3398,28 +3329,6 @@ def pact_interaction_as_synchronous_http(
     raise NotImplementedError
 
 
-def pact_interaction_as_message(interaction: PactInteraction) -> Message:
-    """
-    Casts this interaction to a `Message` interaction.
-
-    Returns a NULL pointer if the interaction can not be casted to a `Message`
-    interaction (for instance, it is a http interaction). The returned pointer
-    must be freed with `pactffi_message_delete` when no longer required.
-
-    [Rust
-    `pactffi_pact_interaction_as_message`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_interaction_as_message)
-
-    Note that if the interaction is a V4 `AsynchronousMessage`, it will be
-    converted to a V3 `Message` before being returned.
-
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
-
-    # Errors On any error, this function will return a NULL pointer.
-    """
-    raise NotImplementedError
-
-
 def pact_interaction_as_asynchronous_message(
     interaction: PactInteraction,
 ) -> AsynchronousMessage:
@@ -3465,30 +3374,6 @@ def pact_interaction_as_synchronous_message(
     # Errors On any error, this function will return a NULL pointer.
     """
     raise NotImplementedError
-
-
-def pact_message_iter_delete(iter: PactMessageIterator) -> None:
-    """
-    Free the iterator when you're done using it.
-
-    [Rust
-    `pactffi_pact_message_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_message_iter_delete)
-    """
-    lib.pactffi_pact_message_iter_delete(iter._ptr)
-
-
-def pact_message_iter_next(iter: PactMessageIterator) -> Message:
-    """
-    Get the next message from the message pact.
-
-    [Rust
-    `pactffi_pact_message_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_message_iter_next)
-    """
-    ptr = lib.pactffi_pact_message_iter_next(iter._ptr)
-    if ptr == ffi.NULL:
-        raise StopIteration
-    raise NotImplementedError
-    return Message(ptr)
 
 
 def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> AsynchronousMessage:
@@ -3647,275 +3532,6 @@ def matching_rules_iter_pair_delete(pair: MatchingRuleKeyValuePair) -> None:
     lib.pactffi_matching_rules_iter_pair_delete(pair._ptr)
 
 
-def message_new() -> Message:
-    """
-    Get a mutable pointer to a newly-created default message on the heap.
-
-    [Rust
-    `pactffi_message_new`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_new)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    Returns NULL on error.
-    """
-    raise NotImplementedError
-
-
-def message_new_from_json(
-    index: int,
-    json_str: str,
-    spec_version: PactSpecification,
-) -> Message:
-    """
-    Constructs a `Message` from the JSON string.
-
-    [Rust
-    `pactffi_message_new_from_json`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_new_from_json)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the JSON string is invalid or not UTF-8 encoded, returns a NULL.
-    """
-    raise NotImplementedError
-
-
-def message_new_from_body(body: str, content_type: str) -> Message:
-    """
-    Constructs a `Message` from a body with a given content-type.
-
-    [Rust
-    `pactffi_message_new_from_body`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_new_from_body)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the body or content type are invalid or not UTF-8 encoded, returns NULL.
-    """
-    raise NotImplementedError
-
-
-def message_delete(message: Message) -> None:
-    """
-    Destroy the `Message` being pointed to.
-
-    [Rust
-    `pactffi_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_delete)
-    """
-    raise NotImplementedError
-
-
-def message_get_contents(message: Message) -> OwnedString | None:
-    """
-    Get the contents of a `Message` in string form.
-
-    [Rust
-    `pactffi_message_get_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents)
-
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete` and can
-    outlive the message. This function must only ever be called from a foreign
-    language. Calling it from a Rust function that has a Tokio runtime in its
-    call stack can result in a deadlock.
-
-    The returned string can outlive the message.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL. If the body of the message is missing,
-    then this function also returns NULL. This means there's no mechanism to
-    differentiate with this function call alone between a NULL message and a
-    missing message body.
-    """
-    raise NotImplementedError
-
-
-def message_set_contents(message: Message, contents: str, content_type: str) -> None:
-    """
-    Sets the contents of the message.
-
-    [Rust
-    `pactffi_message_set_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_set_contents)
-
-    # Safety
-
-    The message contents and content type must either be NULL pointers, or point
-    to valid UTF-8 encoded NULL-terminated strings. Otherwise behaviour is
-    undefined.
-
-    # Error Handling
-
-    If the contents is a NULL pointer, it will set the message contents as null.
-    If the content type is a null pointer, or can't be parsed, it will set the
-    content type as unknown.
-    """
-    raise NotImplementedError
-
-
-def message_get_contents_length(message: Message) -> int:
-    """
-    Get the length of the contents of a `Message`.
-
-    [Rust
-    `pactffi_message_get_contents_length`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents_length)
-
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the message is NULL, returns 0. If the body of the message is missing,
-    then this function also returns 0.
-    """
-    raise NotImplementedError
-
-
-def message_get_contents_bin(message: Message) -> str:
-    """
-    Get the contents of a `Message` as a pointer to an array of bytes.
-
-    [Rust
-    `pactffi_message_get_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_contents_bin)
-
-    # Safety
-
-    The number of bytes in the buffer will be returned by
-    `pactffi_message_get_contents_length`. It is safe to use the pointer while
-    the message is not deleted or changed. Using the pointer after the message
-    is mutated or deleted may lead to undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL. If the body of the message is missing,
-    then this function also returns NULL.
-    """
-    raise NotImplementedError
-
-
-def message_set_contents_bin(
-    message: Message,
-    contents: str,
-    len: int,
-    content_type: str,
-) -> None:
-    """
-    Sets the contents of the message as an array of bytes.
-
-    [Rust
-    `pactffi_message_set_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_set_contents_bin)
-
-    # Safety
-
-    The contents pointer must be valid for reads of `len` bytes, and it must be
-    properly aligned and consecutive. Otherwise behaviour is undefined.
-
-    # Error Handling
-
-    If the contents is a NULL pointer, it will set the message contents as null.
-    If the content type is a null pointer, or can't be parsed, it will set the
-    content type as unknown.
-    """
-    raise NotImplementedError
-
-
-def message_get_description(message: Message) -> OwnedString:
-    r"""
-    Get a copy of the description.
-
-    [Rust
-    `pactffi_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_description)
-
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the `Message`.
-
-    # Errors
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the Rust string contains embedded null ('\0')
-    bytes.
-    """
-    raise NotImplementedError
-
-
-def message_set_description(message: Message, description: str) -> int:
-    """
-    Write the `description` field on the `Message`.
-
-    [Rust
-    `pactffi_message_set_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_set_description)
-
-    # Safety
-
-    `description` must contain valid UTF-8. Invalid UTF-8 will be replaced with
-    U+FFFD REPLACEMENT CHARACTER.
-
-    This function will only reallocate if the new string does not fit in the
-    existing buffer.
-
-    # Error Handling
-
-    Errors will be reported with a non-zero return value.
-    """
-    raise NotImplementedError
-
-
-def message_get_provider_state(message: Message, index: int) -> ProviderState:
-    r"""
-    Get a copy of the provider state at the given index from this message.
-
-    [Rust
-    `pactffi_message_get_provider_state`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_provider_state)
-
-    # Safety
-
-    The returned structure must be deleted with `provider_state_delete`.
-
-    Since it is a copy, the returned structure may safely outlive the `Message`.
-
-    # Error Handling
-
-    On failure, this function will return a variant other than Success.
-
-    This function may fail if the index requested is out of bounds, or if any of
-    the Rust strings contain embedded null ('\0') bytes.
-    """
-    raise NotImplementedError
-
-
-def message_get_provider_state_iter(message: Message) -> ProviderStateIterator:
-    """
-    Get an iterator over provider states.
-
-    [Rust
-    `pactffi_message_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_provider_state_iter)
-
-    # Safety
-
-    The underlying data must not change during iteration.
-
-    # Error Handling
-
-    Returns NULL if an error occurs.
-    """
-    raise NotImplementedError
-
-
 def provider_state_iter_next(iter: ProviderStateIterator) -> ProviderState:
     """
     Get the next value from the iterator.
@@ -3947,52 +3563,6 @@ def provider_state_iter_delete(iter: ProviderStateIterator) -> None:
     raise NotImplementedError
 
 
-def message_find_metadata(message: Message, key: str) -> str:
-    r"""
-    Get a copy of the metadata value indexed by `key`.
-
-    [Rust
-    `pactffi_message_find_metadata`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_find_metadata)
-
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the `Message`.
-
-    The returned pointer will be NULL if the metadata does not contain the given
-    key, or if an error occurred.
-
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the provided `key` string contains invalid UTF-8,
-    or if the Rust string contains embedded null ('\0') bytes.
-    """
-    raise NotImplementedError
-
-
-def message_insert_metadata(message: Message, key: str, value: str) -> int:
-    r"""
-    Insert the (`key`, `value`) pair into this Message's `metadata` HashMap.
-
-    [Rust
-    `pactffi_message_insert_metadata`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_insert_metadata)
-
-    # Safety
-
-    This function returns an enum indicating the result; see the comments on
-    HashMapInsertStatus for details.
-
-    # Error Handling
-
-    This function may fail if the provided `key` or `value` strings contain
-    invalid UTF-8.
-    """
-    raise NotImplementedError
-
-
 def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadataPair:
     """
     Get the next key and value out of the iterator, if possible.
@@ -4012,31 +3582,6 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
     # Error Handling
 
     If no further data is present, returns NULL.
-    """
-    raise NotImplementedError
-
-
-def message_get_metadata_iter(message: Message) -> MessageMetadataIterator:
-    r"""
-    Get an iterator over the metadata of a message.
-
-    [Rust
-    `pactffi_message_get_metadata_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_get_metadata_iter)
-
-    # Safety
-
-    This iterator carries a pointer to the message, and must not outlive the
-    message.
-
-    The message metadata also must not be modified during iteration. If it is,
-    the old iterator must be deleted and a new iterator created.
-
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if any of the Rust strings contain embedded null
-    ('\0') bytes.
     """
     raise NotImplementedError
 
@@ -6406,27 +5951,6 @@ def add_text_comment(interaction: InteractionHandle, comment: str) -> None:
     if not success:
         msg = f"Failed to add text comment for {interaction}."
         raise RuntimeError(msg)
-
-
-def pact_handle_get_message_iter(pact: PactHandle) -> PactMessageIterator:
-    r"""
-    Get an iterator over all the messages of the Pact.
-
-    [Rust
-    `pactffi_pact_handle_get_message_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_handle_get_message_iter)
-
-    # Safety
-
-    The iterator contains a copy of the Pact, so it is always safe to use.
-
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if any of the Rust strings contain embedded null
-    ('\0') bytes.
-    """
-    return PactMessageIterator(lib.pactffi_pact_handle_get_message_iter(pact._ref))
 
 
 def pact_handle_get_async_message_iter(pact: PactHandle) -> PactAsyncMessageIterator:
