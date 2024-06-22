@@ -80,6 +80,9 @@ docstring.
 # ruff: noqa: SLF001
 #       private-member-access, as we need access to other handles' internal
 #       references, without exposing them to the user.
+# pyright: reportPrivateUsage=false
+#          Ignore private member access, as we frequently need to use the
+#          object's underlying pointer stored in `_ptr`.
 
 from __future__ import annotations
 
