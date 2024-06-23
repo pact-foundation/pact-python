@@ -654,10 +654,116 @@ class MessageContents:
         return  # Ensures that the parent object outlives the generator
 
 
-class MessageMetadataIterator: ...
+class MessageMetadataIterator:
+    """
+    Iterator over an interaction's metadata.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Message Metadata Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageMetadataIterator *":
+            msg = (
+                "ptr must be a struct MessageMetadataIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageMetadataIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageMetadataIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Interaction Iterator.
+        """
+        message_metadata_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> MessageMetadataPair:
+        """
+        Get the next interaction from the iterator.
+        """
+        return message_metadata_iter_next(self)
 
 
-class MessageMetadataPair: ...
+class MessageMetadataPair:
+    """
+    A metadata key-value pair.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Message Metadata Pair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageMetadataPair *":
+            msg = (
+                "ptr must be a struct MessageMetadataPair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageMetadataPair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageMetadataPair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Interaction Iterator.
+        """
+        message_metadata_pair_delete(self)
+
+    @property
+    def key(self) -> str:
+        """
+        Metadata key.
+        """
+        s = ffi.string(self._ptr.key)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def value(self) -> str:
+        """
+        Metadata value.
+        """
+        s = ffi.string(self._ptr.value)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
 
 
 class Mismatch: ...
@@ -3655,11 +3761,13 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
     only ever be called from a foreign language. Calling it from a Rust function
     that has a Tokio runtime in its call stack can result in a deadlock.
 
-    # Error Handling
-
-    If no further data is present, returns NULL.
+    Raises:
+        StopIteration: If no further data is present.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_metadata_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return MessageMetadataPair(ptr)
 
 
 def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
@@ -3669,7 +3777,7 @@ def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
     [Rust
     `pactffi_message_metadata_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_metadata_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_message_metadata_iter_delete(iter._ptr)
 
 
 def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
@@ -3679,7 +3787,7 @@ def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
     [Rust
     `pactffi_message_metadata_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_metadata_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_message_metadata_pair_delete(pair._ptr)
 
 
 def provider_get_name(provider: Provider) -> str:
