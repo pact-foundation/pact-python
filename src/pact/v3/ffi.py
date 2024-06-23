@@ -92,7 +92,7 @@ import logging
 import typing
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Literal
+from typing import TYPE_CHECKING, Any, List, Literal, Tuple
 from typing import Generator as GeneratorType
 
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
@@ -1076,16 +1076,208 @@ class PactSyncMessageIterator:
 class Provider: ...
 
 
-class ProviderState: ...
+class ProviderState:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new ProviderState.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderState *":
+            msg = "ptr must be a struct ProviderState, got" f" {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderState({self.name!r})"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderState({self._ptr!r})"
+
+    @property
+    def name(self) -> str:
+        """
+        Provider State name.
+        """
+        return provider_state_get_name(self) or ""
+
+    def parameters(self) -> GeneratorType[Tuple[str, str], None, None]:
+        """
+        Provider State parameters.
+
+        This is a generator that yields key-value pairs.
+        """
+        for p in provider_state_get_param_iter(self):
+            yield p.key, p.value
+        return  # Ensures that the parent object outlives the generator
 
 
-class ProviderStateIterator: ...
+class ProviderStateIterator:
+    """
+    Iterator over an interactions ProviderStates.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Provider State Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderStateIterator *":
+            msg = (
+                "ptr must be a struct ProviderStateIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderStateIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderStateIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Iterator.
+        """
+        provider_state_iter_delete(self)
+
+    def __iter__(self) -> ProviderStateIterator:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> ProviderState:
+        """
+        Get the next message from the iterator.
+        """
+        return provider_state_iter_next(self)
 
 
-class ProviderStateParamIterator: ...
+class ProviderStateParamIterator:
+    """
+    Iterator over a Provider States Parameters.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Provider State Param Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderStateParamIterator *":
+            msg = (
+                "ptr must be a struct ProviderStateParamIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderStateParamIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderStateParamIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Param Iterator.
+        """
+        provider_state_param_iter_delete(self)
+
+    def __iter__(self) -> ProviderStateParamIterator:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> ProviderStateParamPair:
+        """
+        Get the next message from the iterator.
+        """
+        return provider_state_param_iter_next(self)
 
 
-class ProviderStateParamPair: ...
+class ProviderStateParamPair:
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new ProviderStateParamPair.
+
+        Args:
+            ptr:
+                CFFI data structure.
+        """
+        if ffi.typeof(ptr).cname != "struct ProviderStateParamPair *":
+            msg = (
+                "ptr must be a struct ProviderStateParamPair, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "ProviderStateParamPair"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"ProviderStateParamPair({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Provider State Param Pair.
+        """
+        provider_state_param_pair_delete(self)
+
+    @property
+    def key(self) -> str:
+        """
+        Provider State Param key.
+        """
+        s = ffi.string(self._ptr.key)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
+
+    @property
+    def value(self) -> str:
+        """
+        Provider State Param value.
+        """
+        s = ffi.string(self._ptr.value)  # type: ignore[attr-defined]
+        if isinstance(s, bytes):
+            s = s.decode("utf-8")
+        return s
 
 
 class SynchronousHttp: ...
@@ -3725,14 +3917,14 @@ def provider_state_iter_next(iter: ProviderStateIterator) -> ProviderState:
 
     The underlying data must not change during iteration.
 
-    If a previous call panicked, then the internal mutex will have been poisoned
-    and this function will return NULL.
-
-    # Error Handling
-
-    Returns NULL if an error occurs.
+    Raises:
+        StopIteration: If no further data is present, or if an internal error
+            occurs.
     """
-    raise NotImplementedError
+    provider_state = lib.pactffi_provider_state_iter_next(iter._ptr)
+    if provider_state == ffi.NULL:
+        raise StopIteration
+    return ProviderState(provider_state)
 
 
 def provider_state_iter_delete(iter: ProviderStateIterator) -> None:
@@ -3742,7 +3934,7 @@ def provider_state_iter_delete(iter: ProviderStateIterator) -> None:
     [Rust
     `pactffi_provider_state_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_provider_state_iter_delete(iter._ptr)
 
 
 def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadataPair:
@@ -3861,24 +4053,22 @@ def pact_provider_delete(provider: Provider) -> None:
     raise NotImplementedError
 
 
-def provider_state_get_name(provider_state: ProviderState) -> str:
+def provider_state_get_name(provider_state: ProviderState) -> str | None:
     """
     Get the name of the provider state as a string.
-
-    This needs to be deleted with `pactffi_string_delete`.
 
     [Rust
     `pactffi_provider_state_get_name`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_get_name)
 
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the provider_state param is NULL, this returns NULL.
+    Raises:
+        RuntimeError:
+            If the name could not be retrieved.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_provider_state_get_name(provider_state._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get provider state name."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def provider_state_get_param_iter(
@@ -3898,14 +4088,14 @@ def provider_state_get_param_iter(
     The provider state params also must not be modified during iteration. If it
     is, the old iterator must be deleted and a new iterator created.
 
-    # Errors
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if any of the Rust strings contain embedded null
-    ('\0') bytes.
+    Raises:
+        RuntimeError: If the iterator could not be created.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_provider_state_get_param_iter(provider_state._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get provider state param iterator."
+        raise RuntimeError(msg)
+    return ProviderStateParamIterator(ptr)
 
 
 def provider_state_param_iter_next(
@@ -3917,20 +4107,17 @@ def provider_state_param_iter_next(
     [Rust
     `pactffi_provider_state_param_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_param_iter_next)
 
-    Returns a pointer to a heap allocated array of 2 elements, the pointer to
-    the key string on the heap, and the pointer to the value string on the heap.
-
     # Safety
 
     The underlying data must not be modified during iteration.
 
-    The user needs to free both the contained strings and the array.
-
-    # Error Handling
-
-    Returns NULL if there's no further elements or the iterator is NULL.
+    Raises:
+        StopIteration: If no further data is present.
     """
-    raise NotImplementedError
+    provider_state_param = lib.pactffi_provider_state_param_iter_next(iter._ptr)
+    if provider_state_param == ffi.NULL:
+        raise StopIteration
+    return ProviderStateParamPair(provider_state_param)
 
 
 def provider_state_delete(provider_state: ProviderState) -> None:
@@ -3950,7 +4137,7 @@ def provider_state_param_iter_delete(iter: ProviderStateParamIterator) -> None:
     [Rust
     `pactffi_provider_state_param_iter_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_param_iter_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_provider_state_param_iter_delete(iter._ptr)
 
 
 def provider_state_param_pair_delete(pair: ProviderStateParamPair) -> None:
@@ -3960,7 +4147,7 @@ def provider_state_param_pair_delete(pair: ProviderStateParamPair) -> None:
     [Rust
     `pactffi_provider_state_param_pair_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_provider_state_param_pair_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_provider_state_param_pair_delete(pair._ptr)
 
 
 def sync_message_new() -> SynchronousMessage:
