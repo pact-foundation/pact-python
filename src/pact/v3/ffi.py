@@ -571,7 +571,87 @@ class MatchingRuleKeyValuePair:
 class MatchingRuleResult: ...
 
 
-class MessageContents: ...
+class MessageContents:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = True) -> None:
+        """
+        Initialise a Message Contents.
+
+        Args:
+            ptr:
+                CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
+        """
+        if ffi.typeof(ptr).cname != "struct MessageContents *":
+            msg = (
+                "ptr must be a struct MessageContents, got" f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "MessageContents"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"MessageContents({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the MessageContents.
+        """
+        if not self._owned:
+            message_contents_delete(self)
+
+    @property
+    def contents(self) -> str | bytes | None:
+        """
+        Get the contents of the message.
+        """
+        return message_contents_get_contents_str(
+            self
+        ) or message_contents_get_contents_bin(self)
+
+    @property
+    def metadata(self) -> GeneratorType[MessageMetadataPair, None, None]:
+        """
+        Get the metadata for the message contents.
+        """
+        yield from message_contents_get_metadata_iter(self)
+        return  # Ensures that the parent object outlives the generator
+
+    def matching_rules(
+        self,
+        category: MatchingRuleCategoryOptions | MatchingRuleCategory,
+    ) -> GeneratorType[MatchingRuleKeyValuePair, None, None]:
+        """
+        Get the matching rules for the message contents.
+        """
+        if isinstance(category, str):
+            category = MatchingRuleCategory(category.upper())
+        yield from message_contents_get_matching_rule_iter(self, category)
+        return  # Ensures that the parent object outlives the generator
+
+    def generators(
+        self,
+        category: GeneratorCategoryOptions | GeneratorCategory,
+    ) -> GeneratorType[GeneratorKeyValuePair, None, None]:
+        """
+        Get the generators for the message contents.
+        """
+        if isinstance(category, str):
+            category = GeneratorCategory(category.upper())
+        yield from message_contents_get_generators_iter(self, category)
+        return  # Ensures that the parent object outlives the generator
 
 
 class MessageMetadataIterator: ...
@@ -2100,26 +2180,36 @@ def pact_consumer_delete(consumer: Consumer) -> None:
     raise NotImplementedError
 
 
-def message_contents_get_contents_str(contents: MessageContents) -> str:
+def message_contents_delete(contents: MessageContents) -> None:
+    """
+    Delete the message contents instance.
+
+    This should only be called on a message contents that require deletion.
+    The function creating the message contents should document whether it
+    requires deletion.
+
+    Deleting a message content which is associated with an interaction
+    will result in undefined behaviour.
+
+    [Rust `pactffi_message_contents_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_delete)
+    """
+    lib.pactffi_message_contents_delete(contents._ptr)
+
+
+def message_contents_get_contents_str(contents: MessageContents) -> str | None:
     """
     Get the message contents in string form.
 
     [Rust `pactffi_message_contents_get_contents_str`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_str)
 
+    If the message has no contents or contain invalid UTF-8 characters, this
+    function will return `None`.
     # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    The returned string can outlive the message.
-
-    # Error Handling
-
-    If the message contents is NULL, returns NULL. If the body of the message
-    is missing, then this function also returns NULL. This means there's
-    no mechanism to differentiate with this function call alone between
-    a NULL message and a missing message body.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_contents_get_contents_str(contents._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return OwnedString(ptr)
 
 
 def message_contents_set_contents_str(
@@ -2160,38 +2250,27 @@ def message_contents_get_contents_length(contents: MessageContents) -> int:
 
     [Rust `pactffi_message_contents_get_contents_length`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_length)
 
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the message is NULL, returns 0. If the body of the message
-    is missing, then this function also returns 0.
+    If the message has not contents, this function will return 0.
     """
-    raise NotImplementedError
+    return lib.pactffi_message_contents_get_contents_length(contents._ptr)
 
 
-def message_contents_get_contents_bin(contents: MessageContents) -> str:
+def message_contents_get_contents_bin(contents: MessageContents) -> bytes | None:
     """
     Get the contents of a message as a pointer to an array of bytes.
 
     [Rust
     `pactffi_message_contents_get_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_contents_bin)
 
-    # Safety
-
-    The number of bytes in the buffer will be returned by
-    `pactffi_message_contents_get_contents_length`. It is safe to use the
-    pointer while the message is not deleted or changed. Using the pointer after
-    the message is mutated or deleted may lead to undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL. If the body of the message is missing,
-    then this function also returns NULL.
+    If the message has no contents, this function will return `None`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_contents_get_contents_bin(contents._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return ffi.buffer(
+        ptr,
+        lib.pactffi_message_contents_get_contents_length(contents._ptr),
+    )[:]
 
 
 def message_contents_set_contents_bin(
@@ -2235,9 +2314,6 @@ def message_contents_get_metadata_iter(
     [Rust
     `pactffi_message_contents_get_metadata_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_metadata_iter)
 
-    The returned pointer must be deleted with
-    `pactffi_message_metadata_iter_delete` when done with it.
-
     # Safety
 
     This iterator carries a pointer to the message contents, and must not
@@ -2246,14 +2322,14 @@ def message_contents_get_metadata_iter(
     The message metadata also must not be modified during iteration. If it is,
     the old iterator must be deleted and a new iterator created.
 
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if any of the Rust strings contain embedded null
-    ('\0') bytes.
+    Raises:
+        RuntimeError: If the metadata iterator cannot be retrieved.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_message_contents_get_metadata_iter(contents._ptr)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the metadata iterator from the message contents."
+        raise RuntimeError(msg)
+    return MessageMetadataIterator(ptr)
 
 
 def message_contents_get_matching_rule_iter(
@@ -2294,7 +2370,9 @@ def message_contents_get_matching_rule_iter(
 
     On failure, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    return MatchingRuleCategoryIterator(
+        lib.pactffi_message_contents_get_matching_rule_iter(contents._ptr, category)
+    )
 
 
 def request_contents_get_matching_rule_iter(
@@ -2381,21 +2459,19 @@ def message_contents_get_generators_iter(
     [Rust
     `pactffi_message_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_message_contents_get_generators_iter)
 
-    The returned pointer must be deleted with `pactffi_generators_iter_delete`
-    when done with it.
-
     # Safety
 
     The iterator contains a copy of the data, so is safe to use when the message
     or message contents has been deleted.
 
-    # Error Handling
-
-    On failure, this function will return a NULL pointer.
+    Raises:
+        RuntimeError: If the generators iterator cannot be retrieved.
     """
-    return GeneratorCategoryIterator(
-        lib.pactffi_message_contents_get_generators_iter(contents, category)
-    )
+    ptr = lib.pactffi_message_contents_get_generators_iter(contents._ptr, category)
+    if ptr == ffi.NULL:
+        msg = "Unable to get the generators iterator from the message contents."
+        raise RuntimeError(msg)
+    return GeneratorCategoryIterator(ptr)
 
 
 def request_contents_get_generators_iter(
