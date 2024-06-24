@@ -24,6 +24,7 @@ section of the Pact documentation.
 
 from __future__ import annotations
 
+import time
 from multiprocessing import Process
 from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
@@ -93,6 +94,7 @@ def verifier() -> Generator[Verifier, Any, None]:
         provider_base_url=str(PROVIDER_URL),
     )
     proc.start()
+    time.sleep(2)
     yield verifier
     proc.kill()
 

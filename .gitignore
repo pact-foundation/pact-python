@@ -4,6 +4,9 @@
 src/pact/bin
 src/pact/data
 
+# Test outputs
+examples/tests/pacts
+
 # Version is determined from the VCS
 src/pact/__version__.py
 

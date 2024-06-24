@@ -15,7 +15,8 @@ services:
   broker:
     image: pactfoundation/pact-broker:latest-multi
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "9292:9292"
     restart: always
@@ -41,3 +42,4 @@ services:
       interval: 1s
       timeout: 2s
       retries: 5
+      start_period: 30s
