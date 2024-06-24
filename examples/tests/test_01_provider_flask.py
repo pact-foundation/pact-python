@@ -24,6 +24,7 @@ section of the Pact documentation.
 
 from __future__ import annotations
 
+import time
 from multiprocessing import Process
 from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
@@ -133,6 +134,7 @@ def test_against_broker(broker: URL, verifier: Verifier) -> None:
 
     For an example of the consumer's contract, see the consumer's tests.
     """
+    time.sleep(2) # give the broker time to start
     code, _ = verifier.verify_with_broker(
         broker_url=str(broker),
         # Despite the auth being set in the broker URL, we still need to pass
