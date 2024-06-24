@@ -162,6 +162,10 @@ class AsynchronousMessage:
                 Whether the message is owned by something else or not. This
                 determines whether the message should be freed when the Python
                 object is destroyed.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct AsynchronousMessage`.
         """
         if ffi.typeof(ptr).cname != "struct AsynchronousMessage *":
             msg = (
@@ -228,6 +232,10 @@ class Generator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct Generator`.
         """
         if ffi.typeof(ptr).cname != "struct Generator *":
             msg = "ptr must be a struct Generator, got" f" {ffi.typeof(ptr).cname}"
@@ -297,6 +305,10 @@ class GeneratorCategoryIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct GeneratorCategoryIterator`.
         """
         if ffi.typeof(ptr).cname != "struct GeneratorCategoryIterator *":
             msg = (
@@ -345,6 +357,10 @@ class GeneratorKeyValuePair:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct GeneratorKeyValuePair`.
         """
         if ffi.typeof(ptr).cname != "struct GeneratorKeyValuePair *":
             msg = (
@@ -435,6 +451,10 @@ class MatchingRule:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct MatchingRule`.
         """
         if ffi.typeof(ptr).cname != "struct MatchingRule *":
             msg = "ptr must be a struct MatchingRule, got" f" {ffi.typeof(ptr).cname}"
@@ -469,6 +489,10 @@ class MatchingRuleCategoryIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct MatchingRuleCategoryIterator`.
         """
         if ffi.typeof(ptr).cname != "struct MatchingRuleCategoryIterator *":
             msg = (
@@ -523,6 +547,10 @@ class MatchingRuleKeyValuePair:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct MatchingRuleKeyValuePair`.
         """
         if ffi.typeof(ptr).cname != "struct MatchingRuleKeyValuePair *":
             msg = (
@@ -584,6 +612,10 @@ class MessageContents:
                 Whether the message is owned by something else or not. This
                 determines whether the message should be freed when the Python
                 object is destroyed.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct MessageContents`.
         """
         if ffi.typeof(ptr).cname != "struct MessageContents *":
             msg = (
@@ -666,6 +698,10 @@ class MessageMetadataIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct MessageMetadataIterator`.
         """
         if ffi.typeof(ptr).cname != "struct MessageMetadataIterator *":
             msg = (
@@ -718,6 +754,10 @@ class MessageMetadataPair:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct MessageMetadataPair`.
         """
         if ffi.typeof(ptr).cname != "struct MessageMetadataPair *":
             msg = (
@@ -790,6 +830,10 @@ class PactAsyncMessageIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct PactAsyncMessageIterator`.
         """
         if ffi.typeof(ptr).cname != "struct PactAsyncMessageIterator *":
             msg = (
@@ -935,6 +979,10 @@ class PactInteractionIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct PactInteractionIterator`.
         """
         if ffi.typeof(ptr).cname != "struct PactInteractionIterator *":
             msg = (
@@ -981,6 +1029,10 @@ class PactSyncHttpIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct PactSyncHttpIterator`.
         """
         if ffi.typeof(ptr).cname != "struct PactSyncHttpIterator *":
             msg = (
@@ -1033,6 +1085,10 @@ class PactSyncMessageIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct PactSyncMessageIterator`.
         """
         if ffi.typeof(ptr).cname != "struct PactSyncMessageIterator *":
             msg = (
@@ -1084,6 +1140,10 @@ class ProviderState:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct ProviderState`.
         """
         if ffi.typeof(ptr).cname != "struct ProviderState *":
             msg = "ptr must be a struct ProviderState, got" f" {ffi.typeof(ptr).cname}"
@@ -1132,6 +1192,10 @@ class ProviderStateIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct ProviderStateIterator`.
         """
         if ffi.typeof(ptr).cname != "struct ProviderStateIterator *":
             msg = (
@@ -1184,6 +1248,10 @@ class ProviderStateParamIterator:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct ProviderStateParamIterator`.
         """
         if ffi.typeof(ptr).cname != "struct ProviderStateParamIterator *":
             msg = (
@@ -1232,6 +1300,10 @@ class ProviderStateParamPair:
         Args:
             ptr:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct ProviderStateParamPair`.
         """
         if ffi.typeof(ptr).cname != "struct ProviderStateParamPair *":
             msg = (
@@ -1293,6 +1365,10 @@ class SynchronousHttp:
                 Whether the message is owned by something else or not. This
                 determines whether the message should be freed when the Python
                 object is destroyed.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct SynchronousHttp`.
         """
         if ffi.typeof(ptr).cname != "struct SynchronousHttp *":
             msg = (
@@ -1369,6 +1445,10 @@ class SynchronousMessage:
                 Whether the message is owned by something else or not. This
                 determines whether the message should be freed when the Python
                 object is destroyed.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct SynchronousMessage`.
         """
         if ffi.typeof(ptr).cname != "struct SynchronousMessage *":
             msg = (
@@ -1674,6 +1754,10 @@ class StringResult:
         Args:
             cdata:
                 CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `cdata` is not a `struct StringResult`.
         """
         if ffi.typeof(cdata).cname != "struct StringResult":
             msg = f"cdata must be a struct StringResult, got {ffi.typeof(cdata).cname}"
@@ -1722,7 +1806,12 @@ class StringResult:
         Raise an exception with the text of the result.
 
         Raises:
-            RuntimeError: If the result is an error.
+            RuntimeError:
+                If the result is an error.
+
+        Raises:
+            RuntimeError:
+                If the result is an error.
         """
         if self.is_failed:
             raise RuntimeError(self.text)
@@ -2015,7 +2104,8 @@ def get_error_message(length: int = 1024) -> str | None:
         message.
 
     Raises:
-        RuntimeError: If the error message could not be retrieved.
+        RuntimeError:
+            If the error message could not be retrieved.
     """
     buffer = ffi.new("char[]", length)
     ret: int = lib.pactffi_get_error_message(buffer, length)
@@ -2066,7 +2156,8 @@ def log_to_stderr(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
             insensitive).
 
     Raises:
-        RuntimeError: If there was an error setting the logger.
+        RuntimeError:
+            If there was an error setting the logger.
     """
     if isinstance(level_filter, str):
         level_filter = LevelFilter[level_filter.upper()]
@@ -2096,6 +2187,10 @@ def log_to_buffer(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     Convenience function to direct all logging to a task local memory buffer.
 
     [Rust `pactffi_log_to_buffer`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_log_to_buffer)
+
+    Raises:
+        RuntimeError:
+            If there was an error setting the logger.
     """
     if isinstance(level_filter, str):
         level_filter = LevelFilter[level_filter.upper()]
@@ -2475,7 +2570,8 @@ def async_message_get_description(message: AsynchronousMessage) -> str:
     `pactffi_async_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_get_description)
 
     Raises:
-        RuntimeError: If the description cannot be retrieved.
+        RuntimeError:
+            If the description cannot be retrieved.
     """
     ptr = lib.pactffi_async_message_get_description(message._ptr)
     if ptr == ffi.NULL:
@@ -2518,19 +2614,9 @@ def async_message_get_provider_state(
     [Rust
     `pactffi_async_message_get_provider_state`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_async_message_get_provider_state)
 
-    # Safety
-
-    The returned structure must be deleted with `provider_state_delete`.
-
-    Since it is a copy, the returned structure may safely outlive the
-    `AsynchronousMessage`.
-
-    # Error Handling
-
-    On failure, this function will return a variant other than Success.
-
-    This function may fail if the index requested is out of bounds, or if any of
-    the Rust strings contain embedded null ('\0') bytes.
+    Raises:
+        RuntimeError:
+            If the provider state cannot be retrieved.
     """
     ptr = lib.pactffi_async_message_get_provider_state(message._ptr, index)
     if ptr == ffi.NULL:
@@ -2649,7 +2735,6 @@ def message_contents_get_contents_str(contents: MessageContents) -> str | None:
 
     If the message has no contents or contain invalid UTF-8 characters, this
     function will return `None`.
-    # Safety
     """
     ptr = lib.pactffi_message_contents_get_contents_str(contents._ptr)
     if ptr == ffi.NULL:
@@ -2768,7 +2853,8 @@ def message_contents_get_metadata_iter(
     the old iterator must be deleted and a new iterator created.
 
     Raises:
-        RuntimeError: If the metadata iterator cannot be retrieved.
+        RuntimeError:
+            If the metadata iterator cannot be retrieved.
     """
     ptr = lib.pactffi_message_contents_get_metadata_iter(contents._ptr)
     if ptr == ffi.NULL:
@@ -2910,7 +2996,8 @@ def message_contents_get_generators_iter(
     or message contents has been deleted.
 
     Raises:
-        RuntimeError: If the generators iterator cannot be retrieved.
+        RuntimeError:
+            If the generators iterator cannot be retrieved.
     """
     ptr = lib.pactffi_message_contents_get_generators_iter(contents._ptr, category)
     if ptr == ffi.NULL:
@@ -3273,23 +3360,15 @@ def validate_datetime(value: str, format: str) -> None:
     """
     Validates the date/time value against the date/time format string.
 
-    Raises an error if the value is not a valid date/time for the format string.
-
-    If the value is valid, this function will return a zero status code
-    (EXIT_SUCCESS). If the value is not valid, will return a value of 1
-    (EXIT_FAILURE) and set the error message which can be retrieved with
-    `pactffi_get_error_message`.
-
     [Rust
     `pactffi_validate_datetime`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_validate_datetime)
 
-    # Errors If the function receives a panic, it will return 2 and the message
-    associated with the panic can be retrieved with `pactffi_get_error_message`.
+    Raises:
+        ValueError:
+            If the value is not a valid date/time for the format string.
 
-    # Safety
-
-    This function is safe as long as the value and format parameters point to
-    valid NULL-terminated strings.
+        RuntimeError:
+            For any other error.
     """
     ret = lib.pactffi_validate_datetime(value.encode(), format.encode())
     if ret == 0:
@@ -3386,14 +3465,9 @@ def generators_iter_next(iter: GeneratorCategoryIterator) -> GeneratorKeyValuePa
     The returned pointer must be deleted with
     `pactffi_generator_iter_pair_delete`.
 
-    # Safety
-
-    The underlying data is owned by the `GeneratorKeyValuePair`, so is always
-    safe to use.
-
-    # Error Handling
-
-    If no further data is present, returns NULL.
+    Raises:
+        StopIteration:
+            If the iterator has reached the end.
     """
     ptr = lib.pactffi_generators_iter_next(iter._ptr)
     if ptr == ffi.NULL:
@@ -3708,7 +3782,8 @@ def sync_http_get_description(interaction: SynchronousHttp) -> str:
     `pactffi_sync_http_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_description)
 
     Raises:
-        RuntimeError: If the description cannot be retrieved
+        RuntimeError:
+            If the description cannot be retrieved
     """
     ptr = lib.pactffi_sync_http_get_description(interaction._ptr)
     if ptr == ffi.NULL:
@@ -3780,7 +3855,8 @@ def sync_http_get_provider_state_iter(
     The underlying data must not change during iteration.
 
     Raises:
-        RuntimeError: If the iterator cannot be retrieved
+        RuntimeError:
+            If the iterator cannot be retrieved
     """
     ptr = lib.pactffi_sync_http_get_provider_state_iter(interaction._ptr)
     if ptr == ffi.NULL:
@@ -3864,6 +3940,10 @@ def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> Asynchronous
 
     [Rust
     `pactffi_pact_async_message_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_async_message_iter_next)
+
+    Raises:
+        StopIteration:
+            If the iterator has reached the end.
     """
     ptr = lib.pactffi_pact_async_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
@@ -3887,6 +3967,10 @@ def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMes
 
     [Rust
     `pactffi_pact_sync_message_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_sync_message_iter_next)
+
+    Raises:
+        StopIteration:
+            If the iterator has reached the end.
     """
     ptr = lib.pactffi_pact_sync_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
@@ -3910,6 +3994,10 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
 
     [Rust
     `pactffi_pact_sync_http_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_sync_http_iter_next)
+
+    Raises:
+        StopIteration:
+            If the iterator has reached the end.
     """
     ptr = lib.pactffi_pact_sync_http_iter_next(iter._ptr)
     if ptr == ffi.NULL:
@@ -3933,6 +4021,10 @@ def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction
 
     [Rust
     `pactffi_pact_interaction_iter_next`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_pact_interaction_iter_next)
+
+    Raises:
+        StopIteration:
+            If the iterator has reached the end.
     """
     ptr = lib.pactffi_pact_interaction_iter_next(iter._ptr)
     if ptr == ffi.NULL:
@@ -4024,8 +4116,8 @@ def provider_state_iter_next(iter: ProviderStateIterator) -> ProviderState:
     The underlying data must not change during iteration.
 
     Raises:
-        StopIteration: If no further data is present, or if an internal error
-            occurs.
+        StopIteration:
+            If no further data is present, or if an internal error occurs.
     """
     provider_state = lib.pactffi_provider_state_iter_next(iter._ptr)
     if provider_state == ffi.NULL:
@@ -4060,7 +4152,8 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
     that has a Tokio runtime in its call stack can result in a deadlock.
 
     Raises:
-        StopIteration: If no further data is present.
+        StopIteration:
+            If no further data is present.
     """
     ptr = lib.pactffi_message_metadata_iter_next(iter._ptr)
     if ptr == ffi.NULL:
@@ -4195,7 +4288,8 @@ def provider_state_get_param_iter(
     is, the old iterator must be deleted and a new iterator created.
 
     Raises:
-        RuntimeError: If the iterator could not be created.
+        RuntimeError:
+            If the iterator could not be created.
     """
     ptr = lib.pactffi_provider_state_get_param_iter(provider_state._ptr)
     if ptr == ffi.NULL:
@@ -4218,7 +4312,8 @@ def provider_state_param_iter_next(
     The underlying data must not be modified during iteration.
 
     Raises:
-        StopIteration: If no further data is present.
+        StopIteration:
+            If no further data is present.
     """
     provider_state_param = lib.pactffi_provider_state_param_iter_next(iter._ptr)
     if provider_state_param == ffi.NULL:
@@ -4445,6 +4540,10 @@ def sync_message_generate_request_contents(
 
     [Rust
     `pactffi_sync_message_generate_request_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_request_contents)
+
+    Raises:
+        RuntimeError:
+            If the request contents cannot be generated
     """
     ptr = lib.pactffi_sync_message_generate_request_contents(message._ptr)
     if ptr == ffi.NULL:
@@ -4654,7 +4753,8 @@ def sync_message_generate_response_contents(
     `pactffi_sync_message_generate_response_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_response_contents)
 
     Raises:
-        RuntimeError: If the response contents could not be generated.
+        RuntimeError:
+            If the response contents could not be generated.
     """
     ptr = lib.pactffi_sync_message_generate_response_contents(message._ptr, index)
     if ptr == ffi.NULL:
@@ -4671,7 +4771,8 @@ def sync_message_get_description(message: SynchronousMessage) -> str:
     `pactffi_sync_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_get_description)
 
     Raises:
-        RuntimeError: If the description could not be retrieved
+        RuntimeError:
+            If the description could not be retrieved
     """
     ptr = lib.pactffi_sync_message_get_description(message._ptr)
     if ptr == ffi.NULL:
@@ -4743,7 +4844,8 @@ def sync_message_get_provider_state_iter(
     The underlying data must not change during iteration.
 
     Raises:
-        RuntimeError: If the iterator could not be created.
+        RuntimeError:
+            If the iterator could not be created.
     """
     ptr = lib.pactffi_sync_message_get_provider_state_iter(message._ptr)
     if ptr == ffi.NULL:
@@ -4897,8 +4999,9 @@ def create_mock_server_for_transport(
         A handle to the mock server.
 
     Raises:
-        RuntimeError: If the mock server could not be created. The error message
-            will contain details of the error.
+        RuntimeError:
+            If the mock server could not be created. The error message will
+            contain details of the error.
     """
     ret: int = lib.pactffi_create_mock_server_for_transport(
         pact._ref,
@@ -4950,8 +5053,9 @@ def mock_server_mismatches(
     # Errors
 
     Raises:
-        RuntimeError: If there is no mock server with the provided port number,
-            or the function panics.
+        RuntimeError:
+            If there is no mock server with the provided port number, or the
+            function panics.
     """
     ptr = lib.pactffi_mock_server_mismatches(mock_server_handle._ref)
     if ptr == ffi.NULL:
@@ -4978,7 +5082,8 @@ def cleanup_mock_server(mock_server_handle: PactServerHandle) -> None:
             Handle to the mock server to cleanup.
 
     Raises:
-        RuntimeError: If the mock server could not be cleaned up.
+        RuntimeError:
+            If the mock server could not be cleaned up.
     """
     success: bool = lib.pactffi_cleanup_mock_server(mock_server_handle._ref)
     if not success:
@@ -5013,7 +5118,8 @@ def write_pact_file(
             pact file will be merged with any existing pact file.
 
     Raises:
-        RuntimeError: If there was an error writing the pact file.
+        RuntimeError:
+            If there was an error writing the pact file.
     """
     ret: int = lib.pactffi_write_pact_file(
         mock_server_handle._ref,
@@ -5053,7 +5159,8 @@ def mock_server_logs(mock_server_handle: PactServerHandle) -> str:
     `pactffi_mock_server_logs`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_mock_server_logs)
 
     Raises:
-        RuntimeError: If the logs for the mock server can not be retrieved.
+        RuntimeError:
+            If the logs for the mock server can not be retrieved.
     """
     ptr = lib.pactffi_mock_server_logs(mock_server_handle._ref)
     if ptr == ffi.NULL:
@@ -5283,7 +5390,11 @@ def upon_receiving(interaction: InteractionHandle, description: str) -> None:
             The interaction description. It needs to be unique for each Pact.
 
     Raises:
-        RuntimeError: If the interaction description could not be set.
+        NotImplementedError:
+            This function has intentionally been left unimplemented.
+
+        RuntimeError:
+            If the interaction description could not be set.
     """
     # This function has intentionally been left unimplemented. The rationale is
     # to avoid code of the form:
@@ -5318,7 +5429,8 @@ def given(interaction: InteractionHandle, description: str) -> None:
             The provider state description. It needs to be unique.
 
     Raises:
-        RuntimeError: If the provider state could not be specified.
+        RuntimeError:
+            If the provider state could not be specified.
     """
     success: bool = lib.pactffi_given(interaction._ref, description.encode("utf-8"))
     if not success:
@@ -5343,23 +5455,10 @@ def interaction_test_name(interaction: InteractionHandle, test_name: str) -> Non
         test_name:
             The test name to set.
 
-    # Safety
-
-    The test name parameter must be a valid pointer to a NULL terminated string.
-
     Raises:
-        RuntimeError: If the test name can not be set.
+        RuntimeError:
+            If the test name can not be set.
 
-    # Error Handling
-
-    If the test name can not be set, this will return a positive value.
-
-    * `1` - Function panicked. Error message will be available by calling
-      `pactffi_get_error_message`.
-    * `2` - Handle was not valid.
-    * `3` - Mock server was already started and the integration can not be
-      modified.
-    * `4` - Not a V4 interaction.
     """
     ret: int = lib.pactffi_interaction_test_name(
         interaction._ref,
@@ -5410,7 +5509,8 @@ def given_with_param(
             Parameter value as JSON.
 
     Raises:
-        RuntimeError: If the interaction state could not be updated.
+        RuntimeError:
+            If the interaction state could not be updated.
     """
     success: bool = lib.pactffi_given_with_param(
         interaction._ref,
@@ -5448,19 +5548,8 @@ def given_with_params(
             Parameter values as a JSON fragment.
 
     Raises:
-        RuntimeError: If the interaction state could not be updated.
-
-    # Errors
-
-    Returns EXIT_FAILURE (1) if the interaction or Pact can't be modified (i.e.
-    the mock server for it has already started).
-
-    Returns 2 and sets the error message (which can be retrieved with
-    `pactffi_get_error_message`) if the parameter values con't be parsed as
-    JSON.
-
-    Returns 3 if any of the C strings are not valid.
-
+        RuntimeError:
+            If the interaction state could not be updated.
     """
     ret: int = lib.pactffi_given_with_params(
         interaction._ref,
@@ -5511,7 +5600,8 @@ def with_request(interaction: InteractionHandle, method: str, path: str) -> None
             ```
 
     Raises:
-        RuntimeError: If the request could not be specified.
+        RuntimeError:
+            If the request could not be specified.
     """
     success: bool = lib.pactffi_with_request(
         interaction._ref,
@@ -5625,7 +5715,8 @@ def with_query_parameter_v2(
             rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
-        RuntimeError: If there was an error setting the query parameter.
+        RuntimeError:
+            If there was an error setting the query parameter.
     """
     success: bool = lib.pactffi_with_query_parameter_v2(
         interaction._ref,
@@ -5651,6 +5742,10 @@ def with_specification(pact: PactHandle, version: PactSpecification) -> None:
 
         version:
             The spec version to use.
+
+    Raises:
+        RuntimeError:
+            If the Pact specification could not be set.
     """
     success: bool = lib.pactffi_with_specification(pact._ref, version.value)
     if not success:
@@ -5703,6 +5798,10 @@ def with_pact_metadata(
 
         value:
             The value to set
+
+    Raises:
+        RuntimeError:
+            If the metadata could not be set.
     """
     success: bool = lib.pactffi_with_pact_metadata(
         pact._ref,
@@ -5771,6 +5870,10 @@ def with_metadata(
     The key and value parameters must be valid pointers to NULL terminated
     strings, or `NULL` for the value parameter if the metadata key should be
     removed.
+
+    Raises:
+        RuntimeError:
+            If the metadata could not be set.
     """
     success: bool = lib.pactffi_with_metadata(
         interaction._ref,
@@ -5856,7 +5959,8 @@ def with_header_v2(
             rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
-        RuntimeError: If there was an error setting the header.
+        RuntimeError:
+            If there was an error setting the header.
     """
     success: bool = lib.pactffi_with_header_v2(
         interaction._ref,
@@ -5903,7 +6007,8 @@ def set_header(
             The header value. This is handled as-is, with no processing.
 
     Raises:
-        RuntimeError: If the header could not be set.
+        RuntimeError:
+            If the header could not be set.
     """
     success: bool = lib.pactffi_set_header(
         interaction._ref,
@@ -5931,7 +6036,8 @@ def response_status(interaction: InteractionHandle, status: int) -> None:
             The response status. Defaults to 200.
 
     Raises:
-        RuntimeError: If the response status could not be set.
+        RuntimeError:
+            If the response status could not be set.
     """
     success: bool = lib.pactffi_response_status(interaction._ref, status)
     if not success:
@@ -5977,7 +6083,8 @@ def response_status_v2(interaction: InteractionHandle, status: str) -> None:
             rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
-        RuntimeError: If the response status could not be set.
+        RuntimeError:
+            If the response status could not be set.
     """
     success: bool = lib.pactffi_response_status_v2(
         interaction._ref, status.encode("utf-8")
@@ -6021,7 +6128,8 @@ def with_body(
             in the body. See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
-        RuntimeError: If the body could not be specified.
+        RuntimeError:
+            If the body could not be specified.
     """
     success: bool = lib.pactffi_with_body(
         interaction._ref,
@@ -6068,7 +6176,8 @@ def with_binary_body(
             The body contents. If `None`, the body will be set to null.
 
     Raises:
-        RuntimeError: If the body could not be modified.
+        RuntimeError:
+            If the body could not be modified.
     """
     raise NotImplementedError
 
@@ -6108,6 +6217,10 @@ def with_binary_file(
 
         body:
             The body contents. If `None`, the body will be set to null.
+
+    Raises:
+        RuntimeError:
+            If the body could not be set.
     """
     if len(gc.get_referrers(body)) == 0:
         warnings.warn(
@@ -6153,7 +6266,8 @@ def with_matching_rules(
             JSON string of the matching rules to add to the interaction.
 
     Raises:
-        RuntimeError: If the rules could not be added.
+        RuntimeError:
+            If the rules could not be added.
     """
     success: bool = lib.pactffi_with_matching_rules(
         interaction._ref,
@@ -6192,6 +6306,9 @@ def with_generators(
         generators:
             JSON string of the generators to add to the interaction.
 
+    Raises:
+        RuntimeError:
+            If the generators could not be added.
     """
     success: bool = lib.pactffi_with_generators(
         interaction._ref,
@@ -6319,6 +6436,10 @@ def set_key(interaction: InteractionHandle, key: str | None) -> None:
         key:
             Key value. This must be a valid UTF-8 null-terminated string, or
             `None` to clear the key.
+
+    Raises:
+        RuntimeError:
+            If the key could not be set.
     """
     success: bool = lib.pactffi_set_key(
         interaction._ref,
@@ -6342,6 +6463,10 @@ def set_pending(interaction: InteractionHandle, *, pending: bool) -> None:
 
         pending:
             Boolean value to toggle the pending state of the interaction.
+
+    Raises:
+        RuntimeError:
+            If the pending status could not be updated.
     """
     success: bool = lib.pactffi_set_pending(interaction._ref, pending)
     if not success:
@@ -6370,7 +6495,8 @@ def set_comment(interaction: InteractionHandle, key: str, value: str | None) -> 
             null.
 
     Raises:
-        RuntimeError: If the comments could not be updated.
+        RuntimeError:
+            If the comments could not be updated.
     """
     success: bool = lib.pactffi_set_comment(
         interaction._ref,
@@ -6395,6 +6521,10 @@ def add_text_comment(interaction: InteractionHandle, comment: str) -> None:
 
         comment:
             Comment value. This is a regular string value.
+
+    Raises:
+        RuntimeError:
+            If the comment could not be added.
     """
     success: bool = lib.pactffi_add_text_comment(
         interaction._ref,
@@ -6507,6 +6637,10 @@ def pact_handle_write_file(
             If `True`, the file will be overwritten with the contents of the
             current pact. Otherwise, it will be merged with any existing pact
             file.
+
+    Raises:
+        RuntimeError:
+            If there was an error writing the pact file.
     """
     ret: int = lib.pactffi_pact_handle_write_file(
         pact._ref,
@@ -6534,7 +6668,8 @@ def free_pact_handle(pact: PactHandle) -> None:
     `pactffi_free_pact_handle`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_free_pact_handle)
 
     Raises:
-        RuntimeError: If the handle could not be freed.
+        RuntimeError:
+            If the handle could not be freed.
     """
     ret: int = lib.pactffi_free_pact_handle(pact._ref)
     if ret == 0:
@@ -6778,6 +6913,10 @@ def verifier_set_verification_options(
 
         request_timeout:
             The timeout for the request in milliseconds.
+
+    Raises:
+        RuntimeError:
+            If the options could not be set.
     """
     retval: int = lib.pactffi_verifier_set_verification_options(
         handle._ref,
@@ -6808,6 +6947,10 @@ def verifier_set_coloured_output(
 
         enabled:
             A boolean value to enable or disable coloured output.
+
+    Raises:
+        RuntimeError:
+            If the coloured output could not be set.
     """
     retval: int = lib.pactffi_verifier_set_coloured_output(
         handle._ref,
@@ -6831,6 +6974,10 @@ def verifier_set_no_pacts_is_error(handle: VerifierHandle, *, enabled: bool) -> 
 
         enabled:
             If `True`, an error will be raised when no pacts are found to verify.
+
+    Raises:
+        RuntimeError:
+            If the no pacts is error setting could not be set.
     """
     retval: int = lib.pactffi_verifier_set_no_pacts_is_error(
         handle._ref,
@@ -6869,6 +7016,10 @@ def verifier_set_publish_options(
 
         provider_branch:
             Name of the branch used for verification.
+
+    Raises:
+        RuntimeError:
+            If the publish options could not be set.
     """
     retval: int = lib.pactffi_verifier_set_publish_options(
         handle._ref,
@@ -7113,6 +7264,10 @@ def verifier_execute(handle: VerifierHandle) -> None:
     Runs the verification.
 
     (https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_verifier_execute)
+
+    Raises:
+        RuntimeError:
+            If the verifier could not be executed.
     """
     success: int = lib.pactffi_verifier_execute(handle._ref)
     if success != 0:
@@ -7189,6 +7344,10 @@ def verifier_logs(handle: VerifierHandle) -> OwnedString:
     This needs the memory buffer log sink to be setup before the verification is
     executed. The returned string will need to be freed with the `free_string`
     function call to avoid leaking memory.
+
+    Raises:
+        RuntimeError:
+            If the logs could not be extracted.
     """
     ptr = lib.pactffi_verifier_logs(handle._ref)
     if ptr == ffi.NULL:
@@ -7207,6 +7366,10 @@ def verifier_logs_for_provider(provider_name: str) -> OwnedString:
     This needs the memory buffer log sink to be setup before the verification is
     executed. The returned string will need to be freed with the `free_string`
     function call to avoid leaking memory.
+
+    Raises:
+        RuntimeError:
+            If the logs could not be extracted.
     """
     ptr = lib.pactffi_verifier_logs_for_provider(provider_name.encode("utf-8"))
     if ptr == ffi.NULL:
@@ -7230,6 +7393,10 @@ def verifier_output(handle: VerifierHandle, strip_ansi: int) -> OwnedString:
             This parameter controls ANSI escape codes. Setting it to a non-zero
             value will cause the ANSI control codes to be stripped from the
             output.
+
+    Raises:
+        RuntimeError:
+            If the output could not be extracted.
     """
     ptr = lib.pactffi_verifier_output(handle._ref, strip_ansi)
     if ptr == ffi.NULL:
@@ -7244,6 +7411,10 @@ def verifier_json(handle: VerifierHandle) -> OwnedString:
 
     [Rust
     `pactffi_verifier_json`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_verifier_json)
+
+    Raises:
+        RuntimeError:
+            If the JSON could not be extracted.
     """
     ptr = lib.pactffi_verifier_json(handle._ref)
     if ptr == ffi.NULL:
@@ -7279,6 +7450,10 @@ def using_plugin(
         plugin_version:
             Version of the plugin to use. If `None`, the latest version will be
             used.
+
+    Raises:
+        RuntimeError:
+            If the plugin could not be loaded.
     """
     ret: int = lib.pactffi_using_plugin(
         pact._ref,
@@ -7340,6 +7515,10 @@ def interaction_contents(
 
         contents:
             JSON contents that gets passed to the plugin.
+
+    Raises:
+        RuntimeError:
+            If the interaction could not be configured
     """
     ret: int = lib.pactffi_interaction_contents(
         interaction._ref,
