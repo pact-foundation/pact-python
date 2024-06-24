@@ -64,6 +64,7 @@ from __future__ import annotations
 
 import json
 import logging
+from abc import ABC
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Set, overload
 
@@ -85,6 +86,120 @@ if TYPE_CHECKING:
         from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
+
+
+class PactError(Exception, ABC):
+    """
+    Base class for exceptions raised by the Pact module.
+    """
+
+
+class InteractionVerificationError(PactError):
+    """
+    Exception raised due during the verification of an interaction.
+
+    This error is raised when an error occurs during the manual verification of an
+    interaction. This is typically raised when the consumer fails to handle the
+    interaction correctly thereby generating its own exception. The cause of the
+    error is stored in the `error` attribute.
+    """
+
+    def __init__(self, description: str, error: Exception) -> None:
+        """
+        Initialise a new InteractionVerificationError.
+
+        Args:
+            description:
+                Description of the interaction that failed verification.
+
+            error: Error that occurred during the verification of the
+                interaction.
+        """
+        super().__init__(f"Error verifying interaction '{description}': {error}")
+        self._description = description
+        self._error = error
+
+    @property
+    def description(self) -> str:
+        """
+        Description of the interaction that failed verification.
+        """
+        return self._description
+
+    @property
+    def error(self) -> Exception:
+        """
+        Error that occurred during the verification of the interaction.
+        """
+        return self._error
+
+
+class PactVerificationError(PactError):
+    """
+    Exception raised due to errors in the verification of a Pact.
+
+    This is raised when performing manual verification of the Pact through the
+    [`verify`][pact.v3.Pact.verify] method:
+
+    ```python
+    pact = Pact("consumer", "provider")
+    # Define interactions...
+    try:
+        pact.verify(handler, kind="Async")
+    except PactVerificationError as e:
+        print(e.errors)
+    ```
+
+    All of the errors that occurred during the verification of all of the
+    interactions are stored in the `errors` attribute.
+
+    This is different from the [`MismatchesError`][pact.v3.MismatchesError]
+    which is raised when there are mismatches detected by the mock server.
+    """
+
+    def __init__(self, errors: list[InteractionVerificationError]) -> None:
+        """
+        Initialise a new PactVerificationError.
+
+        Args:
+            errors:
+                Errors that occurred during the verification of the Pact.
+        """
+        super().__init__(f"Error verifying Pact (count: {len(errors)})")
+        self._errors = errors
+
+    @property
+    def errors(self) -> list[InteractionVerificationError]:
+        """
+        Errors that occurred during the verification of the Pact.
+        """
+        return self._errors
+
+
+class MismatchesError(PactError):
+    """
+    Exception raised when there are mismatches between the Pact and the server.
+    """
+
+    def __init__(self, mismatches: list[dict[str, Any]]) -> None:
+        """
+        Initialise a new MismatchesError.
+
+        Args:
+            mismatches:
+                Mismatches between the Pact and the server.
+        """
+        super().__init__(f"Mismatched interaction (count: {len(mismatches)})")
+        self._mismatches = mismatches
+
+    # TODO: Replace the list of dicts with a more structured object.
+    # https://github.com/pact-foundation/pact-python/issues/644
+    @property
+    def mismatches(self) -> list[dict[str, Any]]:
+        """
+        Mismatches between the Pact and the server.
+        """
+        return self._mismatches
 
 
 class Pact:
@@ -441,32 +556,6 @@ class Pact:
             directory,
             overwrite=overwrite,
         )
-
-
-class MismatchesError(Exception):
-    """
-    Exception raised when there are mismatches between the Pact and the server.
-    """
-
-    def __init__(self, mismatches: list[dict[str, Any]]) -> None:
-        """
-        Initialise a new MismatchesError.
-
-        Args:
-            mismatches:
-                Mismatches between the Pact and the server.
-        """
-        super().__init__(f"Mismatched interaction (count: {len(mismatches)})")
-        self._mismatches = mismatches
-
-    # TODO: Replace the list of dicts with a more structured object.
-    # https://github.com/pact-foundation/pact-python/issues/644
-    @property
-    def mismatches(self) -> list[dict[str, Any]]:
-        """
-        Mismatches between the Pact and the server.
-        """
-        return self._mismatches
 
 
 class PactServer:
