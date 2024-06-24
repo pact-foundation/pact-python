@@ -1280,7 +1280,80 @@ class ProviderStateParamPair:
         return s
 
 
-class SynchronousHttp: ...
+class SynchronousHttp:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
+        """
+        Initialise a new Synchronous HTTP Interaction.
+
+        Args:
+            ptr:
+                CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
+        """
+        if ffi.typeof(ptr).cname != "struct SynchronousHttp *":
+            msg = (
+                "ptr must be a struct SynchronousHttp, got" f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "SynchronousHttp"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"SynchronousHttp({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the SynchronousHttp.
+        """
+        if not self._owned:
+            sync_http_delete(self)
+
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return sync_http_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from sync_http_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
+
+    @property
+    def request_contents(self) -> str | bytes | None:
+        """
+        The contents of the request.
+        """
+        return sync_http_get_request_contents(
+            self
+        ) or sync_http_get_request_contents_bin(self)
+
+    @property
+    def response_contents(self) -> str | bytes | None:
+        """
+        The contents of the response.
+        """
+        return sync_http_get_response_contents(
+            self
+        ) or sync_http_get_response_contents_bin(self)
 
 
 class SynchronousMessage: ...
@@ -3288,7 +3361,7 @@ def sync_http_delete(interaction: SynchronousHttp) -> None:
     [Rust
     `pactffi_sync_http_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_sync_http_delete(interaction)
 
 
 def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
@@ -3311,27 +3384,20 @@ def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
     raise NotImplementedError
 
 
-def sync_http_get_request_contents(interaction: SynchronousHttp) -> str:
+def sync_http_get_request_contents(interaction: SynchronousHttp) -> str | None:
     """
     Get the request contents of a `SynchronousHttp` interaction in string form.
 
     [Rust
     `pactffi_sync_http_get_request_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_request_contents)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    The returned string can outlive the interaction.
-
-    # Error Handling
-
-    If the interaction is NULL, returns NULL. If the body of the request is
-    missing, then this function also returns NULL. This means there's no
-    mechanism to differentiate with this function call alone between a NULL body
-    and a missing body.
+    Note that this function will return `None` if either the body is missing or
+    is `null`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_request_contents(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return OwnedString(ptr)
 
 
 def sync_http_set_request_contents(
@@ -3373,38 +3439,28 @@ def sync_http_get_request_contents_length(interaction: SynchronousHttp) -> int:
     [Rust
     `pactffi_sync_http_get_request_contents_length`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_request_contents_length)
 
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the interaction is NULL, returns 0. If the body of the request is
-    missing, then this function also returns 0.
+    This function will return 0 if the body is missing.
     """
-    raise NotImplementedError
+    return lib.pactffi_sync_http_get_request_contents_length(interaction._ptr)
 
 
-def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes:
+def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes | None:
     """
     Get the request contents of a `SynchronousHttp` interaction as bytes.
 
     [Rust
     `pactffi_sync_http_get_request_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_request_contents_bin)
 
-    # Safety
-
-    The number of bytes in the buffer will be returned by
-    `pactffi_sync_http_get_request_contents_length`. It is safe to use the
-    pointer while the interaction is not deleted or changed. Using the pointer
-    after the interaction is mutated or deleted may lead to undefined behaviour.
-
-    # Error Handling
-
-    If the interaction is NULL, returns NULL. If the body of the request is
-    missing, then this function also returns NULL.
+    Note that this function will return `None` if either the body is missing or
+    is `null`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_request_contents_bin(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return ffi.buffer(
+        ptr,
+        sync_http_get_request_contents_length(interaction),
+    )[:]
 
 
 def sync_http_set_request_contents_bin(
@@ -3459,28 +3515,20 @@ def sync_http_get_response(interaction: SynchronousHttp) -> HttpResponse:
     raise NotImplementedError
 
 
-def sync_http_get_response_contents(interaction: SynchronousHttp) -> str:
+def sync_http_get_response_contents(interaction: SynchronousHttp) -> str | None:
     """
     Get the response contents of a `SynchronousHttp` interaction in string form.
 
     [Rust
     `pactffi_sync_http_get_response_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_response_contents)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    The returned string can outlive the interaction.
-
-    # Error Handling
-
-    If the interaction is NULL, returns NULL.
-
-    If the body of the response is missing, then this function also returns
-    NULL. This means there's no mechanism to differentiate with this function
-    call alone between a NULL body and a missing body.
+    Note that this function will return `None` if either the body is missing or
+    is `null`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_response_contents(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return OwnedString(ptr)
 
 
 def sync_http_set_response_contents(
@@ -3522,38 +3570,28 @@ def sync_http_get_response_contents_length(interaction: SynchronousHttp) -> int:
     [Rust
     `pactffi_sync_http_get_response_contents_length`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_response_contents_length)
 
-    # Safety
-
-    This function is safe.
-
-    # Error Handling
-
-    If the interaction is NULL or the index is not valid, returns 0. If the body
-    of the response is missing, then this function also returns 0.
+    This function will return 0 if the body is missing.
     """
-    raise NotImplementedError
+    return lib.pactffi_sync_http_get_response_contents_length(interaction._ptr)
 
 
-def sync_http_get_response_contents_bin(interaction: SynchronousHttp) -> bytes:
+def sync_http_get_response_contents_bin(interaction: SynchronousHttp) -> bytes | None:
     """
     Get the response contents of a `SynchronousHttp` interaction as bytes.
 
     [Rust
     `pactffi_sync_http_get_response_contents_bin`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_response_contents_bin)
 
-    # Safety
-
-    The number of bytes in the buffer will be returned by
-    `pactffi_sync_http_get_response_contents_length`. It is safe to use the
-    pointer while the interaction is not deleted or changed. Using the pointer
-    after the interaction is mutated or deleted may lead to undefined behaviour.
-
-    # Error Handling
-
-    If the interaction is NULL, returns NULL. If the body of the response is
-    missing, then this function also returns NULL.
+    Note that this function will return `None` if either the body is missing or
+    is `null`.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_response_contents_bin(interaction._ptr)
+    if ptr == ffi.NULL:
+        return None
+    return ffi.buffer(
+        ptr,
+        sync_http_get_response_contents_length(interaction),
+    )[:]
 
 
 def sync_http_set_response_contents_bin(
@@ -3595,21 +3633,14 @@ def sync_http_get_description(interaction: SynchronousHttp) -> str:
     [Rust
     `pactffi_sync_http_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_http_get_description)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the
-    `SynchronousHttp` interaction.
-
-    # Errors
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the Rust string contains embedded null ('\0')
-    bytes.
+    Raises:
+        RuntimeError: If the description cannot be retrieved
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_description(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get description"
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def sync_http_set_description(interaction: SynchronousHttp, description: str) -> int:
@@ -3674,11 +3705,14 @@ def sync_http_get_provider_state_iter(
 
     The underlying data must not change during iteration.
 
-    # Error Handling
-
-    Returns NULL if an error occurs.
+    Raises:
+        RuntimeError: If the iterator cannot be retrieved
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_http_get_provider_state_iter(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get provider state iterator"
+        raise RuntimeError(msg)
+    return ProviderStateIterator(ptr)
 
 
 def pact_interaction_as_synchronous_http(
@@ -3807,8 +3841,7 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
     ptr = lib.pactffi_pact_sync_http_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
-    return SynchronousHttp(ptr)
+    return SynchronousHttp(ptr, owned=True)
 
 
 def pact_sync_http_iter_delete(iter: PactSyncHttpIterator) -> None:
