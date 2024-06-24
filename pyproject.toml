@@ -189,8 +189,10 @@ addopts = [
   "--cov-report=xml",
 ]
 filterwarnings = [
+  "ignore::DeprecationWarning:examples",
   "ignore::DeprecationWarning:pact",
   "ignore::DeprecationWarning:tests",
+  "ignore::PendingDeprecationWarning:examples",
   "ignore::PendingDeprecationWarning:pact",
   "ignore::PendingDeprecationWarning:tests",
 ]
