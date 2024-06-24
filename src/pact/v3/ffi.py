@@ -1356,7 +1356,81 @@ class SynchronousHttp:
         ) or sync_http_get_response_contents_bin(self)
 
 
-class SynchronousMessage: ...
+class SynchronousMessage:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
+        """
+        Initialise a new Synchronous Message.
+
+        Args:
+            ptr:
+                CFFI data structure.
+
+            owned:
+                Whether the message is owned by something else or not. This
+                determines whether the message should be freed when the Python
+                object is destroyed.
+        """
+        if ffi.typeof(ptr).cname != "struct SynchronousMessage *":
+            msg = (
+                "ptr must be a struct SynchronousMessage, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "SynchronousMessage"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"SynchronousMessage({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the SynchronousMessage.
+        """
+        if not self._owned:
+            sync_message_delete(self)
+
+    @property
+    def description(self) -> str:
+        """
+        Description of this message interaction.
+
+        This needs to be unique in the pact file.
+        """
+        return sync_message_get_description(self)
+
+    def provider_states(self) -> GeneratorType[ProviderState, None, None]:
+        """
+        Optional provider state for the interaction.
+        """
+        yield from sync_message_get_provider_state_iter(self)
+        return  # Ensures that the parent object outlives the generator
+
+    @property
+    def request_contents(self) -> MessageContents:
+        """
+        The contents of the message.
+        """
+        return sync_message_generate_request_contents(self)
+
+    @property
+    def response_contents(self) -> GeneratorType[MessageContents, None, None]:
+        """
+        The contents of the responses.
+        """
+        yield from (
+            sync_message_generate_response_contents(self, i)
+            for i in range(sync_message_get_number_responses(self))
+        )
+        return  # Ensures that the parent object outlives the generator
 
 
 class VerifierHandle:
@@ -3817,8 +3891,7 @@ def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMes
     ptr = lib.pactffi_pact_sync_message_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
-    return SynchronousMessage(ptr)
+    return SynchronousMessage(ptr, owned=True)
 
 
 def pact_sync_message_iter_delete(iter: PactSyncMessageIterator) -> None:
@@ -4208,7 +4281,7 @@ def sync_message_delete(message: SynchronousMessage) -> None:
     [Rust
     `pactffi_sync_message_delete`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_sync_message_delete(message._ptr)
 
 
 def sync_message_get_request_contents_str(message: SynchronousMessage) -> str:
@@ -4372,21 +4445,12 @@ def sync_message_generate_request_contents(
 
     [Rust
     `pactffi_sync_message_generate_request_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_request_contents)
-
-    # Safety
-
-    The data pointed to by the pointer this function returns will be deleted
-    when the message is deleted. Trying to use if after the message is deleted
-    will result in undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL, returns NULL.
     """
-    return MessageContents(
-        lib.pactffi_sync_message_generate_request_contents(message._ptr),
-        owned=False,
-    )
+    ptr = lib.pactffi_sync_message_generate_request_contents(message._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to generate request contents"
+        raise RuntimeError(msg)
+    return MessageContents(ptr, owned=False)
 
 
 def sync_message_get_number_responses(message: SynchronousMessage) -> int:
@@ -4396,15 +4460,9 @@ def sync_message_get_number_responses(message: SynchronousMessage) -> int:
     [Rust
     `pactffi_sync_message_get_number_responses`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_get_number_responses)
 
-    # Safety
-
-    The message pointer must point to a valid SynchronousMessage.
-
-    # Error Handling
-
-    If the message is NULL, returns 0.
+    If the message is null, this function will return 0.
     """
-    raise NotImplementedError
+    return lib.pactffi_sync_message_get_number_responses(message._ptr)
 
 
 def sync_message_get_response_contents_str(
@@ -4595,20 +4653,14 @@ def sync_message_generate_response_contents(
     [Rust
     `pactffi_sync_message_generate_response_contents`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_generate_response_contents)
 
-    # Safety
-
-    The data pointed to by the pointer this function returns will be deleted
-    when the message is deleted. Trying to use if after the message is deleted
-    will result in undefined behaviour.
-
-    # Error Handling
-
-    If the message is NULL or the index is not valid, returns NULL.
+    Raises:
+        RuntimeError: If the response contents could not be generated.
     """
-    return MessageContents(
-        lib.pactffi_sync_message_generate_response_contents(message._ptr, index),
-        owned=False,
-    )
+    ptr = lib.pactffi_sync_message_generate_response_contents(message._ptr, index)
+    if ptr == ffi.NULL:
+        msg = "Failed to generate response contents."
+        raise RuntimeError(msg)
+    return MessageContents(ptr, owned=False)
 
 
 def sync_message_get_description(message: SynchronousMessage) -> str:
@@ -4618,21 +4670,14 @@ def sync_message_get_description(message: SynchronousMessage) -> str:
     [Rust
     `pactffi_sync_message_get_description`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_sync_message_get_description)
 
-    # Safety
-
-    The returned string must be deleted with `pactffi_string_delete`.
-
-    Since it is a copy, the returned string may safely outlive the
-    `SynchronousMessage`.
-
-    # Errors
-
-    On failure, this function will return a NULL pointer.
-
-    This function may fail if the Rust string contains embedded null ('\0')
-    bytes.
+    Raises:
+        RuntimeError: If the description could not be retrieved
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_message_get_description(message._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get description."
+        raise RuntimeError(msg)
+    return OwnedString(ptr)
 
 
 def sync_message_set_description(message: SynchronousMessage, description: str) -> int:
@@ -4697,11 +4742,14 @@ def sync_message_get_provider_state_iter(
 
     The underlying data must not change during iteration.
 
-    # Error Handling
-
-    Returns NULL if an error occurs.
+    Raises:
+        RuntimeError: If the iterator could not be created.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_sync_message_get_provider_state_iter(message._ptr)
+    if ptr == ffi.NULL:
+        msg = "Failed to get provider state iterator."
+        raise RuntimeError(msg)
+    return ProviderStateIterator(ptr)
 
 
 def string_delete(string: OwnedString) -> None:
