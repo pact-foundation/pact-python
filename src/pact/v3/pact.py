@@ -64,9 +64,20 @@ from __future__ import annotations
 
 import json
 import logging
+import warnings
 from abc import ABC
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generator, Literal, Set, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    List,
+    Literal,
+    Set,
+    overload,
+)
 
 from yarl import URL
 
@@ -505,6 +516,95 @@ class Pact:
             msg = f"Unknown interaction type: {kind}"
             raise ValueError(msg)
         return  # Ensures that the parent object outlives the generator
+
+    @overload
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: Literal[True] = True,
+    ) -> None: ...
+    @overload
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: Literal[False],
+    ) -> List[InteractionVerificationError]: ...
+
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: bool = True,
+    ) -> List[InteractionVerificationError] | None:
+        """
+        Verify message interactions.
+
+        This function is used to ensure that the consumer is able to handle the
+        messages that are defined in the Pact. The `handler` function is called
+        for each message in the Pact.
+
+        The end-user is responsible for defining the `handler` function and
+        verifying that the messages are handled correctly. For example, if the
+        handler is meant to call an API, then the API call should be mocked out
+        and once the verification is complete, the mock should be verified. Any
+        exceptions raised by the handler will be caught and reported as
+        mismatches.
+
+        Args:
+            handler:
+                The function that will be called for each message in the Pact.
+
+                The first argument to the function is the message body, either as
+                a string or byte array.
+
+                The second argument is the metadata for the message. If there
+                is no metadata, then this will be an empty dictionary.
+
+            kind:
+                The type of message interaction. This must be one of `Async`
+                or `Sync`.
+
+            raises:
+                Whether or not to raise an exception if the handler fails to
+                process a message. If set to `False`, then the function will
+                return a list of errors.
+        """
+        errors: List[InteractionVerificationError] = []
+        for message in self.interactions(kind):
+            request: pact.v3.ffi.MessageContents | None = None
+            if isinstance(message, pact.v3.ffi.SynchronousMessage):
+                request = message.request_contents
+            elif isinstance(message, pact.v3.ffi.AsynchronousMessage):
+                request = message.contents
+            else:
+                msg = f"Unknown message type: {type(message).__name__}"
+                raise TypeError(msg)
+
+            if request is None:
+                warnings.warn(
+                    f"Message '{message.description}' has no contents",
+                    stacklevel=2,
+                )
+                continue
+
+            body = request.contents
+            metadata = {pair.key: pair.value for pair in request.metadata}
+
+            try:
+                handler(body, metadata)
+            except Exception as e:  # noqa: BLE001
+                errors.append(InteractionVerificationError(message.description, e))
+
+        if raises:
+            if errors:
+                raise PactVerificationError(errors)
+            return None
+        return errors
 
     def write_file(
         self,
