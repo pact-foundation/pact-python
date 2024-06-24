@@ -149,7 +149,7 @@ class HttpInteraction(Interaction):
         # JSON Matching
 
         Pact's matching rules are defined in the [upstream
-        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md)
+        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.21/rust/pact_ffi/IntegrationJson.md)
         and support a wide range of matching rules. These can be specified
         using a JSON object as a strong using `json.dumps(...)`. For example,
         the above rule whereby the `X-Foo` header has multiple values can be
@@ -391,7 +391,7 @@ class HttpInteraction(Interaction):
         ```
 
         For more information on the format of the JSON object, see the [upstream
-        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.19/rust/pact_ffi/IntegrationJson.md).
+        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.21/rust/pact_ffi/IntegrationJson.md).
 
         Args:
             name:
