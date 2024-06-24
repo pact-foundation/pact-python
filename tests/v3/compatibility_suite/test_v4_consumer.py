@@ -9,7 +9,7 @@ from typing import Any, Generator
 from pytest_bdd import given, parsers, scenario, then
 
 from pact.v3.pact import HttpInteraction, Pact
-from tests.v3.compatibility_suite.util import string_to_int
+from tests.v3.compatibility_suite.util import PactInteractionTuple, string_to_int
 from tests.v3.compatibility_suite.util.consumer import (
     the_pact_file_for_the_test_is_generated,
 )
@@ -63,41 +63,38 @@ def test_supports_adding_comments() -> None:
     target_fixture="pact_interaction",
 )
 def an_http_interaction_is_being_defined_for_a_consumer_test() -> (
-    Generator[tuple[Pact, HttpInteraction], Any, None]
+    Generator[PactInteractionTuple[HttpInteraction], Any, None]
 ):
     """An HTTP interaction is being defined for a consumer test."""
     pact = Pact("consumer", "provider")
     pact.with_specification("V4")
-    yield (pact, pact.upon_receiving("a request"))
+    yield PactInteractionTuple(pact, pact.upon_receiving("a request"))
 
 
 @given(parsers.re(r'a key of "(?P<key>[^"]+)" is specified for the HTTP interaction'))
 def a_key_is_specified_for_the_http_interaction(
-    pact_interaction: tuple[Pact, HttpInteraction],
+    pact_interaction: PactInteractionTuple[HttpInteraction],
     key: str,
 ) -> None:
     """A key is specified for the HTTP interaction."""
-    _, interaction = pact_interaction
-    interaction.set_key(key)
+    pact_interaction.interaction.set_key(key)
 
 
 @given("the HTTP interaction is marked as pending")
 def the_http_interaction_is_marked_as_pending(
-    pact_interaction: tuple[Pact, HttpInteraction],
+    pact_interaction: PactInteractionTuple[HttpInteraction],
 ) -> None:
     """The HTTP interaction is marked as pending."""
-    _, interaction = pact_interaction
-    interaction.set_pending(pending=True)
+    pact_interaction.interaction.set_pending(pending=True)
 
 
 @given(parsers.re(r'a comment "(?P<comment>[^"]+)" is added to the HTTP interaction'))
 def a_comment_is_added_to_the_http_interaction(
-    pact_interaction: tuple[Pact, HttpInteraction],
+    pact_interaction: PactInteractionTuple[HttpInteraction],
     comment: str,
 ) -> None:
     """A comment of "<comment>" is added to the HTTP interaction."""
-    _, interaction = pact_interaction
-    interaction.set_comment("text", [comment])
+    pact_interaction.interaction.set_comment("text", [comment])
 
 
 ################################################################################

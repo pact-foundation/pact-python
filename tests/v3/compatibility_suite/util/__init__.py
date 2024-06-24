@@ -31,7 +31,7 @@ import typing
 from collections.abc import Collection, Mapping
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any
+from typing import Any, Generic, TypeVar
 from xml.etree import ElementTree
 
 import flask
@@ -46,6 +46,34 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 SUITE_ROOT = Path(__file__).parent.parent / "definition"
 FIXTURES_ROOT = SUITE_ROOT / "fixtures"
+
+_T = TypeVar("_T")
+
+
+class PactInteractionTuple(Generic[_T]):
+    """
+    Pact and interaction tuple.
+
+    A number of steps in the compatibility suite require one or both of a `Pact`
+    and an `Interaction` subclass. This named tuple is used to pass these
+    objects around more easily.
+
+    !!! note
+
+        This should be simplified in the future to simply being a
+        [`NamedTuple`][typing.NamedTuple]; however, earlier versions of Python
+        do not support inheriting from multiple classes, thereby preventing
+        `class PactInteractionTuple(NamedTuple, Generic[_T])` (even if
+        [`Generic[_T]`][typing.Generic] serves no purpose other than to allow
+        type hinting).
+    """
+
+    def __init__(self, pact: Pact, interaction: _T) -> None:
+        """
+        Instantiate the tuple.
+        """
+        self.pact = pact
+        self.interaction = interaction
 
 
 def string_to_int(word: str) -> int:
