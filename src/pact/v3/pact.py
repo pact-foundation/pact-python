@@ -461,27 +461,6 @@ class Pact:
             verbose=verbose,
         )
 
-    def messages(self) -> pact.v3.ffi.PactMessageIterator:
-        """
-        Iterate over the messages in the Pact.
-
-        This function returns an iterator over the messages in the Pact. This
-        is useful for validating the Pact against the provider.
-
-        ```python
-        pact = Pact("consumer", "provider")
-        with pact.serve() as srv:
-            for message in pact.messages():
-                # Validate the message against the provider.
-                ...
-        ```
-
-        Note that the Pact must be written to a file before the messages can be
-        iterated over. This is because the messages are not stored in memory,
-        but rather are streamed directly from the file.
-        """
-        return pact.v3.ffi.pact_handle_get_message_iter(self._handle)
-
     @overload
     def interactions(
         self,
