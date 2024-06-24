@@ -33,7 +33,7 @@ class AsyncMessageInteraction(Interaction):
 
         Args:
             pact_handle:
-                Handle for the Pact.
+                The Pact instance this interaction belongs to.
 
             description:
                 Description of the interaction. This must be unique within the
@@ -54,4 +54,14 @@ class AsyncMessageInteraction(Interaction):
 
     @property
     def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+        """
+        Interaction part.
+
+        Where interactions have multiple parts, this property keeps track
+        of which part is currently being set.
+
+        As this is an asynchronous message interaction, this will always
+        return a [`REQUEST`][pact.v3.ffi.InteractionPart.REQUEST], as there the
+        consumer of the message does not send any responses.
+        """
         return pact.v3.ffi.InteractionPart.REQUEST
