@@ -37,6 +37,19 @@ class Interaction(abc.ABC):
     -  [`HttpInteraction`][pact.v3.interaction.HttpInteraction]
     -  [`AsyncMessageInteraction`][pact.v3.interaction.AsyncMessageInteraction]
     -  [`SyncMessageInteraction`][pact.v3.interaction.SyncMessageInteraction]
+
+    # Interaction Part
+
+    For HTTP and synchronous message interactions, the interaction is split into
+    two parts: the request and the response. The interaction part is used to
+    specify which part of the interaction is being set. This is specified using
+    the `part` argument of various methods (which defaults to an intelligent
+    choice based on the order of the methods called).
+
+    The asynchronous message interaction does not have parts, as the interaction
+    contains a single message from the provider (a.ka. the producer of the
+    message) to the consumer. An attempt to set a response part will raise an
+    error.
     """
 
     def __init__(self, description: str) -> None:
