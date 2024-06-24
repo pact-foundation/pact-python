@@ -14,7 +14,22 @@ from typing import Any, Dict, Union
 
 
 class Filesystem:
-    """Filesystem interface."""
+    """
+    Filesystem interface.
+
+    In practice, the handler would process messages and perform some actions on
+    other systems, whether that be a database, a filesystem, or some other
+    service. This capability would typically be offered by some library;
+    however, when running tests, we typically wish to avoid actually interacting
+    with this external service.
+
+    In order to avoid side effects while testing, the test setup should mock out
+    the calls to the external service.
+
+    This class provides a simple dummy filesystem interface (which evidently
+    would fail if actually used), and serves to demonstrate how to mock out
+    external services when testing.
+    """
 
     def __init__(self) -> None:
         """Initialize the filesystem connection."""
