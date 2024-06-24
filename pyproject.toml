@@ -147,6 +147,7 @@ artifacts = [
 # Install dev dependencies in the default environment to simplify the developer
 # workflow.
 [tool.hatch.envs.default]
+installer = "uv"
 features = ["devel"]
 extra-dependencies = [
   "hatchling",
@@ -169,6 +170,7 @@ docs-build = "mkdocs build {args}"
 # Test environment for running unit tests. This automatically tests against all
 # supported Python versions.
 [tool.hatch.envs.test]
+installer = "uv"
 features = ["devel-test"]
 
 [[tool.hatch.envs.test.matrix]]
