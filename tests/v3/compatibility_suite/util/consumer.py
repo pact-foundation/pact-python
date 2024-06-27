@@ -647,8 +647,8 @@ def the_nth_interaction_request_will_contain_the_header(stacklevel: int = 1) -> 
         expected = {key: value}
         actual = pact_file["interactions"][n - 1]["request"]["headers"]
         assert expected.keys() == actual.keys()
-        for key in expected:
-            assert expected[key] == actual[key] or [expected[key]] == actual[key]
+        for k in expected:
+            assert expected[k] == actual[k] or [expected[k]] == actual[k]
 
 
 def the_nth_interaction_request_content_type_will_be(stacklevel: int = 1) -> None:

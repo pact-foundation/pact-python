@@ -393,8 +393,8 @@ class PactBroker:
 
         cmd.extend(["--consumer-app-version", version or next_version()])
 
-        subprocess.run(
-            cmd,  # noqa: S603
+        subprocess.run(  # noqa: S603
+            cmd,
             encoding="utf-8",
             check=True,
         )
@@ -580,8 +580,8 @@ def a_provider_is_started_that_returns_the_responses_from_interactions_with_chan
 
 def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # noqa: C901
     """Start the provider app with the given interactions."""
-    process = subprocess.Popen(
-        [  # noqa: S603
+    process = subprocess.Popen(  # noqa: S603
+        [
             sys.executable,
             Path(__file__),
             str(provider_dir),
