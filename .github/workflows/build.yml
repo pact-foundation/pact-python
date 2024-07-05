@@ -47,7 +47,7 @@ jobs:
           hatch build --target sdist
 
       - name: Upload sdist
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4
         with:
           name: wheels-sdist
           path: ./dist/*.tar.*
@@ -110,7 +110,7 @@ jobs:
           CIBW_BUILD: ${{ steps.cibw-filter.outputs.build }}
 
       - name: Upload wheels
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.archs }}
           path: ./wheelhouse/*.whl
@@ -171,7 +171,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.build == '' && '*' || format('*{0}*', matrix.build) }}
 
       - name: Upload wheels
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.archs }}-${{  matrix.build }}
           path: ./wheelhouse/*.whl
