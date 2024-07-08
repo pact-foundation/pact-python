@@ -110,7 +110,7 @@ class Interaction(abc.ABC):
         if part == "Response":
             return pact.v3.ffi.InteractionPart.RESPONSE
         if part is None:
-            return self._interaction_part
+            return self._interaction_part()
         msg = f"Invalid part: {part}"
         raise ValueError(msg)
 
@@ -300,6 +300,7 @@ class Interaction(abc.ABC):
             body:
                 Body of the request.
         """
+        import pdb; pdb.set_trace()
         pact.v3.ffi.with_binary_file(
             self._handle,
             self._parse_interaction_part(part),
