@@ -208,6 +208,7 @@ markers = [
   # Markers for the compatibility suite
   "consumer",
   "provider",
+  "message",
 ]
 
 ################################################################################
