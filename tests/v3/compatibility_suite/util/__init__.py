@@ -29,6 +29,7 @@ import logging
 import sys
 import typing
 from collections.abc import Collection, Mapping
+from contextlib import suppress
 from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any, Generic, TypeVar
@@ -41,6 +42,7 @@ from typing_extensions import Self
 from yarl import URL
 
 if typing.TYPE_CHECKING:
+    from pact.v3.interaction import Interaction
     from pact.v3.pact import Pact
 
 logger = logging.getLogger(__name__)
@@ -185,6 +187,31 @@ def parse_markdown_table(content: str) -> list[dict[str, str]]:
     return [dict(zip(rows[0], row)) for row in rows[1:]]
 
 
+def parse_horizontal_markdown_table(content: str) -> list[dict[str, str]]:
+    """
+    Parse a Markdown table into a list of dictionaries.
+
+    The table is expected to be in the following format:
+
+    ```markdown
+    | key1 | val1 |
+    | key2 | val2 |
+    | key3 | val3 |
+    ```
+    """
+    rows = [
+        list(map(str.strip, row.split("|")))[1:-1]
+        for row in content.split("\n")
+        if row.strip()
+    ]
+
+    if len(rows[0]) > 2:
+        msg = f"Expected at most two columns in the table, got {len(rows[0])}"
+        raise ValueError(msg)
+
+    return {row[0]: row[1] for row in rows}
+
+
 def serialize(obj: Any) -> Any:  # noqa: ANN401, PLR0911
     """
     Convert an object to a dictionary.
@@ -291,13 +318,17 @@ class InteractionDefinition:
         - An XML document
         """
 
-        def __init__(self, data: str) -> None:
+        def __init__(self, data: str | bytes) -> None:
             """
             Instantiate the interaction body.
             """
             self.string: str | None = None
             self.bytes: bytes | None = None
             self.mime_type: str | None = None
+
+            if isinstance(data, bytes):
+                self.bytes = data
+                return
 
             if data.startswith("file: ") and data.endswith("-body.xml"):
                 self.parse_fixture(FIXTURES_ROOT / data[6:])
@@ -452,6 +483,9 @@ class InteractionDefinition:
         self.response_body: InteractionDefinition.Body | None = None
         self.matching_rules: str | None = None
         self.response_matching_rules: str | None = None
+        self.metadata: dict[str, Any] | None = None
+        self.is_pending: bool = kwargs.pop("is_pending", False)
+        self.type: typing.Literal["HTTP", "Sync", "Async"] = kwargs.pop("type", "HTTP")
 
         self.update(**kwargs)
 
@@ -533,6 +567,9 @@ class InteractionDefinition:
         ):
             self.response_matching_rules = parse_matching_rules(matching_rules)
 
+        if metadata := kwargs.pop("metadata", None):
+            self.metadata = metadata
+
         if len(kwargs) > 0:
             msg = f"Unexpected arguments: {kwargs.keys()}"
             raise TypeError(msg)
@@ -545,7 +582,62 @@ class InteractionDefinition:
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
 
-    def add_to_pact(self, pact: Pact, name: str) -> None:  # noqa: C901, PLR0912, PLR0915
+    def _add_body(
+        self, body: InteractionDefinition.Body, interaction: Interaction
+    ) -> None:
+        if body.mime_type == "application/xml":
+
+            def _element_to_json(element: ElementTree.Element) -> dict[str, Any]:
+                json_dict = {
+                    "name": element.tag,
+                }
+                if element.attrib:
+                    json_dict["attributes"] = element.attrib
+                if len(element):
+                    json_dict["children"] = [
+                        _element_to_json(child) for child in element
+                    ]
+                else:
+                    json_dict["children"] = [{"content": element.text}]
+                return json_dict
+
+            with suppress(ElementTree.ParseError):
+                # try to parse the content as XML
+                # it _may_ be JSON, so it's ok if this errors
+                body.string = json.dumps({
+                    "root": _element_to_json(
+                        ElementTree.fromstring(body.string)  # noqa: S314
+                    )
+                })
+        if body.string:
+            logger.info(
+                "with_body(%s, %s)",
+                truncate(body.string),
+                body.mime_type,
+            )
+            interaction.with_body(
+                body.string,
+                body.mime_type,
+            )
+        elif body.bytes:
+            logger.info(
+                "with_binary_file(%s, %s)",
+                truncate(body.bytes),
+                body.mime_type,
+            )
+            interaction.with_binary_body(
+                body.bytes,
+                body.mime_type,
+            )
+        else:
+            msg = "Unexpected body definition"
+            raise RuntimeError(msg)
+
+    def add_to_pact(  # noqa: C901, PLR0912, PLR0915
+        self,
+        pact: Pact,
+        name: str,
+    ) -> None:
         """
         Add the interaction to the pact.
 
@@ -560,9 +652,10 @@ class InteractionDefinition:
             name:
                 Name for this interaction. Must be unique for the pact.
         """
-        interaction = pact.upon_receiving(name)
-        logger.info("with_request(%s, %s)", self.method, self.path)
-        interaction.with_request(self.method, self.path)
+        interaction = pact.upon_receiving(name, self.type)
+        logger.info("with_request(%s, %s, %s)", self.method, self.path, self.type)
+        if self.type != "Async":
+            interaction.with_request(self.method, self.path)
 
         for state in self.states or []:
             if state.parameters:
@@ -577,8 +670,9 @@ class InteractionDefinition:
             interaction.set_pending(pending=True)
 
         if self.text_comments:
-            logger.info("set_comment(text, %s)", self.text_comments)
-            interaction.set_comment("text", self.text_comments)
+            for comment in self.text_comments:
+                logger.info("add_text_comment(%s)", comment)
+                interaction.add_text_comment(comment)
 
         for key, value in self.comments.items():
             logger.info("set_comment(%s, %s)", key, value)
@@ -598,29 +692,7 @@ class InteractionDefinition:
             interaction.with_headers(self.headers.items())
 
         if self.body:
-            if self.body.string:
-                logger.info(
-                    "with_body(%s, %s)",
-                    truncate(self.body.string),
-                    self.body.mime_type,
-                )
-                interaction.with_body(
-                    self.body.string,
-                    self.body.mime_type,
-                )
-            elif self.body.bytes:
-                logger.info(
-                    "with_binary_file(%s, %s)",
-                    truncate(self.body.bytes),
-                    self.body.mime_type,
-                )
-                interaction.with_binary_body(
-                    self.body.bytes,
-                    self.body.mime_type,
-                )
-            else:
-                msg = "Unexpected body definition"
-                raise RuntimeError(msg)
+            self._add_body(self.body, interaction)
 
         if self.matching_rules:
             logger.info("with_matching_rules(%s)", self.matching_rules)
@@ -628,40 +700,27 @@ class InteractionDefinition:
 
         if self.response:
             logger.info("will_respond_with(%s)", self.response)
-            interaction.will_respond_with(self.response)
+            if self.type != "Async":
+                interaction.will_respond_with(self.response)
 
         if self.response_headers:
             logger.info("with_headers(%s)", self.response_headers)
             interaction.with_headers(self.response_headers.items())
 
         if self.response_body:
-            if self.response_body.string:
-                logger.info(
-                    "with_body(%s, %s)",
-                    truncate(self.response_body.string),
-                    self.response_body.mime_type,
-                )
-                interaction.with_body(
-                    self.response_body.string,
-                    self.response_body.mime_type,
-                )
-            elif self.response_body.bytes:
-                logger.info(
-                    "with_binary_file(%s, %s)",
-                    truncate(self.response_body.bytes),
-                    self.response_body.mime_type,
-                )
-                interaction.with_binary_body(
-                    self.response_body.bytes,
-                    self.response_body.mime_type,
-                )
-            else:
-                msg = "Unexpected body definition"
-                raise RuntimeError(msg)
+            self._add_body(self.response_body, interaction)
 
         if self.response_matching_rules:
             logger.info("with_matching_rules(%s)", self.response_matching_rules)
             interaction.with_matching_rules(self.response_matching_rules)
+
+        if self.metadata:
+            for key, value in self.metadata.items():
+                interaction.with_metadata({key: value})
+
+        if self.is_pending:
+            logger.info("set_pending(True)")
+            interaction.set_pending(pending=True)
 
     def add_to_flask(self, app: flask.Flask) -> None:
         """
@@ -724,4 +783,23 @@ class InteractionDefinition:
             self.path,
             view_func=route_fn,
             methods=[self.method],
+        )
+
+    def create_message_response(self) -> flask.Response:
+        """Creates a flask response for an async message."""
+        if self.metadata:
+            self.response_headers.add(
+                "Pact-Message-Metadata",
+                base64.b64encode(json.dumps(self.metadata).encode("utf-8")).decode(
+                    "utf-8"
+                ),
+            )
+        return flask.Response(
+            response=self.response_body.bytes or self.response_body.string or None
+            if self.response_body
+            else None,
+            status=self.response,
+            headers=dict(**self.response_headers),
+            content_type=self.response_body.mime_type if self.response_body else None,
+            direct_passthrough=True,
         )
