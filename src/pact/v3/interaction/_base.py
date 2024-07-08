@@ -300,7 +300,6 @@ class Interaction(abc.ABC):
             body:
                 Body of the request.
         """
-        import pdb; pdb.set_trace()
         pact.v3.ffi.with_binary_file(
             self._handle,
             self._parse_interaction_part(part),

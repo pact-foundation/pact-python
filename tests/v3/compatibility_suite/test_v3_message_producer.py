@@ -235,7 +235,6 @@ def a_pact_file_for_is_to_be_verified(
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact.write_file(temp_dir / "pacts")
-    import pdb; pdb.set_trace()
     verifier.add_source(temp_dir / "pacts")
 
 

@@ -632,7 +632,6 @@ class InteractionDefinition:
             interaction.with_binary_body(
                 body.bytes,
                 body.mime_type,
-                "Response",
             )
         else:
             msg = "Unexpected body definition"
