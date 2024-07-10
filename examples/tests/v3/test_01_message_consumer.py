@@ -65,7 +65,7 @@ def pact() -> Generator[Pact, None, None]:
 
     ```
     """
-    pact_dir = Path(Path(__file__).parent.parent / "pacts")
+    pact_dir = Path(Path(__file__).parent.parent.parent / "pacts")
     pact = Pact("v3_message_consumer", "v3_message_provider")
     log.info("Creating Message Pact with V3 specification")
     yield pact.with_specification("V3")
@@ -136,7 +136,21 @@ def test_async_message_handler_write(
                 "action": "WRITE",
                 "path": "my_file.txt",
                 "contents": "Hello, world!",
-            })
+            }),
+            "application/json",
+        )
+        .with_matching_rules(
+            {
+                "body": {
+                    "$.path": {
+                        "combine": "AND",
+                        "matchers": [
+                            {"match": "type"},
+                        ],
+                    }
+                }
+            },
+            "Response",
         )
     )
     pact.verify(verifier, "Async")
@@ -161,9 +175,19 @@ def test_async_message_handler_read(
             json.dumps({
                 "action": "READ",
                 "path": "my_file.txt",
-                "contents": "Hello, world!",
-            })
+            }),
+            "application/json",
         )
+        .with_matching_rules({
+            "body": {
+                "$.path": {
+                    "combine": "AND",
+                    "matchers": [
+                        {"match": "type"},
+                    ],
+                },
+            }
+        })
     )
     pact.verify(verifier, "Async")
 
