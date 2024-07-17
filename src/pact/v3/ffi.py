@@ -6179,7 +6179,23 @@ def with_binary_body(
         RuntimeError:
             If the body could not be modified.
     """
-    raise NotImplementedError
+    if len(gc.get_referrers(body)) == 0:
+        warnings.warn(
+            "Make sure to assign the body to a variable to avoid having the byte array"
+            " modified.",
+            UserWarning,
+            stacklevel=3,
+        )
+    success: bool = lib.pactffi_with_binary_body(
+        interaction._ref,
+        part.value,
+        content_type.encode("utf-8") if content_type else ffi.NULL,
+        body if body else ffi.NULL,
+        len(body) if body else 0,
+    )
+    if not success:
+        msg = f"Unable to set body for {interaction}."
+        raise RuntimeError(msg)
 
 
 def with_binary_file(

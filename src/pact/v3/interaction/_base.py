@@ -300,7 +300,7 @@ class Interaction(abc.ABC):
             body:
                 Body of the request.
         """
-        pact.v3.ffi.with_binary_file(
+        pact.v3.ffi.with_binary_body(
             self._handle,
             self._parse_interaction_part(part),
             content_type,
