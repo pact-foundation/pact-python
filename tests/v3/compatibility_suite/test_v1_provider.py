@@ -10,9 +10,9 @@ import sys
 import pytest
 from pytest_bdd import given, parsers, scenario
 
-from tests.v3.compatibility_suite.util import (
+from tests.v3.compatibility_suite.util import parse_markdown_table
+from tests.v3.compatibility_suite.util.interaction_definition import (
     InteractionDefinition,
-    parse_markdown_table,
 )
 from tests.v3.compatibility_suite.util.provider import (
     a_failed_verification_result_will_be_published_back,
@@ -407,7 +407,7 @@ def the_following_http_interactions_have_been_defined(
     # Parse the table into a more useful format
     interactions: dict[int, InteractionDefinition] = {}
     for row in content:
-        interactions[int(row["No"])] = InteractionDefinition(**row)
+        interactions[int(row["No"])] = InteractionDefinition(**row)  # type: ignore[arg-type]
     return interactions
 
 

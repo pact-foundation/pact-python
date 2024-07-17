@@ -6,10 +6,7 @@ import logging
 
 from pytest_bdd import given, parsers, scenario
 
-from tests.v3.compatibility_suite.util import (
-    InteractionDefinition,
-    parse_markdown_table,
-)
+from tests.v3.compatibility_suite.util import parse_markdown_table
 from tests.v3.compatibility_suite.util.consumer import (
     a_response_is_returned,
     request_n_is_made_to_the_mock_server,
@@ -33,6 +30,9 @@ from tests.v3.compatibility_suite.util.consumer import (
     the_pact_file_will_contain_n_interactions,
     the_pact_test_is_done,
     the_payload_will_contain_the_json_document,
+)
+from tests.v3.compatibility_suite.util.interaction_definition import (
+    InteractionDefinition,
 )
 
 logger = logging.getLogger(__name__)
@@ -320,7 +320,7 @@ def the_following_http_interactions_have_been_defined(
     # Parse the table into a more useful format
     interactions: dict[int, InteractionDefinition] = {}
     for row in content:
-        interactions[int(row["No"])] = InteractionDefinition(**row)
+        interactions[int(row["No"])] = InteractionDefinition(**row)  # type: ignore[arg-type]
     return interactions
 
 
