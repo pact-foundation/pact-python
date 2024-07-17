@@ -13,6 +13,7 @@ import aiohttp
 import pytest
 
 from pact.v3 import Pact
+from pact.v3.pact import MismatchesError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -362,7 +363,7 @@ async def test_with_body_response(pact: Pact, method: str) -> None:
                 json={"test": True},
             ) as resp:
                 assert resp.status == 200
-                assert await resp.json() == {"test": True}
+                assert json.loads(await resp.content.read()) == {"test": True}
 
 
 @pytest.mark.asyncio()
@@ -382,7 +383,7 @@ async def test_with_body_explicit(pact: Pact) -> None:
                 json={"request": True},
             ) as resp:
                 assert resp.status == 200
-                assert await resp.json() == {"response": True}
+                assert json.loads(await resp.content.read()) == {"response": True}
 
 
 def test_with_body_invalid(pact: Pact) -> None:
@@ -444,10 +445,10 @@ async def test_binary_file_request(pact: Pact) -> None:
         async with aiohttp.ClientSession(srv.url) as session:
             async with session.post("/", data=payload) as resp:
                 assert resp.status == 200
+
+    with pytest.raises(MismatchesError), pact.serve() as srv:  # noqa: PT012
+        async with aiohttp.ClientSession(srv.url) as session:
             async with session.post("/", data=payload[:2]) as resp:
-                # The match _only_ checks the content type, not the content
-                # itself. See
-                # https://pact-foundation.slack.com/archives/C02BXLDJ7JR/p1697032990681329
                 assert resp.status == 200
 
 
