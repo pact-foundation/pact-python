@@ -318,17 +318,13 @@ class InteractionDefinition:
         - An XML document
         """
 
-        def __init__(self, data: str | bytes) -> None:
+        def __init__(self, data: str) -> None:
             """
             Instantiate the interaction body.
             """
             self.string: str | None = None
             self.bytes: bytes | None = None
             self.mime_type: str | None = None
-
-            if isinstance(data, bytes):
-                self.bytes = data
-                return
 
             if data.startswith("file: ") and data.endswith("-body.xml"):
                 self.parse_fixture(FIXTURES_ROOT / data[6:])
@@ -418,6 +414,54 @@ class InteractionDefinition:
             else:
                 msg = "Unknown file type"
                 raise ValueError(msg)
+
+        def add_to_interaction(
+            self,
+            interaction: Interaction,
+        ) -> None:
+            """
+            Add a body to the interaction.
+
+            This is a helper method that adds the body to the interaction. This
+            relies on Pact's intelligent understanding of whether it is dealing with
+            a request or response (which is determined through the use of
+            `will_respond_with`).
+
+            Args:
+                body:
+                    The body to add to the interaction.
+
+                interaction:
+                    The interaction to add the body to.
+
+            """
+            if self.string:
+                logger.info(
+                    "with_body(%r, %r)",
+                    truncate(self.string),
+                    self.mime_type,
+                )
+                interaction.with_body(
+                    self.string,
+                    self.mime_type,
+                )
+            elif self.bytes:
+                logger.info(
+                    "with_binary_body(%r, %r)",
+                    truncate(self.bytes),
+                    self.mime_type,
+                )
+                interaction.with_binary_body(
+                    self.bytes,
+                    self.mime_type,
+                )
+            else:
+                msg = "Unexpected body definition"
+                raise RuntimeError(msg)
+
+            if self.mime_type and isinstance(interaction, HttpInteraction):
+                logger.info('set_header("Content-Type", %r)', self.mime_type)
+                interaction.set_header("Content-Type", self.mime_type)
 
     class State:
         """
@@ -581,57 +625,6 @@ class InteractionDefinition:
         return "<Body: {}>".format(
             ", ".join(f"{k}={v!r}" for k, v in vars(self).items()),
         )
-
-    def _add_body(
-        self, body: InteractionDefinition.Body, interaction: Interaction
-    ) -> None:
-        if body.mime_type == "application/xml":
-
-            def _element_to_json(element: ElementTree.Element) -> dict[str, Any]:
-                json_dict = {
-                    "name": element.tag,
-                }
-                if element.attrib:
-                    json_dict["attributes"] = element.attrib
-                if len(element):
-                    json_dict["children"] = [
-                        _element_to_json(child) for child in element
-                    ]
-                else:
-                    json_dict["children"] = [{"content": element.text}]
-                return json_dict
-
-            with suppress(ElementTree.ParseError):
-                # try to parse the content as XML
-                # it _may_ be JSON, so it's ok if this errors
-                body.string = json.dumps({
-                    "root": _element_to_json(
-                        ElementTree.fromstring(body.string)  # noqa: S314
-                    )
-                })
-        if body.string:
-            logger.info(
-                "with_body(%s, %s)",
-                truncate(body.string),
-                body.mime_type,
-            )
-            interaction.with_body(
-                body.string,
-                body.mime_type,
-            )
-        elif body.bytes:
-            logger.info(
-                "with_binary_file(%s, %s)",
-                truncate(body.bytes),
-                body.mime_type,
-            )
-            interaction.with_binary_body(
-                body.bytes,
-                body.mime_type,
-            )
-        else:
-            msg = "Unexpected body definition"
-            raise RuntimeError(msg)
 
     def add_to_pact(  # noqa: C901, PLR0912, PLR0915
         self,
