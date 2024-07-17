@@ -49,11 +49,14 @@ from yarl import URL
 import pact.constants  # type: ignore[import-untyped]
 from pact.v3.pact import Pact
 from tests.v3.compatibility_suite.util import (
-    InteractionDefinition,
     parse_headers,
     parse_markdown_table,
     serialize,
     truncate,
+)
+from tests.v3.compatibility_suite.util.interaction_definition import (
+    InteractionDefinition,
+    InteractionState,
 )
 
 if TYPE_CHECKING:
@@ -179,24 +182,24 @@ class Provider:
             raise ValueError(msg)
 
         self.app: flask.Flask = flask.Flask("provider")
-        self._add_ping(self.app)
-        self._add_callback(self.app)
-        self._add_after_request(self.app)
-        self._add_interactions(self.app)
+        self._add_ping()
+        self._add_callback()
+        self._add_after_request()
+        self._add_interactions()
 
-    def _add_ping(self, app: flask.Flask) -> None:
+    def _add_ping(self) -> None:
         """
         Add a ping endpoint to the provider.
 
         This is used to check that the provider is running.
         """
 
-        @app.get("/_test/ping")
+        @self.app.get("/_test/ping")
         def ping() -> str:
             """Simple ping endpoint for testing."""
             return "pong"
 
-    def _add_callback(self, app: flask.Flask) -> None:
+    def _add_callback(self) -> None:
         """
         Add a callback endpoint to the provider.
 
@@ -213,7 +216,7 @@ class Provider:
         contents of the file.
         """
 
-        @app.route("/_pact/callback", methods=["GET", "POST"])
+        @self.app.route("/_pact/callback", methods=["GET", "POST"])
         def callback() -> tuple[str, int] | str:
             if (self.provider_dir / "fail_callback").exists():
                 return "Provider state not found", 404
@@ -222,7 +225,7 @@ class Provider:
             if provider_states_path.exists():
                 logger.debug("Provider states file found")
                 with provider_states_path.open() as f:
-                    states = [InteractionDefinition.State(**s) for s in json.load(f)]
+                    states = [InteractionState(**s) for s in json.load(f)]
                 logger.debug("Provider states: %s", states)
                 for state in states:
                     if request.args["state"] == state.name:
@@ -257,7 +260,7 @@ class Provider:
 
             return ""
 
-    def _add_after_request(self, app: flask.Flask) -> None:
+    def _add_after_request(self) -> None:
         """
         Add a handler to log requests and responses.
 
@@ -265,7 +268,7 @@ class Provider:
         application (both to the logger as well as to files).
         """
 
-        @app.after_request
+        @self.app.after_request
         def log_request(response: flask.Response) -> flask.Response:
             logger.debug("Received request: %s %s", request.method, request.path)
             logger.debug("-> Query string: %s", request.query_string.decode("utf-8"))
@@ -292,7 +295,7 @@ class Provider:
                 )
             return response
 
-        @app.after_request
+        @self.app.after_request
         def log_response(response: flask.Response) -> flask.Response:
             logger.debug("Returning response: %d", response.status_code)
             logger.debug("-> Headers: %s", serialize(response.headers))
@@ -320,7 +323,7 @@ class Provider:
                 )
             return response
 
-    def _add_interactions(self, app: flask.Flask) -> None:
+    def _add_interactions(self) -> None:
         """
         Add the interactions to the provider.
         """
@@ -328,7 +331,7 @@ class Provider:
             interactions: list[InteractionDefinition] = pickle.load(f)  # noqa: S301
 
         for interaction in interactions:
-            interaction.add_to_flask(app)
+            interaction.add_to_provider(self)
 
     def run(self) -> None:
         """
@@ -537,7 +540,7 @@ if __name__ == "__main__":
         sys.stderr.write(f"Usage: {sys.argv[0]} <dir> <log_level>\n")
         sys.exit(1)
 
-    Provider(sys.argv[1], sys.argv[2]).run()
+    Provider(sys.argv[1], int(sys.argv[2])).run()
 
 
 ################################################################################
@@ -608,7 +611,7 @@ def a_provider_is_started_that_returns_the_responses_from_interactions_with_chan
         defns: list[InteractionDefinition] = []
         for interaction in interactions:
             defn = copy.deepcopy(interaction_definitions[interaction])
-            defn.update(**changes[0])
+            defn.update(**changes[0])  # type: ignore[arg-type]
             defns.append(defn)
             logger.debug(
                 "Updated interaction %d: %s",
@@ -950,7 +953,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
         )
 
         defn = interaction_definitions[interaction]
-        defn.states = [InteractionDefinition.State(state)]
+        defn.states = [InteractionState(state)]
 
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
@@ -996,8 +999,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_states_defined
 
         defn = interaction_definitions[interaction]
         defn.states = [
-            InteractionDefinition.State(s["State Name"], s.get("Parameters", None))
-            for s in states
+            InteractionState(s["State Name"], s.get("Parameters", None)) for s in states
         ]
 
         pact = Pact("consumer", "provider")

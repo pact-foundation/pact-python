@@ -29,7 +29,9 @@ if TYPE_CHECKING:
 
     from pact.v3.interaction._async_message_interaction import AsyncMessageInteraction
     from pact.v3.pact import PactServer
-    from tests.v3.compatibility_suite.util import InteractionDefinition
+    from tests.v3.compatibility_suite.util.interaction_definition import (
+        InteractionDefinition,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +123,7 @@ def the_mock_server_is_started_with_interaction_n_but_with_the_following_changes
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
         definition = interaction_definitions[iid]
-        definition.update(**content[0])
+        definition.update(**content[0])  # type: ignore[arg-type]
         logger.info("Adding modified interaction %s", iid)
         definition.add_to_pact(pact, f"interaction {iid}")
 
@@ -153,6 +155,9 @@ def request_n_is_made_to_the_mock_server(stacklevel: int = 1) -> None:
             and "Content-Type" not in definition.headers
         ):
             definition.headers.add("Content-Type", definition.body.mime_type)
+
+        assert definition.method is not None, "Method not defined"
+        assert definition.path is not None, "Path not defined"
 
         return requests.request(
             definition.method,
@@ -195,7 +200,7 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
         """
         definition = interaction_definitions[request_id]
         assert len(content) == 1, "Expected exactly one row in the table"
-        definition.update(**content[0])
+        definition.update(**content[0])  # type: ignore[arg-type]
 
         if (
             definition.body
@@ -203,6 +208,9 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
             and "Content-Type" not in definition.headers
         ):
             definition.headers.add("Content-Type", definition.body.mime_type)
+
+        assert definition.method is not None, "Method not defined"
+        assert definition.path is not None, "Path not defined"
 
         return requests.request(
             definition.method,

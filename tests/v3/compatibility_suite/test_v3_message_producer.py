@@ -18,9 +18,12 @@ from pytest_bdd import (
 
 from pact.v3.pact import Pact
 from tests.v3.compatibility_suite.util import (
-    InteractionDefinition,
     parse_horizontal_markdown_table,
     parse_markdown_table,
+)
+from tests.v3.compatibility_suite.util.interaction_definition import (
+    InteractionDefinition,
+    InteractionState,
 )
 from tests.v3.compatibility_suite.util.provider import (
     a_provider_is_started_that_can_generate_the_message,
@@ -229,7 +232,7 @@ def a_pact_file_for_is_to_be_verified_with_the_following(
     interaction_definition = InteractionDefinition(
         type="Async",
         description=name,
-        **table,
+        **table,  # type: ignore[arg-type]
     )
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
@@ -284,16 +287,14 @@ def a_pact_file_for_is_to_be_verified_with_provider_state(
         description=name,
         body=fixture,
     )
-    interaction_definition.states = [InteractionDefinition.State(provider_state)]
+    interaction_definition.states = [InteractionState(provider_state)]
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact.write_file(temp_dir / "pacts")
     verifier.add_source(temp_dir / "pacts")
     with (temp_dir / "provider_states").open("w") as f:
         logger.debug("Writing provider state to %s", temp_dir / "provider_states")
-        json.dump(
-            [s.as_dict() for s in [InteractionDefinition.State(provider_state)]], f
-        )
+        json.dump([s.as_dict() for s in [InteractionState(provider_state)]], f)
 
 
 @given(
