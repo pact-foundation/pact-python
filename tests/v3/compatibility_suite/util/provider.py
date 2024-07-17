@@ -53,6 +53,7 @@ from tests.v3.compatibility_suite.util import (
     parse_headers,
     parse_markdown_table,
     serialize,
+    truncate,
 )
 
 if TYPE_CHECKING:
@@ -127,12 +128,35 @@ def _find_free_port() -> int:
         return s.getsockname()[1]
 
 
+def _setup_logging(log_level: int) -> None:
+    """
+    Set up logging for the provider.
+
+    Pytest is responsible for setting up the logging for the main Python
+    process, but the provider runs in a subprocess and does not automatically
+    inherit the logging configuration.
+
+    This function sets up the logging within the provider subprocess, provided
+    that it wasn't already set up (in case any logging configuration is
+    inherited).
+    """
+    if logging.getLogger().handlers:
+        return
+
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s.%(msec)03d [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
+    logger.debug("Debug logging enabled")
+
+
 class Provider:
     """
     HTTP Provider.
     """
 
-    def __init__(self, provider_dir: Path | str) -> None:
+    def __init__(self, provider_dir: Path | str, log_level: int) -> None:
         """
         Instantiate a new provider.
 
@@ -142,8 +166,12 @@ class Provider:
                 provider. At a minimum, this directory must contain a file
                 called `interactions.pkl`. This file must contain a list of
                 [`InteractionDefinition`] objects.
+
+            log_level:
+                The log level for the provider.
         """
         self._messages = {}
+        _setup_logging(log_level)
         self.provider_dir = Path(provider_dir)
         if not self.provider_dir.is_dir():
             msg = f"Directory {self.provider_dir} does not exist"
@@ -191,13 +219,17 @@ class Provider:
 
             provider_states_path = self.provider_dir / "provider_states"
             if provider_states_path.exists():
+                logger.debug("Provider states file found")
                 with provider_states_path.open() as f:
                     states = [InteractionDefinition.State(**s) for s in json.load(f)]
+                logger.debug("Provider states: %s", states)
                 for state in states:
                     if request.args["state"] == state.name:
+                        logger.debug("State found: %s", state)
                         for k, v in state.parameters.items():
                             assert k in request.args
                             assert str(request.args[k]) == str(v)
+                        logger.debug("State parameters match")
                         break
                 else:
                     msg = "State not found"
@@ -216,7 +248,7 @@ class Provider:
                         "query_params": serialize(request.args),
                         "headers_list": serialize(request.headers),
                         "headers_dict": serialize(dict(request.headers)),
-                        "body": request.data.decode("utf-8"),
+                        "body": request.data.decode("utf-8", errors="backslashreplace"),
                         "form": serialize(request.form),
                     },
                     f,
@@ -234,12 +266,11 @@ class Provider:
 
         @app.after_request
         def log_request(response: flask.Response) -> flask.Response:
-            sys.stderr.write(f"START REQUEST: {request.method} {request.path}\n")
-            sys.stderr.write(f"Query string: {request.query_string.decode('utf-8')}\n")
-            sys.stderr.write(f"Header: {serialize(request.headers)}\n")
-            sys.stderr.write(f"Body: {request.data.decode('utf-8')}\n")
-            sys.stderr.write(f"Form: {serialize(request.form)}\n")
-            sys.stderr.write("END REQUEST\n")
+            logger.debug("Received request: %s %s", request.method, request.path)
+            logger.debug("-> Query string: %s", request.query_string.decode("utf-8"))
+            logger.debug("-> Headers: %s", serialize(request.headers))
+            logger.debug("-> Body: %s", truncate(request.get_data().decode("utf-8")))
+            logger.debug("-> Form: %s", serialize(request.form))
 
             with (
                 self.provider_dir
@@ -253,7 +284,7 @@ class Provider:
                         "query_params": serialize(request.args),
                         "headers_list": serialize(request.headers),
                         "headers_dict": serialize(dict(request.headers)),
-                        "body": request.data.decode("utf-8"),
+                        "body": request.data.decode("utf-8", errors="backslashreplace"),
                         "form": serialize(request.form),
                     },
                     f,
@@ -262,12 +293,14 @@ class Provider:
 
         @app.after_request
         def log_response(response: flask.Response) -> flask.Response:
-            sys.stderr.write(f"START RESPONSE: {response.status_code}\n")
-            sys.stderr.write(f"Headers: {serialize(response.headers)}\n")
-            sys.stderr.write(
-                f"Body: {response.get_data().decode('utf-8', errors='replace')}\n"
+            logger.debug("Returning response: %d", response.status_code)
+            logger.debug("-> Headers: %s", serialize(response.headers))
+            logger.debug(
+                "-> Body: %s",
+                truncate(
+                    response.get_data().decode("utf-8", errors="backslashreplace")
+                ),
             )
-            sys.stderr.write("END RESPONSE\n")
 
             with (
                 self.provider_dir
@@ -278,7 +311,9 @@ class Provider:
                         "status_code": response.status_code,
                         "headers_list": serialize(response.headers),
                         "headers_dict": serialize(dict(response.headers)),
-                        "body": response.get_data().decode("utf-8", errors="replace"),
+                        "body": response.get_data().decode(
+                            "utf-8", errors="backslashreplace"
+                        ),
                     },
                     f,
                 )
@@ -516,11 +551,11 @@ class PactBroker:
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) != 2:
-        sys.stderr.write(f"Usage: {sys.argv[0]} <dir>")
+    if len(sys.argv) != 3:
+        sys.stderr.write(f"Usage: {sys.argv[0]} <dir> <log_level>\n")
         sys.exit(1)
 
-    Provider(sys.argv[1]).run()
+    Provider(sys.argv[1], sys.argv[2]).run()
 
 
 ################################################################################
@@ -643,6 +678,7 @@ def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # n
             sys.executable,
             Path(__file__),
             str(provider_dir),
+            str(logger.getEffectiveLevel()),
         ],
         cwd=Path.cwd(),
         stdout=subprocess.PIPE,
@@ -688,10 +724,10 @@ def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # n
         while True:
             if process.stdout:
                 while line := process.stdout.readline():
-                    logger.debug("Provider stdout: %s", line.strip())
+                    logger.debug("Provider stdout: %s", line.rstrip())
             if process.stderr:
                 while line := process.stderr.readline():
-                    logger.debug("Provider stderr: %s", line.strip())
+                    logger.debug("Provider stderr: %s", line.rstrip())
 
     thread = Thread(target=redirect, daemon=True)
     thread.start()

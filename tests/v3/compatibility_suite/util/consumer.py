@@ -90,7 +90,7 @@ def the_mock_server_is_started_with_interactions(
         pact.with_specification(version)
         for iid in ids:
             definition = interaction_definitions[iid]
-            logging.info("Adding interaction %s", iid)
+            logger.info("Adding interaction %s", iid)
             definition.add_to_pact(pact, f"interaction {iid}")
 
         with pact.serve(raises=False) as srv:
@@ -122,7 +122,7 @@ def the_mock_server_is_started_with_interaction_n_but_with_the_following_changes
         pact.with_specification(version)
         definition = interaction_definitions[iid]
         definition.update(**content[0])
-        logging.info("Adding modified interaction %s", iid)
+        logger.info("Adding modified interaction %s", iid)
         definition.add_to_pact(pact, f"interaction {iid}")
 
         with pact.serve(raises=False) as srv:
@@ -263,7 +263,7 @@ def a_response_is_returned(stacklevel: int = 1) -> None:
         """
         A response is returned.
         """
-        logging.info(
+        logger.info(
             "Request Information:\n%s",
             json.dumps(
                 {
@@ -277,7 +277,7 @@ def a_response_is_returned(stacklevel: int = 1) -> None:
                 indent=2,
             ),
         )
-        logging.info("Mismatches:\n%s", json.dumps(srv.mismatches, indent=2))
+        logger.info("Mismatches:\n%s", json.dumps(srv.mismatches, indent=2))
         assert response.status_code == code
 
 
@@ -310,7 +310,8 @@ def the_content_type_will_be_set_as(stacklevel: int = 1) -> None:
         response: requests.Response,
         content_type: str,
     ) -> None:
-        assert response.headers["Content-Type"] == content_type
+        assert "Content-Type" in response.headers, "Content-Type not set"
+        assert response.headers["Content-Type"] == content_type, "Content-Type mismatch"
 
 
 def the_mock_server_status_will_be(stacklevel: int = 1) -> None:
