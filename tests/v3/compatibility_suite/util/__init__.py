@@ -187,7 +187,7 @@ def parse_markdown_table(content: str) -> list[dict[str, str]]:
     return [dict(zip(rows[0], row)) for row in rows[1:]]
 
 
-def parse_horizontal_markdown_table(content: str) -> list[dict[str, str]]:
+def parse_horizontal_markdown_table(content: str) -> dict[str, str]:
     """
     Parse a Markdown table into a list of dictionaries.
 
