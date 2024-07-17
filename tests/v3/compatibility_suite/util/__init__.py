@@ -132,7 +132,7 @@ def truncate(data: str | bytes) -> str:
 
     This is useful for printing large strings or bytes objects in tests.
     """
-    if len(data) <= 32:
+    if len(data) <= 256:
         if isinstance(data, str):
             return f"{data}"
         return data.decode("utf-8", "backslashreplace")
@@ -142,9 +142,9 @@ def truncate(data: str | bytes) -> str:
         checksum = hashlib.sha256(data.encode()).hexdigest()
         return (
             '"'
-            + data[:6]
+            + data[:128]
             + "⋯"
-            + data[-6:]
+            + data[-128:]
             + '"'
             + f" ({length} bytes, sha256={checksum[:7]})"
         )
