@@ -1,8 +1,5 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
-  - name: 🚀 Feature request
-    url: https://pact.canny.io
-    about: The Canny board to send us feature requests, vote and measure the interest of users. Useful to submit a feature request when you have an idea but no concrete API design proposal.
   - name: ❓ Simple question - Slack chat
     url: https://slack.pact.io
     about: If you have a simple question, or want to discuss a feature request, join our Slack chat.

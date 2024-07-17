@@ -66,7 +66,7 @@ If you're only fixing a bug, it's fine to submit a pull request right away but w
 
 ### Feature requests
 
-If you would like to request a new feature or enhancement but are not yet thinking about opening a pull request, you can file an issue with the [feature template](https://github.com/pact-foundation/pact-python/issues/new?assignees=&labels=feature%2Cstatus%3A+needs+triage&template=feature.yml) for more thought out ideas. Alternatively, you can use the [Canny board](https://pact.canny.io/) for more casual feature requests and gain enough traction before proposing an RFC.
+If you would like to request a new feature or enhancement but are not yet thinking about opening a pull request, you can file an issue with the [feature template](https://github.com/pact-foundation/pact-python/issues/new?assignees=&labels=feature%2Cstatus%3A+needs+triage&template=feature.yml) for more thought out ideas.
 
 ### Claiming issues
 
