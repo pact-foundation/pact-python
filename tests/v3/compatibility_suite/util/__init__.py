@@ -29,10 +29,9 @@ import logging
 import sys
 import typing
 from collections.abc import Collection, Mapping
-from contextlib import suppress
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 from xml.etree import ElementTree
 
 import flask
@@ -40,6 +39,8 @@ from flask import request
 from multidict import MultiDict
 from typing_extensions import Self
 from yarl import URL
+
+from pact.v3.interaction import HttpInteraction, Interaction
 
 if typing.TYPE_CHECKING:
     from pact.v3.interaction import Interaction
@@ -506,43 +507,147 @@ class InteractionDefinition:
             """
             return cls(**data)
 
-    def __init__(self, **kwargs: str) -> None:
-        """Initialise the interaction definition."""
-        self.id: int | None = None
+    def __init__(self, metadata: dict[str, Any] | None = None, **kwargs: str) -> None:
+        """
+        Initialise the interaction definition.
 
+        As the interaction definitions are parsed from a Markdown table,
+        values are expected to be strings and must be converted to the correct
+        type.
+
+        The _only_ exception to this is the `metadata` key, which expects
+        a dictionary.
+        """
+        # A common pattern used in the tests is to have a table with the 'base'
+        # definitions, and have tests modify these definitions as need be. As a
+        # result, the `__init__` method is designed to set all the values to
+        # defaults, and the `update` method is used to update the values.
+        if type_ := kwargs.pop("type", "HTTP"):
+            if type_ not in ("HTTP", "Sync", "Async"):
+                msg = f"Invalid value for 'type': {type_}"
+                raise ValueError(msg)
+            self.type: Literal["HTTP", "Sync", "Async"] = type_
+
+        # General properties shared by all interaction types
+        self.id: int | None = None
+        self.description: str | None = None
         self.states: list[InteractionDefinition.State] = []
+        self.metadata: dict[str, Any] | None = None
         self.pending: bool = False
+        self.is_pending: bool = False
+        self.test_name: str | None = None
         self.text_comments: list[str] = []
         self.comments: dict[str, str] = {}
-        self.test_name: str | None = None
 
-        self.method: str = kwargs.pop("method")
-        self.path: str = kwargs.pop("path")
-        self.response: int = int(kwargs.pop("response", 200))
+        # Request properties
+        self.method: str | None = None
+        self.path: str | None = None
+        self.response: int | None = None
         self.query: str | None = None
         self.headers: MultiDict[str] = MultiDict()
         self.body: InteractionDefinition.Body | None = None
+        self.matching_rules: str | None = None
 
+        # Response properties
         self.response_headers: MultiDict[str] = MultiDict()
         self.response_body: InteractionDefinition.Body | None = None
-        self.matching_rules: str | None = None
         self.response_matching_rules: str | None = None
-        self.metadata: dict[str, Any] | None = None
-        self.is_pending: bool = kwargs.pop("is_pending", False)
-        self.type: typing.Literal["HTTP", "Sync", "Async"] = kwargs.pop("type", "HTTP")
 
-        self.update(**kwargs)
+        self.update(metadata=metadata, **kwargs)
 
-    def update(self, **kwargs: str) -> None:  # noqa: C901, PLR0912
+    def update(self, metadata: dict[str, Any] | None = None, **kwargs: str) -> None:
         """
         Update the interaction definition.
 
         This is a convenience method that allows the interaction definition to
         be updated with new values.
         """
+        kwargs = self._update_shared(metadata, **kwargs)
+        kwargs = self._update_request(**kwargs)
+        kwargs = self._update_response(**kwargs)
+
+        if len(kwargs) > 0:
+            msg = f"Unexpected arguments: {kwargs.keys()}"
+            raise TypeError(msg)
+
+    def _update_shared(
+        self,
+        metadata: dict[str, Any] | None = None,
+        **kwargs: str,
+    ) -> dict[str, str]:
+        """
+        Update the shared properties of the interaction.
+
+        Note that the following properties are not supported and must be
+        modified directly:
+
+        -   `states`
+        -   `text_comments`
+        -   `comments`
+
+        Args:
+            metadata:
+                Metadata for the interaction.
+
+            kwargs:
+                Remaining keyword arguments, which are:
+
+                -   `No`: Interaction ID. Used purely for debugging purposes.
+                -   `description`: Description of the interaction (used by
+                    asynchronous messages)
+                -   `pending`: Whether the interaction is pending.
+                -   `test_name`: Test name for the interaction.
+
+        Returns:
+            The remaining keyword arguments.
+        """
         if interaction_id := kwargs.pop("No", None):
             self.id = int(interaction_id)
 
+        if description := kwargs.pop("description", None):
+            self.description = description
+
+        if "states" in kwargs:
+            msg = "Unsupported. Modify the 'states' property directly."
+            raise ValueError(msg)
+
+        if metadata:
+            self.metadata = metadata
+
+        if "pending" in kwargs:
+            self.pending = kwargs.pop("pending") == "true"
+
+        if test_name := kwargs.pop("test_name", None):
+            self.test_name = test_name
+
+        if "text_comments" in kwargs:
+            msg = "Unsupported. Modify the 'text_comments' property directly."
+            raise ValueError(msg)
+
+        if "comments" in kwargs:
+            msg = "Unsupported. Modify the 'comments' property directly."
+            raise ValueError(msg)
+
+        return kwargs
+
+    def _update_request(self, **kwargs: str) -> dict[str, str]:
+        """
+        Update the request properties of the interaction.
+
+        Args:
+            kwargs:
+                Remaining keyword arguments, which are:
+
+                -   `method`: Request method.
+                -   `path`: Request path.
+                -   `query`: Query parameters.
+                -   `headers`: Request headers.
+                -   `raw_headers`: Request headers.
+                -   `body`: Request body.
+                -   `content_type`: Request content type.
+                -   `matching_rules`: Request matching rules.
+
+        """
         if method := kwargs.pop("method", None):
             self.method = method
 
@@ -574,6 +679,30 @@ class InteractionDefinition:
                 self.body = InteractionDefinition.Body("")
             self.body.mime_type = content_type
 
+        if matching_rules := (
+            kwargs.pop("matching_rules", None) or kwargs.pop("matching rules", None)
+        ):
+            self.matching_rules = parse_matching_rules(matching_rules)
+
+        return kwargs
+
+    def _update_response(self, **kwargs: str) -> dict[str, str]:
+        """
+        Update the response properties of the interaction.
+
+        Args:
+            kwargs:
+                Remaining keyword arguments, which are:
+
+                -  `response`: Response status code.
+                -  `response_headers`: Response headers.
+                -  `response_content`: Response content type.
+                -  `response_body`: Response body.
+                -  `response_matching_rules`: Response matching rules.
+
+        Returns:
+            The remaining keyword arguments.
+        """
         if response := kwargs.pop("response", None) or kwargs.pop("status", None):
             self.response = int(response)
 
@@ -601,22 +730,12 @@ class InteractionDefinition:
             )
 
         if matching_rules := (
-            kwargs.pop("matching_rules", None) or kwargs.pop("matching rules", None)
-        ):
-            self.matching_rules = parse_matching_rules(matching_rules)
-
-        if matching_rules := (
             kwargs.pop("response_matching_rules", None)
             or kwargs.pop("response matching rules", None)
         ):
             self.response_matching_rules = parse_matching_rules(matching_rules)
 
-        if metadata := kwargs.pop("metadata", None):
-            self.metadata = metadata
-
-        if len(kwargs) > 0:
-            msg = f"Unexpected arguments: {kwargs.keys()}"
-            raise TypeError(msg)
+        return kwargs
 
     def __repr__(self) -> str:
         """
@@ -646,16 +765,19 @@ class InteractionDefinition:
                 Name for this interaction. Must be unique for the pact.
         """
         interaction = pact.upon_receiving(name, self.type)
-        logger.info("with_request(%s, %s, %s)", self.method, self.path, self.type)
-        if self.type != "Async":
+        if isinstance(interaction, HttpInteraction):
+            assert self.method, "Method must be defined"
+            assert self.path, "Path must be defined"
+
+            logger.info("with_request(%r, %r)", self.method, self.path)
             interaction.with_request(self.method, self.path)
 
         for state in self.states or []:
             if state.parameters:
-                logger.info("given(%s, parameters=%s)", state.name, state.parameters)
+                logger.info("given(%r, parameters=%r)", state.name, state.parameters)
                 interaction.given(state.name, parameters=state.parameters)
             else:
-                logger.info("given(%s)", state.name)
+                logger.info("given(%r)", state.name)
                 interaction.given(state.name)
 
         if self.pending:
@@ -664,56 +786,69 @@ class InteractionDefinition:
 
         if self.text_comments:
             for comment in self.text_comments:
-                logger.info("add_text_comment(%s)", comment)
+                logger.info("add_text_comment(%r)", comment)
                 interaction.add_text_comment(comment)
 
         for key, value in self.comments.items():
-            logger.info("set_comment(%s, %s)", key, value)
+            logger.info("set_comment(%r, %r)", key, value)
             interaction.set_comment(key, value)
 
         if self.test_name:
-            logger.info("test_name(%s)", self.test_name)
+            logger.info("test_name(%r)", self.test_name)
             interaction.test_name(self.test_name)
 
         if self.query:
+            assert isinstance(
+                interaction, HttpInteraction
+            ), "Query parameters require an HTTP interaction"
             query = URL.build(query_string=self.query).query
-            logger.info("with_query_parameters(%s)", query.items())
+            logger.info("with_query_parameters(%r)", query.items())
             interaction.with_query_parameters(query.items())
 
         if self.headers:
-            logger.info("with_headers(%s)", self.headers.items())
+            assert isinstance(
+                interaction, HttpInteraction
+            ), "Headers require an HTTP interaction"
+            logger.info("with_headers(%r)", self.headers.items())
             interaction.with_headers(self.headers.items())
 
         if self.body:
-            self._add_body(self.body, interaction)
+            self.body.add_to_interaction(interaction)
 
         if self.matching_rules:
-            logger.info("with_matching_rules(%s)", self.matching_rules)
+            logger.info("with_matching_rules(%r)", self.matching_rules)
             interaction.with_matching_rules(self.matching_rules)
 
         if self.response:
-            logger.info("will_respond_with(%s)", self.response)
-            if self.type != "Async":
-                interaction.will_respond_with(self.response)
+            assert isinstance(
+                interaction, HttpInteraction
+            ), "Response requires an HTTP interaction"
+            logger.info("will_respond_with(%r)", self.response)
+            interaction.will_respond_with(self.response)
 
         if self.response_headers:
-            logger.info("with_headers(%s)", self.response_headers)
+            assert isinstance(
+                interaction, HttpInteraction
+            ), "Response headers require an HTTP interaction"
+            logger.info("with_headers(%r)", self.response_headers)
             interaction.with_headers(self.response_headers.items())
 
         if self.response_body:
-            self._add_body(self.response_body, interaction)
+            assert isinstance(
+                interaction, HttpInteraction
+            ), "Response body requires an HTTP interaction"
+            self.response_body.add_to_interaction(interaction)
 
         if self.response_matching_rules:
-            logger.info("with_matching_rules(%s)", self.response_matching_rules)
+            logger.info("with_matching_rules(%r)", self.response_matching_rules)
             interaction.with_matching_rules(self.response_matching_rules)
 
         if self.metadata:
             for key, value in self.metadata.items():
-                interaction.with_metadata({key: value})
-
-        if self.is_pending:
-            logger.info("set_pending(True)")
-            interaction.set_pending(pending=True)
+                if isinstance(value, str):
+                    interaction.with_metadata({key: value})
+                else:
+                    interaction.with_metadata({key: json.dumps(value)})
 
     def add_to_flask(self, app: flask.Flask) -> None:
         """
@@ -723,18 +858,45 @@ class InteractionDefinition:
             app:
                 The Flask app to add the interaction to.
         """
-        sys.stderr.write(
-            f"Adding interaction to Flask app: {self.method} {self.path}\n"
+        logger.debug("Adding %s interaction to Flask app", self.type)
+        if self.type == "HTTP":
+            self._add_http_to_flask(app)
+        elif self.type == "Sync":
+            self._add_sync_to_flask(app)
+        elif self.type == "Async":
+            self._add_async_to_flask(app)
+        else:
+            msg = f"Unknown interaction type: {self.type}"
+            raise ValueError(msg)
+
+    def _add_http_to_flask(self, app: flask.Flask) -> None:
+        """
+        Add a HTTP interaction to a Flask app.
+
+        Ths function works by defining a new function to handle the request and
+        produce the response. This function is then added to the Flask app as a
+        route.
+
+        Args:
+            app:
+                The Flask app to add the interaction to.
+        """
+        assert isinstance(self.method, str), "Method must be a string"
+        assert isinstance(self.path, str), "Path must be a string"
+
+        logger.info(
+            "Adding HTTP '%s %s' interaction to Flask app",
+            self.method,
+            self.path,
         )
-        sys.stderr.write(f"  Query: {self.query}\n")
-        sys.stderr.write(f"  Headers: {self.headers}\n")
-        sys.stderr.write(f"  Body: {self.body}\n")
-        sys.stderr.write(f"  Response: {self.response}\n")
-        sys.stderr.write(f"  Response headers: {self.response_headers}\n")
-        sys.stderr.write(f"  Response body: {self.response_body}\n")
+        logger.debug("-> Query: %s", self.query)
+        logger.debug("-> Headers: %s", self.headers)
+        logger.debug("-> Body: %s", self.body)
+        logger.debug("-> Response Status: %s", self.response)
+        logger.debug("-> Response Headers: %s", self.response_headers)
+        logger.debug("-> Response Body: %s", self.response_body)
 
         def route_fn() -> flask.Response:
-            sys.stderr.write(f"Received request: {self.method} {self.path}\n")
             if self.query:
                 query = URL.build(query_string=self.query).query
                 # Perform a two-way check to ensure that the query parameters
@@ -778,21 +940,82 @@ class InteractionDefinition:
             methods=[self.method],
         )
 
-    def create_message_response(self) -> flask.Response:
-        """Creates a flask response for an async message."""
+    def _add_sync_to_flask(self, app: flask.Flask) -> None:
+        """
+        Add a synchronous message interaction to a Flask app.
+
+        Args:
+            app:
+                The Flask app to add the interaction to.
+        """
+        raise NotImplementedError
+
+    def _add_async_to_flask(self, app: flask.Flask) -> None:
+        """
+        Add a synchronous message interaction to a Flask app.
+
+        Args:
+            app:
+                The Flask app to add the interaction to.
+        """
+        assert self.description, "Description must be set for async messages"
+        if hasattr(app, "pact_messages"):
+            app.pact_messages[self.description] = self
+        else:
+            app.pact_messages = {self.description: self}
+
+        # All messages are handled by the same route. So we just need to check
+        # whether the route has been defined, and if not, define it.
+        for rule in app.url_map.iter_rules():
+            if rule.rule == "/_pact/message":
+                sys.stderr.write("Async message route already defined\n")
+                return
+
+        sys.stderr.write("Adding async message route\n")
+
+        @app.post("/_pact/message")
+        def post_message() -> flask.Response:
+            sys.stderr.write("Received POST request for message\n")
+            assert hasattr(app, "pact_messages"), "No messages defined"
+            assert isinstance(app.pact_messages, dict), "Messages must be a dictionary"
+
+            body: dict[str, Any] = json.loads(request.data)
+            description: str = body["description"]
+
+            if description not in app.pact_messages:
+                return flask.Response(
+                    response=json.dumps({
+                        "error": f"Message {description} not found",
+                    }),
+                    status=404,
+                    headers={"Content-Type": "application/json"},
+                    content_type="application/json",
+                )
+
+            interaction: InteractionDefinition = app.pact_messages[description]
+            return interaction.create_async_message_response()
+
+    def create_async_message_response(self) -> flask.Response:
+        """
+        Convert the interaction to a Flask response.
+
+        When an async message needs to be produced, Pact expects the response
+        from the special `/_pact/message` endppoint to generate the expected
+        message.
+
+        Whilst this is a Response from Flask's perspective, the attributes
+        returned
+        """
+        assert self.type == "Async", "Only async messages are supported"
+
         if self.metadata:
-            self.response_headers.add(
-                "Pact-Message-Metadata",
-                base64.b64encode(json.dumps(self.metadata).encode("utf-8")).decode(
-                    "utf-8"
-                ),
-            )
+            self.headers["Pact-Message-Metadata"] = base64.b64encode(
+                json.dumps(self.metadata).encode("utf-8")
+            ).decode("utf-8")
+
         return flask.Response(
-            response=self.response_body.bytes or self.response_body.string or None
-            if self.response_body
-            else None,
-            status=self.response,
-            headers=dict(**self.response_headers),
-            content_type=self.response_body.mime_type if self.response_body else None,
+            response=self.body.bytes or self.body.string or None if self.body else None,
+            headers=((k, v) for k, v in self.headers.items()),
+            content_type=self.body.mime_type if self.body else None,
             direct_passthrough=True,
         )

@@ -170,8 +170,9 @@ class Provider:
             log_level:
                 The log level for the provider.
         """
-        self._messages = {}
         _setup_logging(log_level)
+
+        self.messages: dict[str, InteractionDefinition] = {}
         self.provider_dir = Path(provider_dir)
         if not self.provider_dir.is_dir():
             msg = f"Directory {self.provider_dir} does not exist"
@@ -212,7 +213,7 @@ class Provider:
         contents of the file.
         """
 
-        @app.route("/_test/callback", methods=["GET", "POST"])
+        @app.route("/_pact/callback", methods=["GET", "POST"])
         def callback() -> tuple[str, int] | str:
             if (self.provider_dir / "fail_callback").exists():
                 return "Provider state not found", 404
@@ -327,26 +328,7 @@ class Provider:
             interactions: list[InteractionDefinition] = pickle.load(f)  # noqa: S301
 
         for interaction in interactions:
-            if interaction.type != "Async":
-                interaction.add_to_flask(app)
-            else:
-                self._messages[interaction.path] = interaction
-
-        @app.route("/message_handler", methods=["GET", "POST"])
-        def handle_messages() -> flask.Response:
-            body = json.loads(request.data.decode("utf-8"))
-            message = self._messages.get("/" + body.get("description", ""))
-            if message:
-                return message.create_message_response()
-            return flask.Response(
-                response=json.dumps({
-                    "error": f"Message {body.get('description')} not found"
-                }),
-                status=404,
-                headers={"Content-Type": "application/json"},
-                content_type="application/json",
-                direct_passthrough=True,
-            )
+            interaction.add_to_flask(app)
 
     def run(self) -> None:
         """
@@ -644,31 +626,39 @@ def a_provider_is_started_that_can_generate_the_message(
     stacklevel: int = 1,
 ) -> None:
     @given(
-        parsers.parse(
-            'a provider is started that can generate the "{name}" message with "{body}"'
+        parsers.re(
+            r"a provider is started"
+            r' that can generate the "(?P<name>[^"]+)" message'
+            r' with "(?P<body>.+)"$'
         ),
+        target_fixture="provider_url",
         stacklevel=stacklevel + 1,
     )
     def _(
         temp_dir: Path,
         name: str,
         body: str,
-    ) -> None:
-        interaction_definitions = []
-        if (temp_dir / "interactions.pkl").exists():
-            with (temp_dir / "interactions.pkl").open("rb") as pkl_file:
-                interaction_definitions = pickle.load(pkl_file)  # noqa: S301
+    ) -> Generator[URL, None, None]:
+        interactions: list[InteractionDefinition] = []
+        interactions_pkl = temp_dir / "interactions.pkl"
+        if interactions_pkl.exists():
+            with interactions_pkl.open("rb") as f:
+                interactions = pickle.load(f)  # noqa: S301
 
-        body = body.replace('\\"', '"')
-        interaction_definition = InteractionDefinition(
-            method="POST",
-            path=f"/{name}",
-            response_body=body,
+        interaction = InteractionDefinition(
             type="Async",
+            description=name,
+            body=body.replace(r"\"", '"'),
         )
-        interaction_definitions.append(interaction_definition)
+        # If there's no content type, then it is a `text/plain` message
+        if interaction.body and not interaction.body.mime_type:
+            interaction.body.mime_type = "text/plain"
+        interactions.append(interaction)
+
         with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-            pickle.dump(interaction_definitions, pkl_file)
+            pickle.dump(interactions, pkl_file)
+
+        yield from start_provider(temp_dir)
 
 
 def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # noqa: C901
@@ -926,7 +916,7 @@ def a_provider_state_callback_is_configured(
                 f.write("true")
 
         verifier.set_state(
-            provider_url / "_test" / "callback",
+            provider_url / "_pact" / "callback",
             teardown=True,
         )
 
@@ -1072,38 +1062,15 @@ def the_verification_is_run(
         logger.debug("Running verification on %r", verifier)
 
         verifier.set_info("provider", url=provider_url)
+        verifier.add_transport(
+            protocol="message",
+            port=provider_url.port,
+            path="/_pact/message",
+        )
         try:
             verifier.verify()
         except Exception as e:  # noqa: BLE001
             return verifier, e
-        return verifier, None
-
-
-def the_verification_is_run_with_start_context(
-    stacklevel: int = 1,
-) -> tuple[Verifier, Exception | None]:
-    @when(
-        "the verification is run",
-        target_fixture="verifier_result",
-        stacklevel=stacklevel + 1,
-    )
-    def _(
-        verifier: Verifier,
-        temp_dir: Path,
-    ) -> tuple[Verifier, Exception | None]:
-        """Run the verification."""
-        start_provider_context_manager = contextlib.contextmanager(start_provider)
-
-        with start_provider_context_manager(temp_dir) as provider_url:
-            verifier.set_state(
-                provider_url / "_test" / "callback",
-                teardown=True,
-            )
-            verifier.set_info("provider", url=f"{provider_url}/message_handler")
-            try:
-                verifier.verify()
-            except Exception as e:  # noqa: BLE001
-                return verifier, e
         return verifier, None
 
 

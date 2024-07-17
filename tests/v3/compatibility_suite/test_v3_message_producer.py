@@ -7,7 +7,7 @@ import logging
 import pickle
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generator
 
 import pytest
 from pytest_bdd import (
@@ -24,15 +24,19 @@ from tests.v3.compatibility_suite.util import (
 )
 from tests.v3.compatibility_suite.util.provider import (
     a_provider_is_started_that_can_generate_the_message,
+    a_provider_state_callback_is_configured,
+    start_provider,
     the_provider_state_callback_will_be_called_after_the_verification_is_run,
     the_provider_state_callback_will_be_called_before_the_verification_is_run,
     the_provider_state_callback_will_receive_a_setup_call,
-    the_verification_is_run_with_start_context,
+    the_verification_is_run,
     the_verification_results_will_contain_a_error,
     the_verification_will_be_successful,
 )
 
 if TYPE_CHECKING:
+    from yarl import URL
+
     from pact.v3.verifier import Verifier
 
 TEST_PACT_FILE_DIRECTORY = Path(Path(__file__).parent / "pacts")
@@ -191,6 +195,7 @@ def test_verifying_multiple_pact_files() -> None:
 
 
 a_provider_is_started_that_can_generate_the_message()
+a_provider_state_callback_is_configured()
 
 
 @given(
@@ -205,47 +210,27 @@ def a_pact_file_for_is_to_be_verified_with_the_following(
     verifier: Verifier,
     temp_dir: Path,
     name: str,
-    table: dict[str, str],
+    table: dict[str, str | dict[str, str]],
 ) -> None:
-    """A Pact file for "basic" is to be verified with the following."""
-    metadata = {}
-    if table.get("metadata"):
-
-        def _repl(x: str) -> tuple[str, str]:
-            return (z.replace("JSON: ", "") for z in x.split("="))
-
-        metadata = dict(_repl(x) for x in table["metadata"].split("; "))
+    """
+    A Pact file for "basic" is to be verified with the following.
+    """
     pact = Pact("consumer", "provider")
     pact.with_specification("V3")
-    interaction_definition = InteractionDefinition(
-        method="POST",
-        path=f"/{name}",
-        metadata=metadata,
-        response_body=table["body"],
-        matching_rules=table.get("matching rules"),
-        type="Async",
-    )
-    interaction_definition.add_to_pact(pact, name)
-    (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
-    pact.write_file(temp_dir / "pacts")
-    verifier.add_source(temp_dir / "pacts")
 
+    if "metadata" in table:
+        assert isinstance(table["metadata"], str)
+        metadata = {
+            k: json.loads(v.replace("JSON: ", "")) if v.startswith("JSON: ") else v
+            for k, _, v in (s.partition("=") for s in table["metadata"].split("; "))
+        }
+        table["metadata"] = metadata
 
-@given(parsers.parse('a Pact file for "{name}":"{fixture}" is to be verified'))
-def a_pact_file_for_is_to_be_verified(
-    verifier: Verifier, temp_dir: Path, name: str, fixture: str
-) -> None:
-    pact = Pact("consumer", "provider")
-    pact.with_specification("V3")
     interaction_definition = InteractionDefinition(
-        method="POST",
-        path=f"/{name}",
-        response_body=fixture,
         type="Async",
+        description=name,
+        **table,
     )
-    # for plain text message, the mime type needs to be set
-    if not re.match(r"^(file:|JSON:)", fixture):
-        interaction_definition.response_body.mime_type = "text/html;charset=utf-8"
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact.write_file(temp_dir / "pacts")
@@ -253,9 +238,35 @@ def a_pact_file_for_is_to_be_verified(
 
 
 @given(
-    parsers.parse(
-        'a Pact file for "{name}":"{fixture}" is to be '
-        'verified with provider state "{provider_state}"'
+    parsers.re(
+        r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)" is to be verified'
+    )
+)
+def a_pact_file_for_is_to_be_verified(
+    verifier: Verifier,
+    temp_dir: Path,
+    name: str,
+    fixture: str,
+) -> None:
+    pact = Pact("consumer", "provider")
+    pact.with_specification("V3")
+    interaction_definition = InteractionDefinition(
+        type="Async",
+        description=name,
+        body=fixture,
+    )
+    interaction_definition.add_to_pact(pact, name)
+    (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+    pact.write_file(temp_dir / "pacts")
+    with (temp_dir / "pacts" / "consumer-provider.json").open() as f:
+        logger.debug("Pact file contents: %s", f.read())
+    verifier.add_source(temp_dir / "pacts")
+
+
+@given(
+    parsers.re(
+        r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)"'
+        r' is to be verified with provider state "(?P<provider_state>[^"]+)"'
     )
 )
 def a_pact_file_for_is_to_be_verified_with_provider_state(
@@ -269,13 +280,11 @@ def a_pact_file_for_is_to_be_verified_with_provider_state(
     pact = Pact("consumer", "provider")
     pact.with_specification("V3")
     interaction_definition = InteractionDefinition(
-        method="POST",
-        path=f"/{name}",
-        response_body=fixture,
         type="Async",
+        description=name,
+        body=fixture,
     )
-    states = [InteractionDefinition.State(provider_state)]
-    interaction_definition.states = states
+    interaction_definition.states = [InteractionDefinition.State(provider_state)]
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact.write_file(temp_dir / "pacts")
@@ -301,17 +310,21 @@ def a_pact_file_for_is_to_be_verified_with_the_following_metadata(
     verifier: Verifier,
     name: str,
     fixture: str,
-    metadata: dict[str, str],
+    metadata: list[dict[str, str]],
 ) -> None:
     """A Pact file is to be verified with the following metadata."""
     pact = Pact("consumer", "provider")
     pact.with_specification("V3")
     interaction_definition = InteractionDefinition(
-        method="POST",
-        path=f"/{name}",
-        metadata={h["key"]: h["value"].replace("JSON: ", "") for h in metadata},
-        response_body=fixture,
         type="Async",
+        description=name,
+        body=fixture,
+        metadata={
+            row["key"]: json.loads(row["value"].replace("JSON: ", ""))
+            if row["value"].startswith("JSON: ")
+            else row["value"]
+            for row in metadata
+        },
     )
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
@@ -327,41 +340,37 @@ def a_pact_file_for_is_to_be_verified_with_the_following_metadata(
         re.DOTALL,
     ),
     converters={"metadata": parse_markdown_table},
+    target_fixture="provider_url",
 )
 def a_provider_is_started_that_can_generate_the_message_with_the_following_metadata(
     temp_dir: Path,
     name: str,
     fixture: str,
-    metadata: dict[str, str],
-) -> None:
+    metadata: list[dict[str, str]],
+) -> Generator[URL, None, None]:
     """A provider is started that can generate the message with the following metadata."""  # noqa: E501
-    interaction_definitions = []
+    interaction_definitions: list[InteractionDefinition] = []
     if (temp_dir / "interactions.pkl").exists():
         with (temp_dir / "interactions.pkl").open("rb") as pkl_file:
             interaction_definitions = pickle.load(pkl_file)  # noqa: S301
 
-    def parse_metadata_value(value: str) -> str:
-        return (
-            json.loads(value.replace("JSON: ", ""))
-            if value.startswith("JSON: ")
-            else value
-        )
-
     interaction_definition = InteractionDefinition(
-        method="POST",
-        path=f"/{name}",
-        metadata={m["key"]: parse_metadata_value(m["value"]) for m in metadata},
-        response_body=fixture,
         type="Async",
+        description=name,
+        body=fixture,
+        metadata={
+            row["key"]: json.loads(row["value"].replace("JSON: ", ""))
+            if row["value"].startswith("JSON: ")
+            else row["value"]
+            for row in metadata
+        },
     )
     interaction_definitions.append(interaction_definition)
+
     with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
         pickle.dump(interaction_definitions, pkl_file)
 
-
-@given("a provider state callback is configured", target_fixture="callback")
-def a_provider_state_callback_is_configured() -> None:
-    """A provider state callback is configured."""
+    yield from start_provider(temp_dir)
 
 
 ################################################################################
@@ -369,7 +378,7 @@ def a_provider_state_callback_is_configured() -> None:
 ################################################################################
 
 
-the_verification_is_run_with_start_context()
+the_verification_is_run()
 
 
 ################################################################################
