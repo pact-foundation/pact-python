@@ -1,4 +1,4 @@
-name: 💅 Feature design / RFC
+name: 💡 Feature design / RFC
 description: Submit a detailed feature request with a concrete proposal
 labels: [feature, triage]
 body:
@@ -9,7 +9,6 @@ body:
 
         - We expect the feature request to be detailed.
         - The request does not have to be perfect, we'll discuss it and fix it if needed.
-        - For a more "casual" feature request, consider using Canny instead: https://pact.canny.io.
 
   - type: checkboxes
     attributes:
@@ -24,11 +23,6 @@ body:
       description: A clear and concise description of what the feature is.
     validations:
       required: true
-
-  - type: input
-    attributes:
-      label: Has this been requested on Canny?
-      description: Please post the [Canny](https://pact.canny.io) link, it is helpful to see how much interest there is for this feature.
 
   - type: textarea
     attributes:
