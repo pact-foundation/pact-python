@@ -21,123 +21,15 @@ env:
   CIBW_BUILD_FRONTEND: build
 
 jobs:
-  build-sdist:
-    name: Build source distribution
-
-    if: github.event_name == 'push' || ! github.event.pull_request.draft
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-        with:
-          # Fetch all tags
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
-        with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-          cache: pip
-
-      - name: Install hatch
-        run: pip install --upgrade hatch
-
-      - name: Create source distribution
-        run: |
-          hatch build --target sdist
-
-      - name: Upload sdist
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4
-        with:
-          name: wheels-sdist
-          path: ./dist/*.tar.*
-          if-no-files-found: error
-          compression-level: 0
-
-  build-x86_64:
-    name: Build wheels on ${{ matrix.os }} (x86, 64-bit)
-
-    if: github.event_name == 'push' || ! github.event.pull_request.draft
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-20.04
-            archs: x86_64
-          - os: macos-12
-            archs: x86_64
-          - os: windows-2019
-            archs: AMD64
-
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-        with:
-          # Fetch all tags
-          fetch-depth: 0
-
-      - name: Cache pip packages
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ github.workflow }}-pip-${{ runner.os }}
-            ${{ github.workflow }}-pip
-            ${{ github.workflow }}
-
-      - name: Filter targets
-        id: cibw-filter
-        shell: bash
-        # Building all wheels on PRs is too slow, so we filter them to target
-        # the latest stable version of Python.
-        run: |
-          if [[ "${{ github.event_name}}" == "pull_request" ]] ; then
-            echo "build=cp${STABLE_PYTHON_VERSION/./}-*" >> "$GITHUB_OUTPUT"
-          else
-            echo "build=*" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set macOS deployment target
-        if: startsWith(matrix.os, 'macos-')
-        run: |
-          echo "MACOSX_DEPLOYMENT_TARGET=10.12" >> "$GITHUB_ENV"
-
-      - name: Create wheels
-        uses: pypa/cibuildwheel@7e5a838a63ac8128d71ab2dfd99e4634dd1bca09 # v2.19.2
-        env:
-          CIBW_ARCHS: ${{ matrix.archs }}
-          CIBW_BUILD: ${{ steps.cibw-filter.outputs.build }}
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4
-        with:
-          name: wheels-${{ matrix.os }}-${{ matrix.archs }}
-          path: ./wheelhouse/*.whl
-          if-no-files-found: error
-          compression-level: 0
-
   build-arm64:
     name: Build wheels on ${{ matrix.os }} (arm64)
 
     # As this requires emulation, it's not worth running on PRs or master
-    if: >-
-      github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
-            archs: aarch64
-            build: manylinux
-          - os: ubuntu-20.04
-            archs: aarch64
-            build: musllinux
-          - os: macos-14
-            archs: arm64
-            build: ""
           - os: windows-2019
             archs: ARM64
             build: ""
@@ -169,6 +61,7 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_BUILD: ${{ matrix.build == '' && '*' || format('*{0}*', matrix.build) }}
+          DEBUG: "1"
 
       - name: Upload wheels
         uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4
@@ -177,84 +70,3 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
           compression-level: 0
-
-  publish:
-    name: Publish wheels and sdist
-
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    runs-on: ubuntu-20.04
-    environment: pypi
-
-    needs:
-      - build-sdist
-      - build-x86_64
-      - build-arm64
-
-    permissions:
-      # Required for trusted publishing
-      id-token: write
-      # Required for release creation
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-        with:
-          # Fetch all tags
-          fetch-depth: 0
-
-      - name: Download wheels and sdist
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
-        with:
-          path: wheels
-          merge-multiple: true
-
-      - name: Setup Python
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
-        with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-
-      - name: Update changelog
-        id: changelog
-        run: |
-          pip install --upgrade commitizen
-
-          cz changelog \
-            --incremental \
-            --template .github/CHANGELOG.md.j2 \
-            --dry-run \
-            | tail -n+2 \
-            > ${{ runner.temp }}/changelog
-          echo -e "\n\n## Pull Requests\n\n" >> ${{ runner.temp }}/changelog
-
-          cz changelog \
-            --incremental \
-            --template .github/CHANGELOG.md.j2
-
-      - name: Generate release
-        id: release
-        uses: softprops/action-gh-release@fb2d03176f42a1f0dd433ca263f314051d3edd44 # v2
-        with:
-          files: wheels/*
-          body_path: ${{ runner.temp }}/changelog
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-
-      - name: Push build artifacts to PyPI
-        uses: pypa/gh-action-pypi-publish@ec4db0b4ddc65acdf4bff5fa45ac92d78b56bdf0 # v1.9.0
-        with:
-          skip-existing: true
-          password: ${{ secrets.PYPI_TOKEN }}
-          packages-dir: wheels
-
-      - name: Create PR for changelog update
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          commit-message: "chore: update changelog ${{ github.ref_name }}"
-          title: "chore: update changelog"
-          body: |
-            This PR updates the changelog for ${{ github.ref_name }}.
-          branch: chore/update-changelog
-          base: master

@@ -13,19 +13,34 @@ not set, a pinned version will be used instead.
 from __future__ import annotations
 
 import gzip
+import logging
 import os
 import shutil
+import sysconfig
 import tarfile
 import tempfile
 import warnings
 import zipfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 import cffi
 import requests
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
+
+if TYPE_CHECKING:
+    from hatchling.bridge.app import Application
+    from hatchling.builders.config import BuilderConfig
+    from hatchling.metadata.core import ProjectMetadata
+
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.DEBUG if os.getenv("DEBUG") else logging.INFO,
+    format="%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 PACT_ROOT_DIR = Path(__file__).parent.resolve() / "src" / "pact"
 
@@ -59,25 +74,44 @@ class PactBuildHook(BuildHookInterface[Any]):
 
     PLUGIN_NAME = "custom"
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(  # noqa: PLR0913
+        self,
+        root: str,
+        config: dict[str, Any],
+        build_config: BuilderConfig,
+        metadata: ProjectMetadata[Any],
+        directory: str,
+        target_name: str,
+        app: Application | None = None,
+    ) -> None:
         """
         Initialize the build hook.
 
         For this hook, we additionally define the lib extension based on the
         current platform.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            root=root,
+            config=config,
+            build_config=build_config,
+            metadata=metadata,
+            directory=directory,
+            target_name=target_name,
+            app=app,
+        )
         self.tmpdir = Path(tempfile.TemporaryDirectory().name)
         self.tmpdir.mkdir(parents=True, exist_ok=True)
 
     def clean(self, versions: list[str]) -> None:  # noqa: ARG002
         """Clean up any files created by the build hook."""
         for subdir in ["bin", "lib", "data"]:
+            logger.debug("Removing directory %s", PACT_ROOT_DIR / subdir)
             shutil.rmtree(PACT_ROOT_DIR / subdir, ignore_errors=True)
 
         for ffi in (PACT_ROOT_DIR / "v3").glob("_ffi.*"):
             if ffi.name == "_ffi.pyi":
                 continue
+            logger.debug("Removing file %s", ffi)
             ffi.unlink()
 
     def initialize(
@@ -92,6 +126,7 @@ class PactBuildHook(BuildHookInterface[Any]):
         binaries_included = False
         try:
             self.pact_bin_install(PACT_BIN_VERSION)
+            logger.info("Pact CLI binaries installed.")
             binaries_included = True
         except UnsupportedPlatformError as err:
             msg = f"Pact binaries on not available for {err.platform}."
@@ -99,6 +134,7 @@ class PactBuildHook(BuildHookInterface[Any]):
 
         try:
             self.pact_lib_install(PACT_LIB_VERSION)
+            logger.info("Pact library installed.")
             binaries_included = True
         except UnsupportedPlatformError as err:
             msg = f"Pact library is not available for {err.platform}"
@@ -136,58 +172,115 @@ class PactBuildHook(BuildHookInterface[Any]):
             version: The upstream Pact version.
 
         Returns:
-            The URL to download the Pact binaries from, or None if the current
-            platform is not supported.
+            The URL to download the Pact binaries from.
+
+        Raises:
+            UnsupportedPlatformError: If the platform is not supported.
         """
         platform = next(sys_tags()).platform
+        logger.debug("Detected platform: %s", platform)
+        logger.debug("Sysconfig platform: %s", sysconfig.get_platform())
+        logger.debug("Self vars:")
+        for k, v in vars(self).items():
+            logger.debug("  %s: %s", k, v)
 
         if platform.startswith("macosx"):
-            os = "osx"
-            if platform.endswith("arm64"):
-                machine = "arm64"
-            elif platform.endswith("x86_64"):
-                machine = "x86_64"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_BIN_URL.format(
-                version=version,
-                os=os,
-                machine=machine,
-                ext="tar.gz",
-            )
-
+            return self._pact_bin_url_macos(version, platform)
         if platform.startswith("win"):
-            os = "windows"
-
-            if platform.endswith("amd64"):
-                machine = "x86_64"
-            elif platform.endswith(("x86", "win32")):
-                machine = "x86"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_BIN_URL.format(
-                version=version,
-                os=os,
-                machine=machine,
-                ext="zip",
-            )
-
-        if "manylinux" in platform:
-            os = "linux"
-            if platform.endswith("x86_64"):
-                machine = "x86_64"
-            elif platform.endswith("aarch64"):
-                machine = "arm64"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_BIN_URL.format(
-                version=version,
-                os=os,
-                machine=machine,
-                ext="tar.gz",
-            )
-
+            return self._pact_bin_url_windows(version, platform)
+        if "linux" in platform:
+            return self._pact_bin_url_linux(version, platform)
         raise UnsupportedPlatformError(platform)
+
+    def _pact_bin_url_macos(self, version: str, platform: str) -> str | None:
+        """
+        Generate the download URL for the macOS Pact binaries.
+
+        Args:
+            version: The upstream Pact version.
+            platform: The macOS platform string.
+
+        Returns:
+            The URL to download the Pact binaries from.
+
+        Raises:
+            UnsupportedPlatformError: If the platform is not supported.
+        """
+        os = "osx"
+
+        if platform.endswith("arm64"):
+            machine = "arm64"
+        elif platform.endswith("x86_64"):
+            machine = "x86_64"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        return PACT_BIN_URL.format(
+            version=version,
+            os=os,
+            machine=machine,
+            ext="tar.gz",
+        )
+
+    def _pact_bin_url_windows(self, version: str, platform: str) -> str | None:
+        """
+        Generate the download URL for the Windows Pact binaries.
+
+        Args:
+            version: The upstream Pact version.
+            platform: The Windows platform string.
+
+        Returns:
+            The URL to download the Pact binaries from.
+
+        Raises:
+            UnsupportedPlatformError: If the platform is not supported.
+        """
+        os = "windows"
+
+        if platform.endswith("amd64"):
+            machine = "x86_64"
+        elif platform.endswith(("x86", "win32")):
+            machine = "x86"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        return PACT_BIN_URL.format(
+            version=version,
+            os=os,
+            machine=machine,
+            ext="zip",
+        )
+
+    def _pact_bin_url_linux(self, version: str, platform: str) -> str | None:
+        """
+        Generate the download URL for the Linux Pact binaries.
+
+        Args:
+            version: The upstream Pact version.
+            platform: The Linux platform string.
+
+        Returns:
+            The URL to download the Pact binaries from.
+
+        Raises:
+            UnsupportedPlatformError: If the platform is not supported.
+        """
+        os = "linux"
+
+        if platform.endswith("x86_64"):
+            machine = "x86_64"
+        elif platform.endswith("aarch64"):
+            machine = "arm64"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        return PACT_BIN_URL.format(
+            version=version,
+            os=os,
+            machine=machine,
+            ext="tar.gz",
+        )
 
     def _pact_bin_extract(self, artifact: Path) -> None:
         """
@@ -199,16 +292,18 @@ class PactBuildHook(BuildHookInterface[Any]):
         Args:
             artifact: The path to the downloaded artifact.
         """
+        logger.debug("Extracting %s", artifact)
         with tempfile.TemporaryDirectory() as tmpdir:
-            if str(artifact).endswith(".zip"):
+            if artifact.suffixes[-1] == ".zip":
                 with zipfile.ZipFile(artifact) as f:
                     f.extractall(tmpdir)  # noqa: S202
 
-            if str(artifact).endswith(".tar.gz"):
+            if artifact.suffixes[-2:] == [".tar", ".gz"]:
                 with tarfile.open(artifact) as f:
                     f.extractall(tmpdir)  # noqa: S202
 
             for d in ["bin", "lib"]:
+                logger.debug("Copying extracted %s dir to %s", d, PACT_ROOT_DIR / d)
                 if (PACT_ROOT_DIR / d).is_dir():
                     shutil.rmtree(PACT_ROOT_DIR / d)
                 shutil.copytree(
@@ -232,7 +327,7 @@ class PactBuildHook(BuildHookInterface[Any]):
         includes = self._pact_lib_header(url)
         self._pact_lib_cffi(includes)
 
-    def _pact_lib_url(self, version: str) -> str:  # noqa: C901, PLR0912
+    def _pact_lib_url(self, version: str) -> str:
         """
         Generate the download URL for the Pact library.
 
@@ -248,78 +343,119 @@ class PactBuildHook(BuildHookInterface[Any]):
             The URL to download the Pact library from.
 
         Raises:
-            ValueError:
+            UnsupportedPlatformError:
                 If the current platform is not supported.
         """
         platform = next(sys_tags()).platform
+        logger.debug("Detected platform: %s", platform)
 
         if platform.startswith("macosx"):
-            os = "macos"
-            if platform.endswith("arm64"):
-                machine = "aarch64"
-            elif platform.endswith("x86_64"):
-                machine = "x86_64"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_LIB_URL.format(
-                prefix="lib",
-                version=version,
-                os=os,
-                machine=machine,
-                ext="a.gz",
-            )
-
+            return self._pact_lib_url_macos(version, platform)
         if platform.startswith("win"):
-            os = "windows"
-
-            if platform.endswith("amd64"):
-                machine = "x86_64"
-            elif platform.endswith(("arm64", "aarch64")):
-                machine = "aarch64"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_LIB_URL.format(
-                prefix="",
-                version=version,
-                os=os,
-                machine=machine,
-                ext="lib.gz",
-            )
-
-        if "musllinux" in platform:
-            os = "linux"
-            if platform.endswith("x86_64"):
-                machine = "x86_64-musl"
-            elif platform.endswith("aarch64"):
-                machine = "aarch64-musl"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_LIB_URL.format(
-                prefix="lib",
-                version=version,
-                os=os,
-                machine=machine,
-                ext="a.gz",
-            )
-
-        if "manylinux" in platform:
-            os = "linux"
-            if platform.endswith("x86_64"):
-                machine = "x86_64"
-            elif platform.endswith("aarch64"):
-                machine = "aarch64"
-            else:
-                raise UnsupportedPlatformError(platform)
-
-            return PACT_LIB_URL.format(
-                prefix="lib",
-                version=version,
-                os=os,
-                machine=machine,
-                ext="a.gz",
-            )
+            return self._pact_lib_url_windows(version, platform)
+        if "linux" in platform:
+            return self._pact_lib_url_linux(version, platform)
 
         raise UnsupportedPlatformError(platform)
+
+    def _pact_lib_url_macos(self, version: str, platform: str) -> str:
+        """
+        Generate the download URL for the macOS Pact library.
+
+        Args:
+            version: The upstream Pact version.
+            platform: The macOS platform string.
+
+        Returns:
+            The URL to download the Pact library from.
+
+        Raises:
+            UnsupportedPlatformError:
+                If the current platform is not supported.
+        """
+        os = "macos"
+
+        if platform.endswith("arm64"):
+            machine = "aarch64"
+        elif platform.endswith("x86_64"):
+            machine = "x86_64"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        return PACT_LIB_URL.format(
+            prefix="lib",
+            version=version,
+            os=os,
+            machine=machine,
+            ext="a.gz",
+        )
+
+    def _pact_lib_url_windows(self, version: str, platform: str) -> str:
+        """
+        Generate the download URL for the Windows Pact library.
+
+        Args:
+            version: The upstream Pact version.
+            platform: The Windows platform string.
+
+        Returns:
+            The URL to download the Pact library from.
+
+        Raises:
+            UnsupportedPlatformError:
+                If the current platform is not supported.
+        """
+        os = "windows"
+
+        if platform.endswith("amd64"):
+            machine = "x86_64"
+        elif platform.endswith(("arm64", "aarch64")):
+            machine = "aarch64"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        return PACT_LIB_URL.format(
+            prefix="",
+            version=version,
+            os=os,
+            machine=machine,
+            ext="lib.gz",
+        )
+
+    def _pact_lib_url_linux(self, version: str, platform: str) -> str:
+        """
+        Generate the download URL for the Linux Pact library.
+
+        Args:
+            version: The upstream Pact version.
+            platform: The Linux platform string.
+
+        Returns:
+            The URL to download the Pact library from.
+
+        Raises:
+            UnsupportedPlatformError:
+                If the current platform is not supported.
+        """
+        os = "linux"
+
+        if platform.endswith("x86_64"):
+            machine = "x86_64"
+        elif platform.endswith("aarch64"):
+            machine = "aarch64"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        if "musl" in platform:
+            machine = f"{machine}-musl"
+
+        return PACT_LIB_URL.format(
+            prefix="lib",
+            version=version,
+            os=os,
+            machine=machine,
+            ext="a.gz",
+        )
 
     def _pact_lib_extract(self, artifact: Path) -> None:
         """
@@ -334,13 +470,13 @@ class PactBuildHook(BuildHookInterface[Any]):
         # Pypy does not guarantee that the directory exists.
         self.tmpdir.mkdir(parents=True, exist_ok=True)
 
-        if not str(artifact).endswith(".gz"):
+        if artifact.suffixes[-1] != ".gz":
             msg = f"Unknown artifact type {artifact}"
             raise ValueError(msg)
 
-        with gzip.open(artifact, "rb") as f_in, (
-            self.tmpdir / (artifact.name.split("-")[0] + artifact.suffixes[0])
-        ).open("wb") as f_out:
+        destination = self.tmpdir / (artifact.name.split("-")[0] + artifact.suffixes[0])
+        logger.debug("Decompressing %s to %s", artifact, destination)
+        with gzip.open(artifact, "rb") as f_in, destination.open("wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
 
     def _pact_lib_header(self, url: str) -> list[str]:
@@ -363,6 +499,8 @@ class PactBuildHook(BuildHookInterface[Any]):
 
         url = url.rsplit("/", 1)[0] + "/pact.h"
         artifact = self._download(url)
+
+        logger.debug("Processing %s", artifact)
         includes: list[str] = []
         with artifact.open("r", encoding="utf-8") as f_in, (
             self.tmpdir / "pact.h"
@@ -393,6 +531,7 @@ class PactBuildHook(BuildHookInterface[Any]):
                 A list of additional `#include` statements to include in the
                 generated bindings.
         """
+        logger.debug("Compiling binary extension")
         if os.name == "nt":
             extra_libs = [
                 "advapi32",
@@ -415,6 +554,7 @@ class PactBuildHook(BuildHookInterface[Any]):
             ]
         else:
             extra_libs = []
+        logger.debug("Extra libraries: %s", extra_libs)
 
         ffibuilder = cffi.FFI()
         with (self.tmpdir / "pact.h").open(
@@ -447,6 +587,7 @@ class PactBuildHook(BuildHookInterface[Any]):
         filename = url.split("/")[-1]
         artifact = PACT_ROOT_DIR / "data" / filename
         artifact.parent.mkdir(parents=True, exist_ok=True)
+        logger.debug("Downloading %s to %s", url, artifact)
 
         if not artifact.exists():
             response = requests.get(url, timeout=30)
