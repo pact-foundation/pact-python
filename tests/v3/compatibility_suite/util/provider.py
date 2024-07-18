@@ -777,6 +777,45 @@ def a_pact_file_for_interaction_is_to_be_verified(
         verifier.add_source(temp_dir / "pacts")
 
 
+def a_pact_file_for_message_is_to_be_verified(
+    version: str,
+    stacklevel: int = 1,
+) -> None:
+    @given(
+        parsers.re(
+            r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)" is to be verified'
+            r"(?P<pending>(, but is marked pending)?)",
+        ),
+        converters={"pending": lambda x: x != ""},
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        verifier: Verifier,
+        temp_dir: Path,
+        name: str,
+        fixture: str,
+        pending: bool,  # noqa: FBT001
+    ) -> None:
+        defn = InteractionDefinition(
+            type="Async",
+            description=name,
+            body=fixture,
+        )
+        defn.pending = pending
+        logger.debug("Adding message interaction: %s", defn)
+
+        pact = Pact("consumer", "provider")
+        pact.with_specification(version)
+        defn.add_to_pact(pact, name)
+        (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+        pact.write_file(temp_dir / "pacts")
+
+        with (temp_dir / "pacts" / "consumer-provider.json").open() as f:
+            logger.debug("Pact file contents: %s", f.read())
+
+        verifier.add_source(temp_dir / "pacts")
+
+
 def a_pact_file_for_interaction_is_to_be_verified_with_comments(
     version: str,
     stacklevel: int = 1,
@@ -828,6 +867,52 @@ def a_pact_file_for_interaction_is_to_be_verified_with_comments(
         ) as f:
             for line in f:
                 logger.debug("Pact file: %s", line.rstrip())
+
+        verifier.add_source(temp_dir / "pacts")
+
+
+def a_pact_file_for_message_is_to_be_verified_with_comments(
+    version: str,
+    stacklevel: int = 1,
+) -> None:
+    @given(
+        parsers.re(
+            r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)" is to be verified'
+            r" with the following comments:\n(?P<comments>.+)",
+            re.DOTALL,
+        ),
+        converters={"comments": parse_markdown_table},
+        stacklevel=stacklevel + 1,
+    )
+    def _(
+        verifier: Verifier,
+        temp_dir: Path,
+        name: str,
+        fixture: str,
+        comments: list[dict[str, str]],
+    ) -> None:
+        defn = InteractionDefinition(
+            type="Async",
+            description=name,
+            body=fixture,
+        )
+        for comment in comments:
+            if comment["type"] == "text":
+                defn.text_comments.append(comment["comment"])
+            elif comment["type"] == "testname":
+                defn.test_name = comment["comment"]
+            else:
+                defn.comments[comment["type"]] = comment["comment"]
+        logger.info("Updated interaction: %s", defn)
+
+        pact = Pact("consumer", "provider")
+        pact.with_specification(version)
+        defn.add_to_pact(pact, name)
+        (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
+        pact.write_file(temp_dir / "pacts")
+
+        with (temp_dir / "pacts" / "consumer-provider.json").open() as f:
+            logger.debug("Pact file contents: %s", f.read())
 
         verifier.add_source(temp_dir / "pacts")
 

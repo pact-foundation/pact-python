@@ -26,6 +26,7 @@ from tests.v3.compatibility_suite.util.interaction_definition import (
     InteractionState,
 )
 from tests.v3.compatibility_suite.util.provider import (
+    a_pact_file_for_message_is_to_be_verified,
     a_provider_is_started_that_can_generate_the_message,
     a_provider_state_callback_is_configured,
     start_provider,
@@ -199,6 +200,7 @@ def test_verifying_multiple_pact_files() -> None:
 
 a_provider_is_started_that_can_generate_the_message()
 a_provider_state_callback_is_configured()
+a_pact_file_for_message_is_to_be_verified("V3")
 
 
 @given(
@@ -237,32 +239,6 @@ def a_pact_file_for_is_to_be_verified_with_the_following(
     interaction_definition.add_to_pact(pact, name)
     (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
     pact.write_file(temp_dir / "pacts")
-    verifier.add_source(temp_dir / "pacts")
-
-
-@given(
-    parsers.re(
-        r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)" is to be verified'
-    )
-)
-def a_pact_file_for_is_to_be_verified(
-    verifier: Verifier,
-    temp_dir: Path,
-    name: str,
-    fixture: str,
-) -> None:
-    pact = Pact("consumer", "provider")
-    pact.with_specification("V3")
-    interaction_definition = InteractionDefinition(
-        type="Async",
-        description=name,
-        body=fixture,
-    )
-    interaction_definition.add_to_pact(pact, name)
-    (temp_dir / "pacts").mkdir(exist_ok=True, parents=True)
-    pact.write_file(temp_dir / "pacts")
-    with (temp_dir / "pacts" / "consumer-provider.json").open() as f:
-        logger.debug("Pact file contents: %s", f.read())
     verifier.add_source(temp_dir / "pacts")
 
 
