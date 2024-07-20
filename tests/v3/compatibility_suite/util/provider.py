@@ -354,7 +354,7 @@ class PactBroker:
     Interface to the Pact Broker.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         broker_url: URL,
         *,

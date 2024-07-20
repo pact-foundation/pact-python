@@ -693,7 +693,7 @@ class Verifier:
         selector: Literal[True],
     ) -> BrokerSelectorBuilder: ...
 
-    def broker_source(  # noqa: PLR0913
+    def broker_source(
         self,
         url: str | URL,
         *,
@@ -804,7 +804,7 @@ class BrokerSelectorBuilder:
     This class encapsulates the logic for selecting Pacts from a Pact broker.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         verifier: Verifier,
         url: str,

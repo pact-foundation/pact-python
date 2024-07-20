@@ -375,7 +375,7 @@ class Interaction(abc.ABC):
             )
         return self
 
-    def with_multipart_file(  # noqa: PLR0913
+    def with_multipart_file(
         self,
         part_name: str,
         path: Path | None,
