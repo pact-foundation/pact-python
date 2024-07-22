@@ -185,7 +185,9 @@ jobs:
 
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
-    environment: pypi
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pact-python
 
     needs:
       - build-sdist
@@ -247,7 +249,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@ec4db0b4ddc65acdf4bff5fa45ac92d78b56bdf0 # v1.9.0
         with:
           skip-existing: true
-          password: ${{ secrets.PYPI_TOKEN }}
           packages-dir: wheels
 
       - name: Create PR for changelog update
