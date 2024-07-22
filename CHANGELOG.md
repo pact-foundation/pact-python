@@ -1,3 +1,25 @@
+## v2.2.1 (2024-07-22)
+
+### Feat
+
+-   **ffi**: upgrade ffi to 0.4.22
+-   **v3**: add async message provider
+-   **v3**: implement message verification
+-   **v3**: remove deprecated messages iterator
+-   **v3**: improve exception types
+-   **v3**: add enum type aliases
+-   **ffi**: upgrade ffi 0.4.21
+
+### Fix
+
+-   **ffi**: use `with_binary_body`
+
+### Refactor
+
+-   **tests**: move InteractionDefinition in own module
+-   **tests**: make `_add_body` a method of Body
+-   **v3**: new interaction iterators
+
 ## v2.2.0 (2024-04-11)
 
 ### Feat
