@@ -81,9 +81,7 @@ devel-test = [
   "flask[async]      ~=3.0",
   "httpx             ~=0.0",
   "mock              ~=5.0",
-  # TODO: Upgrade to PyTest 8.1
-  # Pending on https://github.com/pytest-dev/pytest-bdd/issues/673
-  "pytest            ~=8.2.2",
+  "pytest            ~=8.0",
   "pytest-asyncio    ~=0.0",
   "pytest-bdd        ~=7.0",
   "pytest-cov        ~=5.0",
