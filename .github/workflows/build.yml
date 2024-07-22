@@ -138,9 +138,11 @@ jobs:
           - os: macos-14
             archs: arm64
             build: ""
-          - os: windows-2019
-            archs: ARM64
-            build: ""
+          # TODO: Re-enable once the issues with Windows ARM64 are resolved.exclude:
+          #       See: pypa/cibuildwheel#1942
+          # - os: windows-2019
+          #   archs: ARM64
+          #   build: ""
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
