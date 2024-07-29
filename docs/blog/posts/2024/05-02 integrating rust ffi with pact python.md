@@ -15,7 +15,7 @@ In this blog post, I will delve into how this is all achieved. From explaining h
 
 <!-- more -->
 
-## Briding Python and Binary Libraries
+## Bridging Python and Binary Libraries
 
 Python, known for its dynamic typing and automated memory management, is fundamentally an interpreted language. Despite not having innate capabilities to directly interact with binary libraries, most Python interpreters bridge this gap efficiently. For instance, CPython—the principal interpreter—enables the creation of binary extensions[^binary_extension] and similarly, PyPy—a widely-used alternative—offers comparable functionalities[^pypy].
 
