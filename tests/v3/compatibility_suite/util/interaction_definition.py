@@ -576,7 +576,7 @@ class InteractionDefinition:
                 interaction, HttpInteraction
             ), "Response headers require an HTTP interaction"
             logger.info("with_headers(%r)", self.response_headers)
-            interaction.with_headers(self.response_headers.items())
+            interaction.with_headers(self.response_headers.items(), "Response")
 
         if self.response_body:
             assert isinstance(
