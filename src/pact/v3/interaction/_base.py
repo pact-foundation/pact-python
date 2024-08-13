@@ -16,6 +16,7 @@ import json
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 import pact.v3.ffi
+from pact.v3.matchers import Matcher, MatcherEncoder
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -245,7 +246,7 @@ class Interaction(abc.ABC):
 
     def with_body(
         self,
-        body: str | None = None,
+        body: str | dict | Matcher | None = None,
         content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
@@ -266,11 +267,16 @@ class Interaction(abc.ABC):
                 If `None`, then the function intelligently determines whether
                 the body should be added to the request or the response.
         """
+        if not isinstance(body, str):
+            body_str = json.dumps(body, cls=MatcherEncoder)
+        else:
+            body_str = body
+
         pact.v3.ffi.with_body(
             self._handle,
             self._parse_interaction_part(part),
             content_type,
-            body,
+            body_str,
         )
         return self
 
