@@ -4,11 +4,13 @@ HTTP interaction.
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from typing import TYPE_CHECKING, Iterable, Literal
 
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
+from pact.v3.matchers import Matcher, MatcherEncoder
 
 if TYPE_CHECKING:
     try:
@@ -94,7 +96,7 @@ class HttpInteraction(Interaction):
         """
         return self.__interaction_part
 
-    def with_request(self, method: str, path: str) -> Self:
+    def with_request(self, method: str, path: str | Matcher) -> Self:
         """
         Set the request.
 
@@ -106,13 +108,17 @@ class HttpInteraction(Interaction):
             path:
                 Path for the request.
         """
-        pact.v3.ffi.with_request(self._handle, method, path)
+        if isinstance(path, Matcher):
+            path_str = json.dumps(path, cls=MatcherEncoder)
+        else:
+            path_str = path
+        pact.v3.ffi.with_request(self._handle, method, path_str)
         return self
 
     def with_header(
         self,
         name: str,
-        value: str,
+        value: str | dict | Matcher,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         r"""
@@ -208,12 +214,16 @@ class HttpInteraction(Interaction):
         name_lower = name.lower()
         index = self._request_indices[(interaction_part, name_lower)]
         self._request_indices[(interaction_part, name_lower)] += 1
+        if not isinstance(value, str):
+            value_str: str = json.dumps(value, cls=MatcherEncoder)
+        else:
+            value_str = value
         pact.v3.ffi.with_header_v2(
             self._handle,
             interaction_part,
             name,
             index,
-            value,
+            value_str,
         )
         return self
 
