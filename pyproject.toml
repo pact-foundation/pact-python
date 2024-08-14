@@ -85,7 +85,7 @@ devel-test = [
   "pytest-asyncio    ~=0.0",
   "pytest-bdd        ~=7.0",
   "pytest-cov        ~=5.0",
-  "testcontainers    ~=3.0",
+  "testcontainers    ~=4.8",
 ]
 devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.6.9"]
 
