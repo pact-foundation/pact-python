@@ -12,7 +12,7 @@
   "packageRules": [
     {
       "groupName": "Ruff",
-      "matchPackageNames": ["astral-sh/ruff-pre-commit", "devel/ruff"]
+      "matchPackageNames": ["astral-sh/ruff-pre-commit", "ruff"]
     }
   ]
 }
