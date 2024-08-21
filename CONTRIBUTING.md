@@ -99,7 +99,7 @@ You can also try using the new [github.dev](https://github.dev/pact-foundation/p
     pipx install hatch
     ```
 
-3.  After cloning the repository, run `hatch shell` in the root of the repository. This will install all dependencies in a Python virtual environment and then ensure that the virtual environment is activated. You will also need to run `git submodule init` if you want to run tests, as Pact Python makes use of the Pact Compability Suite.
+3.  After cloning the repository, run `hatch shell` in the root of the repository. This will install all dependencies in a Python virtual environment and then ensure that the virtual environment is activated. You will also need to run `git submodule init` if you want to run tests, as Pact Python makes use of the Pact Compatibility Suite.
 
 4.  Patch the compatibility suite by running `cd tests/v3/compatibility_suite && patch -p1 -d definition < definition-update.diff && cd -` in the root of the repository.
 

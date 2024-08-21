@@ -154,7 +154,7 @@ class MessageProvider(object):
         Exit a Python context.
 
         Return False to cascade the exception in context manager's body.
-        Otherwise it will be supressed and the test will always pass.
+        Otherwise it will be suppressed and the test will always pass.
         """
         if (exc_type, exc_val, exc_tb) != (None, None, None):
             if exc_type is not None:

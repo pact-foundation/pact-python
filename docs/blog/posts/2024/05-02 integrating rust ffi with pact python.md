@@ -83,7 +83,7 @@ if isinstance(version, bytes):  # (3)
 2.  Convert the pointer to a Python string, or bytes if necessary, using the `ffi.string` method.
 3.  Decode the bytes to a string if needed.
 
-While the process is reasonably straightforward, it does require some boilerplate code to handle the type conversions. To simplify this, we've wrapped each function from the Rust core library in a simple Python function that performs these conversion autoamtically. You can find these wrapper functions in the [`ffi` module](https://github.com/pact-foundation/pact-python/blob/d6869797b52429252b5d0da4d0fc0079f9d3671c/src/pact/v3/ffi.py). For example, the `version` function is implemented as follows:
+While the process is reasonably straightforward, it does require some boilerplate code to handle the type conversions. To simplify this, we've wrapped each function from the Rust core library in a simple Python function that performs these conversion automatically. You can find these wrapper functions in the [`ffi` module](https://github.com/pact-foundation/pact-python/blob/d6869797b52429252b5d0da4d0fc0079f9d3671c/src/pact/v3/ffi.py). For example, the `version` function is implemented as follows:
 
 ```python
 def version() -> str:

@@ -261,7 +261,7 @@ def the_message_is_successfully_processed(
     # we don't raise an exception and instead capture any errors that occur.
     errors = pact_interaction.pact.verify(handler, "Async", raises=False)
     if errors:
-        logger.error("%d errors occured during verification:", len(errors))
+        logger.error("%d errors occurred during verification:", len(errors))
         for error in errors:
             logger.error(error)
         msg = "Errors occurred during verification"

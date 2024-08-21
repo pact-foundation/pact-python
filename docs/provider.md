@@ -1,6 +1,6 @@
 # Provider Testing
 
-Pact is a consumer-driven contract testng tool. This means that the consumer specifies the expected interactions with the provider, and these interactions are used to create a contract. This contract is then used to verify that the provider behaves as expected.
+Pact is a consumer-driven contract testing tool. This means that the consumer specifies the expected interactions with the provider, and these interactions are used to create a contract. This contract is then used to verify that the provider behaves as expected.
 
 The provider verification process works by replaying the interactions from the consumer against the provider and checking that the responses match what was expected. This is done by using the Pact files created by the consumer tests, either by reading them from a local filesystem, or by fetching them from a Pact Broker.
 

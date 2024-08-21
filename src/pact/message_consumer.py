@@ -13,7 +13,7 @@ class MessageConsumer(object):
 
     >>> from pact import MessageConsumer, Provider
     >>> message_consumer = MessageConsumer('my-web-front-end')
-    >>> message_consumer.has_pact_with(Provider('my-backend-serivce'))
+    >>> message_consumer.has_pact_with(Provider('my-backend-service'))
     """
 
     def __init__(
@@ -93,7 +93,7 @@ class MessageConsumer(object):
         >>> from pact import Consumer, Provider
         >>> consumer = Consumer('my-web-front-end')
         >>> consumer.has_pact_with(
-        ...   Provider('my-backend-serivce'),
+        ...   Provider('my-backend-service'),
         ...   host_name='192.168.1.1',
         ...   port=8000)
 

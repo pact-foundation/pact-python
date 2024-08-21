@@ -19,9 +19,33 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
-  test-container:
+  complete:
+    name: Test completion check
+    if: always()
+
+    permissions:
+      contents: none
+
+    runs-on: ubuntu-latest
+    needs:
+      - test-linux
+      - test-other
+      - example
+      - format
+      - lint
+      - typecheck
+      - spelling
+      - pre-commit
+
+    steps:
+      - name: Failed
+        run: exit 1
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+
+  test-linux:
     name: >-
-      Tests py${{ matrix.python-version }} on ${{ matrix.os }}
+      Test Python ${{ matrix.python-version }}
+      on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
 
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
@@ -93,9 +117,10 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  test-no-container:
+  test-other:
     name: >-
-      Tests py${{ matrix.python-version }} on ${{ matrix.os }}
+      Test Python ${{ matrix.python-version }}
+      on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
 
     runs-on: ${{ matrix.os }}
 
@@ -138,17 +163,6 @@ jobs:
 
       - name: Run tests
         run: hatch run test
-
-  test-conlusion:
-    name: Test matrix complete
-
-    runs-on: ubuntu-latest
-    needs:
-      - test-container
-      - test-no-container
-
-    steps:
-      - run: echo "Test matrix completed successfully."
 
   example:
     name: Example
@@ -197,6 +211,26 @@ jobs:
         run: >
           hatch run example --broker-url=http://pactbroker:pactbroker@localhost:9292
 
+  format:
+    name: Format
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
+
+      - name: Format
+        run: hatch run format
+
   lint:
     name: Lint
 
@@ -214,11 +248,47 @@ jobs:
       - name: Install Hatch
         run: pip install --upgrade hatch
 
-      - name: Lint
+      - name: Format
         run: hatch run lint
 
-      - name: Typecheck
-        run: hatch run typecheck
+  typecheck:
+    name: Typecheck
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5
+        with:
+          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Hatch
+        run: pip install --upgrade hatch
 
       - name: Format
-        run: hatch run format
+        run: hatch run typecheck
+
+  spelling:
+    name: Spell check
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Spell Check Repo
+      uses: crate-ci/typos@master
+
+  pre-commit:
+    name: Pre-commit
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run pre-commit
+      uses: pre-commit/action@v3.0.1

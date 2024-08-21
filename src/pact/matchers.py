@@ -335,7 +335,7 @@ class Format:
         """
         Match any hexadecimal.
 
-        :return: a Term object with a hexdecimal regex.
+        :return: a Term object with a hexadecimal regex.
         :rtype: Term
         """
         return Term(self.Regexes.hexadecimal.value, '3F')

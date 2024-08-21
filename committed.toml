@@ -1,0 +1,17 @@
+## Configuration for committed
+##
+## See <https://github.com/crate-ci/committed/blob/master/docs/reference.md>
+style = "conventional"
+allowed_types = [
+  "fix",
+  "feat",
+  "chore",
+  "docs",
+  "style",
+  "refactor",
+  "perf",
+  "test",
+  "release",
+]
+merge_commit = false
+subject_capitalized = false
