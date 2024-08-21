@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 MOCK_URL = URL("http://localhost:8080")
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_consumer() -> UserConsumer:
     """
     Returns an instance of the UserConsumer class.

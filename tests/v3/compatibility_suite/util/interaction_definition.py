@@ -15,7 +15,7 @@ import logging
 import sys
 import typing
 from typing import Any, Literal
-from xml.etree import ElementTree
+from xml.etree import ElementTree as ET  # noqa: N817
 
 import flask
 from flask import request
@@ -99,7 +99,7 @@ class InteractionBody:
         This is used to parse the fixture files that contain additional
         metadata about the body (such as the content type).
         """
-        etree = ElementTree.parse(fixture)  # noqa: S314
+        etree = ET.parse(fixture)  # noqa: S314
         root = etree.getroot()
         if not root or root.tag != "body":
             msg = "Invalid XML fixture document"

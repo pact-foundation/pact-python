@@ -16,7 +16,7 @@ from pact.v3.verifier import Verifier
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-@pytest.fixture()
+@pytest.fixture
 def verifier() -> Verifier:
     return Verifier()
 

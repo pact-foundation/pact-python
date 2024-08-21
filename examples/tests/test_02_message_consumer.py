@@ -85,7 +85,7 @@ def pact(broker: URL, pact_dir: Path) -> Generator[MessagePact, Any, None]:
         yield pact
 
 
-@pytest.fixture()
+@pytest.fixture
 def handler() -> Handler:
     """
     Fixture for the Handler.

@@ -35,7 +35,7 @@ def _submodule_init() -> None:
     subprocess.check_call([git_exec, "submodule", "init"])  # noqa: S603
 
 
-@pytest.fixture()
+@pytest.fixture
 def verifier() -> Verifier:
     """Return a new Verifier."""
     return Verifier()

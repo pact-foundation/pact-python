@@ -31,7 +31,7 @@ ALL_HTTP_METHODS = [
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def pact() -> Pact:
     """
     Fixture for a Pact instance.
@@ -56,7 +56,7 @@ def test_repr(pact: Pact) -> None:
     "method",
     ALL_HTTP_METHODS,
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_basic_request_method(pact: Pact, method: str) -> None:
     (
         pact.upon_receiving(f"a basic {method} request")
@@ -78,7 +78,7 @@ async def test_basic_request_method(pact: Pact, method: str) -> None:
     "status",
     list(range(200, 600, 13)),
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_basic_response_status(pact: Pact, status: int) -> None:
     (
         pact.upon_receiving(f"a basic request producing status {status}")
@@ -99,7 +99,7 @@ async def test_basic_response_status(pact: Pact, status: int) -> None:
         [("X-Test", "1"), ("X-Test", "2")],
     ],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_header_request(
     pact: Pact,
     headers: list[tuple[str, str]],
@@ -124,7 +124,7 @@ async def test_with_header_request(
         [("X-Test", "1"), ("X-Test", "2")],
     ],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_header_response(
     pact: Pact,
     headers: list[tuple[str, str]],
@@ -144,7 +144,7 @@ async def test_with_header_response(
                     assert (header.lower(), value) in response_headers
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_header_dict(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a headers from a dict")
@@ -169,7 +169,7 @@ async def test_with_header_dict(pact: Pact) -> None:
         [("X-Foo", "true"), ("X-Bar", "true")],
     ],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_set_header_request(
     pact: Pact,
     headers: list[tuple[str, str]],
@@ -186,7 +186,7 @@ async def test_set_header_request(
                 assert resp.status == 200
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_set_header_request_repeat(
     pact: Pact,
 ) -> None:
@@ -218,7 +218,7 @@ async def test_set_header_request_repeat(
         [("X-Foo", "true"), ("X-Bar", "true")],
     ],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_set_header_response(
     pact: Pact,
     headers: list[tuple[str, str]],
@@ -238,7 +238,7 @@ async def test_set_header_response(
                     assert (header.lower(), value) in response_headers
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_set_header_response_repeat(
     pact: Pact,
 ) -> None:
@@ -260,7 +260,7 @@ async def test_set_header_response_repeat(
                 assert ("x-test", "1") not in response_headers
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_set_header_dict(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a headers from a dict")
@@ -286,7 +286,7 @@ async def test_set_header_dict(pact: Pact) -> None:
         [("test", "1"), ("test", "2")],
     ],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_query_parameter_request(
     pact: Pact,
     query: list[tuple[str, str]],
@@ -304,7 +304,7 @@ async def test_with_query_parameter_request(
                 assert resp.status == 200
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_query_parameter_dict(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a query parameter from a dict")
@@ -323,7 +323,7 @@ async def test_with_query_parameter_dict(pact: Pact) -> None:
     "method",
     ["GET", "POST", "PUT"],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_body_request(pact: Pact, method: str) -> None:
     (
         pact.upon_receiving(f"a basic {method} request with a body")
@@ -345,7 +345,7 @@ async def test_with_body_request(pact: Pact, method: str) -> None:
     "method",
     ["GET", "POST", "PUT"],
 )
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_body_response(pact: Pact, method: str) -> None:
     (
         pact.upon_receiving(
@@ -366,7 +366,7 @@ async def test_with_body_response(pact: Pact, method: str) -> None:
                 assert json.loads(await resp.content.read()) == {"test": True}
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_body_explicit(pact: Pact) -> None:
     (
         pact.upon_receiving("")
@@ -400,7 +400,7 @@ def test_with_body_invalid(pact: Pact) -> None:
         )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_given(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request given state 1")
@@ -432,7 +432,7 @@ async def test_given(pact: Pact) -> None:
                 assert resp.status == 202
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_binary_file_request(pact: Pact) -> None:
     payload = bytes(range(8))
     (
@@ -452,7 +452,7 @@ async def test_binary_file_request(pact: Pact) -> None:
                 assert resp.status == 200
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_binary_file_response(pact: Pact) -> None:
     payload = bytes(range(5))
     (
@@ -471,7 +471,7 @@ async def test_binary_file_response(pact: Pact) -> None:
 
 
 @pytest.mark.skip(reason="Not working yet")
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_multipart_file_request(pact: Pact, temp_dir: Path) -> None:
     fpy = temp_dir / "test.py"
     fpng = temp_dir / "test.png"
@@ -512,7 +512,7 @@ async def test_multipart_file_request(pact: Pact, temp_dir: Path) -> None:
             assert await resp.read() == b""
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_name(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a test name")
@@ -526,7 +526,7 @@ async def test_name(pact: Pact) -> None:
                 assert await resp.read() == b""
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_with_plugin(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a plugin")
@@ -540,7 +540,7 @@ async def test_with_plugin(pact: Pact) -> None:
                 assert await resp.read() == b""
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_pact_server_verbose(
     pact: Pact,
     caplog: pytest.LogCaptureFixture,
