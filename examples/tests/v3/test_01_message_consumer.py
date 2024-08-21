@@ -72,7 +72,7 @@ def pact() -> Generator[Pact, None, None]:
     pact.write_file(pact_dir, overwrite=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def handler() -> Handler:
     """
     Fixture for the Handler.
@@ -87,7 +87,7 @@ def handler() -> Handler:
     return handler
 
 
-@pytest.fixture()
+@pytest.fixture
 def verifier(
     handler: Handler,
 ) -> Generator[Callable[[str | bytes | None, Dict[str, Any]], None], Any, None]:

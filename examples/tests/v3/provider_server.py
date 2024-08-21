@@ -21,8 +21,9 @@ import requests
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
-import flask
 from yarl import URL
+
+import flask
 
 logger = logging.getLogger(__name__)
 

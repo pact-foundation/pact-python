@@ -11,7 +11,7 @@ import pytest
 from pact.v3 import Pact
 
 
-@pytest.fixture()
+@pytest.fixture
 def pact() -> Pact:
     """
     Fixture for a Pact instance.

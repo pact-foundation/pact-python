@@ -86,7 +86,7 @@ def test_incorrect_request_is_made_to_provider() -> None:
     sys.platform.startswith("win"),
     reason="See pact-foundation/pact-python#639",
 )
-@pytest.mark.container()
+@pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying a simple HTTP request via a Pact broker",
@@ -100,7 +100,7 @@ def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
     sys.platform.startswith("win"),
     reason="See pact-foundation/pact-python#639",
 )
-@pytest.mark.container()
+@pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying a simple HTTP request via a Pact broker with publishing results enabled",
@@ -114,7 +114,7 @@ def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> 
     sys.platform.startswith("win"),
     reason="See pact-foundation/pact-python#639",
 )
-@pytest.mark.container()
+@pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying multiple Pact files via a Pact broker",
@@ -128,7 +128,7 @@ def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
     sys.platform.startswith("win"),
     reason="See pact-foundation/pact-python#639",
 )
-@pytest.mark.container()
+@pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Incorrect request is made to provider via a Pact broker",
