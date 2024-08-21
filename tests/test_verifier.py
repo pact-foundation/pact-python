@@ -175,7 +175,7 @@ class VerifierBrokerTestCase(TestCase):
                            include_wip_pacts_since=None)
 
     @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    def test_verifier_and_pubish_with_broker(self, mock_wrapper):
+    def test_verifier_and_publish_with_broker(self, mock_wrapper):
 
         mock_wrapper.return_value = (True, 'some value')
 

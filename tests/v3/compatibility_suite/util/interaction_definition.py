@@ -618,7 +618,7 @@ class InteractionDefinition:
         """
         Add a HTTP interaction to a Flask app.
 
-        Ths function works by defining a new function to handle the request and
+        This function works by defining a new function to handle the request and
         produce the response. This function is then added to the Flask app as a
         route.
 

@@ -21,6 +21,24 @@ env:
   CIBW_BUILD_FRONTEND: build
 
 jobs:
+  complete:
+    name: Build completion check
+    if: always()
+
+    permissions:
+      contents: none
+
+    runs-on: ubuntu-latest
+    needs:
+      - build-sdist
+      - build-x86_64
+      - build-arm64
+
+    steps:
+      - name: Failed
+        run: exit 1
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+
   build-sdist:
     name: Build source distribution
 
@@ -123,7 +141,7 @@ jobs:
     # As this requires emulation, it's not worth running on PRs or master
     if: >-
       github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags')
+      startsWith(github.event.ref, 'refs/tags/v*')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

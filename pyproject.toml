@@ -344,3 +344,12 @@ before-build = [
   'IF EXIST src\pact\v3\data\ RMDIR /S /Q src\pact\v3\data',
   'IF EXIST src\pact\v3\lib\ RMDIR /S /Q src\pact\v3\lib',
 ]
+
+################################################################################
+## Typos
+################################################################################
+
+[tool.typos.default]
+extend-ignore-re = [
+  "(?Rm)^.*(#|//|<!--)\\s*spellchecker:\\s*ignore"
+]

@@ -293,7 +293,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   e097153 - docs: update readme (William Infante, Mon Jan 25 17:18:35 2021 +1100)
 -   fc0d91c - feat: address PR comments (William Infante, Mon Jan 25 10:30:33 2021 +1100)
 -   5448d8c - test: remove mock and check generated json file (William Infante, Wed Jan 20 21:07:39 2021 +1100)
--   abd3574 - fix: few more tests to improve coverage (Tuan Pham, Wed Jan 20 09:23:13 2021 +1100)
+-   abd3574 - fix: few more tests to improve coverage (Tuan Pham, Wed Jan 20 09:23:13 2021 +1100)  <!-- spellchecker: ignore -->
 -   0ef971f - fix: improve test coverage (Tuan Pham, Tue Jan 19 15:11:11 2021 +1100)
 -   e543f04 - chore: add missing import (William Infante, Tue Jan 19 13:58:17 2021 +1100)
 -   bc7ff78 - chore: pydocstyle (Tuan Pham, Tue Jan 19 10:40:12 2021 +1100)
@@ -301,9 +301,9 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   19827d0 - chore: remove test param for provider (Tuan Pham, Mon Jan 18 16:06:42 2021 +1100)
 -   912b477 - chore: flake8 revert (Tuan Pham, Mon Jan 18 16:04:00 2021 +1100)
 -   4a730ae - fix: revert changes to quotes (Tuan Pham, Mon Jan 18 15:57:14 2021 +1100)
--   cfe35cc - feat: update message hander to be independent of pact (William Infante, Mon Jan 18 13:12:17 2021 +1100)
+-   cfe35cc - feat: update message handler to be independent of pact (William Infante, Mon Jan 18 13:12:17 2021 +1100)
 -   12b4a50 - fix: flake8 warning (Tuan Pham, Mon Jan 18 12:50:50 2021 +1100)
--   7afe693 - test: update message handler condition based on content (William Infante, Mon Jan 18 12:37:50 2021 +1100)
+-   7afe693 - test: update message handler condition based on content (William Infante, Mon Jan 18 12:37:50 2021 +1100)  <!-- spellchecker: ignore -->
 -   79106bb - feat: move publish function to broker class (Tuan Pham, Mon Jan 18 11:30:35 2021 +1100)
 -   a04b954 - docs: add readme for message consumer (William Infante, Mon Jan 18 09:48:01 2021 +1100)
 -   8672e2f - feat: update handler to handle error exceptions (William Infante, Fri Jan 15 16:24:38 2021 +1100)
@@ -322,7 +322,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   8546a26 - fix: linting (Tuan Pham, Thu Jan 14 10:38:52 2021 +1100)
 -   65b69d7 - fix: remove publish fn for now (Tuan Pham, Thu Jan 14 10:38:10 2021 +1100)
 -   e31dd45 - feat: add constants test (William Infante, Wed Jan 13 17:28:45 2021 +1100)
--   955dbe1 - feat: update MessageConsumer and tests (William Infante, Wed Jan 13 16:38:30 2021 +1100)
+-   955dbe1 - feat: update MessageConsumer and tests (William Infante, Wed Jan 13 16:38:30 2021 +1100)  <!-- spellchecker: ignore -->
 -   af5c9fb - feat: create basic tests for single pact message (William Infante, Wed Jan 13 15:52:07 2021 +1100)
 -   fea27c8 - feat: single message flow (William Infante, Wed Jan 13 15:03:41 2021 +1100)
 -   9047855 - feat: add MessageConsumer (William Infante, Wed Jan 13 12:45:19 2021 +1100)
@@ -378,7 +378,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   e097153 - docs: update readme (William Infante, Mon Jan 25 17:18:35 2021 +1100)
 -   fc0d91c - feat: address PR comments (William Infante, Mon Jan 25 10:30:33 2021 +1100)
 -   5448d8c - test: remove mock and check generated json file (William Infante, Wed Jan 20 21:07:39 2021 +1100)
--   abd3574 - fix: few more tests to improve coverage (Tuan Pham, Wed Jan 20 09:23:13 2021 +1100)
+-   abd3574 - fix: few more tests to improve coverage (Tuan Pham, Wed Jan 20 09:23:13 2021 +1100)  <!-- spellchecker: ignore -->
 -   0ef971f - fix: improve test coverage (Tuan Pham, Tue Jan 19 15:11:11 2021 +1100)
 -   e543f04 - chore: add missing import (William Infante, Tue Jan 19 13:58:17 2021 +1100)
 -   bc7ff78 - chore: pydocstyle (Tuan Pham, Tue Jan 19 10:40:12 2021 +1100)
@@ -386,9 +386,9 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   19827d0 - chore: remove test param for provider (Tuan Pham, Mon Jan 18 16:06:42 2021 +1100)
 -   912b477 - chore: flake8 revert (Tuan Pham, Mon Jan 18 16:04:00 2021 +1100)
 -   4a730ae - fix: revert changes to quotes (Tuan Pham, Mon Jan 18 15:57:14 2021 +1100)
--   cfe35cc - feat: update message hander to be independent of pact (William Infante, Mon Jan 18 13:12:17 2021 +1100)
+-   cfe35cc - feat: update message handler to be independent of pact (William Infante, Mon Jan 18 13:12:17 2021 +1100)
 -   12b4a50 - fix: flake8 warning (Tuan Pham, Mon Jan 18 12:50:50 2021 +1100)
--   7afe693 - test: update message handler condition based on content (William Infante, Mon Jan 18 12:37:50 2021 +1100)
+-   7afe693 - test: update message handler condition based on content (William Infante, Mon Jan 18 12:37:50 2021 +1100)  <!-- spellchecker: ignore -->
 -   79106bb - feat: move publish function to broker class (Tuan Pham, Mon Jan 18 11:30:35 2021 +1100)
 -   a04b954 - docs: add readme for message consumer (William Infante, Mon Jan 18 09:48:01 2021 +1100)
 -   8672e2f - feat: update handler to handle error exceptions (William Infante, Fri Jan 15 16:24:38 2021 +1100)
@@ -407,7 +407,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   8546a26 - fix: linting (Tuan Pham, Thu Jan 14 10:38:52 2021 +1100)
 -   65b69d7 - fix: remove publish fn for now (Tuan Pham, Thu Jan 14 10:38:10 2021 +1100)
 -   e31dd45 - feat: add constants test (William Infante, Wed Jan 13 17:28:45 2021 +1100)
--   955dbe1 - feat: update MessageConsumer and tests (William Infante, Wed Jan 13 16:38:30 2021 +1100)
+-   955dbe1 - feat: update MessageConsumer and tests (William Infante, Wed Jan 13 16:38:30 2021 +1100)  <!-- spellchecker: ignore -->
 -   af5c9fb - feat: create basic tests for single pact message (William Infante, Wed Jan 13 15:52:07 2021 +1100)
 -   fea27c8 - feat: single message flow (William Infante, Wed Jan 13 15:03:41 2021 +1100)
 -   9047855 - feat: add MessageConsumer (William Infante, Wed Jan 13 12:45:19 2021 +1100)
@@ -422,7 +422,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 
 ## 1.2.11
 
--   ba10318 - Merge pull request #192 from pact-foundation/fix/deploy_wheel_fix (Elliott Murray, Tue Dec 29 20:05:52 2020 +0000)
+-   ba10318 - Merge pull request #192 from pact-foundation/fix/deploy_wheel_fix (Elliott Murray, Tue Dec 29 20:05:52 2020 +0000)  <!-- spellchecker: ignore -->
 -   289e784 - fix: not creating wheel (Elliott Murray, Tue Dec 29 20:00:19 2020 +0000)
 -   d217e67 - chore: Releasing version 1.2.10 (Elliott Murray, Sat Dec 19 12:41:02 2020 +0000)
 -   9438449 - Merge pull request #191 from pact-foundation/build-and-test-with-github-actions (Elliott Murray, Sat Dec 19 12:38:23 2020 +0000)
@@ -438,7 +438,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   48a2a21 - Merge pull request #186 from jstoebel/patch-2 (Elliott Murray, Sat Nov 21 10:39:48 2020 +0000)
 -   74f9a4f - docs: fix small typo in `with_request` doc string (Jacob Stoebel, Wed Nov 18 14:51:03 2020 -0500)
 -   4e4ed26 - chore: added run test to travis (Elliott Murray, Sun Nov 1 11:49:38 2020 +0000)
--   37e2f3a - chore: wqshell script to run flask in exmaples (Elliott Murray, Sun Nov 1 11:41:59 2020 +0000)
+-   37e2f3a - chore: wqshell script to run flask in examples (Elliott Murray, Sun Nov 1 11:41:59 2020 +0000)
 -   b5d9d7b - chore(upgrade): upgrade python version to 3.8 (Elliott Murray, Sun Nov 1 11:12:10 2020 +0000)
 
 ## 1.2.10
@@ -456,7 +456,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   48a2a21 - Merge pull request #186 from jstoebel/patch-2 (Elliott Murray, Sat Nov 21 10:39:48 2020 +0000)
 -   74f9a4f - docs: fix small typo in `with_request` doc string (Jacob Stoebel, Wed Nov 18 14:51:03 2020 -0500)
 -   4e4ed26 - chore: added run test to travis (Elliott Murray, Sun Nov 1 11:49:38 2020 +0000)
--   37e2f3a - chore: wqshell script to run flask in exmaples (Elliott Murray, Sun Nov 1 11:41:59 2020 +0000)
+-   37e2f3a - chore: wqshell script to run flask in examples (Elliott Murray, Sun Nov 1 11:41:59 2020 +0000)
 -   b5d9d7b - chore(upgrade): upgrade python version to 3.8 (Elliott Murray, Sun Nov 1 11:12:10 2020 +0000)
 
 ## 1.2.9
@@ -482,9 +482,9 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 ## 1.2.7
 
 -   90b71d2 - Merge pull request #178 from pact-foundation/fix/custom_header_typo (Elliott Murray, Fri Oct 9 12:47:37 2020 +0100)
--   b07ef69 - fix(verifier): headers not propogated properly (Elliott Murray, Fri Oct 9 12:24:25 2020 +0100)
+-   b07ef69 - fix(verifier): headers not propagated properly (Elliott Murray, Fri Oct 9 12:24:25 2020 +0100)
 -   0e9b71c - Merge pull request #177 from pact-foundation/docs/remove_handcrafted_broker (Elliott Murray, Fri Oct 9 12:01:24 2020 +0100)
--   2db7008 - docs(examples): removed manaul publish to broker (Elliott Murray, Fri Oct 9 11:54:30 2020 +0100)
+-   2db7008 - docs(examples): removed manual publish to broker (Elliott Murray, Fri Oct 9 11:54:30 2020 +0100)
 
 ## 1.2.6
 
@@ -514,7 +514,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 
 -   8188d88 - chore: fix release script (Elliott Murray, Wed Aug 26 12:46:10 2020 +0100)
 -   e0e5106 - Merge pull request #169 from pact-foundation/chore/update_pr_scripts (Elliott Murray, Wed Aug 26 10:24:47 2020 +0100)
--   81fd653 - chore: release script updates version automaitcally now (Elliott Murray, Wed Aug 26 10:16:14 2020 +0100)
+-   81fd653 - chore: release script updates version automatically now (Elliott Murray, Wed Aug 26 10:16:14 2020 +0100)
 -   773d3f9 - chore: script now uses gh over hub (Elliott Murray, Wed Aug 26 10:03:06 2020 +0100)
 -   468e4ad - Merge pull request #168 from pact-foundation/chore/upgrade-to-pact-ruby-standalone-1-88-3 (Elliott Murray, Wed Aug 26 09:49:33 2020 +0100)
 -   ce944fe - feat: update standalone to 1.88.3 (Elliott Murray, Wed Aug 26 09:08:27 2020 +0100)
@@ -607,7 +607,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   48ad173 - Merge pull request #135 from m-aciek/master (Elliott Murray, Sat May 9 17:21:52 2020 +0100)
 -   6948482 - Merge pull request #136 from pact-foundation/chore/upgrade-to-pact-ruby-standalone-1-84-0 (Elliott Murray, Sat May 9 15:13:07 2020 +0100)
 -   14603ac - feat: update standalone to 1.84.0 (Beth Skurrie, Sat May 2 09:43:30 2020 +1000)
--   410caf1 - chore: add script to create a PR to update the pact-ruby-standalone version (Beth Skurrie, Sat May 2 09:42:55 2020 +1000)
+-   410caf1 - chore: add script to create a PR to update the pact-ruby-standalone version (Beth Skurrie, Sat May 2 09:42:55 2020 +1000)  <!-- spellchecker: ignore -->
 -   b5af1fc - Fix missing normalization of consumer name while publishing pact (Maciej Olko, Thu Apr 30 08:50:17 2020 +0200)
 -   5785782 - Move tests to standard tests dir (Peter Yasi, Fri Apr 17 14:03:04 2020 -0400)
 -   88ea23d - docs: update RELEASING.md (Beth Skurrie, Tue Feb 18 10:46:11 2020 +1100)
@@ -624,11 +624,11 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 ## 0.20.0
 
 -   978d9f3 - fix typo (Jingjing Duan, Wed May 24 15:48:43 2017 -0700)
--   4ede7d5 - Merge pull request #117 from dlmiddlecote/feature/expose-more-options (Matt Fellows, Fri Jan 17 10:00:56 2020 +1100)
+-   4ede7d5 - Merge pull request #117 from dlmiddlecote/feature/expose-more-options (Matt Fellows, Fri Jan 17 10:00:56 2020 +1100)  <!-- spellchecker: ignore -->
 -   73ae8d2 - Update docs (Daniel Middlecote, Tue Jan 14 22:11:40 2020 +0000)
 -   2bffe5e - Simple test case (Daniel Middlecote, Tue Jan 14 22:11:25 2020 +0000)
--   3ba51b5 - Add --broker-token support (Daniel Middlecote, Tue Jan 14 22:04:39 2020 +0000)
--   d3a8ba6 - Update pact-ruby-standalone (Daniel Middlecote, Tue Jan 14 21:45:01 2020 +0000)
+-   3ba51b5 - Add --broker-token support (Daniel Middlecote, Tue Jan 14 22:04:39 2020 +0000)  <!-- spellchecker: ignore -->
+-   d3a8ba6 - Update pact-ruby-standalone (Daniel Middlecote, Tue Jan 14 21:45:01 2020 +0000)  <!-- spellchecker: ignore -->
 -   0cbb9d4 - Merge pull request #115 from ejrb/patch-1 (Matthew Balvanz, Sat Dec 14 20:49:56 2019 -0600)
 -   0c85502 - match platforms like 'macOS-\*' to osx suffix (ejrb, Mon Dec 9 11:13:19 2019 +0000)
 -   9a0eaa7 - Merge pull request #109 from pact-foundation/dependabot/pip/flask-1.0 (Matthew Balvanz, Mon Sep 30 21:35:20 2019 -0500)
@@ -700,7 +700,7 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 
 -   149dfc7 - Merge pull request #67 from jawu/enable-possibility-to-use-mathers-in-path (Matthew Balvanz, Sun Dec 17 10:32:34 2017 -0600)
 -   fb97d2f - fixed doc string of Request (Janneck Wullschleger, Sat Dec 16 20:44:11 2017 +0100)
--   c2c24cc - adjusted doc string of Request calss to allow str and Matcher as path parameter (Janneck Wullschleger, Sat Dec 16 20:40:35 2017 +0100)
+-   c2c24cc - adjusted doc string of Request class to allow str and Matcher as path parameter (Janneck Wullschleger, Sat Dec 16 20:40:35 2017 +0100)
 -   697a6a2 - fixed port parameter in e2e test for python 2.7 (Janneck Wullschleger, Thu Dec 14 15:08:05 2017 +0100)
 -   ca2eb92 - added from_term call in Request constructor to process path property for json transport (Janneck Wullschleger, Thu Dec 14 14:45:11 2017 +0100)
 
@@ -826,5 +826,5 @@ Identical to 2.1.0, but with a fix to the publication process to PyPI.
 -   189c647 - Merge pull request #3 from pact-foundation/travis-ci (Jose Salvatierra, Fri Apr 7 21:40:02 2017 +0100)
 -   559efb8 - Add Travis CI build (Matthew Balvanz, Fri Apr 7 11:12:01 2017 -0500)
 -   8f074a0 - Merge pull request #1 from pact-foundation/initial-framework (Matthew Balvanz, Fri Apr 7 09:55:34 2017 -0500)
--   f5caf9c - Initial pact-python implementation (Matthew Balvanz, Mon Apr 3 09:16:59 2017 -0500)
+-   f5caf9c - Initial pact-python implementation (Matthew Balvanz, Mon Apr 3 09:16:59 2017 -0500)  <!-- spellchecker: ignore -->
 -   bfb8380 - Initial pact-python implementation (Matthew Balvanz, Thu Mar 30 20:41:05 2017 -0500)

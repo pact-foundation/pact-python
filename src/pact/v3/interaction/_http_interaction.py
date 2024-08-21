@@ -374,7 +374,7 @@ class HttpInteraction(Interaction):
         ```
 
         It is also possible to have a more complicated Regex pattern for the
-        paramater. For example, a pattern for an `version` parameter might be
+        parameter. For example, a pattern for an `version` parameter might be
         specified as:
 
         ```python

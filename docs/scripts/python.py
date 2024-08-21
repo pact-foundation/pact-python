@@ -155,7 +155,7 @@ def process_python(
             List of tuples containing the source and destination Python
             identifiers to map. Note that the list is processed in order, with
             later mappings applied after earlier mappings. This is applied
-            idependently of the `destination_mapping` argument.
+            independently of the `destination_mapping` argument.
 
         ignore_private:
             Whether to ignore private modules (those starting with an underscore

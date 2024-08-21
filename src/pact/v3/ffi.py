@@ -916,7 +916,7 @@ class PactServerHandle:
     """
     Handle to a Pact Server.
 
-    This does not have an exact correspondance in the Rust library. It is used
+    This does not have an exact correspondence in the Rust library. It is used
     to manage the lifecycle of the mock server.
 
     # Implementation Notes
@@ -1663,7 +1663,7 @@ class MatchingRuleCategory(Enum):
     QUERY = lib.MatchingRuleCategory_QUERY
     BODY = lib.MatchingRuleCategory_BODY
     STATUS = lib.MatchingRuleCategory_STATUS
-    CONTENST = lib.MatchingRuleCategory_CONTENTS
+    CONTENTS = lib.MatchingRuleCategory_CONTENTS
     METADATA = lib.MatchingRuleCategory_METADATA
 
     def __str__(self) -> str:
@@ -3060,7 +3060,7 @@ def parse_matcher_definition(expression: str) -> MatchingRuleDefinitionResult:
     """
     Parse a matcher definition string into a MatchingRuleDefinition.
 
-    The MatchingRuleDefition contains the example value, and matching rules and
+    The MatchingRuleDefinition contains the example value, and matching rules and
     any generator.
 
     [Rust
