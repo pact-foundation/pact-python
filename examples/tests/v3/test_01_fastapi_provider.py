@@ -83,10 +83,14 @@ async def mock_pact_provider_states(
     mapping["setup"] = {
         "user doesn't exists": mock_user_doesnt_exist,
         "user exists": mock_user_exists,
+        "the specified user doesn't exist": mock_post_request_to_create_user,
+        "user is present in DB": mock_delete_request_to_delete_user,
     }
     mapping["teardown"] = {
         "user doesn't exists": verify_user_doesnt_exist_mock,
         "user exists": verify_user_exists_mock,
+        "the specified user doesn't exist": verify_mock_post_request_to_create_user,
+        "user is present in DB": verify_mock_delete_request_to_delete_user,
     }
 
     mapping[action][state]()
@@ -203,6 +207,56 @@ def mock_user_exists() -> None:
     examples.src.fastapi.FAKE_DB = mock_db
 
 
+def mock_post_request_to_create_user() -> None:
+    """
+    Mock the database for the post request to create a user.
+    """
+    import examples.src.fastapi
+
+    mock_db = MagicMock()
+    mock_db.__len__.return_value = 124
+    mock_db.__setitem__.return_value = None
+    mock_db.__getitem__.return_value = {
+        "id": 124,
+        "created_on": "2024-09-06T05:07:06.745719+00:00",
+        "email": "jane@example.com",
+        "name": "Jane Doe",
+    }
+    examples.src.fastapi.FAKE_DB = mock_db
+
+
+def mock_delete_request_to_delete_user() -> None:
+    """
+    Mock the database for the delete request to delete a user.
+    """
+    import examples.src.fastapi
+
+    db_values = {
+        123: {
+            "id": 123,
+            "name": "Verna Hampton",
+            "created_on": "2024-08-29T04:53:07.337793+00:00",
+            "ip_address": "10.1.2.3",
+            "hobbies": ["hiking", "swimming"],
+            "admin": False,
+        },
+        124: {
+            "id": 124,
+            "name": "Jane Doe",
+            "created_on": "2024-08-29T04:53:07.337793+00:00",
+            "ip_address": "10.1.2.5",
+            "hobbies": ["running", "dancing"],
+            "admin": False,
+        },
+    }
+
+    mock_db = MagicMock()
+    mock_db.__delitem__.side_effect = lambda key: db_values.__delitem__(key)
+    mock_db.__getitem__.side_effect = lambda key: db_values[key]
+    mock_db.__contains__.side_effect = lambda key: key in db_values
+    examples.src.fastapi.FAKE_DB = mock_db
+
+
 def verify_user_doesnt_exist_mock() -> None:
     """
     Verify the mock calls for the 'user doesn't exist' state.
@@ -255,5 +309,50 @@ def verify_user_exists_mock() -> None:
     assert len(args) == 1
     assert isinstance(args[0], int)
     assert kwargs == {}
+
+    examples.src.fastapi.FAKE_DB.reset_mock()
+
+
+def verify_mock_post_request_to_create_user() -> None:
+    import examples.src.fastapi
+
+    if TYPE_CHECKING:
+        examples.src.fastapi.FAKE_DB = MagicMock()
+
+    examples.src.fastapi.FAKE_DB.__getitem__.assert_called()
+
+    expected_return = {
+        "id": 124,
+        "created_on": "2024-09-06T05:07:06.745719+00:00",
+        "email": "jane@example.com",
+        "name": "Jane Doe",
+    }
+
+    examples.src.fastapi.FAKE_DB.__len__.assert_called()
+    assert (
+        examples.src.fastapi.FAKE_DB.__getitem__.return_value == expected_return
+    ), "Unexpected return value from __getitem__()"
+
+    args, _ = examples.src.fastapi.FAKE_DB.__getitem__.call_args
+    assert isinstance(
+        args[0], int
+    ), f"Expected get() to be called with an integer, but got {type(args[0])}"
+    assert args[0] == 124, f"Expected get(124), but got get({args[0]})"
+
+    examples.src.fastapi.FAKE_DB.reset_mock()
+
+
+def verify_mock_delete_request_to_delete_user() -> None:
+    import examples.src.fastapi
+
+    if TYPE_CHECKING:
+        examples.src.fastapi.FAKE_DB = MagicMock()
+
+    examples.src.fastapi.FAKE_DB.__delitem__.assert_called()
+
+    args, _ = examples.src.fastapi.FAKE_DB.__delitem__.call_args
+    assert isinstance(
+        args[0], int
+    ), f"Expected __delitem__() to be called with an integer, but got {type(args[0])}"
 
     examples.src.fastapi.FAKE_DB.reset_mock()

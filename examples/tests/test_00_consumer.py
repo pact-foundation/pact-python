@@ -16,6 +16,7 @@ section of the Pact documentation.
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Dict, Generator
 
@@ -24,16 +25,26 @@ import requests
 from yarl import URL
 
 from examples.src.consumer import User, UserConsumer
-from pact import Consumer, Format, Like, Provider
+from pact import Consumer, Format, Like, Provider  # type: ignore[attr-defined]
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from pact.pact import Pact
+    from pact.pact import Pact  # type: ignore[import-untyped]
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 MOCK_URL = URL("http://localhost:8080")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _setup_pact_logging() -> None:
+    """
+    Set up logging for the pact package.
+    """
+    from pact.v3 import ffi
+
+    ffi.log_to_stderr("INFO")
 
 
 @pytest.fixture
@@ -78,7 +89,7 @@ def pact(broker: URL, pact_dir: Path) -> Generator[Pact, Any, None]:
     pact = consumer.has_pact_with(
         Provider("UserProvider"),
         pact_dir=pact_dir,
-        publish_to_broker=True,
+        publish_to_broker=False,
         # Mock service configuration
         host_name=MOCK_URL.host,
         port=MOCK_URL.port,
@@ -141,4 +152,67 @@ def test_get_unknown_user(pact: Pact, user_consumer: UserConsumer) -> None:
             user_consumer.get_user(123)
         assert excinfo.value.response is not None
         assert excinfo.value.response.status_code == HTTPStatus.NOT_FOUND
+        pact.verify()
+
+
+def test_post_request_to_create_user(pact: Pact, user_consumer: UserConsumer) -> None:
+    """
+    Test the POST request for creating a new user.
+
+    This test defines the expected interaction for a POST request to create
+    a new user. It sets up the expected request and response from the provider,
+    including the request body and headers, and verifies that the response
+    status code is 200 and the response body matches the expected user data.
+    """
+    expected: Dict[str, Any] = {
+        "id": 124,
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+        "created_on": Format().iso_8601_datetime(),
+    }
+    header = {"Content-Type": "application/json"}
+    payload: dict[str, str] = {
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+        "created_on": (datetime.now(tz=UTC) - timedelta(days=318)).isoformat(),
+    }
+    expected_response_code: int = 200
+
+    (
+        pact.given("create user 124")
+        .upon_receiving("A request to create a new user")
+        .with_request(method="POST", path="/users/", headers=header, body=payload)
+        .will_respond_with(status=200, headers=header, body=Like(expected))
+    )
+
+    with pact:
+        response = user_consumer.create_user(user=payload, header=header)
+        assert response[0] == expected_response_code
+        assert response[1].id == 124
+        assert response[1].name == "Jane Doe"
+
+        pact.verify()
+
+
+def test_delete_request_to_delete_user(pact: Pact, user_consumer: UserConsumer) -> None:
+    """
+    Test the DELETE request for deleting a user.
+
+    This test defines the expected interaction for a DELETE request to delete
+    a user. It sets up the expected request and response from the provider,
+    including the request body and headers, and verifies that the response
+    status code is 200 and the response body matches the expected user data.
+    """
+    expected_response_code: int = 204
+    (
+        pact.given("delete the user 124")
+        .upon_receiving("a request for deleting user")
+        .with_request(method="DELETE", path="/users/124")
+        .will_respond_with(204)
+    )
+
+    with pact:
+        response_status_code = user_consumer.delete_user(124)
+        assert response_status_code == expected_response_code
+
         pact.verify()

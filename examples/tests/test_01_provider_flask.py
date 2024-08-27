@@ -25,6 +25,7 @@ section of the Pact documentation.
 from __future__ import annotations
 
 import time
+from datetime import UTC, datetime, timedelta
 from multiprocessing import Process
 from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
@@ -34,7 +35,7 @@ from yarl import URL
 
 from examples.src.flask import app
 from flask import request
-from pact import Verifier
+from pact import Verifier  # type: ignore[import-untyped]
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -58,6 +59,8 @@ async def mock_pact_provider_states() -> Dict[str, Union[str, None]]:
     mapping = {
         "user 123 doesn't exist": mock_user_123_doesnt_exist,
         "user 123 exists": mock_user_123_exists,
+        "create user 124": mock_post_request_to_create_user,
+        "delete the user 124": mock_delete_request_to_delete_user,
     }
     return {"result": mapping[request.json["state"]]()}  # type: ignore[index]
 
@@ -115,11 +118,61 @@ def mock_user_123_exists() -> None:
     examples.src.flask.FAKE_DB.get.return_value = {
         "id": 123,
         "name": "Verna Hampton",
-        "created_on": "2016-12-15T20:16:01",
+        "created_on": datetime.now(tz=UTC).isoformat(),
         "ip_address": "10.1.2.3",
         "hobbies": ["hiking", "swimming"],
         "admin": False,
     }
+
+
+def mock_post_request_to_create_user() -> None:
+    """
+    Mock the database for the post request to create a user.
+    """
+    import examples.src.flask
+
+    examples.src.flask.FAKE_DB = MagicMock()
+    examples.src.flask.FAKE_DB.__len__.return_value = 124
+    examples.src.flask.FAKE_DB.__setitem__.return_value = None
+    examples.src.flask.FAKE_DB.__getitem__.return_value = {
+        "id": 124,
+        "created_on": (datetime.now(tz=UTC) - timedelta(days=261)).isoformat(),
+        "email": "jane@example.com",
+        "name": "Jane Doe",
+    }
+
+
+def mock_delete_request_to_delete_user() -> None:
+    """
+    Mock the database for the delete request to delete a user.
+    """
+    import examples.src.flask
+
+    db_values: dict[int, dict[str, Any]] = {
+        123: {
+            "id": 123,
+            "name": "Verna Hampton",
+            "created_on": (datetime.now(tz=UTC) - timedelta(days=318)).isoformat(),
+            "ip_address": "10.1.2.3",
+            "hobbies": ["hiking", "swimming"],
+            "admin": False,
+        },
+        124: {
+            "id": 124,
+            "name": "Jane Doe",
+            "created_on": (datetime.now(tz=UTC) - timedelta(days=318)).isoformat(),
+            "ip_address": "10.1.2.5",
+            "hobbies": ["running", "dancing"],
+            "admin": False,
+        },
+    }
+
+    examples.src.flask.FAKE_DB = MagicMock()
+    examples.src.flask.FAKE_DB.__delitem__.side_effect = (
+        lambda key: db_values.__delitem__(key)
+    )
+    examples.src.flask.FAKE_DB.__getitem__.side_effect = lambda key: db_values[key]
+    examples.src.flask.FAKE_DB.__contains__.side_effect = lambda key: key in db_values
 
 
 def test_against_broker(broker: URL, verifier: Verifier) -> None:

@@ -81,5 +81,5 @@ repos:
         entry: hatch run mypy
         language: system
         types: [python]
-        exclude: ^(src/pact|tests)/(?!v3/).*\.py$
+        exclude: ^(src/pact|tests|examples/tests)/(?!v3/).*\.py$
         stages: [pre-push]
