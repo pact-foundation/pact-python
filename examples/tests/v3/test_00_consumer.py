@@ -131,3 +131,67 @@ def test_get_non_existent_user(pact: Pact) -> None:
         response = requests.get(f"{srv.url}/users/2", timeout=5)
 
         assert response.status_code == expected_response_code
+
+
+def test_post_request_to_create_user(pact: Pact) -> None:
+    """
+    Test the POST request for creating a new user.
+
+    This test defines the expected interaction for a POST request to create
+    a new user. It sets up the expected request and response from the provider,
+    including the request body and headers, and verifies that the response
+    status code is 200 and the response body matches the expected user data.
+    """
+    expected: Dict[str, Any] = {
+        "id": 124,
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+    }
+    header = {"Content-Type": "application/json"}
+    body = {"name": "Jane Doe", "email": "jane@example.com"}
+    expected_response_code: int = 200
+
+    (
+        pact.upon_receiving("a request to create a new user")
+        .given("the specified user doesn't exist")
+        .with_request(method="POST", path="/users/")
+        .with_body(json.dumps(body))
+        .with_header("Content-Type", "application/json")
+        .will_respond_with(status=200)
+        .with_body(content_type="application/json", body=json.dumps(expected))
+    )
+
+    with pact.serve() as srv:
+        response = requests.post(
+            f"{srv.url}/users/", headers=header, json=body, timeout=5
+        )
+
+        assert response.status_code == expected_response_code
+        assert response.json() == {
+            "id": 124,
+            "name": "Jane Doe",
+            "email": "jane@example.com",
+        }
+
+
+def test_delete_request_to_delete_user(pact: Pact) -> None:
+    """
+    Test the DELETE request for deleting a user.
+
+    This test defines the expected interaction for a DELETE request to delete
+    a user. It sets up the expected request and response from the provider,
+    including the request body and headers, and verifies that the response
+    status code is 200 and the response body matches the expected user data.
+    """
+    expected_response_code: int = 204
+    (
+        pact.upon_receiving("a request for deleting user")
+        .given("user is present in DB")
+        .with_request(method="DELETE", path="/users/124")
+        .will_respond_with(204)
+    )
+
+    with pact.serve() as srv:
+        response = requests.delete(f"{srv.url}/users/124", timeout=5)
+
+        assert response.status_code == expected_response_code

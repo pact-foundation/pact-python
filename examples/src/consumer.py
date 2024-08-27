@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import requests
 
@@ -102,3 +102,44 @@ class UserConsumer:
             name=data["name"],
             created_on=datetime.fromisoformat(data["created_on"]),
         )
+
+    def create_user(
+        self, user: Dict[str, Any], header: Dict[str, str]
+    ) -> Tuple[int, User]:
+        """
+        Create a new user on the server.
+
+        Args:
+            user: The user data to create.
+            header: The headers to send with the request.
+
+        Returns:
+            The user data including the ID assigned by the server; Error if user exists.
+        """
+        uri = f"{self.base_uri}/users/"
+        response = requests.post(uri, headers=header, json=user, timeout=5)
+        response.raise_for_status()
+        data: Dict[str, Any] = response.json()
+        return (
+            response.status_code,
+            User(
+                id=data["id"],
+                name=data["name"],
+                created_on=datetime.fromisoformat(data["created_on"]),
+            ),
+        )
+
+    def delete_user(self, user_id: int) -> int:
+        """
+        Delete a user by ID from the server.
+
+        Args:
+            user_id: The ID of the user to delete.
+
+        Returns:
+            The response status code.
+        """
+        uri = f"{self.base_uri}/users/{user_id}"
+        response = requests.delete(uri, timeout=5)
+        response.raise_for_status()
+        return response.status_code

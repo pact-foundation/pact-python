@@ -19,12 +19,14 @@ concerned with Pact, only the tests are.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Union
+import logging
+from typing import Any, Dict, Tuple, Union
 
-from flask import Flask
+from flask import Flask, Response, abort, jsonify, request
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-
 """
 As this is a simple example, we'll use a simple dict to represent a database.
 This would be replaced with a real database in a real application.
@@ -47,7 +49,29 @@ def get_user_by_id(uid: int) -> Union[Dict[str, Any], tuple[Dict[str, Any], int]
     Returns:
         The user data if found, HTTP 404 if not
     """
-    user = FAKE_DB.get(uid)
+    user = FAKE_DB.get(int(uid))
     if not user:
         return {"error": "User not found"}, 404
     return user
+
+
+@app.route("/users/", methods=["POST"])
+def create_user() -> Tuple[Response, int]:
+    if request.json is None:
+        abort(400, description="Invalid JSON data")
+
+    data: Dict[str, Any] = request.json
+    new_uid: int = len(FAKE_DB)
+    if new_uid in FAKE_DB:
+        abort(400, description="User already exists")
+
+    FAKE_DB[new_uid] = {"id": new_uid, "name": data["name"], "email": data["email"]}
+    return jsonify(FAKE_DB[new_uid]), 200
+
+
+@app.route("/users/<user_id>", methods=["DELETE"])
+def delete_user(user_id: int) -> Tuple[str, int]:
+    if user_id not in FAKE_DB:
+        abort(404, description="User not found")
+    del FAKE_DB[user_id]
+    return "", 204  # No Content status code

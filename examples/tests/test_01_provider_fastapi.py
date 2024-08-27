@@ -25,6 +25,7 @@ section of the Pact documentation.
 from __future__ import annotations
 
 import time
+from datetime import UTC, datetime, timedelta
 from multiprocessing import Process
 from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
@@ -35,7 +36,7 @@ from pydantic import BaseModel
 from yarl import URL
 
 from examples.src.fastapi import app
-from pact import Verifier
+from pact import Verifier  # type: ignore[import-untyped]
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -68,6 +69,8 @@ async def mock_pact_provider_states(
     mapping = {
         "user 123 doesn't exist": mock_user_123_doesnt_exist,
         "user 123 exists": mock_user_123_exists,
+        "create user 124": mock_post_request_to_create_user,
+        "delete the user 124": mock_delete_request_to_delete_user,
     }
     return {"result": mapping[state.state]()}
 
@@ -127,11 +130,66 @@ def mock_user_123_exists() -> None:
     examples.src.fastapi.FAKE_DB.get.return_value = {
         "id": 123,
         "name": "Verna Hampton",
-        "created_on": "2016-12-15T20:16:01",
+        "created_on": datetime.now(tz=UTC).isoformat(),
         "ip_address": "10.1.2.3",
         "hobbies": ["hiking", "swimming"],
         "admin": False,
     }
+
+
+def mock_post_request_to_create_user() -> None:
+    """
+    Mock the database for the post request to create a user.
+    """
+    import examples.src.fastapi
+
+    examples.src.fastapi.FAKE_DB = MagicMock()
+    examples.src.fastapi.FAKE_DB.__len__.return_value = 124
+    examples.src.fastapi.FAKE_DB.__setitem__.return_value = None
+    examples.src.fastapi.FAKE_DB.__getitem__.return_value = {
+        "id": 124,
+        "created_on": (datetime.now(tz=UTC) - timedelta(days=152)).isoformat(),
+        "email": "jane@example.com",
+        "name": "Jane Doe",
+        "ip_address": "10.1.2.3",
+        "hobbies": ["hiking", "swimming"],
+        "admin": False,
+    }
+
+
+def mock_delete_request_to_delete_user() -> None:
+    """
+    Mock the database for the delete request to delete a user.
+    """
+    import examples.src.fastapi
+
+    db_values = {
+        123: {
+            "id": 123,
+            "name": "Verna Hampton",
+            "email": "verna@example.com",
+            "created_on": (datetime.now(tz=UTC) - timedelta(days=152)).isoformat(),
+            "ip_address": "10.1.2.3",
+            "hobbies": ["hiking", "swimming"],
+            "admin": False,
+        },
+        124: {
+            "id": 124,
+            "name": "Jane Doe",
+            "email": "jane@example.com",
+            "created_on": (datetime.now(tz=UTC) - timedelta(days=152)).isoformat(),
+            "ip_address": "10.1.2.5",
+            "hobbies": ["running", "dancing"],
+            "admin": False,
+        },
+    }
+
+    examples.src.fastapi.FAKE_DB = MagicMock()
+    examples.src.fastapi.FAKE_DB.__delitem__.side_effect = (
+        lambda key: db_values.__delitem__(key)
+    )
+    examples.src.fastapi.FAKE_DB.__getitem__.side_effect = lambda key: db_values[key]
+    examples.src.fastapi.FAKE_DB.__contains__.side_effect = lambda key: key in db_values
 
 
 def test_against_broker(broker: URL, verifier: Verifier) -> None:
