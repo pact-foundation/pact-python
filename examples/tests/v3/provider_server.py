@@ -231,7 +231,7 @@ def start_provider(**kwargs: str) -> Generator[URL, None, None]:  # noqa: C901
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) < 5:  # noqa: PLR2004
+    if len(sys.argv) < 5:
         sys.stderr.write(
             f"Usage: {sys.argv[0]} <state_provider_module> <state_provider_function> "
             f"<handler_module> <handler_function>"
