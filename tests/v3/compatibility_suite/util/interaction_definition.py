@@ -15,7 +15,7 @@ import logging
 import sys
 import typing
 from typing import Any, Literal
-from xml.etree import ElementTree as ET  # noqa: N817
+from xml.etree import ElementTree as ET
 
 import flask
 from flask import request
