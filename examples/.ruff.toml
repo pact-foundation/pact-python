@@ -9,5 +9,6 @@ ignore = [
 
 [lint.per-file-ignores]
 "tests/**.py" = [
-  "INP001", # Forbid implicit namespaces
+  "INP001",  # Forbid implicit namespaces
+  "PLR2004", # Forbid magic values
 ]
