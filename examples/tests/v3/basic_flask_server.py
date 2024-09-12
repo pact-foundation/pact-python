@@ -1,3 +1,7 @@
+"""
+Simple flask server for matcher example.
+"""
+
 import logging
 import re
 import signal
@@ -5,7 +9,9 @@ import subprocess
 import sys
 import time
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
+from random import randint, uniform
 from threading import Thread
 from typing import Generator, NoReturn
 
@@ -14,6 +20,7 @@ from flask import Flask, Response, make_response
 from yarl import URL
 
 logger = logging.getLogger(__name__)
+
 
 @contextmanager
 def start_provider() -> Generator[URL, None, None]:  # noqa: C901
@@ -82,22 +89,46 @@ def start_provider() -> Generator[URL, None, None]:  # noqa: C901
     finally:
         process.send_signal(signal.SIGINT)
 
+
 if __name__ == "__main__":
     app = Flask(__name__)
 
     @app.route("/path/to/<test_id>")
     def hello_world(test_id: int) -> Response:
-        response = make_response(
-            {
-                "response": {
-                    "id": test_id,
-                    "regex": "must end with 'hello world'",
-                    "integer": 42,
-                    "include": "hello world",
-                    "minMaxArray": [1.0, 1.1, 1.2],
-                }
+        response = make_response({
+            "response": {
+                "id": test_id,
+                "regexMatches": "must end with 'hello world'",
+                "randomRegexMatches":
+                    "1-8 digits: 12345678, 1-8 random letters abcdefgh",
+                "integerMatches": test_id,
+                "decimalMatches": round(uniform(0, 9), 3),  # noqa: S311
+                "booleanMatches": True,
+                "randomIntegerMatches": randint(1, 100),  # noqa: S311
+                "randomDecimalMatches": round(uniform(0, 9), 1),  # noqa: S311
+                "randomStringMatches": "hi there",
+                "includeMatches": "hello world",
+                "includeWithGeneratorMatches": "say 'hello world' for me",
+                "minMaxArrayMatches": [
+                    round(uniform(0, 9), 1)  # noqa: S311
+                    for _ in range(randint(3, 5))  # noqa: S311
+                ],
+                "arrayContainingMatches": [randint(1, 100), randint(1, 100)],  # noqa: S311
+                "dateMatches": "1999-12-31",
+                "randomDateMatches": "1999-12-31",
+                "timeMatches": "12:34:56",
+                "timestampMatches": datetime.now().isoformat(),  # noqa: DTZ005
+                "nullMatches": None,
+                "eachKeyMatches": {
+                    "id_1": {
+                        "name": "John Doe",
+                    },
+                    "id_2": {
+                        "name": "Jane Doe",
+                    },
+                },
             }
-        )
+        })
         response.headers["SpecialHeader"] = "Special: Hi"
         return response
 
