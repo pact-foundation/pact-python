@@ -267,7 +267,7 @@ class Interaction(abc.ABC):
                 If `None`, then the function intelligently determines whether
                 the body should be added to the request or the response.
         """
-        if not isinstance(body, str):
+        if body and not isinstance(body, str):
             body_str = json.dumps(body, cls=MatcherEncoder)
         else:
             body_str = body

@@ -352,7 +352,7 @@ class HttpInteraction(Interaction):
             self.set_header(name, value, part)
         return self
 
-    def with_query_parameter(self, name: str, value: str) -> Self:
+    def with_query_parameter(self, name: str, value: str | dict | Matcher) -> Self:
         r"""
         Add a query to the request.
 
@@ -412,17 +412,21 @@ class HttpInteraction(Interaction):
         """
         index = self._parameter_indices[name]
         self._parameter_indices[name] += 1
+        if not isinstance(value, str):
+            value_str: str = json.dumps(value, cls=MatcherEncoder)
+        else:
+            value_str = value
         pact.v3.ffi.with_query_parameter_v2(
             self._handle,
             name,
             index,
-            value,
+            value_str,
         )
         return self
 
     def with_query_parameters(
         self,
-        parameters: dict[str, str] | Iterable[tuple[str, str]],
+        parameters: dict[str, str] | Iterable[tuple[str, str]] | Matcher,
     ) -> Self:
         """
         Add multiple query parameters to the request.
@@ -435,6 +439,10 @@ class HttpInteraction(Interaction):
             parameters:
                 Query parameters to add to the request.
         """
+        if isinstance(parameters, Matcher):
+            matcher_dict = json.dumps(parameters, cls=MatcherEncoder)
+            for name, value in matcher_dict.items():
+                self.with_query_parameter(name, value)
         if isinstance(parameters, dict):
             parameters = parameters.items()
         for name, value in parameters:
