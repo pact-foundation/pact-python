@@ -30,7 +30,6 @@ MatcherTypeV3 = Literal[
     "equality",
     "regex",
     "type",
-    "type",
     "include",
     "integer",
     "decimal",

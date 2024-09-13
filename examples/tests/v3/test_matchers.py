@@ -96,7 +96,7 @@ def test_matchers() -> None:
         assert (
             response_data["response"]["regexMatches"] == "must end with 'hello world'"
         )
-        assert response_data["response"]["integerMatches"] == 42  # noqa: PLR2004
+        assert response_data["response"]["integerMatches"] == 42
         assert response_data["response"]["booleanMatches"] is False
         assert response_data["response"]["includeMatches"] == "world"
         assert response_data["response"]["dateMatches"] == "2024-01-01"
@@ -116,12 +116,12 @@ def test_matchers() -> None:
         )
         random_integer = int(response_data["response"]["randomIntegerMatches"])
         assert random_integer >= 1
-        assert random_integer <= 100  # noqa: PLR2004
+        assert random_integer <= 100
         float(response_data["response"]["randomDecimalMatches"])
         assert (
-            len(response_data["response"]["randomDecimalMatches"].replace(".", "")) == 4  # noqa: PLR2004
+            len(response_data["response"]["randomDecimalMatches"].replace(".", "")) == 4
         )
-        assert len(response_data["response"]["randomStringMatches"]) == 10  # noqa: PLR2004
+        assert len(response_data["response"]["randomStringMatches"]) == 10
 
     pact.write_file(pact_dir, overwrite=True)
     with start_provider() as url:

@@ -16,8 +16,9 @@ from threading import Thread
 from typing import Generator, NoReturn
 
 import requests
-from flask import Flask, Response, make_response
 from yarl import URL
+
+from flask import Flask, Response, make_response
 
 logger = logging.getLogger(__name__)
 
@@ -95,12 +96,12 @@ if __name__ == "__main__":
 
     @app.route("/path/to/<test_id>")
     def hello_world(test_id: int) -> Response:
+        random_regex_matches = "1-8 digits: 12345678, 1-8 random letters abcdefgh"
         response = make_response({
             "response": {
                 "id": test_id,
                 "regexMatches": "must end with 'hello world'",
-                "randomRegexMatches":
-                    "1-8 digits: 12345678, 1-8 random letters abcdefgh",
+                "randomRegexMatches": random_regex_matches,
                 "integerMatches": test_id,
                 "decimalMatches": round(uniform(0, 9), 3),  # noqa: S311
                 "booleanMatches": True,
