@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from typing import TYPE_CHECKING, Iterable, Literal
+from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
@@ -426,7 +426,7 @@ class HttpInteraction(Interaction):
 
     def with_query_parameters(
         self,
-        parameters: dict[str, str] | Iterable[tuple[str, str]] | Matcher,
+        parameters: dict[str, Any] | Iterable[tuple[str, Any]],
     ) -> Self:
         """
         Add multiple query parameters to the request.
@@ -439,10 +439,6 @@ class HttpInteraction(Interaction):
             parameters:
                 Query parameters to add to the request.
         """
-        if isinstance(parameters, Matcher):
-            matcher_dict = json.dumps(parameters, cls=MatcherEncoder)
-            for name, value in matcher_dict.items():
-                self.with_query_parameter(name, value)
         if isinstance(parameters, dict):
             parameters = parameters.items()
         for name, value in parameters:

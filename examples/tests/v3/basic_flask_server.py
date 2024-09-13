@@ -114,6 +114,12 @@ if __name__ == "__main__":
                     for _ in range(randint(3, 5))  # noqa: S311
                 ],
                 "arrayContainingMatches": [randint(1, 100), randint(1, 100)],  # noqa: S311
+                "numbers": {
+                    "intMatches": 42,
+                    "floatMatches": 3.1415,
+                    "intGeneratorMatches": randint(1, 100),  # noqa: S311,
+                    "decimalGeneratorMatches": round(uniform(10, 99), 2),  # noqa: S311
+                },
                 "dateMatches": "1999-12-31",
                 "randomDateMatches": "1999-12-31",
                 "timeMatches": "12:34:56",
