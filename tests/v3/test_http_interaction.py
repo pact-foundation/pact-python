@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import aiohttp
 import pytest
 
-from pact.v3 import Pact
+from pact.v3 import Pact, matchers
 from pact.v3.pact import MismatchesError
 
 if TYPE_CHECKING:
@@ -305,11 +305,43 @@ async def test_with_query_parameter_request(
 
 
 @pytest.mark.asyncio
+async def test_with_query_parameter_with_matcher(
+    pact: Pact,
+) -> None:
+    (
+        pact.upon_receiving("a basic request with a query parameter")
+        .with_request("GET", "/")
+        .with_query_parameter("test", matchers.string("true"))
+        .will_respond_with(200)
+    )
+    with pact.serve() as srv:
+        async with aiohttp.ClientSession(srv.url) as session:
+            url = srv.url.with_query([("test", "true")])
+            async with session.request("GET", url.path_qs) as resp:
+                assert resp.status == 200
+
+
+@pytest.mark.asyncio
 async def test_with_query_parameter_dict(pact: Pact) -> None:
     (
         pact.upon_receiving("a basic request with a query parameter from a dict")
         .with_request("GET", "/")
         .with_query_parameters({"test": "true", "foo": "bar"})
+        .will_respond_with(200)
+    )
+    with pact.serve() as srv:
+        async with aiohttp.ClientSession(srv.url) as session:
+            url = srv.url.with_query({"test": "true", "foo": "bar"})
+            async with session.request("GET", url.path_qs) as resp:
+                assert resp.status == 200
+
+
+@pytest.mark.asyncio
+async def test_with_query_parameter_tuple_list(pact: Pact) -> None:
+    (
+        pact.upon_receiving("a basic request with a query parameter from a dict")
+        .with_request("GET", "/")
+        .with_query_parameters([("test", "true"), ("foo", "bar")])
         .will_respond_with(200)
     )
     with pact.serve() as srv:

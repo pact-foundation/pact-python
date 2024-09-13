@@ -267,10 +267,10 @@ class Interaction(abc.ABC):
                 If `None`, then the function intelligently determines whether
                 the body should be added to the request or the response.
         """
-        if body and not isinstance(body, str):
-            body_str = json.dumps(body, cls=MatcherEncoder)
-        else:
+        if body and isinstance(body, str):
             body_str = body
+        else:
+            body_str = json.dumps(body, cls=MatcherEncoder)
 
         pact.v3.ffi.with_body(
             self._handle,

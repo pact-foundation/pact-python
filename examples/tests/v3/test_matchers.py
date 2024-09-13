@@ -57,6 +57,12 @@ def test_matchers() -> None:
                         matchers.integer(1),
                         matchers.integer(2),
                     ]),
+                    "numbers": {
+                        "intMatches": matchers.number(42),
+                        "floatMatches": matchers.number(3.1415),
+                        "intGeneratorMatches": matchers.number(max_val=10),
+                        "decimalGeneratorMatches": matchers.number(digits=4),
+                    },
                     "dateMatches": matchers.date("yyyy-MM-dd", "2024-01-01"),
                     "randomDateMatches": matchers.date("yyyy-MM-dd"),
                     "timeMatches": matchers.time("HH:mm:ss", "12:34:56"),
