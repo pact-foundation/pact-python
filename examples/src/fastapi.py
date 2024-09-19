@@ -12,6 +12,14 @@ The provider is the application which receives requests from another service
 (the consumer) and returns a response. In this example, we have a simple
 endpoint which returns a user's information from a (fake) database.
 
+This also showcases how Pact tests differ from merely testing adherence to an
+OpenAPI specification. The Pact tests are more concerned with the practical use
+of the API, rather than the formally defined specification. The User class
+defined here has additional fields which are not used by the consumer. Should
+the provider later decide to add or remove fields, Pact's consumer-driven
+testing will provide feedback on whether the consumer is compatible with the
+provider's changes.
+
 Note that the code in this module is agnostic of Pact. The `pact-python`
 dependency only appears in the tests. This is because the consumer is not
 concerned with Pact, only the tests are.
@@ -20,28 +28,51 @@ concerned with Pact, only the tests are.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any, Dict
 
-from pydantic import BaseModel
-
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
 
-class User(BaseModel):
-    """
-    User data class.
+@dataclass()
+class User:
+    """User data class."""
 
-    This class is used to represent a user in the application. It is used to
-    validate the incoming data and to dump the data to a dictionary.
-    """
-
-    id: int | None = None
+    id: int
     name: str
-    email: str
+    created_on: datetime
+    email: str | None
+    ip_address: str | None
+    hobbies: list[str]
+    admin: bool
+
+    def __post_init__(self) -> None:
+        """
+        Validate the User data.
+
+        This performs the following checks:
+
+        - The name cannot be empty
+        - The id must be a positive integer
+
+        Raises:
+            ValueError: If any of the above checks fail.
+        """
+        if not self.name:
+            msg = "User must have a name"
+            raise ValueError(msg)
+
+        if self.id < 0:
+            msg = "User ID must be a positive integer"
+            raise ValueError(msg)
+
+    def __repr__(self) -> str:
+        """Return the user's name."""
+        return f"User({self.id}:{self.name})"
 
 
 """
@@ -52,11 +83,11 @@ When testing the provider in a real application, the calls to the database would
 be mocked out to avoid the need for a real database. An example of this can be
 found in the [test suite][examples.tests.test_01_provider_fastapi].
 """
-FAKE_DB: Dict[int, Dict[str, Any]] = {}
+FAKE_DB: Dict[int, User] = {}
 
 
 @app.get("/users/{uid}")
-async def get_user_by_id(uid: int) -> JSONResponse:
+async def get_user_by_id(uid: int) -> User:
     """
     Fetch a user by their ID.
 
@@ -68,12 +99,12 @@ async def get_user_by_id(uid: int) -> JSONResponse:
     """
     user = FAKE_DB.get(uid)
     if not user:
-        return JSONResponse(status_code=404, content={"error": "User not found"})
-    return JSONResponse(status_code=200, content=user)
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @app.post("/users/")
-async def create_new_user(user: User) -> JSONResponse:
+async def create_new_user(user: dict[str, Any]) -> User:
     """
     Create a new user .
 
@@ -83,26 +114,33 @@ async def create_new_user(user: User) -> JSONResponse:
     Returns:
         The status code 200 and user data if successfully created, HTTP 404 if not
     """
-    if user.id is not None:
+    if "id" in user:
         raise HTTPException(status_code=400, detail="ID should not be provided.")
-    new_uid = len(FAKE_DB)
-    FAKE_DB[new_uid] = user.model_dump()
+    uid = len(FAKE_DB)
+    FAKE_DB[uid] = User(
+        id=uid,
+        name=user["name"],
+        created_on=datetime.now(tz=UTC),
+        email=user.get("email"),
+        ip_address=user.get("ip_address"),
+        hobbies=user.get("hobbies", []),
+        admin=user.get("admin", False),
+    )
+    return FAKE_DB[uid]
 
-    return JSONResponse(status_code=200, content=FAKE_DB[new_uid])
 
-
-@app.delete("/users/{user_id}", status_code=204)
-async def delete_user(user_id: int):  # noqa: ANN201
+@app.delete("/users/{uid}", status_code=204)
+async def delete_user(uid: int):  # noqa: ANN201
     """
      Delete an existing user .
 
     Args:
-        user_id: The ID of the user to delete
+        uid: The ID of the user to delete
 
     Returns:
         The status code 204, HTTP 404 if not
     """
-    if user_id not in FAKE_DB:
+    if uid not in FAKE_DB:
         raise HTTPException(status_code=404, detail="User not found")
 
-    del FAKE_DB[user_id]
+    del FAKE_DB[uid]

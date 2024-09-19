@@ -25,6 +25,7 @@ from typing import Any, Dict, Generator
 import pytest
 import requests
 
+from examples.src.consumer import UserConsumer
 from pact.v3 import Pact
 
 
@@ -71,7 +72,6 @@ def test_get_existing_user(pact: Pact) -> None:
     code as shown in
     [`test_get_non_existent_user`](#test_get_non_existent_user).
     """
-    expected_response_code = 200
     expected: Dict[str, Any] = {
         "id": 123,
         "name": "Verna Hampton",
@@ -96,11 +96,10 @@ def test_get_existing_user(pact: Pact) -> None:
     )
 
     with pact.serve() as srv:
-        response = requests.get(f"{srv.url}/users/123", timeout=5)
-
-        assert response.status_code == expected_response_code
-        assert expected["name"] == "Verna Hampton"
-        datetime.fromisoformat(expected["created_on"]["value"])
+        client = UserConsumer(str(srv.url))
+        user = client.get_user(123)
+        assert user.id == 123
+        assert user.name == "Verna Hampton"
 
 
 def test_get_non_existent_user(pact: Pact) -> None:
@@ -133,7 +132,7 @@ def test_get_non_existent_user(pact: Pact) -> None:
         assert response.status_code == expected_response_code
 
 
-def test_post_request_to_create_user(pact: Pact) -> None:
+def test_create_user(pact: Pact) -> None:
     """
     Test the POST request for creating a new user.
 
@@ -142,36 +141,38 @@ def test_post_request_to_create_user(pact: Pact) -> None:
     including the request body and headers, and verifies that the response
     status code is 200 and the response body matches the expected user data.
     """
-    expected: Dict[str, Any] = {
+    body = {"name": "Verna Hampton"}
+    expected_response: Dict[str, Any] = {
         "id": 124,
-        "name": "Jane Doe",
-        "email": "jane@example.com",
+        "name": "Verna Hampton",
+        "created_on": {
+            # This structure is using the Integration JSON format as described
+            # in the link below. The preview of V3 currently does not have
+            # built-in support for matchers and generators, though this is on
+            # the roadmap and will be available before the final release.
+            #
+            # <https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson>
+            "pact:matcher:type": "regex",
+            "regex": r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}(Z|(\+|-)\d{2}:\d{2})",
+            "value": datetime.now(tz=timezone.utc).isoformat(),
+        },
     }
-    header = {"Content-Type": "application/json"}
-    body = {"name": "Jane Doe", "email": "jane@example.com"}
-    expected_response_code: int = 200
 
     (
         pact.upon_receiving("a request to create a new user")
         .given("the specified user doesn't exist")
         .with_request(method="POST", path="/users/")
-        .with_body(json.dumps(body))
-        .with_header("Content-Type", "application/json")
+        .with_body(json.dumps(body), content_type="application/json")
         .will_respond_with(status=200)
-        .with_body(content_type="application/json", body=json.dumps(expected))
+        .with_body(content_type="application/json", body=json.dumps(expected_response))
     )
 
     with pact.serve() as srv:
-        response = requests.post(
-            f"{srv.url}/users/", headers=header, json=body, timeout=5
-        )
-
-        assert response.status_code == expected_response_code
-        assert response.json() == {
-            "id": 124,
-            "name": "Jane Doe",
-            "email": "jane@example.com",
-        }
+        client = UserConsumer(str(srv.url))
+        user = client.create_user(name="Verna Hampton")
+        assert user.id > 0
+        assert user.name == "Verna Hampton"
+        assert user.created_on
 
 
 def test_delete_request_to_delete_user(pact: Pact) -> None:
@@ -183,7 +184,6 @@ def test_delete_request_to_delete_user(pact: Pact) -> None:
     including the request body and headers, and verifies that the response
     status code is 200 and the response body matches the expected user data.
     """
-    expected_response_code: int = 204
     (
         pact.upon_receiving("a request for deleting user")
         .given("user is present in DB")
@@ -192,6 +192,5 @@ def test_delete_request_to_delete_user(pact: Pact) -> None:
     )
 
     with pact.serve() as srv:
-        response = requests.delete(f"{srv.url}/users/124", timeout=5)
-
-        assert response.status_code == expected_response_code
+        client = UserConsumer(str(srv.url))
+        client.delete_user(124)

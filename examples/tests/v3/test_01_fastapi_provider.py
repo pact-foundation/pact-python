@@ -27,7 +27,7 @@ correct state.
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from multiprocessing import Process
 from typing import TYPE_CHECKING, Callable, Dict, Literal
 from unittest.mock import MagicMock
@@ -35,7 +35,7 @@ from unittest.mock import MagicMock
 import uvicorn
 from yarl import URL
 
-from examples.src.fastapi import app
+from examples.src.fastapi import User, app
 from pact.v3 import Verifier
 
 PROVIDER_URL = URL("http://localhost:8000")
@@ -196,64 +196,91 @@ def mock_user_exists() -> None:
     import examples.src.fastapi
 
     mock_db = MagicMock()
-    mock_db.get.return_value = {
-        "id": 123,
-        "name": "Verna Hampton",
-        "created_on": datetime.now(tz=timezone.utc).isoformat(),
-        "ip_address": "10.1.2.3",
-        "hobbies": ["hiking", "swimming"],
-        "admin": False,
-    }
+    mock_db.get.return_value = User(
+        id=123,
+        name="Verna Hampton",
+        email="verna@example.com",
+        created_on=datetime.now(tz=UTC),
+        ip_address="10.1.2.3",
+        hobbies=["hiking", "swimming"],
+        admin=False,
+    )
     examples.src.fastapi.FAKE_DB = mock_db
 
 
 def mock_post_request_to_create_user() -> None:
     """
     Mock the database for the post request to create a user.
+
+    While the `FAKE_DB` is a dictionary in this example, one should imagine that
+    this is a real database. In this instance, we are replacing the calls to the
+    database with a local dictionary to avoid side effects; thereby eliminating
+    the need to stand up a real database for the tests.
+
+    The added benefit of using this approach is that the mock can subsequently
+    be inspected to ensure that the correct calls were made to the database. For
+    example, asserting that the correct user ID was retrieved from the database.
+    These checks are performed as part of the `teardown` action. This action can
+    also be used to reset the mock, or in the case were a real database is used,
+    to clean up any side effects.
     """
     import examples.src.fastapi
 
+    local_db: Dict[int, User] = {}
+
+    def local_setitem(key: int, value: User) -> None:
+        local_db[key] = value
+
+    def local_getitem(key: int) -> User:
+        return local_db[key]
+
     mock_db = MagicMock()
     mock_db.__len__.return_value = 124
-    mock_db.__setitem__.return_value = None
-    mock_db.__getitem__.return_value = {
-        "id": 124,
-        "created_on": "2024-09-06T05:07:06.745719+00:00",
-        "email": "jane@example.com",
-        "name": "Jane Doe",
-    }
+    mock_db.__setitem__.side_effect = local_setitem
+    mock_db.__getitem__.side_effect = local_getitem
     examples.src.fastapi.FAKE_DB = mock_db
 
 
 def mock_delete_request_to_delete_user() -> None:
     """
     Mock the database for the delete request to delete a user.
+
+    As with the `mock_post_request_to_create_user` function, we are using a
+    local dictionary to avoid side effects. This function replaces the calls to
+    the database with a local dictionary to avoid side effects.
     """
     import examples.src.fastapi
 
-    db_values = {
-        123: {
-            "id": 123,
-            "name": "Verna Hampton",
-            "created_on": "2024-08-29T04:53:07.337793+00:00",
-            "ip_address": "10.1.2.3",
-            "hobbies": ["hiking", "swimming"],
-            "admin": False,
-        },
-        124: {
-            "id": 124,
-            "name": "Jane Doe",
-            "created_on": "2024-08-29T04:53:07.337793+00:00",
-            "ip_address": "10.1.2.5",
-            "hobbies": ["running", "dancing"],
-            "admin": False,
-        },
+    local_db = {
+        123: User(
+            id=123,
+            name="Verna Hampton",
+            email="verna@example.com",
+            created_on=datetime.now(tz=UTC),
+            ip_address="10.1.2.3",
+            hobbies=["hiking", "swimming"],
+            admin=False,
+        ),
+        124: User(
+            id=124,
+            name="Jane Doe",
+            email="jane@example.com",
+            created_on=datetime.now(tz=UTC),
+            ip_address="10.1.2.5",
+            hobbies=["running", "dancing"],
+            admin=False,
+        ),
     }
 
+    def local_delitem(key: int) -> None:
+        del local_db[key]
+
+    def local_contains(key: int) -> bool:
+        return key in local_db
+
     mock_db = MagicMock()
-    mock_db.__delitem__.side_effect = lambda key: db_values.__delitem__(key)
-    mock_db.__getitem__.side_effect = lambda key: db_values[key]
-    mock_db.__contains__.side_effect = lambda key: key in db_values
+    mock_db.__delitem__.side_effect = local_delitem
+    mock_db.__contains__.side_effect = local_contains
     examples.src.fastapi.FAKE_DB = mock_db
 
 
@@ -261,23 +288,21 @@ def verify_user_doesnt_exist_mock() -> None:
     """
     Verify the mock calls for the 'user doesn't exist' state.
 
-    This function checks that the mock for `FAKE_DB.get` was called,
-    verifies that it returned `None`,
-    and ensures that it was called with an integer argument.
-    It then resets the mock for future tests.
-
-    Returns:
-        str: A message indicating that the 'user doesn't exist' mock has been verified.
+    This function checks that the mock for `FAKE_DB.get` was called, verifies
+    that it returned `None`, and ensures that it was called with an integer
+    argument. It then resets the mock for future tests.
     """
     import examples.src.fastapi
 
     if TYPE_CHECKING:
+        # During setup, the `FAKE_DB` is replaced with a MagicMock object.
+        # We need to inform the type checker that this has happened.
         examples.src.fastapi.FAKE_DB = MagicMock()
 
+    assert len(examples.src.fastapi.FAKE_DB.mock_calls) == 1
+
     examples.src.fastapi.FAKE_DB.get.assert_called_once()
-
     args, kwargs = examples.src.fastapi.FAKE_DB.get.call_args
-
     assert len(args) == 1
     assert isinstance(args[0], int)
     assert kwargs == {}
@@ -289,23 +314,19 @@ def verify_user_exists_mock() -> None:
     """
     Verify the mock calls for the 'user exists' state.
 
-    This function checks that the mock for `FAKE_DB.get` was called,
-    verifies that it returned the expected user data,
-    and ensures that it was called with the integer argument `1`.
-    It then resets the mock for future tests.
-
-    Returns:
-        str: A message indicating that the 'user exists' mock has been verified.
+    This function checks that the mock for `FAKE_DB.get` was called, verifies
+    that it returned the expected user data, and ensures that it was called with
+    the integer argument `1`. It then resets the mock for future tests.
     """
     import examples.src.fastapi
 
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 
+    assert len(examples.src.fastapi.FAKE_DB.mock_calls) == 1
+
     examples.src.fastapi.FAKE_DB.get.assert_called_once()
-
     args, kwargs = examples.src.fastapi.FAKE_DB.get.call_args
-
     assert len(args) == 1
     assert isinstance(args[0], int)
     assert kwargs == {}
@@ -319,25 +340,18 @@ def verify_mock_post_request_to_create_user() -> None:
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 
-    examples.src.fastapi.FAKE_DB.__getitem__.assert_called()
+    assert len(examples.src.fastapi.FAKE_DB.mock_calls) == 2
 
-    expected_return = {
-        "id": 124,
-        "created_on": "2024-09-06T05:07:06.745719+00:00",
-        "email": "jane@example.com",
-        "name": "Jane Doe",
-    }
+    examples.src.fastapi.FAKE_DB.__getitem__.assert_called_once()
+    args, kwargs = examples.src.fastapi.FAKE_DB.__getitem__.call_args
+    assert len(args) == 1
+    assert isinstance(args[0], int)
+    assert kwargs == {}
 
-    examples.src.fastapi.FAKE_DB.__len__.assert_called()
-    assert (
-        examples.src.fastapi.FAKE_DB.__getitem__.return_value == expected_return
-    ), "Unexpected return value from __getitem__()"
-
-    args, _ = examples.src.fastapi.FAKE_DB.__getitem__.call_args
-    assert isinstance(
-        args[0], int
-    ), f"Expected get() to be called with an integer, but got {type(args[0])}"
-    assert args[0] == 124, f"Expected get(124), but got get({args[0]})"
+    examples.src.fastapi.FAKE_DB.__len__.assert_called_once()
+    args, kwargs = examples.src.fastapi.FAKE_DB.__len__.call_args
+    assert len(args) == 0
+    assert kwargs == {}
 
     examples.src.fastapi.FAKE_DB.reset_mock()
 
@@ -348,11 +362,16 @@ def verify_mock_delete_request_to_delete_user() -> None:
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 
-    examples.src.fastapi.FAKE_DB.__delitem__.assert_called()
+    assert len(examples.src.fastapi.FAKE_DB.mock_calls) == 2
 
-    args, _ = examples.src.fastapi.FAKE_DB.__delitem__.call_args
-    assert isinstance(
-        args[0], int
-    ), f"Expected __delitem__() to be called with an integer, but got {type(args[0])}"
+    examples.src.fastapi.FAKE_DB.__delitem__.assert_called_once()
+    args, kwargs = examples.src.fastapi.FAKE_DB.__delitem__.call_args
+    assert len(args) == 1
+    assert isinstance(args[0], int)
+    assert kwargs == {}
 
-    examples.src.fastapi.FAKE_DB.reset_mock()
+    examples.src.fastapi.FAKE_DB.__contains__.assert_called_once()
+    args, kwargs = examples.src.fastapi.FAKE_DB.__contains__.call_args
+    assert len(args) == 1
+    assert isinstance(args[0], int)
+    assert kwargs == {}
