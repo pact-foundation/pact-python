@@ -91,7 +91,7 @@ class ConcreteMatcher(Matcher):
         generator: Optional[Generator] = None,
         *,
         force_generator: Optional[bool] = False,
-        **kwargs: Optional[Union[MatchType, List[MatchType]]],
+        **kwargs: AtomicType,
     ) -> None:
         """
         Initialize the matcher class.
