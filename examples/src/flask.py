@@ -20,13 +20,67 @@ concerned with Pact, only the tests are.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Tuple, Union
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from typing import Any, Dict, Tuple
 
 from flask import Flask, Response, abort, jsonify, request
 
 logger = logging.getLogger(__name__)
-
 app = Flask(__name__)
+
+
+@dataclass()
+class User:
+    """User data class."""
+
+    id: int
+    name: str
+    created_on: datetime
+    email: str | None
+    ip_address: str | None
+    hobbies: list[str]
+    admin: bool
+
+    def __post_init__(self) -> None:
+        """
+        Validate the User data.
+
+        This performs the following checks:
+
+        - The name cannot be empty
+        - The id must be a positive integer
+
+        Raises:
+            ValueError: If any of the above checks fail.
+        """
+        if not self.name:
+            msg = "User must have a name"
+            raise ValueError(msg)
+
+        if self.id < 0:
+            msg = "User ID must be a positive integer"
+            raise ValueError(msg)
+
+    def __repr__(self) -> str:
+        """Return the user's name."""
+        return f"User({self.id}:{self.name})"
+
+    def dict(self) -> dict[str, Any]:
+        """
+        Return the user's data as a dict.
+        """
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_on": self.created_on.isoformat(),
+            "email": self.email,
+            "ip_address": self.ip_address,
+            "hobbies": self.hobbies,
+            "admin": self.admin,
+        }
+
+
 """
 As this is a simple example, we'll use a simple dict to represent a database.
 This would be replaced with a real database in a real application.
@@ -35,11 +89,11 @@ When testing the provider in a real application, the calls to the database would
 be mocked out to avoid the need for a real database. An example of this can be
 found in the [test suite][examples.tests.test_01_provider_flask].
 """
-FAKE_DB: Dict[int, Dict[str, Any]] = {}
+FAKE_DB: Dict[int, User] = {}
 
 
-@app.route("/users/<uid>")
-def get_user_by_id(uid: int) -> Union[Dict[str, Any], tuple[Dict[str, Any], int]]:
+@app.route("/users/<int:uid>")
+def get_user_by_id(uid: int) -> Response | Tuple[Response, int]:
     """
     Fetch a user by their ID.
 
@@ -49,29 +103,34 @@ def get_user_by_id(uid: int) -> Union[Dict[str, Any], tuple[Dict[str, Any], int]
     Returns:
         The user data if found, HTTP 404 if not
     """
-    user = FAKE_DB.get(int(uid))
+    user = FAKE_DB.get(uid)
     if not user:
-        return {"error": "User not found"}, 404
-    return user
+        return jsonify({"detail": "User not found"}), 404
+    return jsonify(user.dict())
 
 
 @app.route("/users/", methods=["POST"])
-def create_user() -> Tuple[Response, int]:
+def create_user() -> Response:
     if request.json is None:
         abort(400, description="Invalid JSON data")
 
-    data: Dict[str, Any] = request.json
-    new_uid: int = len(FAKE_DB)
-    if new_uid in FAKE_DB:
-        abort(400, description="User already exists")
+    user: Dict[str, Any] = request.json
+    uid = len(FAKE_DB)
+    FAKE_DB[uid] = User(
+        id=uid,
+        name=user["name"],
+        created_on=datetime.now(tz=UTC),
+        email=user.get("email"),
+        ip_address=user.get("ip_address"),
+        hobbies=user.get("hobbies", []),
+        admin=user.get("admin", False),
+    )
+    return jsonify(FAKE_DB[uid].dict())
 
-    FAKE_DB[new_uid] = {"id": new_uid, "name": data["name"], "email": data["email"]}
-    return jsonify(FAKE_DB[new_uid]), 200
 
-
-@app.route("/users/<user_id>", methods=["DELETE"])
-def delete_user(user_id: int) -> Tuple[str, int]:
-    if user_id not in FAKE_DB:
-        abort(404, description="User not found")
-    del FAKE_DB[user_id]
-    return "", 204  # No Content status code
+@app.route("/users/<int:uid>", methods=["DELETE"])
+def delete_user(uid: int) -> Tuple[str | Response, int]:
+    if uid not in FAKE_DB:
+        return jsonify({"detail": "User not found"}), 404
+    del FAKE_DB[uid]
+    return "", 204

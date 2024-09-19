@@ -25,7 +25,7 @@ section of the Pact documentation.
 from __future__ import annotations
 
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from multiprocessing import Process
 from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
@@ -35,7 +35,7 @@ import uvicorn
 from pydantic import BaseModel
 from yarl import URL
 
-from examples.src.fastapi import app
+from examples.src.fastapi import User, app
 from pact import Verifier  # type: ignore[import-untyped]
 
 PROVIDER_URL = URL("http://localhost:8080")
@@ -72,7 +72,8 @@ async def mock_pact_provider_states(
         "create user 124": mock_post_request_to_create_user,
         "delete the user 124": mock_delete_request_to_delete_user,
     }
-    return {"result": mapping[state.state]()}
+    mapping[state.state]()
+    return {"result": f"{state} set"}
 
 
 def run_server() -> None:
@@ -126,15 +127,17 @@ def mock_user_123_exists() -> None:
     """
     import examples.src.fastapi
 
-    examples.src.fastapi.FAKE_DB = MagicMock()
-    examples.src.fastapi.FAKE_DB.get.return_value = {
-        "id": 123,
-        "name": "Verna Hampton",
-        "created_on": datetime.now(tz=UTC).isoformat(),
-        "ip_address": "10.1.2.3",
-        "hobbies": ["hiking", "swimming"],
-        "admin": False,
-    }
+    mock_db = MagicMock()
+    mock_db.get.return_value = User(
+        id=123,
+        name="Verna Hampton",
+        email="verna@example.com",
+        created_on=datetime.now(tz=UTC),
+        ip_address="10.1.2.3",
+        hobbies=["hiking", "swimming"],
+        admin=False,
+    )
+    examples.src.fastapi.FAKE_DB = mock_db
 
 
 def mock_post_request_to_create_user() -> None:
@@ -143,18 +146,19 @@ def mock_post_request_to_create_user() -> None:
     """
     import examples.src.fastapi
 
-    examples.src.fastapi.FAKE_DB = MagicMock()
-    examples.src.fastapi.FAKE_DB.__len__.return_value = 124
-    examples.src.fastapi.FAKE_DB.__setitem__.return_value = None
-    examples.src.fastapi.FAKE_DB.__getitem__.return_value = {
-        "id": 124,
-        "created_on": (datetime.now(tz=UTC) - timedelta(days=152)).isoformat(),
-        "email": "jane@example.com",
-        "name": "Jane Doe",
-        "ip_address": "10.1.2.3",
-        "hobbies": ["hiking", "swimming"],
-        "admin": False,
-    }
+    local_db: Dict[int, User] = {}
+
+    def local_setitem(key: int, value: User) -> None:
+        local_db[key] = value
+
+    def local_getitem(key: int) -> User:
+        return local_db[key]
+
+    mock_db = MagicMock()
+    mock_db.__len__.return_value = 124
+    mock_db.__setitem__.side_effect = local_setitem
+    mock_db.__getitem__.side_effect = local_getitem
+    examples.src.fastapi.FAKE_DB = mock_db
 
 
 def mock_delete_request_to_delete_user() -> None:
@@ -163,33 +167,37 @@ def mock_delete_request_to_delete_user() -> None:
     """
     import examples.src.fastapi
 
-    db_values = {
-        123: {
-            "id": 123,
-            "name": "Verna Hampton",
-            "email": "verna@example.com",
-            "created_on": (datetime.now(tz=UTC) - timedelta(days=152)).isoformat(),
-            "ip_address": "10.1.2.3",
-            "hobbies": ["hiking", "swimming"],
-            "admin": False,
-        },
-        124: {
-            "id": 124,
-            "name": "Jane Doe",
-            "email": "jane@example.com",
-            "created_on": (datetime.now(tz=UTC) - timedelta(days=152)).isoformat(),
-            "ip_address": "10.1.2.5",
-            "hobbies": ["running", "dancing"],
-            "admin": False,
-        },
+    local_db = {
+        123: User(
+            id=123,
+            name="Verna Hampton",
+            email="verna@example.com",
+            created_on=datetime.now(tz=UTC),
+            ip_address="10.1.2.3",
+            hobbies=["hiking", "swimming"],
+            admin=False,
+        ),
+        124: User(
+            id=124,
+            name="Jane Doe",
+            email="jane@example.com",
+            created_on=datetime.now(tz=UTC),
+            ip_address="10.1.2.5",
+            hobbies=["running", "dancing"],
+            admin=False,
+        ),
     }
 
-    examples.src.fastapi.FAKE_DB = MagicMock()
-    examples.src.fastapi.FAKE_DB.__delitem__.side_effect = (
-        lambda key: db_values.__delitem__(key)
-    )
-    examples.src.fastapi.FAKE_DB.__getitem__.side_effect = lambda key: db_values[key]
-    examples.src.fastapi.FAKE_DB.__contains__.side_effect = lambda key: key in db_values
+    def local_delitem(key: int) -> None:
+        del local_db[key]
+
+    def local_contains(key: int) -> bool:
+        return key in local_db
+
+    mock_db = MagicMock()
+    mock_db.__delitem__.side_effect = local_delitem
+    mock_db.__contains__.side_effect = local_contains
+    examples.src.fastapi.FAKE_DB = mock_db
 
 
 def test_against_broker(broker: URL, verifier: Verifier) -> None:

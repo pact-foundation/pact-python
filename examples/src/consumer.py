@@ -12,6 +12,13 @@ provider) and receives a response to process. In this example, we have a simple
 [`User`][examples.src.consumer.User] class and the consumer fetches a user's
 information from a HTTP endpoint.
 
+This also showcases how Pact tests differ from merely testing adherence to an
+OpenAPI specification. The Pact tests are more concerned with the practical use
+of the API, rather than the formally defined specification. So you will see
+below that as far as this consumer is concerned, the only information needed
+from the provider is the user's ID, name, and creation date. This is despite the
+provider having additional fields in the response.
+
 Note that the code in this module is agnostic of Pact. The `pact-python`
 dependency only appears in the tests. This is because the consumer is not
 concerned with Pact, only the tests are.
@@ -21,7 +28,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 import requests
 
@@ -104,42 +111,45 @@ class UserConsumer:
         )
 
     def create_user(
-        self, user: Dict[str, Any], header: Dict[str, str]
-    ) -> Tuple[int, User]:
+        self,
+        *,
+        name: str,
+    ) -> User:
         """
         Create a new user on the server.
 
         Args:
-            user: The user data to create.
-            header: The headers to send with the request.
+            name: The name of the user to create.
 
         Returns:
-            The user data including the ID assigned by the server; Error if user exists.
+            The user, if successfully created.
+
+        Raises:
+            requests.HTTPError: If the server returns a non-200 response.
         """
         uri = f"{self.base_uri}/users/"
-        response = requests.post(uri, headers=header, json=user, timeout=5)
+        response = requests.post(uri, json={"name": name}, timeout=5)
         response.raise_for_status()
         data: Dict[str, Any] = response.json()
-        return (
-            response.status_code,
-            User(
-                id=data["id"],
-                name=data["name"],
-                created_on=datetime.fromisoformat(data["created_on"]),
-            ),
+        return User(
+            id=data["id"],
+            name=data["name"],
+            created_on=datetime.fromisoformat(data["created_on"]),
         )
 
-    def delete_user(self, user_id: int) -> int:
+    def delete_user(self, uid: int | User) -> None:
         """
         Delete a user by ID from the server.
 
         Args:
-            user_id: The ID of the user to delete.
+            uid: The user ID or user object to delete.
 
-        Returns:
-            The response status code.
+        Raises:
+            requests.HTTPError: If the server returns a non-200 response.
         """
-        uri = f"{self.base_uri}/users/{user_id}"
+        if isinstance(uid, User):
+            uid = uid.id
+
+        uri = f"{self.base_uri}/users/{uid}"
         response = requests.delete(uri, timeout=5)
         response.raise_for_status()
-        return response.status_code

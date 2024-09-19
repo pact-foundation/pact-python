@@ -25,7 +25,7 @@ section of the Pact documentation.
 from __future__ import annotations
 
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from multiprocessing import Process
 from typing import Any, Dict, Generator, Union
 from unittest.mock import MagicMock
@@ -33,7 +33,7 @@ from unittest.mock import MagicMock
 import pytest
 from yarl import URL
 
-from examples.src.flask import app
+from examples.src.flask import User, app
 from flask import request
 from pact import Verifier  # type: ignore[import-untyped]
 
@@ -56,13 +56,17 @@ async def mock_pact_provider_states() -> Dict[str, Union[str, None]]:
     endpoint is called by Pact before each test to ensure that the provider is
     in the correct state.
     """
+    if request.json is None:
+        msg = "Request must be JSON"
+        raise ValueError(msg)
+    state: str = request.json["state"]
     mapping = {
         "user 123 doesn't exist": mock_user_123_doesnt_exist,
         "user 123 exists": mock_user_123_exists,
         "create user 124": mock_post_request_to_create_user,
         "delete the user 124": mock_delete_request_to_delete_user,
     }
-    return {"result": mapping[request.json["state"]]()}  # type: ignore[index]
+    return {"result": mapping[state]()}  # type: ignore[index]
 
 
 def run_server() -> None:
@@ -73,7 +77,10 @@ def run_server() -> None:
     lambda cannot be used as the target of a `multiprocessing.Process` as it
     cannot be pickled.
     """
-    app.run(host=PROVIDER_URL.host, port=PROVIDER_URL.port)
+    app.run(
+        host=PROVIDER_URL.host,
+        port=PROVIDER_URL.port,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -115,14 +122,15 @@ def mock_user_123_exists() -> None:
     import examples.src.flask
 
     examples.src.flask.FAKE_DB = MagicMock()
-    examples.src.flask.FAKE_DB.get.return_value = {
-        "id": 123,
-        "name": "Verna Hampton",
-        "created_on": datetime.now(tz=UTC).isoformat(),
-        "ip_address": "10.1.2.3",
-        "hobbies": ["hiking", "swimming"],
-        "admin": False,
-    }
+    examples.src.flask.FAKE_DB.get.return_value = User(
+        id=123,
+        name="Verna Hampton",
+        email="verna@example.com",
+        created_on=datetime.now(tz=UTC),
+        ip_address="10.1.2.3",
+        hobbies=["hiking", "swimming"],
+        admin=False,
+    )
 
 
 def mock_post_request_to_create_user() -> None:
@@ -131,15 +139,19 @@ def mock_post_request_to_create_user() -> None:
     """
     import examples.src.flask
 
-    examples.src.flask.FAKE_DB = MagicMock()
-    examples.src.flask.FAKE_DB.__len__.return_value = 124
-    examples.src.flask.FAKE_DB.__setitem__.return_value = None
-    examples.src.flask.FAKE_DB.__getitem__.return_value = {
-        "id": 124,
-        "created_on": (datetime.now(tz=UTC) - timedelta(days=261)).isoformat(),
-        "email": "jane@example.com",
-        "name": "Jane Doe",
-    }
+    local_db: Dict[int, User] = {}
+
+    def local_setitem(key: int, value: User) -> None:
+        local_db[key] = value
+
+    def local_getitem(key: int) -> User:
+        return local_db[key]
+
+    mock_db = MagicMock()
+    mock_db.__len__.return_value = 124
+    mock_db.__setitem__.side_effect = local_setitem
+    mock_db.__getitem__.side_effect = local_getitem
+    examples.src.flask.FAKE_DB = mock_db
 
 
 def mock_delete_request_to_delete_user() -> None:
@@ -148,31 +160,38 @@ def mock_delete_request_to_delete_user() -> None:
     """
     import examples.src.flask
 
-    db_values: dict[int, dict[str, Any]] = {
-        123: {
-            "id": 123,
-            "name": "Verna Hampton",
-            "created_on": (datetime.now(tz=UTC) - timedelta(days=318)).isoformat(),
-            "ip_address": "10.1.2.3",
-            "hobbies": ["hiking", "swimming"],
-            "admin": False,
-        },
-        124: {
-            "id": 124,
-            "name": "Jane Doe",
-            "created_on": (datetime.now(tz=UTC) - timedelta(days=318)).isoformat(),
-            "ip_address": "10.1.2.5",
-            "hobbies": ["running", "dancing"],
-            "admin": False,
-        },
+    local_db = {
+        123: User(
+            id=123,
+            name="Verna Hampton",
+            email="verna@example.com",
+            created_on=datetime.now(tz=UTC),
+            ip_address="10.1.2.3",
+            hobbies=["hiking", "swimming"],
+            admin=False,
+        ),
+        124: User(
+            id=124,
+            name="Jane Doe",
+            email="jane@example.com",
+            created_on=datetime.now(tz=UTC),
+            ip_address="10.1.2.5",
+            hobbies=["running", "dancing"],
+            admin=False,
+        ),
     }
 
-    examples.src.flask.FAKE_DB = MagicMock()
-    examples.src.flask.FAKE_DB.__delitem__.side_effect = (
-        lambda key: db_values.__delitem__(key)
-    )
-    examples.src.flask.FAKE_DB.__getitem__.side_effect = lambda key: db_values[key]
-    examples.src.flask.FAKE_DB.__contains__.side_effect = lambda key: key in db_values
+    def local_delitem(key: int) -> None:
+        del local_db[key]
+
+    def local_contains(key: int) -> bool:
+        return key in local_db
+
+    mock_db = MagicMock()
+    mock_db.__delitem__.side_effect = local_delitem
+    mock_db.__contains__.side_effect = local_contains
+    mock_db.is_mocked = True
+    examples.src.flask.FAKE_DB = mock_db
 
 
 def test_against_broker(broker: URL, verifier: Verifier) -> None:
