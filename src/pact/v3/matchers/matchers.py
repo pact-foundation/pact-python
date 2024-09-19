@@ -136,13 +136,13 @@ class MatcherEncoder(JSONEncoder):
     Matcher encoder class for json serialization.
     """
 
-    def default(self, obj: Any) -> Union[str, Dict[str, Any], List[Any]]:  # noqa: ANN401
+    def default(self, o: Any) -> Union[str, Dict[str, Any], List[Any]]:  # noqa: ANN401
         """
         Encode the object to json.
         """
-        if isinstance(obj, Matcher):
-            return obj.to_dict()
-        return super().default(obj)
+        if isinstance(o, Matcher):
+            return o.to_dict()
+        return super().default(o)
 
 
 def integer(
