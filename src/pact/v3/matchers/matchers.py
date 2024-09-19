@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from json import JSONEncoder
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 from pact.v3.generators import (
     Generator,
@@ -68,7 +68,15 @@ class Matcher(metaclass=ABCMeta):
         """
 
 
-MatchType = Union[str, int, float, bool, dict, list, tuple, None, Matcher]
+AtomicType = str | int | float | bool | None
+MatchType = (
+    AtomicType
+    | Dict[AtomicType, AtomicType]
+    | List[AtomicType]
+    | Tuple[AtomicType]
+    | Sequence[AtomicType]
+    | Mapping[AtomicType, AtomicType]
+)
 
 
 class ConcreteMatcher(Matcher):
