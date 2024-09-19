@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from json import JSONEncoder
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Literal, Mapping, Sequence, Tuple
 
 from pact.v3.generators import (
     Generator,
@@ -44,16 +44,16 @@ MatcherTypeV3 = Literal[
     "arrayContains",
 ]
 
-MatcherTypeV4 = Union[
-    MatcherTypeV3,
-    Literal[
+MatcherTypeV4 = (
+    MatcherTypeV3
+    | Literal[
         "statusCode",
         "notEmpty",
         "semver",
         "eachKey",
         "eachValue",
-    ],
-]
+    ]
+)
 
 
 class Matcher(metaclass=ABCMeta):
@@ -87,28 +87,28 @@ class ConcreteMatcher(Matcher):
     def __init__(
         self,
         matcher_type: MatcherTypeV4,
-        value: Optional[Any] = None,  # noqa: ANN401
-        generator: Optional[Generator] = None,
+        value: Any | None = None,  # noqa: ANN401
+        generator: Generator | None = None,
         *,
-        force_generator: Optional[bool] = False,
+        force_generator: bool | None = False,
         **kwargs: AtomicType,
     ) -> None:
         """
         Initialize the matcher class.
 
         Args:
-            matcher_type (MatcherTypeV4):
+            matcher_type:
                 The type of the matcher.
-            value (Any, optional):
+            value:
                 The value to return when running a consumer test.
                 Defaults to None.
-            generator (Optional[Generator], optional):
+            generator:
                 The generator to use when generating the value. The generator will
                 generally only be used if value is not provided. Defaults to None.
-            force_generator (Optional[boolean], optional):
+            force_generator:
                 If True, the generator will be used to generate a value even if
                 a value is provided. Defaults to False.
-            **kwargs (Optional[Union[MatchType, List[MatchType]]], optional):
+            **kwargs:
                 Additional configuration elements to pass to the matcher.
         """
         self.type = matcher_type
@@ -127,7 +127,7 @@ class ConcreteMatcher(Matcher):
         data["value"] = self.value if self.value is not None else ""
         if self.generator is not None and (self.value is None or self.force_generator):
             data.update(self.generator.to_dict())
-        [data.update({k: v}) for k, v in self.extra_attrs.items() if v is not None]
+        data.update(self.extra_attrs)
         return data
 
 
@@ -136,7 +136,7 @@ class MatcherEncoder(JSONEncoder):
     Matcher encoder class for json serialization.
     """
 
-    def default(self, o: Any) -> Union[str, Dict[str, Any], List[Any]]:  # noqa: ANN401
+    def default(self, o: Any) -> Any:  # noqa: ANN401
         """
         Encode the object to json.
         """
@@ -146,19 +146,19 @@ class MatcherEncoder(JSONEncoder):
 
 
 def integer(
-    value: Optional[int] = None,
-    min_val: Optional[int] = None,
-    max_val: Optional[int] = None,
+    value: int | None = None,
+    min_val: int | None = None,
+    max_val: int | None = None,
 ) -> Matcher:
     """
     Returns a matcher that matches an integer value.
 
     Args:
-        value (int, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
-        min_val (int, optional):
+        min_val:
             The minimum value of the integer to generate. Defaults to None.
-        max_val (int, optional):
+        max_val:
             The maximum value of the integer to generate. Defaults to None.
     """
     return ConcreteMatcher(
@@ -168,24 +168,24 @@ def integer(
     )
 
 
-def decimal(value: Optional[float] = None, digits: Optional[int] = None) -> Matcher:
+def decimal(value: float | None = None, digits: int | None = None) -> Matcher:
     """
     Returns a matcher that matches a decimal value.
 
     Args:
-        value (float, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
-        digits (int, optional):
+        digits:
             The number of decimal digits to generate. Defaults to None.
     """
     return ConcreteMatcher("decimal", value, generator=random_decimal(digits))
 
 
 def number(
-    value: Optional[Union[int, float]] = None,
-    min_val: Optional[int] = None,
-    max_val: Optional[int] = None,
-    digits: Optional[int] = None,
+    value: float | None = None,
+    min_val: float | None = None,
+    max_val: float | None = None,
+    digits: int | None = None,
 ) -> Matcher:
     """
     Returns a matcher that matches a number value.
@@ -195,16 +195,16 @@ def number(
     a random_int generator will be used.
 
     Args:
-        value (int, float, optional):
+        value:
             The value to return when running a consumer test.
             Defaults to None.
-        min_val (int, float, optional):
+        min_val:
             The minimum value of the number to generate. Only used when
             value is an integer. Defaults to None.
-        max_val (int, float, optional):
+        max_val:
             The maximum value of the number to generate. Only used when
             value is an integer. Defaults to None.
-        digits (int, optional):
+        digits:
             The number of decimal digits to generate. Only used when
             value is a float. Defaults to None.
     """
@@ -220,19 +220,19 @@ def number(
 
 
 def string(
-    value: Optional[str] = None,
-    size: Optional[int] = None,
-    generator: Optional[Generator] = None,
+    value: str | None = None,
+    size: int | None = None,
+    generator: Generator | None = None,
 ) -> Matcher:
     """
     Returns a matcher that matches a string value.
 
     Args:
-        value (str, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
-        size (int, optional):
+        size:
             The size of the string to generate. Defaults to None.
-        generator (Optional[Generator], optional):
+        generator:
             The generator to use when generating the value. Defaults to None. If
             no generator is provided and value is not provided, a random string
             generator will be used.
@@ -242,27 +242,27 @@ def string(
     return ConcreteMatcher("type", value, generator=random_string(size))
 
 
-def boolean(*, value: Optional[bool] = True) -> Matcher:
+def boolean(*, value: bool | None = True) -> Matcher:
     """
     Returns a matcher that matches a boolean value.
 
     Args:
-        value (Optional[bool], optional):
+        value:
             The value to return when running a consumer test. Defaults to True.
     """
     return ConcreteMatcher("boolean", value, generator=random_boolean())
 
 
-def date(format_str: str, value: Optional[str] = None) -> Matcher:
+def date(format_str: str, value: str | None = None) -> Matcher:
     """
     Returns a matcher that matches a date value.
 
     Args:
-        format_str (str):
+        format_str:
             The format of the date. See
             [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
             for details on the format string.
-        value (str, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
     """
     return ConcreteMatcher(
@@ -270,16 +270,16 @@ def date(format_str: str, value: Optional[str] = None) -> Matcher:
     )
 
 
-def time(format_str: str, value: Optional[str] = None) -> Matcher:
+def time(format_str: str, value: str | None = None) -> Matcher:
     """
     Returns a matcher that matches a time value.
 
     Args:
-        format_str (str):
+        format_str:
             The format of the time. See
             [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
             for details on the format string.
-        value (str, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
     """
     return ConcreteMatcher(
@@ -287,16 +287,16 @@ def time(format_str: str, value: Optional[str] = None) -> Matcher:
     )
 
 
-def timestamp(format_str: str, value: Optional[str] = None) -> Matcher:
+def timestamp(format_str: str, value: str | None = None) -> Matcher:
     """
     Returns a matcher that matches a timestamp value.
 
     Args:
-        format_str (str):
+        format_str:
             The format of the timestamp. See
             [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
             for details on the format string.
-        value (str, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
     """
     return ConcreteMatcher(
@@ -316,22 +316,22 @@ def null() -> Matcher:
 
 def like(
     value: MatchType,
-    min_count: Optional[int] = None,
-    max_count: Optional[int] = None,
-    generator: Optional[Generator] = None,
+    min_count: int | None = None,
+    max_count: int | None = None,
+    generator: Generator | None = None,
 ) -> Matcher:
     """
     Returns a matcher that matches the given template.
 
     Args:
-        value (MatchType):
+        value:
             The template to match against. This can be a primitive value, a
             dictionary, or a list and matching will be done by type.
-        min_count (int, optional):
+        min_count:
             The minimum number of items that must match the value. Defaults to None.
-        max_count (int, optional):
+        max_count:
             The maximum number of items that must match the value. Defaults to None.
-        generator (Optional[Generator], optional):
+        generator:
             The generator to use when generating the value. Defaults to None.
     """
     return ConcreteMatcher(
@@ -341,8 +341,8 @@ def like(
 
 def each_like(
     value: MatchType,
-    min_count: Optional[int] = 1,
-    max_count: Optional[int] = None,
+    min_count: int | None = 1,
+    max_count: int | None = None,
 ) -> Matcher:
     """
     Returns a matcher that matches each item in an array against a given value.
@@ -352,24 +352,24 @@ def each_like(
     each item in the array and generally should not itself be an array.
 
     Args:
-        value (MatchType):
+        value:
             The value to match against.
-        min_count (int, optional):
+        min_count:
             The minimum number of items that must match the value. Default is 1.
-        max_count (int, optional):
+        max_count:
             The maximum number of items that must match the value.
     """
     return ConcreteMatcher("type", [value], min=min_count, max=max_count)
 
 
-def includes(value: str, generator: Optional[Generator] = None) -> Matcher:
+def includes(value: str, generator: Generator | None = None) -> Matcher:
     """
     Returns a matcher that matches a string that includes the given value.
 
     Args:
-        value (str):
+        value:
             The value to match against.
-        generator (Optional[Generator], optional):
+        generator:
             The generator to use when generating the value. Defaults to None.
     """
     return ConcreteMatcher("include", value, generator=generator, force_generator=True)
@@ -383,13 +383,13 @@ def array_containing(variants: List[MatchType]) -> Matcher:
     objects containing matching rules.
 
     Args:
-        variants (List[MatchType]):
+        variants:
             A list of variants to match against.
     """
     return ConcreteMatcher("arrayContains", variants=variants)
 
 
-def regex(regex: str, value: Optional[str] = None) -> Matcher:
+def regex(regex: str, value: str | None = None) -> Matcher:
     """
     Returns a matcher that matches a string against a regular expression.
 
@@ -397,9 +397,9 @@ def regex(regex: str, value: Optional[str] = None) -> Matcher:
     the regular expression.
 
     Args:
-        regex (str):
+        regex:
             The regular expression to match against.
-        value (str, optional):
+        value:
             The value to return when running a consumer test. Defaults to None.
     """
     return ConcreteMatcher(
@@ -410,16 +410,14 @@ def regex(regex: str, value: Optional[str] = None) -> Matcher:
     )
 
 
-def each_key_matches(
-    value: MatchType, rules: Union[Matcher | List[Matcher]]
-) -> Matcher:
+def each_key_matches(value: MatchType, rules: Matcher | List[Matcher]) -> Matcher:
     """
     Returns a matcher that matches each key in a dictionary against a set of rules.
 
     Args:
-        value (MatchType):
+        value:
             The value to match against.
-        rules (Union[Matcher, List[Matcher]]):
+        rules:
             The matching rules to match against each key.
     """
     if isinstance(rules, Matcher):
@@ -427,16 +425,14 @@ def each_key_matches(
     return ConcreteMatcher("eachKey", value, rules=rules)
 
 
-def each_value_matches(
-    value: MatchType, rules: Union[Matcher | List[Matcher]]
-) -> Matcher:
+def each_value_matches(value: MatchType, rules: Matcher | List[Matcher]) -> Matcher:
     """
     Returns a matcher that matches each value in a dictionary against a set of rules.
 
     Args:
-        value (MatchType):
+        value:
             The value to match against.
-        rules (Union[Matcher, List[Matcher]]):
+        rules:
             The matching rules to match against each value.
     """
     if isinstance(rules, Matcher):
