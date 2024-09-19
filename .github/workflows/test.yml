@@ -111,11 +111,11 @@ jobs:
         run: hatch run test --broker-url=http://pactbroker:pactbroker@localhost:9292 --container
 
       - name: Upload coverage
-        # TODO: Configure code coverage monitoring
-        if: false && matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          flags: tests
 
   test-other:
     name: >-
@@ -210,6 +210,12 @@ jobs:
       - name: Examples
         run: >
           hatch run example --broker-url=http://pactbroker:pactbroker@localhost:9292
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: examples
 
   format:
     name: Format
