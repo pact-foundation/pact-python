@@ -17,7 +17,8 @@ from pact.v3.generators import (
 from pact.v3.generators import date as date_generator
 from pact.v3.generators import regex as regex_generator
 from pact.v3.generators import time as time_generator
-from pact.v3.match.matchers import ConcreteMatcher, Matcher
+from pact.v3.match.matchers import ConcreteMatcher
+from pact.v3.match.types import Matcher
 
 if TYPE_CHECKING:
     from pact.v3.match.types import MatchType
@@ -61,8 +62,8 @@ def decimal(value: float | None = None, digits: int | None = None) -> Matcher:
 
 def number(
     value: float | None = None,
-    min_val: float | None = None,
-    max_val: float | None = None,
+    min_val: int | None = None,
+    max_val: int | None = None,
     digits: int | None = None,
 ) -> Matcher:
     """
