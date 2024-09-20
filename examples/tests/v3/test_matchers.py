@@ -8,7 +8,7 @@ from pathlib import Path
 import requests
 
 from examples.tests.v3.basic_flask_server import start_provider
-from pact.v3 import Pact, Verifier, generators, matchers
+from pact.v3 import Pact, Verifier, generators, match
 
 
 def test_matchers() -> None:
@@ -17,12 +17,12 @@ def test_matchers() -> None:
     (
         pact.upon_receiving("a request")
         .given("a state", parameters={"providerStateArgument": "providerStateValue"})
-        .with_request("GET", matchers.regex(r"/path/to/\d{1,4}", "/path/to/100"))
+        .with_request("GET", match.regex(r"/path/to/\d{1,4}", "/path/to/100"))
         .with_query_parameter(
             "asOf",
-            matchers.like(
+            match.like(
                 [
-                    matchers.date("yyyy-MM-dd", "2024-01-01"),
+                    match.date("yyyy-MM-dd", "2024-01-01"),
                 ],
                 min_count=1,
                 max_count=1,
@@ -30,62 +30,62 @@ def test_matchers() -> None:
         )
         .will_respond_with(200)
         .with_body({
-            "response": matchers.like(
+            "response": match.like(
                 {
-                    "regexMatches": matchers.regex(
+                    "regexMatches": match.regex(
                         r".*hello world'$", "must end with 'hello world'"
                     ),
-                    "randomRegexMatches": matchers.regex(
+                    "randomRegexMatches": match.regex(
                         r"1-8 digits: \d{1,8}, 1-8 random letters \w{1,8}"
                     ),
-                    "integerMatches": matchers.integer(42),
-                    "decimalMatches": matchers.decimal(3.1415),
-                    "randomIntegerMatches": matchers.integer(min_val=1, max_val=100),
-                    "randomDecimalMatches": matchers.decimal(digits=4),
-                    "booleanMatches": matchers.boolean(value=False),
-                    "randomStringMatches": matchers.string(size=10),
-                    "includeMatches": matchers.includes("world"),
-                    "includeWithGeneratorMatches": matchers.includes(
+                    "integerMatches": match.integer(42),
+                    "decimalMatches": match.decimal(3.1415),
+                    "randomIntegerMatches": match.integer(min_val=1, max_val=100),
+                    "randomDecimalMatches": match.decimal(digits=4),
+                    "booleanMatches": match.boolean(value=False),
+                    "randomStringMatches": match.string(size=10),
+                    "includeMatches": match.includes("world"),
+                    "includeWithGeneratorMatches": match.includes(
                         "world", generators.regex(r"\d{1,8} (hello )?world \d+")
                     ),
-                    "minMaxArrayMatches": matchers.each_like(
-                        matchers.number(digits=2),
+                    "minMaxArrayMatches": match.each_like(
+                        match.number(digits=2),
                         min_count=3,
                         max_count=5,
                     ),
-                    "arrayContainingMatches": matchers.array_containing([
-                        matchers.integer(1),
-                        matchers.integer(2),
+                    "arrayContainingMatches": match.array_containing([
+                        match.integer(1),
+                        match.integer(2),
                     ]),
                     "numbers": {
-                        "intMatches": matchers.number(42),
-                        "floatMatches": matchers.number(3.1415),
-                        "intGeneratorMatches": matchers.number(max_val=10),
-                        "decimalGeneratorMatches": matchers.number(digits=4),
+                        "intMatches": match.number(42),
+                        "floatMatches": match.number(3.1415),
+                        "intGeneratorMatches": match.number(max_val=10),
+                        "decimalGeneratorMatches": match.number(digits=4),
                     },
-                    "dateMatches": matchers.date("yyyy-MM-dd", "2024-01-01"),
-                    "randomDateMatches": matchers.date("yyyy-MM-dd"),
-                    "timeMatches": matchers.time("HH:mm:ss", "12:34:56"),
-                    "timestampMatches": matchers.timestamp(
+                    "dateMatches": match.date("yyyy-MM-dd", "2024-01-01"),
+                    "randomDateMatches": match.date("yyyy-MM-dd"),
+                    "timeMatches": match.time("HH:mm:ss", "12:34:56"),
+                    "timestampMatches": match.timestamp(
                         "yyyy-MM-dd'T'HH:mm:ss.SSSSSS", "2024-01-01T12:34:56.000000"
                     ),
-                    "nullMatches": matchers.null(),
-                    "eachKeyMatches": matchers.each_key_matches(
+                    "nullMatches": match.null(),
+                    "eachKeyMatches": match.each_key_matches(
                         {
-                            "id_1": matchers.each_value_matches(
+                            "id_1": match.each_value_matches(
                                 {
-                                    "name": matchers.string(size=30),
+                                    "name": match.string(size=30),
                                 },
-                                rules=matchers.string("John Doe"),
+                                rules=match.string("John Doe"),
                             )
                         },
-                        rules=matchers.regex(r"id_\d+", "id_1"),
+                        rules=match.regex(r"id_\d+", "id_1"),
                     ),
                 },
                 min_count=1,
             )
         })
-        .with_header("SpecialHeader", matchers.regex(r"Special: \w+", "Special: Foo"))
+        .with_header("SpecialHeader", match.regex(r"Special: \w+", "Special: Foo"))
     )
     with pact.serve() as mockserver:
         response = requests.get(
