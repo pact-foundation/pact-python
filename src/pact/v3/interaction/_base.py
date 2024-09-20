@@ -16,10 +16,12 @@ import json
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 import pact.v3.ffi
-from pact.v3.match import Matcher, MatcherEncoder
+from pact.v3.match.matchers import MatcherEncoder
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from pact.v3.match import Matcher
 
     try:
         from typing import Self
