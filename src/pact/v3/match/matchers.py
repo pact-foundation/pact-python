@@ -10,7 +10,7 @@ consumer should use a matcher to define the expected data.
 from __future__ import annotations
 
 from json import JSONEncoder
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Union
 
 from pact.v3.match.types import Matcher
 
@@ -36,16 +36,16 @@ MatcherTypeV3 = Literal[
     "arrayContains",
 ]
 
-MatcherTypeV4 = (
-    MatcherTypeV3
-    | Literal[
+MatcherTypeV4 = Union[
+    MatcherTypeV3,
+    Literal[
         "statusCode",
         "notEmpty",
         "semver",
         "eachKey",
         "eachValue",
-    ]
-)
+    ],
+]
 
 
 class ConcreteMatcher(Matcher):
