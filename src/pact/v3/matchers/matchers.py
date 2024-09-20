@@ -1,5 +1,10 @@
 """
-Implementation of matchers for the V3 and V4 Pact specification.
+Matching functionality for Pact.
+
+Matchers are used in Pact to allow for more flexible matching of data. While the
+consumer defines the expected request and response, there are circumstances
+where the provider may return dynamically generated data. In these cases, the
+consumer should use a matcher to define the expected data.
 """
 
 from __future__ import annotations
