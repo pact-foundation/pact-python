@@ -9,13 +9,14 @@ consumer should use a matcher to define the expected data.
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from json import JSONEncoder
 from typing import TYPE_CHECKING, Any, Literal
 
+from pact.v3.match.types import Matcher
+
 if TYPE_CHECKING:
     from pact.v3.generators import Generator
-    from pact.v3.match.types import AtomicType
+    from pact.v3.match.types import MatchType
 
 MatcherTypeV3 = Literal[
     "equality",
@@ -47,18 +48,6 @@ MatcherTypeV4 = (
 )
 
 
-class Matcher(ABC):
-    """
-    Matcher interface for exporting.
-    """
-
-    @abstractmethod
-    def to_dict(self) -> dict[str, Any]:
-        """
-        Convert the matcher to a dictionary for json serialization.
-        """
-
-
 class ConcreteMatcher(Matcher):
     """
     ConcreteMatcher class.
@@ -71,7 +60,7 @@ class ConcreteMatcher(Matcher):
         generator: Generator | None = None,
         *,
         force_generator: bool | None = False,
-        **kwargs: AtomicType,
+        **kwargs: MatchType,
     ) -> None:
         """
         Initialize the matcher class.
