@@ -2,7 +2,7 @@
 Matchers module.
 """
 
-from pact.v3.matchers.matchers import (
+from pact.v3.match.matchers import (
     Matcher,
     MatcherEncoder,
     array_containing,

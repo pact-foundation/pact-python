@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import aiohttp
 import pytest
 
-from pact.v3 import Pact, matchers
+from pact.v3 import Pact, match
 from pact.v3.pact import MismatchesError
 
 if TYPE_CHECKING:
@@ -311,7 +311,7 @@ async def test_with_query_parameter_with_matcher(
     (
         pact.upon_receiving("a basic request with a query parameter")
         .with_request("GET", "/")
-        .with_query_parameter("test", matchers.string("true"))
+        .with_query_parameter("test", match.string("true"))
         .will_respond_with(200)
     )
     with pact.serve() as srv:
