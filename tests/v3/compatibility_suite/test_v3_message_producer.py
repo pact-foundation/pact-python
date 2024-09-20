@@ -8,7 +8,7 @@ import pickle
 import re
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING
 
 import pytest
 from pytest_bdd import (
@@ -40,6 +40,8 @@ from tests.v3.compatibility_suite.util.provider import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from yarl import URL
 
     from pact.v3.verifier import Verifier

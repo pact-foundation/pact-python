@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  STABLE_PYTHON_VERSION: "3.12"
+  STABLE_PYTHON_VERSION: "3.13"
   HATCH_VERBOSE: "1"
   FORCE_COLOR: "1"
   CIBW_BUILD_FRONTEND: build

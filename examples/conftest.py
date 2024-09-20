@@ -13,11 +13,14 @@ after the examples have been run.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Generator, Union
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
 from yarl import URL
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 EXAMPLE_DIR = Path(__file__).parent.resolve()
 
@@ -34,7 +37,7 @@ def broker(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
     Otherwise, the Pact broker is started in a container. The URL of the
     containerised broker is then returned.
     """
-    broker_url: Union[str, None] = request.config.getoption("--broker-url")
+    broker_url: str | None = request.config.getoption("--broker-url")
 
     # If we have been given a broker URL, there's nothing more to do here and we
     # can return early.

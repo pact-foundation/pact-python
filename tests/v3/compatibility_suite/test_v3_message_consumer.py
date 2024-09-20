@@ -6,7 +6,7 @@ import ast
 import json
 import logging
 import re
-from typing import TYPE_CHECKING, Any, List, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from pytest_bdd import (
     given,
@@ -47,9 +47,9 @@ class ReceivedMessage(NamedTuple):
 class PactResult(NamedTuple):
     """Holder class for Pact Result objects."""
 
-    messages: List[ReceivedMessage]
+    messages: list[ReceivedMessage]
     pact_data: dict[str, Any] | None
-    errors: List[InteractionVerificationError]
+    errors: list[InteractionVerificationError]
 
 
 def assert_type(expected_type: str, value: Any) -> None:  # noqa: ANN401

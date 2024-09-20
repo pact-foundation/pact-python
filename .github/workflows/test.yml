@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  STABLE_PYTHON_VERSION: "3.12"
+  STABLE_PYTHON_VERSION: "3.13"
   PYTEST_ADDOPTS: --color=yes
   HATCH_VERBOSE: "1"
   FORCE_COLOR: "1"
@@ -67,12 +67,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         experimental: [false]
         include:
           - # Run tests against the next Python version, but no need for the full list of OSes.
             os: ubuntu-latest
-            python-version: "3.13.0-alpha.0 - 3.13"
+            python-version: "3.14"
             experimental: true
 
     steps:
@@ -133,16 +133,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        # Python 3.8 and 3.9 aren't supported on macos-latest (ARM)
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        # Python 3.9 aren't supported on macos-latest (ARM)
         exclude:
-          - os: macos-latest
-            python-version: "3.8"
           - os: macos-latest
             python-version: "3.9"
         include:
-          - os: macos-13
-            python-version: "3.8"
           - os: macos-13
             python-version: "3.9"
 

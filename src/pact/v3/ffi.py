@@ -92,14 +92,14 @@ import logging
 import typing
 import warnings
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Literal, Tuple
-from typing import Generator as GeneratorType
+from typing import TYPE_CHECKING, Any, Literal
 
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
     import datetime
     from collections.abc import Collection
+    from collections.abc import Generator as GeneratorType
     from pathlib import Path
 
     import cffi
@@ -1169,7 +1169,7 @@ class ProviderState:
         """
         return provider_state_get_name(self) or ""
 
-    def parameters(self) -> GeneratorType[Tuple[str, str], None, None]:
+    def parameters(self) -> GeneratorType[tuple[str, str], None, None]:
         """
         Provider State parameters.
 
@@ -7035,7 +7035,7 @@ def verifier_set_publish_options(
     handle: VerifierHandle,
     provider_version: str,
     build_url: str | None,
-    provider_tags: List[str] | None,
+    provider_tags: list[str] | None,
     provider_branch: str | None,
 ) -> None:
     """
@@ -7230,10 +7230,10 @@ def verifier_broker_source_with_selectors(  # noqa: PLR0913
     token: str | None,
     enable_pending: int,
     include_wip_pacts_since: datetime.date | None,
-    provider_tags: List[str],
+    provider_tags: list[str],
     provider_branch: str | None,
-    consumer_version_selectors: List[str],
-    consumer_version_tags: List[str],
+    consumer_version_selectors: list[str],
+    consumer_version_tags: list[str],
 ) -> None:
     """
     Adds a Pact broker as a source to verify.

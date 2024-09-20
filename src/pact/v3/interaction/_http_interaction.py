@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Iterable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
@@ -14,6 +14,8 @@ from pact.v3.match import Matcher
 from pact.v3.match.matcher import IntegrationJSONEncoder
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     try:
         from typing import Self
     except ImportError:

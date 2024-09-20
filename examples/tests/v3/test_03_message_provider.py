@@ -8,7 +8,6 @@ and then validate the pact against the provider.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple
 from unittest.mock import MagicMock
 
 from examples.src.message_producer import FileSystemMessageProducer
@@ -29,7 +28,7 @@ responses: dict[str, dict[str, str]] = {
 CURRENT_STATE: str | None = None
 
 
-def message_producer_function() -> Tuple[str, str]:
+def message_producer_function() -> tuple[str, str]:
     producer = FileSystemMessageProducer()
     producer.queue = MagicMock()
 

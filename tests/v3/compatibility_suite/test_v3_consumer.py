@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Generator
+from typing import TYPE_CHECKING, Any
 
 from pytest_bdd import given, parsers, scenario, then
 
@@ -14,6 +14,9 @@ from tests.v3.compatibility_suite.util import PactInteractionTuple, parse_markdo
 from tests.v3.compatibility_suite.util.consumer import (
     the_pact_file_for_the_test_is_generated,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 logger = logging.getLogger(__name__)
 

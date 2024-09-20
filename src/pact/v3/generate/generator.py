@@ -6,9 +6,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from pact.v3.types import GeneratorType
 
 

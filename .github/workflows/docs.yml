@@ -11,7 +11,7 @@ on:
       - master
 
 env:
-  STABLE_PYTHON_VERSION: "3.12"
+  STABLE_PYTHON_VERSION: "3.13"
   FORCE_COLOR: "1"
   HATCH_VERBOSE: "1"
 

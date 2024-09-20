@@ -8,12 +8,13 @@ import signal
 import subprocess
 import sys
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from random import randint, uniform
 from threading import Thread
-from typing import Generator, NoReturn
+from typing import NoReturn
 
 import requests
 from yarl import URL

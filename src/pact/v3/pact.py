@@ -68,11 +68,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Callable,
-    Dict,
-    Generator,
-    List,
     Literal,
-    Set,
     overload,
 )
 
@@ -90,6 +86,7 @@ from pact.v3.interaction._http_interaction import HttpInteraction
 from pact.v3.interaction._sync_message_interaction import SyncMessageInteraction
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from types import TracebackType
 
     from pact.v3.interaction import Interaction
@@ -145,7 +142,7 @@ class Pact:
 
         self._consumer = consumer
         self._provider = provider
-        self._interactions: Set[Interaction] = set()
+        self._interactions: set[Interaction] = set()
         self._handle: pact.v3.ffi.PactHandle = pact.v3.ffi.new_pact(
             consumer,
             provider,
@@ -409,7 +406,7 @@ class Pact:
     @overload
     def verify(
         self,
-        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
         kind: Literal["Async", "Sync"],
         *,
         raises: Literal[True] = True,
@@ -417,19 +414,19 @@ class Pact:
     @overload
     def verify(
         self,
-        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
         kind: Literal["Async", "Sync"],
         *,
         raises: Literal[False],
-    ) -> List[InteractionVerificationError]: ...
+    ) -> list[InteractionVerificationError]: ...
 
     def verify(
         self,
-        handler: Callable[[str | bytes | None, Dict[str, str]], None],
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
         kind: Literal["Async", "Sync"],
         *,
         raises: bool = True,
-    ) -> List[InteractionVerificationError] | None:
+    ) -> list[InteractionVerificationError] | None:
         """
         Verify message interactions.
 
@@ -463,7 +460,7 @@ class Pact:
                 process a message. If set to `False`, then the function will
                 return a list of errors.
         """
-        errors: List[InteractionVerificationError] = []
+        errors: list[InteractionVerificationError] = []
         for message in self.interactions(kind):
             request: pact.v3.ffi.MessageContents | None = None
             if isinstance(message, pact.v3.ffi.SynchronousMessage):

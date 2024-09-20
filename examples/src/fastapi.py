@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Annotated, Any, Dict, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, PlainSerializer
 
@@ -90,7 +90,7 @@ When testing the provider in a real application, the calls to the database would
 be mocked out to avoid the need for a real database. An example of this can be
 found in the [test suite][examples.tests.test_01_provider_fastapi].
 """
-FAKE_DB: Dict[int, User] = {}
+FAKE_DB: dict[int, User] = {}
 
 
 @app.get("/users/{uid}")

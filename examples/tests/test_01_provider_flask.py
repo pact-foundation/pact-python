@@ -27,7 +27,7 @@ from __future__ import annotations
 import time
 from datetime import datetime, timezone
 from multiprocessing import Process
-from typing import Any, Dict, Generator, Union
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -37,11 +37,14 @@ from examples.src.flask import User, app
 from flask import request
 from pact import Verifier  # type: ignore[import-untyped]
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 PROVIDER_URL = URL("http://localhost:8080")
 
 
 @app.route("/_pact/provider_states", methods=["POST"])
-async def mock_pact_provider_states() -> Dict[str, Union[str, None]]:
+async def mock_pact_provider_states() -> dict[str, str | None]:
     """
     Define the provider state.
 
@@ -139,7 +142,7 @@ def mock_post_request_to_create_user() -> None:
     """
     import examples.src.flask
 
-    local_db: Dict[int, User] = {}
+    local_db: dict[int, User] = {}
 
     def local_setitem(key: int, value: User) -> None:
         local_db[key] = value

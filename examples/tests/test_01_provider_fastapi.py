@@ -27,7 +27,7 @@ from __future__ import annotations
 import time
 from datetime import datetime, timezone
 from multiprocessing import Process
-from typing import Any, Dict, Generator, Union
+from typing import TYPE_CHECKING, Any, Optional
 from unittest.mock import MagicMock
 
 import pytest
@@ -37,6 +37,9 @@ from yarl import URL
 
 from examples.src.fastapi import User, app
 from pact import Verifier  # type: ignore[import-untyped]
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 PROVIDER_URL = URL("http://localhost:8080")
 
@@ -51,7 +54,7 @@ class ProviderState(BaseModel):
 @app.post("/_pact/provider_states")
 async def mock_pact_provider_states(
     state: ProviderState,
-) -> Dict[str, Union[str, None]]:
+) -> dict[str, Optional[str]]:
     """
     Define the provider state.
 
@@ -146,7 +149,7 @@ def mock_post_request_to_create_user() -> None:
     """
     import examples.src.fastapi
 
-    local_db: Dict[int, User] = {}
+    local_db: dict[int, User] = {}
 
     def local_setitem(key: int, value: User) -> None:
         local_db[key] = value

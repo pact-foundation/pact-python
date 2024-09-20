@@ -20,7 +20,7 @@ import tempfile
 import warnings
 import zipfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import cffi
 import requests
@@ -83,7 +83,7 @@ class PactBuildHook(BuildHookInterface[Any]):
     def initialize(
         self,
         version: str,  # noqa: ARG002
-        build_data: Dict[str, Any],
+        build_data: dict[str, Any],
     ) -> None:
         """Hook into Hatchling's build process."""
         build_data["infer_tag"] = True
@@ -338,9 +338,12 @@ class PactBuildHook(BuildHookInterface[Any]):
             msg = f"Unknown artifact type {artifact}"
             raise ValueError(msg)
 
-        with gzip.open(artifact, "rb") as f_in, (
-            self.tmpdir / (artifact.name.split("-")[0] + artifact.suffixes[0])
-        ).open("wb") as f_out:
+        with (
+            gzip.open(artifact, "rb") as f_in,
+            (self.tmpdir / (artifact.name.split("-")[0] + artifact.suffixes[0])).open(
+                "wb"
+            ) as f_out,
+        ):
             shutil.copyfileobj(f_in, f_out)
 
     def _pact_lib_header(self, url: str) -> list[str]:
@@ -364,9 +367,10 @@ class PactBuildHook(BuildHookInterface[Any]):
         url = url.rsplit("/", 1)[0] + "/pact.h"
         artifact = self._download(url)
         includes: list[str] = []
-        with artifact.open("r", encoding="utf-8") as f_in, (
-            self.tmpdir / "pact.h"
-        ).open("w", encoding="utf-8") as f_out:
+        with (
+            artifact.open("r", encoding="utf-8") as f_in,
+            (self.tmpdir / "pact.h").open("w", encoding="utf-8") as f_out,
+        ):
             for line in f_in:
                 sline = line.strip()
                 if sline.startswith("#include"):

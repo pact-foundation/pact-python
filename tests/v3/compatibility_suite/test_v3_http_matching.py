@@ -3,8 +3,8 @@
 import pickle
 import re
 import sys
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 from pytest_bdd import (
