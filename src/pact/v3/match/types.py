@@ -5,9 +5,9 @@ Typing definitions for the matchers.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Sequence, Union
 
-AtomicType = str | int | float | bool | None
+AtomicType = Union[str, int, float, bool, None]
 
 
 class Matcher(ABC):
@@ -22,12 +22,12 @@ class Matcher(ABC):
         """
 
 
-MatchType = (
-    AtomicType
-    | Matcher
-    | dict[AtomicType, "MatchType"]
-    | list["MatchType"]
-    | tuple["MatchType"]
-    | Sequence["MatchType"]
-    | Mapping[AtomicType, "MatchType"]
-)
+MatchType = Union[
+    AtomicType,
+    Matcher,
+    dict[AtomicType, "MatchType"],
+    list["MatchType"],
+    tuple["MatchType"],
+    Sequence["MatchType"],
+    Mapping[AtomicType, "MatchType"],
+]
