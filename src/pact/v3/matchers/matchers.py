@@ -4,7 +4,7 @@ Implementation of matchers for the V3 and V4 Pact specification.
 
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from json import JSONEncoder
 from typing import Any, Dict, List, Literal, Mapping, Sequence, Tuple
 
@@ -56,7 +56,7 @@ MatcherTypeV4 = (
 )
 
 
-class Matcher(metaclass=ABCMeta):
+class Matcher(ABC):
     """
     Matcher interface for exporting.
     """
