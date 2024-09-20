@@ -22,7 +22,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from flask import Flask, Response, abort, jsonify, request
 
@@ -89,11 +89,11 @@ When testing the provider in a real application, the calls to the database would
 be mocked out to avoid the need for a real database. An example of this can be
 found in the [test suite][examples.tests.test_01_provider_flask].
 """
-FAKE_DB: Dict[int, User] = {}
+FAKE_DB: dict[int, User] = {}
 
 
 @app.route("/users/<int:uid>")
-def get_user_by_id(uid: int) -> Response | Tuple[Response, int]:
+def get_user_by_id(uid: int) -> Response | tuple[Response, int]:
     """
     Fetch a user by their ID.
 
@@ -114,7 +114,7 @@ def create_user() -> Response:
     if request.json is None:
         abort(400, description="Invalid JSON data")
 
-    user: Dict[str, Any] = request.json
+    user: dict[str, Any] = request.json
     uid = len(FAKE_DB)
     FAKE_DB[uid] = User(
         id=uid,
@@ -129,7 +129,7 @@ def create_user() -> Response:
 
 
 @app.route("/users/<int:uid>", methods=["DELETE"])
-def delete_user(uid: int) -> Tuple[str | Response, int]:
+def delete_user(uid: int) -> tuple[str | Response, int]:
     if uid not in FAKE_DB:
         return jsonify({"detail": "User not found"}), 404
     del FAKE_DB[uid]

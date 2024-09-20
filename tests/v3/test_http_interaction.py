@@ -201,11 +201,14 @@ async def test_set_header_request_repeat(
         .will_respond_with(200)
     )
     with pact.serve(raises=False) as srv:
-        async with aiohttp.ClientSession(srv.url) as session, session.request(
-            "GET",
-            "/",
-            headers=headers,
-        ) as resp:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
+                "GET",
+                "/",
+                headers=headers,
+            ) as resp,
+        ):
             assert resp.status == 500
 
         assert len(srv.mismatches) == 1
@@ -537,10 +540,13 @@ async def test_multipart_file_request(pact: Pact, temp_dir: Path) -> None:
             {"Content-Type": "image/png"},  # type: ignore[arg-type]
         )
 
-        async with aiohttp.ClientSession(srv.url) as session, session.post(
-            "/",
-            data=mpwriter,
-        ) as resp:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.post(
+                "/",
+                data=mpwriter,
+            ) as resp,
+        ):
             assert resp.status == 200
             assert await resp.read() == b""
 
@@ -583,9 +589,10 @@ async def test_pact_server_verbose(
         .with_request("GET", "/foo")
         .will_respond_with(200)
     )
-    with caplog.at_level(logging.WARNING, logger="pact.v3.pact"), pact.serve(
-        raises=False, verbose=True
-    ) as srv:
+    with (
+        caplog.at_level(logging.WARNING, logger="pact.v3.pact"),
+        pact.serve(raises=False, verbose=True) as srv,
+    ):
         async with aiohttp.ClientSession(srv.url) as session:
             async with session.get("/bar") as resp:
                 assert resp.status == 500

@@ -15,7 +15,7 @@ from contextlib import closing, contextmanager
 from importlib import import_module
 from pathlib import Path
 from threading import Thread
-from typing import Generator, NoReturn, Tuple
+from typing import TYPE_CHECKING, NoReturn
 
 import requests
 
@@ -24,6 +24,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 from yarl import URL
 
 import flask
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +85,7 @@ class Provider:
             return "pong"
 
         @self.app.route(self.produce_message_url, methods=["POST"])
-        def produce_message() -> flask.Response | Tuple[str, int]:
+        def produce_message() -> flask.Response | tuple[str, int]:
             """
             Route a message request to the handler function.
 
@@ -101,7 +104,7 @@ class Provider:
                 return str(e), 500
 
         @self.app.route(self.set_provider_state_url, methods=["POST"])
-        def set_provider_state() -> Tuple[str, int]:
+        def set_provider_state() -> tuple[str, int]:
             """
             Calls the state provider function with the state provided in the request.
 

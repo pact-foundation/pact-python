@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Dict, Generator
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import requests
@@ -27,6 +27,7 @@ from examples.src.consumer import User, UserConsumer
 from pact import Consumer, Format, Like, Provider
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from pathlib import Path
 
     from pact.pact import Pact
@@ -104,7 +105,7 @@ def test_get_existing_user(pact: Pact, user_consumer: UserConsumer) -> None:
     # what it needs from the provider (as opposed to the full schema). Should
     # the provider later decide to add or remove fields, Pact's consumer-driven
     # approach will ensure that interaction is still valid.
-    expected: Dict[str, Any] = {
+    expected: dict[str, Any] = {
         "id": Format().integer,
         "name": "Verna Hampton",
         "created_on": Format().iso_8601_datetime(),
@@ -154,7 +155,7 @@ def test_create_user(pact: Pact, user_consumer: UserConsumer) -> None:
     status code is 200 and the response body matches the expected user data.
     """
     body = {"name": "Verna Hampton"}
-    expected_response: Dict[str, Any] = {
+    expected_response: dict[str, Any] = {
         "id": 124,
         "name": "Verna Hampton",
         "created_on": Format().iso_8601_datetime(),

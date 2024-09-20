@@ -18,9 +18,10 @@ of the Pact documentation.
 """
 
 import json
+from collections.abc import Generator
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Generator
+from typing import Any
 
 import pytest
 import requests
@@ -72,7 +73,7 @@ def test_get_existing_user(pact: Pact) -> None:
     code as shown in
     [`test_get_non_existent_user`](#test_get_non_existent_user).
     """
-    expected: Dict[str, Any] = {
+    expected: dict[str, Any] = {
         "id": 123,
         "name": "Verna Hampton",
         "created_on": match.datetime(
@@ -136,7 +137,7 @@ def test_create_user(pact: Pact) -> None:
     status code is 200 and the response body matches the expected user data.
     """
     body = {"name": "Verna Hampton"}
-    expected_response: Dict[str, Any] = {
+    expected_response: dict[str, Any] = {
         "id": 124,
         "name": "Verna Hampton",
         "created_on": match.datetime(

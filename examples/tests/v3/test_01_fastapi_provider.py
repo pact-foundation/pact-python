@@ -29,7 +29,7 @@ from __future__ import annotations
 import time
 from datetime import datetime, timezone
 from multiprocessing import Process
-from typing import TYPE_CHECKING, Callable, Dict, Literal
+from typing import TYPE_CHECKING, Callable, Literal
 from unittest.mock import MagicMock
 
 import uvicorn
@@ -45,7 +45,7 @@ PROVIDER_URL = URL("http://localhost:8000")
 async def mock_pact_provider_states(
     action: Literal["setup", "teardown"],
     state: str,
-) -> Dict[Literal["result"], str]:
+) -> dict[Literal["result"], str]:
     """
     Handler for the provider state callback.
 
@@ -226,7 +226,7 @@ def mock_post_request_to_create_user() -> None:
     """
     import examples.src.fastapi
 
-    local_db: Dict[int, User] = {}
+    local_db: dict[int, User] = {}
 
     def local_setitem(key: int, value: User) -> None:
         local_db[key] = value

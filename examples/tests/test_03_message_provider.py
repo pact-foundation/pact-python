@@ -26,7 +26,7 @@ documentation](https://docs.pact.io/getting_started/how_pact_works#non-http-test
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from flask import Flask
 from pact import MessageProvider
@@ -38,7 +38,7 @@ app = Flask(__name__)
 PACT_DIR = (Path(__file__).parent / "pacts").resolve()
 
 
-def generate_write_message() -> Dict[str, str]:
+def generate_write_message() -> dict[str, str]:
     return {
         "action": "WRITE",
         "path": "test.txt",
@@ -46,7 +46,7 @@ def generate_write_message() -> Dict[str, str]:
     }
 
 
-def generate_read_message() -> Dict[str, str]:
+def generate_read_message() -> dict[str, str]:
     return {
         "action": "READ",
         "path": "test.txt",

@@ -31,7 +31,7 @@ documentation](https://docs.pact.io/getting_started/how_pact_works#non-http-test
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Generator
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -40,6 +40,7 @@ from examples.src.message import Handler
 from pact import MessageConsumer, MessagePact, Provider
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from pathlib import Path
 
     from yarl import URL

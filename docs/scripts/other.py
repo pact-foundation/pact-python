@@ -84,10 +84,13 @@ for source_path in ALL_FILES:
     if is_binary(buf):
         if source_path.stat().st_size < 16 * 2**20:
             # Copy the file only if it's less than 16MB.
-            with Path(source_path).open("rb") as fi, mkdocs_gen_files.open(
-                dest_path,
-                "wb",
-            ) as fd:
+            with (
+                Path(source_path).open("rb") as fi,
+                mkdocs_gen_files.open(
+                    dest_path,
+                    "wb",
+                ) as fd,
+            ):
                 fd.write(fi.read())
         else:
             # File is too big, create a redirect.
@@ -109,9 +112,12 @@ for source_path in ALL_FILES:
             )
 
     else:
-        with Path(source_path).open("r", encoding="utf-8") as fi, mkdocs_gen_files.open(
-            dest_path,
-            "w",
-            encoding="utf-8",
-        ) as fd:
+        with (
+            Path(source_path).open("r", encoding="utf-8") as fi,
+            mkdocs_gen_files.open(
+                dest_path,
+                "w",
+                encoding="utf-8",
+            ) as fd,
+        ):
             fd.write(fi.read())

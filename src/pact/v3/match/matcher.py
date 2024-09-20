@@ -10,10 +10,10 @@ consumer should use a matcher to define the expected data.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from itertools import chain
 from json import JSONEncoder
-from typing import Any, Generic, Sequence, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pact.v3.generate.generator import Generator
 from pact.v3.types import UNSET, Matchable, MatcherType, Unset

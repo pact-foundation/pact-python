@@ -13,8 +13,6 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    Generator,
 )
 from unittest.mock import MagicMock
 
@@ -24,7 +22,7 @@ from examples.src.message import Handler
 from pact.v3.pact import Pact
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Generator
 
 
 log = logging.getLogger(__name__)
@@ -90,7 +88,7 @@ def handler() -> Handler:
 @pytest.fixture
 def verifier(
     handler: Handler,
-) -> Generator[Callable[[str | bytes | None, Dict[str, Any]], None], Any, None]:
+) -> Generator[Callable[[str | bytes | None, dict[str, Any]], None], Any, None]:
     """
     Verifier function for the Pact.
 
@@ -104,7 +102,7 @@ def verifier(
     """
     assert isinstance(handler.fs, MagicMock), "Handler filesystem not mocked"
 
-    def _verifier(msg: str | bytes | None, context: Dict[str, Any]) -> None:
+    def _verifier(msg: str | bytes | None, context: dict[str, Any]) -> None:
         assert msg is not None, "Message is None"
         data = json.loads(msg)
         log.info(
@@ -121,7 +119,7 @@ def verifier(
 def test_async_message_handler_write(
     pact: Pact,
     handler: Handler,
-    verifier: Callable[[str | bytes | None, Dict[str, Any]], None],
+    verifier: Callable[[str | bytes | None, dict[str, Any]], None],
 ) -> None:
     """
     Create a pact between the message handler and the message provider.
@@ -161,7 +159,7 @@ def test_async_message_handler_write(
 def test_async_message_handler_read(
     pact: Pact,
     handler: Handler,
-    verifier: Callable[[str | bytes | None, Dict[str, Any]], None],
+    verifier: Callable[[str | bytes | None, dict[str, Any]], None],
 ) -> None:
     """
     Create a pact between the message handler and the message provider.
