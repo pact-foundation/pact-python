@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
-from pact.v3.match import Matcher, MatcherEncoder
+from pact.v3.match import Matcher
+from pact.v3.match.matchers import MatcherEncoder
 
 if TYPE_CHECKING:
     try:
