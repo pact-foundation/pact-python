@@ -16,7 +16,7 @@ import json
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 import pact.v3.ffi
-from pact.v3.match.matchers import MatcherEncoder
+from pact.v3.match.matcher import IntegrationJSONEncoder
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -272,7 +272,7 @@ class Interaction(abc.ABC):
         if body and isinstance(body, str):
             body_str = body
         else:
-            body_str = json.dumps(body, cls=MatcherEncoder)
+            body_str = json.dumps(body, cls=IntegrationJSONEncoder)
 
         pact.v3.ffi.with_body(
             self._handle,

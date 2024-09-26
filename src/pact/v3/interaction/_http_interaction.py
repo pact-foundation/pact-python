@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 import pact.v3.ffi
 from pact.v3.interaction._base import Interaction
 from pact.v3.match import Matcher
-from pact.v3.match.matchers import MatcherEncoder
+from pact.v3.match.matcher import IntegrationJSONEncoder
 
 if TYPE_CHECKING:
     try:
@@ -110,7 +110,7 @@ class HttpInteraction(Interaction):
                 Path for the request.
         """
         if isinstance(path, Matcher):
-            path_str = json.dumps(path, cls=MatcherEncoder)
+            path_str = json.dumps(path, cls=IntegrationJSONEncoder)
         else:
             path_str = path
         pact.v3.ffi.with_request(self._handle, method, path_str)
@@ -216,7 +216,7 @@ class HttpInteraction(Interaction):
         index = self._request_indices[(interaction_part, name_lower)]
         self._request_indices[(interaction_part, name_lower)] += 1
         if not isinstance(value, str):
-            value_str: str = json.dumps(value, cls=MatcherEncoder)
+            value_str: str = json.dumps(value, cls=IntegrationJSONEncoder)
         else:
             value_str = value
         pact.v3.ffi.with_header_v2(
@@ -414,7 +414,7 @@ class HttpInteraction(Interaction):
         index = self._parameter_indices[name]
         self._parameter_indices[name] += 1
         if not isinstance(value, str):
-            value_str: str = json.dumps(value, cls=MatcherEncoder)
+            value_str: str = json.dumps(value, cls=IntegrationJSONEncoder)
         else:
             value_str = value
         pact.v3.ffi.with_query_parameter_v2(
