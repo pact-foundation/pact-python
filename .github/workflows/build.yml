@@ -43,7 +43,7 @@ jobs:
     name: Build source distribution
 
     if: github.event_name == 'push' || ! github.event.pull_request.draft
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
@@ -202,7 +202,7 @@ jobs:
     name: Publish wheels and sdist
 
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     environment:
       name: pypi
       url: https://pypi.org/p/pact-python
