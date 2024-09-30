@@ -39,294 +39,627 @@ using the functions from there.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import builtins
+import datetime as dt
+import warnings
+from decimal import Decimal
+from typing import TYPE_CHECKING, Mapping, Sequence, TypeVar, overload
 
-from pact.v3.generators import (
-    Generator,
-    date_time,
-    random_boolean,
-    random_decimal,
-    random_int,
-    random_string,
-)
-from pact.v3.generators import date as date_generator
-from pact.v3.generators import regex as regex_generator
-from pact.v3.generators import time as time_generator
-from pact.v3.match.matchers import ConcreteMatcher
-from pact.v3.match.types import Matcher
+from pact.v3 import generate
+from pact.v3.match.matcher import GenericMatcher, Matcher, Unset, _Unset
+from pact.v3.util import strftime_to_simple_date_format
 
 if TYPE_CHECKING:
-    from pact.v3.match.types import MatchType
+    from types import ModuleType
+
+    from pact.v3.generate import Generator
+    from pact.v3.match.types import Matchable, _MatchableT
+
+# ruff: noqa: A001
+#       We provide a more 'Pythonic' interface by matching the names of the
+#       functions to the types they match (e.g., `match.int` matches integers).
+#       This overrides the built-in types which are accessed via the `builtins`
+#       module.
+# ruff: noqa: A002
+#       We only for overrides of built-ins like `min`, `max` and `type` as
+#       arguments to provide a nicer interface for the user.
+
+# The Pact specification allows for arbitrary matching rules to be defined;
+# however in practice, only the matchers provided by the FFI are used and
+# supported.
+#
+# <https://github.com/pact-foundation/pact-reference/blob/303073c/rust/pact_models/src/matchingrules/mod.rs#L62>
+__all__ = [
+    "Matcher",
+    "int",
+    "decimal",
+    "float",
+    "number",
+    "str",
+    "regex",
+    "bool",
+    "date",
+    "time",
+    "timestamp",
+    "datetime",
+    "null",
+    "type",
+    "like",
+    "each_like",
+    "includes",
+    "array_containing",
+    "each_key_matches",
+    "each_value_matches",
+]
 
 
-def integer(
-    value: int | None = None,
-    min_val: int | None = None,
-    max_val: int | None = None,
-) -> Matcher:
+# We prevent users from importing from this module to avoid shadowing built-ins.
+__builtins_import = builtins.__import__
+
+
+def __import__(  # noqa: N807
+    name: builtins.str,
+    globals: Mapping[builtins.str, object] | None = None,
+    locals: Mapping[builtins.str, object] | None = None,
+    fromlist: Sequence[builtins.str] = (),
+    level: builtins.int = 0,
+) -> ModuleType:
     """
-    Returns a matcher that matches an integer value.
+    Override to warn when importing functions directly from this module.
+
+    This function is used to override the built-in `__import__` function to
+    warn users when they import functions directly from this module. This is
+    done to avoid shadowing built-in types and functions.
+    """
+    if name == "pact.v3.match" and len(set(fromlist) - {"Matcher"}) > 0:
+        warnings.warn(
+            "Avoid `from pact.v3.match import <func>`. "
+            "Prefer importing `match` and use `match.<func>`",
+            stacklevel=2,
+        )
+    return __builtins_import(name, globals, locals, fromlist, level)
+
+
+builtins.__import__ = __import__
+
+
+def int(
+    value: builtins.int | Unset = _Unset,
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+) -> Matcher[builtins.int]:
+    """
+    Match an integer value.
 
     Args:
         value:
-            The value to return when running a consumer test. Defaults to None.
-        min_val:
-            The minimum value of the integer to generate. Defaults to None.
-        max_val:
-            The maximum value of the integer to generate. Defaults to None.
+            Default value to use when generating a consumer test.
+        min:
+            If provided, the minimum value of the integer to generate.
+        max:
+            If provided, the maximum value of the integer to generate.
     """
-    return ConcreteMatcher(
+    return GenericMatcher(
         "integer",
-        value,
-        generator=random_int(min_val, max_val),
+        value=value,
+        generator=generate.random_int(min, max),
     )
 
 
-def decimal(value: float | None = None, digits: int | None = None) -> Matcher:
+_NumberT = TypeVar("_NumberT", builtins.int, builtins.float, Decimal)
+
+
+def float(
+    value: _NumberT | Unset = _Unset,
+    /,
+    *,
+    precision: builtins.int | None = None,
+) -> Matcher[_NumberT]:
     """
-    Returns a matcher that matches a decimal value.
+    Match a floating point number.
 
     Args:
         value:
-            The value to return when running a consumer test. Defaults to None.
-        digits:
-            The number of decimal digits to generate. Defaults to None.
+            Default value to use when generating a consumer test.
+        precision:
+            The number of decimal precision to generate.
     """
-    return ConcreteMatcher("decimal", value, generator=random_decimal(digits))
+    return GenericMatcher(
+        "decimal",
+        value,
+        generator=generate.random_decimal(precision),
+    )
 
 
+def decimal(
+    value: _NumberT | Unset = _Unset,
+    /,
+    *,
+    precision: builtins.int | None = None,
+) -> Matcher[_NumberT]:
+    """
+    Alias for [`float`][pact.v3.match.float].
+    """
+    return float(value, precision=precision)
+
+
+@overload
 def number(
-    value: float | None = None,
-    min_val: int | None = None,
-    max_val: int | None = None,
-    digits: int | None = None,
-) -> Matcher:
+    value: builtins.int,
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+) -> Matcher[builtins.int]: ...
+@overload
+def number(
+    value: builtins.float,
+    /,
+    *,
+    precision: builtins.int | None = None,
+) -> Matcher[builtins.float]: ...
+@overload
+def number(
+    value: Decimal,
+    /,
+    *,
+    precision: builtins.int | None = None,
+) -> Matcher[Decimal]: ...
+@overload
+def number(
+    value: Unset = _Unset,
+    /,
+) -> Matcher[builtins.float]: ...
+def number(
+    value: builtins.int | builtins.float | Decimal | Unset = _Unset,  # noqa: PYI041
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+    precision: builtins.int | None = None,
+) -> Matcher[builtins.int] | Matcher[builtins.float] | Matcher[Decimal]:
     """
-    Returns a matcher that matches a number value.
+    Match a general number.
 
-    If all arguments are None, a random_decimal generator will be used.
-    If value argument is an integer or either min_val or max_val are provided,
-    a random_int generator will be used.
+    This matcher is a generalization of the [`integer`][pact.v3.match.integer]
+    and [`decimal`][pact.v3.match.decimal] matchers. It can be used to match any
+    number, whether it is an integer or a float.
+
+    Th
 
     Args:
         value:
-            The value to return when running a consumer test.
-            Defaults to None.
-        min_val:
-            The minimum value of the number to generate. Only used when
-            value is an integer. Defaults to None.
-        max_val:
-            The maximum value of the number to generate. Only used when
-            value is an integer. Defaults to None.
-        digits:
-            The number of decimal digits to generate. Only used when
-            value is a float. Defaults to None.
+            Default value to use when generating a consumer test.
+        min:
+            The minimum value of the number to generate. Only used when value is
+            an integer. Defaults to None.
+        max:
+            The maximum value of the number to generate. Only used when value is
+            an integer. Defaults to None.
+        precision:
+            The number of decimal digits to generate. Only used when value is a
+            float. Defaults to None.
     """
-    if min_val is not None and digits is not None:
-        msg = "min_val and digits cannot be used together"
-        raise ValueError(msg)
+    if isinstance(value, builtins.int):
+        if precision is not None:
+            warnings.warn(
+                "The precision argument is ignored when value is an integer.",
+                stacklevel=2,
+            )
+        return GenericMatcher(
+            "number",
+            value=value,
+            generator=generate.random_int(min, max),
+        )
 
-    if isinstance(value, int) or any(v is not None for v in [min_val, max_val]):
-        generator = random_int(min_val, max_val)
-    else:
-        generator = random_decimal(digits)
-    return ConcreteMatcher("number", value, generator=generator)
+    if isinstance(value, builtins.float):
+        if min is not None or max is not None:
+            warnings.warn(
+                "The min and max arguments are ignored when value is not an integer.",
+                stacklevel=2,
+            )
+        return GenericMatcher(
+            "number",
+            value=value,
+            generator=generate.random_decimal(precision),
+        )
+
+    if isinstance(value, Decimal):
+        if min is not None or max is not None:
+            warnings.warn(
+                "The min and max arguments are ignored when value is not an integer.",
+                stacklevel=2,
+            )
+        return GenericMatcher(
+            "number",
+            value=value,
+            generator=generate.random_decimal(precision),
+        )
+
+    msg = f"Unsupported number type: {builtins.type(value)}"
+    raise TypeError(msg)
 
 
-def string(
-    value: str | None = None,
-    size: int | None = None,
+def str(
+    value: builtins.str | Unset = _Unset,
+    /,
+    *,
+    size: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher:
+) -> Matcher[builtins.str]:
     """
-    Returns a matcher that matches a string value.
+    Match a string value.
+
+    This function can be used to match a string value, merely verifying that the
+    value is a string, possibly with a specific length.
 
     Args:
         value:
-            The value to return when running a consumer test. Defaults to None.
+            Default value to use when generating a consumer test.
         size:
-            The size of the string to generate. Defaults to None.
+            If no generator is provided, the size of the string to generate
+            during a consumer test.
         generator:
-            The generator to use when generating the value. Defaults to None. If
-            no generator is provided and value is not provided, a random string
-            generator will be used.
+            Alternative generator to use when generating a consumer test.
     """
-    if generator is not None:
-        return ConcreteMatcher("type", value, generator=generator, force_generator=True)
-    return ConcreteMatcher("type", value, generator=random_string(size))
-
-
-def boolean(*, value: bool | None = True) -> Matcher:
-    """
-    Returns a matcher that matches a boolean value.
-
-    Args:
-        value:
-            The value to return when running a consumer test. Defaults to True.
-    """
-    return ConcreteMatcher("boolean", value, generator=random_boolean())
-
-
-def date(format_str: str, value: str | None = None) -> Matcher:
-    """
-    Returns a matcher that matches a date value.
-
-    Args:
-        format_str:
-            The format of the date. See
-            [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            for details on the format string.
-        value:
-            The value to return when running a consumer test. Defaults to None.
-    """
-    return ConcreteMatcher(
-        "date", value, format=format_str, generator=date_generator(format_str)
+    if size and generator:
+        warnings.warn(
+            "The size argument is ignored when a generator is provided.",
+            stacklevel=2,
+        )
+    return GenericMatcher(
+        "type",
+        value=value,
+        generator=generator or generate.random_string(size),
     )
 
 
-def time(format_str: str, value: str | None = None) -> Matcher:
+def regex(
+    value: builtins.str | Unset = _Unset,
+    /,
+    *,
+    regex: builtins.str | None = None,
+) -> Matcher[builtins.str]:
     """
-    Returns a matcher that matches a time value.
+    Match a string against a regular expression.
 
     Args:
-        format_str:
-            The format of the time. See
-            [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            for details on the format string.
         value:
-            The value to return when running a consumer test. Defaults to None.
+            Default value to use when generating a consumer test.
+        regex:
+            The regular expression to match against.
     """
-    return ConcreteMatcher(
-        "time", value, format=format_str, generator=time_generator(format_str)
-    )
-
-
-def timestamp(format_str: str, value: str | None = None) -> Matcher:
-    """
-    Returns a matcher that matches a timestamp value.
-
-    Args:
-        format_str:
-            The format of the timestamp. See
-            [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            for details on the format string.
-        value:
-            The value to return when running a consumer test. Defaults to None.
-    """
-    return ConcreteMatcher(
-        "timestamp",
+    if regex is None:
+        msg = "A regex pattern must be provided."
+        raise ValueError(msg)
+    return GenericMatcher(
+        "regex",
         value,
-        format=format_str,
-        generator=date_time(format_str),
+        generator=generate.regex(regex),
+        regex=regex,
     )
 
 
-def null() -> Matcher:
+def bool(value: builtins.bool | Unset = _Unset, /) -> Matcher[builtins.bool]:
     """
-    Returns a matcher that matches a null value.
+    Match a boolean value.
+
+    Args:
+        value:
+            Default value to use when generating a consumer test.
     """
-    return ConcreteMatcher("null")
+    return GenericMatcher("boolean", value, generator=generate.random_boolean())
+
+
+def date(
+    value: dt.date | builtins.str | Unset = _Unset,
+    /,
+    format: builtins.str | None = None,
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Matcher[builtins.str]:
+    """
+    Match a date value.
+
+    A date value is a string that represents a date in a specific format. It
+    does _not_ have any time information.
+
+    Args:
+        value:
+            Default value to use when generating a consumer test.
+        format:
+            Expected format of the date. This uses Python's [`strftime`
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+
+            Pact internally uses the [Java
+            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+            and the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format is done in
+            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+
+            If not provided, an ISO 8601 date format will be used.
+        disable_conversion:
+            If True, the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format will be disabled, and the format must be
+            in Java's `SimpleDateFormat` format. As a result, the value must
+            be a string as Python cannot format the date in the target format.
+    """
+    if disable_conversion:
+        if not isinstance(value, builtins.str):
+            msg = "When disable_conversion is True, the value must be a string."
+            raise ValueError(msg)
+        return GenericMatcher(
+            "date",
+            value=value,
+            format=format,
+            generator=generate.date(format or "yyyy-MM-dd", disable_conversion=True),
+        )
+
+    format = format or "%Y-%m-%d"
+    if isinstance(value, dt.date):
+        value = value.strftime(format)
+    format = strftime_to_simple_date_format(format)
+    return GenericMatcher(
+        "date",
+        value=value,
+        format=format,
+        generator=generate.date(format, disable_conversion=True),
+    )
+
+
+def time(
+    value: dt.time | builtins.str | Unset = _Unset,
+    /,
+    format: builtins.str | None = None,
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Matcher[builtins.str]:
+    """
+    Match a time value.
+
+    A time value is a string that represents a time in a specific format. It
+    does _not_ have any date information.
+
+    Args:
+        value:
+            Default value to use when generating a consumer test.
+        format:
+            Expected format of the time. This uses Python's [`strftime`
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+
+            Pact internally uses the [Java
+            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+            and the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format is done in
+            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+
+            If not provided, an ISO 8601 time format will be used.
+        disable_conversion:
+            If True, the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format will be disabled, and the format must be
+            in Java's `SimpleDateFormat` format. As a result, the value must
+            be a string as Python cannot format the time in the target format.
+    """
+    if disable_conversion:
+        if not isinstance(value, builtins.str):
+            msg = "When disable_conversion is True, the value must be a string."
+            raise ValueError(msg)
+        return GenericMatcher(
+            "time",
+            value=value,
+            format=format,
+            generator=generate.time(format or "HH:mm:ss", disable_conversion=True),
+        )
+    format = format or "%H:%M:%S"
+    if isinstance(value, dt.time):
+        value = value.strftime(format)
+    format = strftime_to_simple_date_format(format)
+    return GenericMatcher(
+        "time",
+        value=value,
+        format=format,
+        generator=generate.time(format, disable_conversion=True),
+    )
+
+
+def timestamp(
+    value: dt.datetime | builtins.str | Unset = _Unset,
+    /,
+    format: builtins.str | None = None,
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Matcher[builtins.str]:
+    """
+    Match a timestamp value.
+
+    A timestamp value is a string that represents a date and time in a specific
+    format.
+
+    Args:
+        value:
+            Default value to use when generating a consumer test.
+        format:
+            Expected format of the timestamp. This uses Python's [`strftime`
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+
+            Pact internally uses the [Java
+            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+            and the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format is done in
+            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+
+            If not provided, an ISO 8601 timestamp format will be used.
+        disable_conversion:
+            If True, the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format will be disabled, and the format must be
+            in Java's `SimpleDateFormat` format. As a result, the value must
+            be a string as Python cannot format the timestamp in the target format.
+    """
+    if disable_conversion:
+        if not isinstance(value, builtins.str):
+            msg = "When disable_conversion is True, the value must be a string."
+            raise ValueError(msg)
+        return GenericMatcher(
+            "timestamp",
+            value=value,
+            format=format,
+            generator=generate.date_time(
+                format or "yyyy-MM-dd'T'HH:mm:ss", disable_conversion=True
+            ),
+        )
+    format = format or "%Y-%m-%d'T'%H:%M:%S"
+    if isinstance(value, dt.datetime):
+        value = value.strftime(format)
+    format = strftime_to_simple_date_format(format)
+    return GenericMatcher(
+        "timestamp",
+        value=value,
+        format=format,
+        generator=generate.date_time(format, disable_conversion=True),
+    )
+
+
+def datetime(
+    value: dt.datetime | builtins.str | Unset = _Unset,
+    /,
+    format: builtins.str | None = None,
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Matcher[builtins.str]:
+    """
+    Alias for [`timestamp`][pact.v3.match.timestamp].
+    """
+    return timestamp(value, format, disable_conversion=disable_conversion)
+
+
+def none() -> Matcher[None]:
+    """
+    Match a null value.
+    """
+    return GenericMatcher("null")
+
+
+def null() -> Matcher[None]:
+    """
+    Alias for [`none`][pact.v3.match.none].
+    """
+    return none()
+
+
+def type(
+    value: _MatchableT,
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+    generator: Generator | None = None,
+) -> Matcher[_MatchableT]:
+    """
+    Match a value by type.
+
+    Args:
+        value:
+            A value to match against. This can be a primitive value, or a more
+            complex object or array.
+        min:
+            The minimum number of items that must match the value.
+        max:
+            The maximum number of items that must match the value.
+        generator:
+            The generator to use when generating the value.
+    """
+    return GenericMatcher("type", value, min=min, max=max, generator=generator)
 
 
 def like(
-    value: MatchType,
-    min_count: int | None = None,
-    max_count: int | None = None,
+    value: _MatchableT,
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher:
+) -> Matcher[_MatchableT]:
     """
-    Returns a matcher that matches the given template.
-
-    Args:
-        value:
-            The template to match against. This can be a primitive value, a
-            dictionary, or a list and matching will be done by type.
-        min_count:
-            The minimum number of items that must match the value. Defaults to None.
-        max_count:
-            The maximum number of items that must match the value. Defaults to None.
-        generator:
-            The generator to use when generating the value. Defaults to None.
+    Alias for [`type`][pact.v3.match.type].
     """
-    return ConcreteMatcher(
-        "type", value, min=min_count, max=max_count, generator=generator
-    )
+    return type(value, min=min, max=max, generator=generator)
 
 
 def each_like(
-    value: MatchType,
-    min_count: int | None = 1,
-    max_count: int | None = None,
-) -> Matcher:
+    value: _MatchableT,
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+) -> Matcher[Sequence[_MatchableT]]:
     """
-    Returns a matcher that matches each item in an array against a given value.
+    Match each item in an array against a given value.
 
-    Note that the matcher will validate the array length be at least one.
-    Also, the argument passed will be used as a template to match against
-    each item in the array and generally should not itself be an array.
+    The value itself is arbitrary, and can include other matchers.
 
     Args:
         value:
             The value to match against.
-        min_count:
-            The minimum number of items that must match the value. Default is 1.
-        max_count:
+        min:
+            The minimum number of items that must match the value. The minimum
+            value is always 1, even if min is set to 0.
+        max:
             The maximum number of items that must match the value.
     """
-    return ConcreteMatcher("type", [value], min=min_count, max=max_count)
+    if min is not None and min < 1:
+        warnings.warn(
+            "The minimum number of items must be at least 1.",
+            stacklevel=2,
+        )
+    return GenericMatcher("type", value=[value], min=min, max=max)
 
 
-def includes(value: str, generator: Generator | None = None) -> Matcher:
+def includes(
+    value: builtins.str,
+    /,
+    *,
+    generator: Generator | None = None,
+) -> Matcher[builtins.str]:
     """
-    Returns a matcher that matches a string that includes the given value.
+    Match a string that includes a given value.
 
     Args:
         value:
             The value to match against.
         generator:
-            The generator to use when generating the value. Defaults to None.
+            The generator to use when generating the value.
     """
-    return ConcreteMatcher("include", value, generator=generator, force_generator=True)
+    return GenericMatcher(
+        "include",
+        value=value,
+        generator=generator,
+    )
 
 
-def array_containing(variants: list[MatchType]) -> Matcher:
+def array_containing(variants: list[Matchable], /) -> Matcher[Matchable]:
     """
-    Returns a matcher that matches the items in an array against a number of variants.
+    Match an array that contains the given variants.
 
-    Matching is successful if each variant occurs once in the array. Variants may be
-    objects containing matching rules.
+    Matching is successful if each variant occurs once in the array. Variants
+    may be objects containing matching rules.
 
     Args:
         variants:
             A list of variants to match against.
     """
-    return ConcreteMatcher("arrayContains", variants=variants)
+    return GenericMatcher("arrayContains", variants=variants)
 
 
-def regex(regex: str, value: str | None = None) -> Matcher:
+def each_key_matches(
+    value: _MatchableT,
+    /,
+    *,
+    rules: Matcher[Matchable] | list[Matcher[Matchable]],
+) -> Matcher[Mapping[_MatchableT, Matchable]]:
     """
-    Returns a matcher that matches a string against a regular expression.
-
-    If no value is provided, a random string will be generated that matches
-    the regular expression.
-
-    Args:
-        regex:
-            The regular expression to match against.
-        value:
-            The value to return when running a consumer test. Defaults to None.
-    """
-    return ConcreteMatcher(
-        "regex",
-        value,
-        generator=regex_generator(regex),
-        regex=regex,
-    )
-
-
-def each_key_matches(value: MatchType, rules: Matcher | list[Matcher]) -> Matcher:
-    """
-    Returns a matcher that matches each key in a dictionary against a set of rules.
+    Match each key in a dictionary against a set of rules.
 
     Args:
         value:
@@ -336,10 +669,15 @@ def each_key_matches(value: MatchType, rules: Matcher | list[Matcher]) -> Matche
     """
     if isinstance(rules, Matcher):
         rules = [rules]
-    return ConcreteMatcher("eachKey", value, rules=rules)
+    return GenericMatcher("eachKey", value=value, rules=rules)
 
 
-def each_value_matches(value: MatchType, rules: Matcher | list[Matcher]) -> Matcher:
+def each_value_matches(
+    value: _MatchableT,
+    /,
+    *,
+    rules: Matcher[Matchable] | list[Matcher[Matchable]],
+) -> Matcher[Mapping[Matchable, _MatchableT]]:
     """
     Returns a matcher that matches each value in a dictionary against a set of rules.
 
@@ -351,4 +689,4 @@ def each_value_matches(value: MatchType, rules: Matcher | list[Matcher]) -> Matc
     """
     if isinstance(rules, Matcher):
         rules = [rules]
-    return ConcreteMatcher("eachValue", value, rules=rules)
+    return GenericMatcher("eachValue", value=value, rules=rules)
