@@ -1,5 +1,40 @@
 """
-Matchers module.
+Matching functionality.
+
+This module provides the functionality to define matching rules to be used
+within a Pact contract. These rules define the expected content of the data
+being exchanged in a way that is more flexible than a simple equality check.
+
+As an example, a contract may define how a new record is to be created through
+a POST request. The consumer would define the new information to be sent, and
+the expected response. The response may contain additional data added by the
+provider, such as an ID and a creation timestamp. The contract would define
+that the ID is of a specific format (e.g., an integer or a UUID), and that the
+creation timestamp is ISO 8601 formatted.
+
+!!! warning
+
+    Do not import functions directly from this module. Instead, import the
+    `match` module and use the functions from there:
+
+    ```python
+    # Good
+    from pact.v3 import match
+
+    match.int(...)
+
+    # Bad
+    from pact.v3.match import int
+
+    int(...)
+    ```
+
+A number of functions in this module are named after the types they match
+(e.g., `int`, `str`, `bool`). These functions will have aliases as well for
+better interoperability with the rest of the Pact ecosystem. It is important
+to note that these functions will shadow the built-in types if imported directly
+from this module. This is why we recommend importing the `match` module and
+using the functions from there.
 """
 
 from __future__ import annotations
