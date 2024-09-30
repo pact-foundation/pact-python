@@ -23,7 +23,7 @@ See: https://docs.python.org/3/library/stdtypes.html
 _ContainerMatchable: TypeAlias = (
     Sequence[Matchable]
     | AbstractSet[Matchable]
-    | Mapping[_BaseMatchable, Matchable]
+    | Mapping[Matchable, Matchable]
     | Collection[Matchable]
 )
 """
@@ -65,7 +65,7 @@ _MatchableT = TypeVar(
     # ContainerMatchable
     Sequence[Matchable],
     AbstractSet[Matchable],
-    Mapping[_BaseMatchable, Matchable],
+    Mapping[Matchable, Matchable],
     Collection[Matchable],
     # StdlibMatchable
     Decimal,
@@ -75,4 +75,7 @@ _MatchableT = TypeVar(
     datetime,
     # ExtraMatchable
     BaseModel,
+    # This last one silences a number of mypy complaints if trying to have a
+    # generic `Matcher[Matchable]` type.
+    Matchable,
 )
