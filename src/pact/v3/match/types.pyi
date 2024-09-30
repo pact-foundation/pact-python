@@ -1,5 +1,6 @@
 from collections.abc import Collection, Mapping, Sequence
 from collections.abc import Set as AbstractSet
+from datetime import date, datetime, time
 from decimal import Decimal
 from fractions import Fraction
 from typing import TypeAlias, TypeVar
@@ -32,15 +33,26 @@ These are defined based on the abstract base classes defined in the
 [`collections.abc`][collections.abc] module.
 """
 
-_ExtraMatchable: TypeAlias = BaseModel | Decimal | Fraction
+_StdlibMatchable: TypeAlias = Decimal | Fraction | date | time | datetime
+"""
+Standard library types.
+"""
 
-Matchable: TypeAlias = _BaseMatchable | _ContainerMatchable | _ExtraMatchable
+_ExtraMatchable: TypeAlias = BaseModel
+"""
+Additional matchable types, typically from third-party libraries.
+"""
+
+Matchable: TypeAlias = (
+    _BaseMatchable | _ContainerMatchable | _StdlibMatchable | _ExtraMatchable
+)
 """
 All supported matchable types.
 """
 
 _MatchableT = TypeVar(
     "_MatchableT",
+    # BaseMatchable
     int,
     float,
     complex,
@@ -50,11 +62,17 @@ _MatchableT = TypeVar(
     bytearray,
     memoryview,
     None,
+    # ContainerMatchable
     Sequence[Matchable],
     AbstractSet[Matchable],
     Mapping[_BaseMatchable, Matchable],
     Collection[Matchable],
-    BaseModel,
+    # StdlibMatchable
     Decimal,
     Fraction,
+    date,
+    time,
+    datetime,
+    # ExtraMatchable
+    BaseModel,
 )
