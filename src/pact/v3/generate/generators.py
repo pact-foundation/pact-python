@@ -114,7 +114,7 @@ def random_string(size: Optional[int] = None) -> Generator:
     Create a random string generator.
 
     Args:
-        size (Optional[int], optional):
+        size:
             The size of the string to generate.
     """
     return ConcreteGenerator("RandomString", {"size": size})

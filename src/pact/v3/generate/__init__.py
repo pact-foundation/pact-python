@@ -2,7 +2,7 @@
 Generator module.
 """
 
-from pact.v3.generators.generators import (
+from pact.v3.generate.generators import (
     Generator,
     GeneratorTypes,
     GeneratorTypeV3,
