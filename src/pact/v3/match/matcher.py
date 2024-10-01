@@ -12,18 +12,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from itertools import chain
 from json import JSONEncoder
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Generic,
-)
+from typing import TYPE_CHECKING, Any, Generic
 
+from pact.v3.generate.generator import Generator
 from pact.v3.types import UNSET, Matchable, MatchableT, MatcherType, Unset
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
-
-    from pact.v3.generate import Generator
 
 
 class Matcher(ABC, Generic[MatchableT]):
@@ -40,7 +35,7 @@ class Matcher(ABC, Generic[MatchableT]):
 
     The matcher provides methods to convert into an integration JSON object and
     a matching rule. These methods are used internally by the Pact library when
-    generating the Pact file.
+    communicating with the FFI and generating the Pact file.
     """
 
     @abstractmethod
@@ -84,9 +79,8 @@ class GenericMatcher(Matcher[MatchableT]):
     """
     Generic matcher.
 
-    In Pact, a matcher is used to define how a value should be compared. This
-    allows for more flexible matching of data, especially when the provider
-    returns dynamically generated data.
+    A generic matcher, with the ability to define arbitrary additional fields
+    for inclusion in the integration JSON object and matching rule.
     """
 
     def __init__(  # noqa: PLR0913
@@ -94,10 +88,10 @@ class GenericMatcher(Matcher[MatchableT]):
         type: MatcherType,  # noqa: A002
         /,
         value: MatchableT | Unset = UNSET,
-        generator: Generator | None = None,
-        extra_fields: Mapping[str, Matchable] | None = None,
-        integration_fields: Mapping[str, Matchable] | None = None,
-        matching_rule_fields: Mapping[str, Matchable] | None = None,
+        generator: Generator[MatchableT] | None = None,
+        extra_fields: Mapping[str, Any] | None = None,
+        integration_fields: Mapping[str, Any] | None = None,
+        matching_rule_fields: Mapping[str, Any] | None = None,
         **kwargs: Matchable,
     ) -> None:
         """
@@ -119,8 +113,8 @@ class GenericMatcher(Matcher[MatchableT]):
 
             extra_fields:
                 Additional configuration elements to pass to the matcher. These
-                fields will be used when converting the matcher to an
-                integration JSON object or a matching rule.
+                fields will be used when converting the matcher to both an
+                integration JSON object and a matching rule.
 
             integration_fields:
                 Additional configuration elements to pass to the matcher when
@@ -144,7 +138,7 @@ class GenericMatcher(Matcher[MatchableT]):
         Default value used by Pact when executing tests.
         """
 
-        self.generator = generator
+        self.generator: Generator[MatchableT] | None = generator
         """
         Generator used to generate a value when the value is not provided.
         """
@@ -158,41 +152,6 @@ class GenericMatcher(Matcher[MatchableT]):
         Check if the matcher has a value.
         """
         return not isinstance(self.value, Unset)
-
-    def extra_fields(self) -> dict[str, Matchable]:
-        """
-        Return any extra fields for the matcher.
-
-        These fields are added to the matcher when it is converted to an
-        integration JSON object or a matching rule.
-        """
-        return self._extra_fields
-
-    def extra_integration_fields(self) -> dict[str, Matchable]:
-        """
-        Return any extra fields for the integration JSON object.
-
-        These fields are added to the matcher when it is converted to an
-        integration JSON object.
-
-        If there is any overlap in the keys between this method and
-        [`extra_fields`](#extra_fields), the values from this method will be
-        used.
-        """
-        return {**self.extra_fields(), **self._integration_fields}
-
-    def extra_matching_rule_fields(self) -> dict[str, Matchable]:
-        """
-        Return any extra fields for the matching rule.
-
-        These fields are added to the matcher when it is converted to a matching
-        rule.
-
-        If there is any overlap in the keys between this method and
-        [`extra_fields`](#extra_fields), the values from this method will be
-        used.
-        """
-        return {**self.extra_fields(), **self._matching_rule_fields}
 
     def to_integration_json(self) -> dict[str, Matchable]:
         """
@@ -217,7 +176,8 @@ class GenericMatcher(Matcher[MatchableT]):
                 if self.generator is not None
                 else {}
             ),
-            **self.extra_integration_fields(),
+            **self._extra_fields,
+            **self._integration_fields,
         }
 
     def to_matching_rule(self) -> dict[str, Any]:
@@ -242,9 +202,8 @@ class GenericMatcher(Matcher[MatchableT]):
         return {
             "match": self.type,
             **({"value": self.value} if not isinstance(self.value, Unset) else {}),
-            **(self.generator.to_matching_rule() if self.generator is not None else {}),
-            **self.extra_fields(),
-            **self.extra_matching_rule_fields(),
+            **self._extra_fields,
+            **self._matching_rule_fields,
         }
 
 
@@ -276,5 +235,7 @@ class IntegrationJSONEncoder(JSONEncoder):
         Encode the object to JSON.
         """
         if isinstance(o, Matcher):
+            return o.to_integration_json()
+        if isinstance(o, Generator):
             return o.to_integration_json()
         return super().default(o)
