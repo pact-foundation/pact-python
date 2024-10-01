@@ -43,7 +43,7 @@ import builtins
 import datetime as dt
 import warnings
 from decimal import Decimal
-from typing import TYPE_CHECKING, Mapping, Sequence, TypeVar, overload
+from typing import TYPE_CHECKING, Literal, Mapping, Sequence, TypeVar, overload
 
 from pact.v3 import generate
 from pact.v3.match.matcher import GenericMatcher, Matcher, Unset, _Unset
@@ -365,6 +365,60 @@ def regex(
         value,
         generator=generate.regex(regex),
         regex=regex,
+    )
+
+
+_UUID_FORMATS = {
+    "simple": r"[0-9a-fA-F]{32}",
+    "lowercase": r"[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+    "uppercase": r"[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}",
+    "urn": r"urn:uuid:[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+}
+
+
+def uuid(
+    value: builtins.str | Unset = _Unset,
+    /,
+    *,
+    format: Literal["uppercase", "lowercase", "urn", "simple"] | None = None,
+) -> Matcher[builtins.str]:
+    """
+    Match a UUID value.
+
+    This matcher internally combines the [`regex`][pact.v3.match.regex] matcher
+    with a UUID regex pattern. See [RFC
+    4122](https://datatracker.ietf.org/doc/html/rfc4122) for details about the
+    UUID format.
+
+    While RFC 4122 requires UUIDs to be output as lowercase, UUIDs are case
+    insensitive on input. Some common alternative formats can be enforced using
+    the `format` parameter.
+
+    Args:
+        value:
+            Default value to use when generating a consumer test.
+        format:
+            Enforce a specific UUID format. The following formats are supported:
+
+            -   `simple`: 32 hexadecimal digits with no hyphens. This is _not_ a
+                valid UUID format, but is provided for convenience.
+            -   `lowercase`: Lowercase hexadecimal digits with hyphens.
+            -   `uppercase`: Uppercase hexadecimal digits with hyphens.
+            -   `urn`: Lowercase hexadecimal digits with hyphens and a
+                `urn:uuid:`
+
+            If not provided, the matcher will accept any lowercase or uppercase.
+    """
+    pattern = (
+        rf"^{_UUID_FORMATS[format]}$"
+        if format
+        else rf"^({_UUID_FORMATS['lowercase']}|{_UUID_FORMATS['uppercase']})$"
+    )
+    return GenericMatcher(
+        "regex",
+        value=value,
+        regex=pattern,
+        generator=generate.uuid(format),
     )
 
 
