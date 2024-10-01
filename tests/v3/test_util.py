@@ -10,6 +10,9 @@ from pact.v3.util import strftime_to_simple_date_format
 def test_convert_python_to_java_datetime_format_basic() -> None:
     assert strftime_to_simple_date_format("%Y-%m-%d") == "yyyy-MM-dd"
     assert strftime_to_simple_date_format("%H:%M:%S") == "HH:mm:ss"
+    assert (
+        strftime_to_simple_date_format("%Y-%m-%dT%H:%M:%S") == "yyyy-MM-dd'T'HH:mm:ss"
+    )
 
 
 def test_convert_python_to_java_datetime_format_with_unsupported_code() -> None:
