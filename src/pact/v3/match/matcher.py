@@ -10,18 +10,18 @@ consumer should use a matcher to define the expected data.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from itertools import chain
 from json import JSONEncoder
-from typing import TYPE_CHECKING, Any, Generic
+from typing import Any, Generic, TypeVar
 
 from pact.v3.generate.generator import Generator
-from pact.v3.types import UNSET, Matchable, MatchableT, MatcherType, Unset
+from pact.v3.types import UNSET, Matchable, MatcherType, Unset
 
-if TYPE_CHECKING:
-    from collections.abc import Mapping
+_T = TypeVar("_T")
 
 
-class Matcher(ABC, Generic[MatchableT]):
+class Matcher(ABC, Generic[_T]):
     """
     Abstract matcher.
 
@@ -75,7 +75,7 @@ class Matcher(ABC, Generic[MatchableT]):
         """
 
 
-class GenericMatcher(Matcher[MatchableT]):
+class GenericMatcher(Matcher[_T]):
     """
     Generic matcher.
 
@@ -87,8 +87,8 @@ class GenericMatcher(Matcher[MatchableT]):
         self,
         type: MatcherType,  # noqa: A002
         /,
-        value: MatchableT | Unset = UNSET,
-        generator: Generator[MatchableT] | None = None,
+        value: _T | Unset = UNSET,
+        generator: Generator | None = None,
         extra_fields: Mapping[str, Any] | None = None,
         integration_fields: Mapping[str, Any] | None = None,
         matching_rule_fields: Mapping[str, Any] | None = None,
@@ -133,19 +133,21 @@ class GenericMatcher(Matcher[MatchableT]):
         The type of the matcher.
         """
 
-        self.value: MatchableT | Unset = value
+        self.value: _T | Unset = value
         """
         Default value used by Pact when executing tests.
         """
 
-        self.generator: Generator[MatchableT] | None = generator
+        self.generator = generator
         """
         Generator used to generate a value when the value is not provided.
         """
 
-        self._integration_fields = integration_fields or {}
-        self._matching_rule_fields = matching_rule_fields or {}
-        self._extra_fields = dict(chain((extra_fields or {}).items(), kwargs.items()))
+        self._integration_fields: Mapping[str, Any] = integration_fields or {}
+        self._matching_rule_fields: Mapping[str, Any] = matching_rule_fields or {}
+        self._extra_fields: Mapping[str, Any] = dict(
+            chain((extra_fields or {}).items(), kwargs.items())
+        )
 
     def has_value(self) -> bool:
         """
@@ -153,7 +155,7 @@ class GenericMatcher(Matcher[MatchableT]):
         """
         return not isinstance(self.value, Unset)
 
-    def to_integration_json(self) -> dict[str, Matchable]:
+    def to_integration_json(self) -> dict[str, Any]:
         """
         Convert the matcher to an integration JSON object.
 
@@ -205,6 +207,74 @@ class GenericMatcher(Matcher[MatchableT]):
             **self._extra_fields,
             **self._matching_rule_fields,
         }
+
+
+class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
+    """
+    Each key matcher.
+
+    A matcher that applies a matcher to each key in a mapping.
+    """
+
+    def __init__(
+        self,
+        value: _T,
+        rules: list[Matcher[_T]] | None = None,
+    ) -> None:
+        """
+        Initialize the matcher.
+
+        Args:
+            value:
+                Example value to match against.
+
+            rules:
+                List of matchers to apply to each key in the mapping.
+        """
+        self._matcher: Matcher[Mapping[_T, Matchable]] = GenericMatcher(
+            "eachKey",
+            extra_fields={"rules": rules, "value": value},
+        )
+
+    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_integration_json()
+
+    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_matching_rule()
+
+
+class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
+    """
+    Each value matcher.
+
+    A matcher that applies a matcher to each value in a mapping.
+    """
+
+    def __init__(
+        self,
+        value: _T,
+        rules: list[Matcher[_T]] | None = None,
+    ) -> None:
+        """
+        Initialize the matcher.
+
+        Args:
+            value:
+                Example value to match against.
+
+            rules:
+                List of matchers to apply to each value in the mapping.
+        """
+        self._matcher: Matcher[Mapping[Matchable, _T]] = GenericMatcher(
+            "eachValue",
+            extra_fields={"rules": rules, "value": value},
+        )
+
+    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_integration_json()
+
+    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_matching_rule()
 
 
 class MatchingRuleJSONEncoder(JSONEncoder):
