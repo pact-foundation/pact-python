@@ -5,7 +5,8 @@ Implementations of generators for the V3 and V4 specifications.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from itertools import chain
+from typing import TYPE_CHECKING, Any, Mapping
 
 if TYPE_CHECKING:
     from pact.v3.types import GeneratorType
@@ -13,46 +14,148 @@ if TYPE_CHECKING:
 
 class Generator(ABC):
     """
-    Generator interface for exporting.
+    Abstract generator.
+
+    In Pact, a generator is used by Pact to generate data on-the-fly during the
+    contract verification process. Generators are used in combination with
+    matchers to provide more flexible matching of data.
+
+    This class is abstract and should not be used directly. Instead, use one of
+    the concrete generator classes. Alternatively, you can create your own
+    generator by subclassing this class
+
+    The matcher provides methods to convert into an integration JSON object and
+    a matching rule. These methods are used internally by the Pact library when
+    communicating with the FFI and generating the Pact file.
     """
 
     @abstractmethod
-    def to_dict(self) -> dict[str, Any]:
+    def to_integration_json(self) -> dict[str, Any]:
         """
-        Convert the generator to a dictionary for json serialization.
+        Convert the matcher to an integration JSON object.
+
+        This method is used internally to convert the matcher to a JSON object
+        which can be embedded directly in a number of places in the Pact FFI.
+
+        For more information about this format, see the docs:
+
+        > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
+
+        Returns:
+            The matcher as an integration JSON object.
+        """
+
+    @abstractmethod
+    def to_generator_json(self) -> dict[str, Any]:
+        """
+        Convert the generator to a generator JSON object.
+
+        This method is used internally to convert the generator to a JSON object
+        which can be embedded directly in a number of places in the Pact FFI.
+
+        For more information about this format, see the docs:
+
+        > https://github.com/pact-foundation/pact-specification/tree/version-4
+
+        and
+
+        > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
+
+        Returns:
+            The generator as a generator JSON object.
         """
 
 
-class ConcreteGenerator(Generator):
+class GenericGenerator(Generator):
     """
-    ConcreteGenerator class.
+    Generic generator.
 
-    A generator is used to generate values for a field in a response.
+    A generic generator, with the ability to specify the generator type and
+    additional configuration elements.
     """
 
     def __init__(
         self,
-        generator_type: GeneratorType,
-        extra_args: Optional[dict[str, Any]] = None,
+        type: GeneratorType,  # noqa: A002
+        /,
+        extra_fields: Mapping[str, Any] | None = None,
+        integration_fields: Mapping[str, Any] | None = None,
+        generator_json_fields: Mapping[str, Any] | None = None,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """
         Instantiate the generator class.
 
         Args:
-            generator_type (GeneratorTypeV4):
-                The type of generator to use.
-            extra_args (dict[str, Any], optional):
-                Additional configuration elements to pass to the generator.
-        """
-        self.type = generator_type
-        self.extra_args = extra_args if extra_args is not None else {}
+            type:
+                The type of the generator.
 
-    def to_dict(self) -> dict[str, Any]:
+            extra_fields:
+                Additional configuration elements to pass to the generator.
+                These fields will be used when converting the generator to both an
+                integration JSON object and a generator JSON object.
+
+            integration_fields:
+                Additional configuration elements to pass to the generator when
+                converting to an integration JSON object.
+
+            generator_json_fields:
+                Additional configuration elements to pass to the generator when
+                converting to a generator JSON object.
+
+            **kwargs:
+                Alternative way to pass additional configuration elements to the
+                generator. See the `extra_fields` argument for more information.
         """
-        Convert the generator to a dictionary for json serialization.
+        self.type = type
         """
-        data = {
+        The type of the generator.
+        """
+
+        self._integration_fields = integration_fields or {}
+        self._generator_json_fields = generator_json_fields or {}
+        self._extra_fields = dict(chain((extra_fields or {}).items(), kwargs.items()))
+
+    def to_integration_json(self) -> dict[str, Any]:
+        """
+        Convert the matcher to an integration JSON object.
+
+        This method is used internally to convert the matcher to a JSON object
+        which can be embedded directly in a number of places in the Pact FFI.
+
+        For more information about this format, see the docs:
+
+        > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
+
+        Returns:
+            The matcher as an integration JSON object.
+        """
+        return {
             "pact:generator:type": self.type,
+            **self._extra_fields,
+            **self._integration_fields,
         }
-        data.update({k: v for k, v in self.extra_args.items() if v is not None})
-        return data
+
+    def to_generator_json(self) -> dict[str, Any]:
+        """
+        Convert the generator to a generator JSON object.
+
+        This method is used internally to convert the generator to a JSON object
+        which can be embedded directly in a number of places in the Pact FFI.
+
+        For more information about this format, see the docs:
+
+        > https://github.com/pact-foundation/pact-specification/tree/version-4
+
+        and
+
+        > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
+
+        Returns:
+            The generator as a generator JSON object.
+        """
+        return {
+            "type": self.type,
+            **self._extra_fields,
+            **self._generator_json_fields,
+        }
