@@ -46,14 +46,14 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, Mapping, Sequence, TypeVar, overload
 
 from pact.v3 import generate
-from pact.v3.match.matcher import GenericMatcher, Matcher, Unset, _Unset
+from pact.v3.match.matcher import GenericMatcher, Matcher
+from pact.v3.types import UNSET, Matchable, MatchableT, Unset
 from pact.v3.util import strftime_to_simple_date_format
 
 if TYPE_CHECKING:
     from types import ModuleType
 
     from pact.v3.generate import Generator
-    from pact.v3.match.types import Matchable, _MatchableT
 
 # ruff: noqa: A001
 #       We provide a more 'Pythonic' interface by matching the names of the
@@ -124,7 +124,7 @@ builtins.__import__ = __import__
 
 
 def int(
-    value: builtins.int | Unset = _Unset,
+    value: builtins.int | Unset = UNSET,
     /,
     *,
     min: builtins.int | None = None,
@@ -149,7 +149,7 @@ def int(
 
 
 def integer(
-    value: builtins.int | Unset = _Unset,
+    value: builtins.int | Unset = UNSET,
     /,
     *,
     min: builtins.int | None = None,
@@ -165,7 +165,7 @@ _NumberT = TypeVar("_NumberT", builtins.int, builtins.float, Decimal)
 
 
 def float(
-    value: _NumberT | Unset = _Unset,
+    value: _NumberT | Unset = UNSET,
     /,
     *,
     precision: builtins.int | None = None,
@@ -187,7 +187,7 @@ def float(
 
 
 def decimal(
-    value: _NumberT | Unset = _Unset,
+    value: _NumberT | Unset = UNSET,
     /,
     *,
     precision: builtins.int | None = None,
@@ -222,11 +222,11 @@ def number(
 ) -> Matcher[Decimal]: ...
 @overload
 def number(
-    value: Unset = _Unset,
+    value: Unset = UNSET,
     /,
 ) -> Matcher[builtins.float]: ...
 def number(
-    value: builtins.int | builtins.float | Decimal | Unset = _Unset,  # noqa: PYI041
+    value: builtins.int | builtins.float | Decimal | Unset = UNSET,  # noqa: PYI041
     /,
     *,
     min: builtins.int | None = None,
@@ -296,7 +296,7 @@ def number(
 
 
 def str(
-    value: builtins.str | Unset = _Unset,
+    value: builtins.str | Unset = UNSET,
     /,
     *,
     size: builtins.int | None = None,
@@ -330,7 +330,7 @@ def str(
 
 
 def string(
-    value: builtins.str | Unset = _Unset,
+    value: builtins.str | Unset = UNSET,
     /,
     *,
     size: builtins.int | None = None,
@@ -343,7 +343,7 @@ def string(
 
 
 def regex(
-    value: builtins.str | Unset = _Unset,
+    value: builtins.str | Unset = UNSET,
     /,
     *,
     regex: builtins.str | None = None,
@@ -377,7 +377,7 @@ _UUID_FORMATS = {
 
 
 def uuid(
-    value: builtins.str | Unset = _Unset,
+    value: builtins.str | Unset = UNSET,
     /,
     *,
     format: Literal["uppercase", "lowercase", "urn", "simple"] | None = None,
@@ -422,7 +422,7 @@ def uuid(
     )
 
 
-def bool(value: builtins.bool | Unset = _Unset, /) -> Matcher[builtins.bool]:
+def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
     """
     Match a boolean value.
 
@@ -434,7 +434,7 @@ def bool(value: builtins.bool | Unset = _Unset, /) -> Matcher[builtins.bool]:
 
 
 def date(
-    value: dt.date | builtins.str | Unset = _Unset,
+    value: dt.date | builtins.str | Unset = UNSET,
     /,
     format: builtins.str | None = None,
     *,
@@ -490,7 +490,7 @@ def date(
 
 
 def time(
-    value: dt.time | builtins.str | Unset = _Unset,
+    value: dt.time | builtins.str | Unset = UNSET,
     /,
     format: builtins.str | None = None,
     *,
@@ -545,7 +545,7 @@ def time(
 
 
 def datetime(
-    value: dt.datetime | builtins.str | Unset = _Unset,
+    value: dt.datetime | builtins.str | Unset = UNSET,
     /,
     format: builtins.str | None = None,
     *,
@@ -604,7 +604,7 @@ def datetime(
 
 
 def timestamp(
-    value: dt.datetime | builtins.str | Unset = _Unset,
+    value: dt.datetime | builtins.str | Unset = UNSET,
     /,
     format: builtins.str | None = None,
     *,
@@ -631,13 +631,13 @@ def null() -> Matcher[None]:
 
 
 def type(
-    value: _MatchableT,
+    value: MatchableT,
     /,
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[_MatchableT]:
+) -> Matcher[MatchableT]:
     """
     Match a value by type.
 
@@ -656,13 +656,13 @@ def type(
 
 
 def like(
-    value: _MatchableT,
+    value: MatchableT,
     /,
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[_MatchableT]:
+) -> Matcher[MatchableT]:
     """
     Alias for [`match.type`][pact.v3.match.type].
     """
@@ -670,12 +670,12 @@ def like(
 
 
 def each_like(
-    value: _MatchableT,
+    value: MatchableT,
     /,
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Matcher[Sequence[_MatchableT]]:
+) -> Matcher[Sequence[MatchableT]]:
     """
     Match each item in an array against a given value.
 
@@ -735,11 +735,11 @@ def array_containing(variants: list[Matchable], /) -> Matcher[Matchable]:
 
 
 def each_key_matches(
-    value: _MatchableT,
+    value: MatchableT,
     /,
     *,
     rules: Matcher[Matchable] | list[Matcher[Matchable]],
-) -> Matcher[Mapping[_MatchableT, Matchable]]:
+) -> Matcher[Mapping[MatchableT, Matchable]]:
     """
     Match each key in a dictionary against a set of rules.
 
@@ -755,11 +755,11 @@ def each_key_matches(
 
 
 def each_value_matches(
-    value: _MatchableT,
+    value: MatchableT,
     /,
     *,
     rules: Matcher[Matchable] | list[Matcher[Matchable]],
-) -> Matcher[Mapping[Matchable, _MatchableT]]:
+) -> Matcher[Mapping[Matchable, MatchableT]]:
     """
     Returns a matcher that matches each value in a dictionary against a set of rules.
 
