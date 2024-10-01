@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from itertools import chain
 from json import JSONEncoder
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Sequence, TypeVar
 
 from pact.v3.generate.generator import Generator
 from pact.v3.types import UNSET, Matchable, MatcherType, Unset
@@ -234,6 +234,33 @@ class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
         self._matcher: Matcher[Mapping[_T, Matchable]] = GenericMatcher(
             "eachKey",
             extra_fields={"rules": rules, "value": value},
+        )
+
+    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_integration_json()
+
+    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_matching_rule()
+
+
+class ArrayContainsMatcher(Matcher[Sequence[_T]]):
+    """
+    Array contains matcher.
+
+    A matcher that checks if an array contains a value.
+    """
+
+    def __init__(self, variants: Sequence[_T | Matcher[_T]]) -> None:
+        """
+        Initialize the matcher.
+
+        Args:
+            variants:
+                List of possible values to match against.
+        """
+        self._matcher: Matcher[Sequence[_T]] = GenericMatcher(
+            "arrayContains",
+            extra_fields={"variants": variants},
         )
 
     def to_integration_json(self) -> dict[str, Any]:  # noqa: D102

@@ -47,6 +47,7 @@ from typing import TYPE_CHECKING, Literal, Mapping, Sequence, TypeVar, overload
 
 from pact.v3 import generate
 from pact.v3.match.matcher import (
+    ArrayContainsMatcher,
     EachKeyMatcher,
     EachValueMatcher,
     GenericMatcher,
@@ -727,7 +728,7 @@ def includes(
     )
 
 
-def array_containing(variants: Sequence[Matchable], /) -> Matcher[Matchable]:
+def array_containing(variants: Sequence[_T | Matcher[_T]], /) -> Matcher[Sequence[_T]]:
     """
     Match an array that contains the given variants.
 
@@ -738,7 +739,7 @@ def array_containing(variants: Sequence[Matchable], /) -> Matcher[Matchable]:
         variants:
             A list of variants to match against.
     """
-    return GenericMatcher("arrayContains", variants=variants)
+    return ArrayContainsMatcher(variants=variants)
 
 
 def each_key_matches(
