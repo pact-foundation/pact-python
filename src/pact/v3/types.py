@@ -6,16 +6,11 @@ the `types.pyi` stub file. The latter is used to provide much richer type
 information to static type checkers like `mypy`.
 """
 
-from typing import Any, TypeAlias, TypeVar
+from typing import Any, TypeAlias
 
 Matchable: TypeAlias = Any
 """
 All supported matchable types.
-"""
-
-MatchableT = TypeVar("MatchableT")
-"""
-Matchable type variable.
 """
 
 MatcherType: TypeAlias = str

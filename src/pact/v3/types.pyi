@@ -9,7 +9,7 @@ from collections.abc import Set as AbstractSet
 from datetime import date, datetime, time
 from decimal import Decimal
 from fractions import Fraction
-from typing import Literal, TypeAlias, TypeVar
+from typing import Literal, TypeAlias
 
 from pydantic import BaseModel
 
@@ -51,36 +51,6 @@ Matchable: TypeAlias = (
 """
 All supported matchable types.
 """
-
-MatchableT = TypeVar(  # noqa: PYI001
-    "MatchableT",
-    # BaseMatchable
-    int,
-    float,
-    complex,
-    bool,
-    str,
-    bytes,
-    bytearray,
-    memoryview,
-    None,
-    # ContainerMatchable
-    Sequence[Matchable],
-    AbstractSet[Matchable],
-    Mapping[Matchable, Matchable],
-    Collection[Matchable],
-    # StdlibMatchable
-    Decimal,
-    Fraction,
-    date,
-    time,
-    datetime,
-    # ExtraMatchable
-    BaseModel,
-    # This last one silences a number of mypy complaints if trying to have a
-    # generic `Matcher[Matchable]` type.
-    Matchable,
-)
 
 _MatcherTypeV3: TypeAlias = Literal[
     "equality",
