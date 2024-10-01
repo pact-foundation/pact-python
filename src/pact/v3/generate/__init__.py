@@ -2,68 +2,161 @@
 Generator module.
 """
 
-from typing import Literal, Optional
+from __future__ import annotations
+
+import builtins
+import warnings
+from typing import TYPE_CHECKING, Literal, Mapping, Sequence
 
 from pact.v3.generate.generator import (
-    ConcreteGenerator,
     Generator,
+    GenericGenerator,
 )
+from pact.v3.util import strftime_to_simple_date_format
 
+if TYPE_CHECKING:
+    from types import ModuleType
+
+# ruff: noqa: A001
+#       We provide a more 'Pythonic' interface by matching the names of the
+#       functions to the types they generate (e.g., `generate.int` generates
+#       integers). This overrides the built-in types which are accessed via the
+#       `builtins` module.
+# ruff: noqa: A002
+#       We only for overrides of built-ins like `min`, `max` and `type` as
+#       arguments to provide a nicer interface for the user.
+
+
+# The Pact specification allows for arbitrary generators to be defined; however
+# in practice, only the matchers provided by the FFI are used and supported.
+#
+# <https://github.com/pact-foundation/pact-reference/blob/303073c/rust/pact_models/src/generators/mod.rs#L121>
 __all__ = [
     "Generator",
-    "random_int",
-    "random_decimal",
-    "random_hexadecimal",
-    "random_string",
+    "int",
+    "float",
+    "hex",
+    "str",
     "regex",
     "uuid",
     "date",
     "time",
-    "date_time",
-    "random_boolean",
+    "datetime",
+    "bool",
     "provider_state",
     "mock_server_url",
 ]
 
+# We prevent users from importing from this module to avoid shadowing built-ins.
+__builtins_import = builtins.__import__
 
-def random_int(
-    min_val: Optional[int] = None, max_val: Optional[int] = None
+
+def __import__(  # noqa: N807
+    name: builtins.str,
+    globals: Mapping[builtins.str, object] | None = None,
+    locals: Mapping[builtins.str, object] | None = None,
+    fromlist: Sequence[builtins.str] = (),
+    level: builtins.int = 0,
+) -> ModuleType:
+    """
+    Override to warn when importing functions directly from this module.
+
+    This function is used to override the built-in `__import__` function to
+    warn users when they import functions directly from this module. This is
+    done to avoid shadowing built-in types and functions.
+    """
+    if name == "pact.v3.generate" and len(set(fromlist) - {"Matcher"}) > 0:
+        warnings.warn(
+            "Avoid `from pact.v3.generate import <func>`. "
+            "Prefer importing `generate` and use `generate.<func>`",
+            stacklevel=2,
+        )
+    return __builtins_import(name, globals, locals, fromlist, level)
+
+
+builtins.__import__ = __import__
+
+
+def int(
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
 ) -> Generator:
     """
     Create a random integer generator.
 
     Args:
-        min_val (Optional[int], optional):
+        min:
             The minimum value for the integer.
-        max_val (Optional[int], optional):
+        max:
             The maximum value for the integer.
     """
-    return ConcreteGenerator("RandomInt", {"min": min_val, "max": max_val})
+    params: dict[builtins.str, builtins.int] = {}
+    if min is not None:
+        params["min"] = min
+    if max is not None:
+        params["max"] = max
+    return GenericGenerator("RandomInt", extra_fields=params)
 
 
-def random_decimal(digits: Optional[int] = None) -> Generator:
+def integer(
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+) -> Generator:
+    """
+    Alias for [`generate.int`][pact.v3.generate.int].
+    """
+    return int(min=min, max=max)
+
+
+def float(precision: builtins.int | None = None) -> Generator:
     """
     Create a random decimal generator.
 
+    Note that the precision is the number of digits to generate _in total_, not
+    the number of decimal places. Therefore a precision of `3` will generate
+    numbers like `0.123` and `12.3`.
+
     Args:
-        digits (Optional[int], optional):
+        precision:
             The number of digits to generate.
     """
-    return ConcreteGenerator("RandomDecimal", {"digits": digits})
+    params: dict[builtins.str, builtins.int] = {}
+    if precision is not None:
+        params["digits"] = precision
+    return GenericGenerator("RandomDecimal", extra_fields=params)
 
 
-def random_hexadecimal(digits: Optional[int] = None) -> Generator:
+def decimal(precision: builtins.int | None = None) -> Generator:
+    """
+    Alias for [`generate.float`][pact.v3.generate.float].
+    """
+    return float(precision=precision)
+
+
+def hex(digits: builtins.int | None = None) -> Generator:
     """
     Create a random hexadecimal generator.
 
     Args:
-        digits (Optional[int], optional):
+        digits:
             The number of digits to generate.
     """
-    return ConcreteGenerator("RandomHexadecimal", {"digits": digits})
+    params: dict[builtins.str, builtins.int] = {}
+    if digits is not None:
+        params["digits"] = digits
+    return GenericGenerator("RandomHexadecimal", extra_fields=params)
 
 
-def random_string(size: Optional[int] = None) -> Generator:
+def hexadecimal(digits: builtins.int | None = None) -> Generator:
+    """
+    Alias for [`generate.hex`][pact.v3.generate.hex].
+    """
+    return hex(digits=digits)
+
+
+def str(size: builtins.int | None = None) -> Generator:
     """
     Create a random string generator.
 
@@ -71,91 +164,173 @@ def random_string(size: Optional[int] = None) -> Generator:
         size:
             The size of the string to generate.
     """
-    return ConcreteGenerator("RandomString", {"size": size})
+    params: dict[builtins.str, builtins.int] = {}
+    if size is not None:
+        params["size"] = size
+    return GenericGenerator("RandomString", extra_fields=params)
 
 
-def regex(regex: str) -> Generator:
+def string(size: builtins.int | None = None) -> Generator:
+    """
+    Alias for [`generate.str`][pact.v3.generate.str].
+    """
+    return str(size=size)
+
+
+def regex(regex: builtins.str) -> Generator:
     """
     Create a regex generator.
 
-    This will generate a string that matches the given regex.
+    The generator will generate a string that matches the given regex pattern.
 
     Args:
-        regex (str):
+        regex:
             The regex pattern to match.
     """
-    return ConcreteGenerator("Regex", {"regex": regex})
+    return GenericGenerator("Regex", {"regex": regex})
+
+
+_UUID_FORMATS = {
+    "simple": "simple",
+    "lowercase": "lower-case-hyphenated",
+    "uppercase": "upper-case-hyphenated",
+    "urn": "URN",
+}
 
 
 def uuid(
-    format_str: Optional[
-        Literal["simple", "lower-case-hyphenated", "upper-case-hyphenated", "URN"]
-    ] = None,
+    format: Literal["simple", "lowercase", "uppercase", "urn"] = "lowercase",
 ) -> Generator:
     """
     Create a UUID generator.
 
     Args:
-        format_str (Optional[Literal[]], optional):
+        format:
             The format of the UUID to generate. This parameter is only supported
             under the V4 specification.
     """
-    return ConcreteGenerator("Uuid", {"format": format_str})
+    return GenericGenerator("Uuid", {"format": format})
 
 
-def date(format_str: str) -> Generator:
+def date(
+    format: builtins.str = "%Y-%m-%d",
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Generator:
     """
     Create a date generator.
 
-    This will generate a date string that matches the given format. See
-    [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-    for more information on the format string.
-
     Args:
-        format_str (str):
-            The format string to use for the date.
+        format:
+            Expected format of the date. This uses Python's [`strftime`
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+
+            Pact internally uses the [Java
+            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+            and the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format is done in
+            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+
+            If not provided, an ISO 8601 date format is used: `%Y-%m-%d`.
+        disable_conversion:
+            If True, the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format will be disabled, and the format must be
+            in Java's `SimpleDateFormat` format. As a result, the value must
+            be a string as Python cannot format the date in the target format.
     """
-    return ConcreteGenerator("Date", {"format": format_str})
+    if not disable_conversion:
+        format = strftime_to_simple_date_format(format or "%Y-%m-%d")
+    return GenericGenerator("Date", {"format": format or "%yyyy-MM-dd"})
 
 
-def time(format_str: str) -> Generator:
+def time(
+    format: builtins.str = "%H:%M:%S",
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Generator:
     """
     Create a time generator.
 
-    This will generate a time string that matches the given format. See
-    [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-    for more information on the format string.
-
     Args:
-        format_str (str):
-            The format string to use for the time.
+        format:
+            Expected format of the time. This uses Python's [`strftime`
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+
+            Pact internally uses the [Java
+            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+            and the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format is done in
+            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+
+            If not provided, an ISO 8601 time format will be used: `%H:%M:%S`.
+        disable_conversion:
+            If True, the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format will be disabled, and the format must be
+            in Java's `SimpleDateFormat` format. As a result, the value must
+            be a string as Python cannot format the time in the target format.
     """
-    return ConcreteGenerator("Time", {"format": format_str})
+    if not disable_conversion:
+        format = strftime_to_simple_date_format(format or "%H:%M:%S")
+    return GenericGenerator("Time", {"format": format or "HH:mm:ss"})
 
 
-def date_time(format_str: str) -> Generator:
+def datetime(
+    format: builtins.str,
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Generator:
     """
     Create a date-time generator.
 
-    This will generate a date-time string that matches the given format. See
-    [Java SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-    for more information on the format string.
-
     Args:
-        format_str (str):
-            The format string to use for the date-time.
+        format:
+            Expected format of the timestamp. This uses Python's [`strftime`
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+
+            Pact internally uses the [Java
+            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+            and the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format is done in
+            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+
+            If not provided, an ISO 8601 timestamp format will be used:
+            `%Y-%m-%dT%H:%M:%S`.
+        disable_conversion:
+            If True, the conversion from Python's `strftime` format to Java's
+            `SimpleDateFormat` format will be disabled, and the format must be
+            in Java's `SimpleDateFormat` format. As a result, the value must be
     """
-    return ConcreteGenerator("DateTime", {"format": format_str})
+    if not disable_conversion:
+        format = strftime_to_simple_date_format(format or "%Y-%m-%dT%H:%M:%S")
+    return GenericGenerator("DateTime", {"format": format or "yyyy-MM-dd'T'HH:mm:ss"})
 
 
-def random_boolean() -> Generator:
+def timestamp(
+    format: builtins.str,
+    *,
+    disable_conversion: builtins.bool = False,
+) -> Generator:
+    """
+    Alias for [`generate.datetime`][pact.v3.generate.datetime].
+    """
+    return datetime(format=format, disable_conversion=disable_conversion)
+
+
+def bool() -> Generator:
     """
     Create a random boolean generator.
     """
-    return ConcreteGenerator("RandomBoolean")
+    return GenericGenerator("RandomBoolean")
 
 
-def provider_state(expression: Optional[str] = None) -> Generator:
+def boolean() -> Generator:
+    """
+    Alias for [`generate.bool`][pact.v3.generate.bool].
+    """
+    return bool()
+
+
+def provider_state(expression: builtins.str | None = None) -> Generator:
     """
     Create a provider state generator.
 
@@ -163,14 +338,18 @@ def provider_state(expression: Optional[str] = None) -> Generator:
     using the given expression.
 
     Args:
-        expression (Optional[str], optional):
+        expression:
             The expression to use to look up the provider state.
     """
-    return ConcreteGenerator("ProviderState", {"expression": expression})
+    params: dict[builtins.str, builtins.str] = {}
+    if expression is not None:
+        params["expression"] = expression
+    return GenericGenerator("ProviderState", extra_fields=params)
 
 
-def mock_server_url(
-    regex: Optional[str] = None, example: Optional[str] = None
+def mock_server_url(  # noqa: D417 (false positive)
+    regex: builtins.str | None = None,
+    example: builtins.str | None = None,
 ) -> Generator:
     """
     Create a mock server URL generator.
@@ -178,9 +357,15 @@ def mock_server_url(
     Generates a URL with the mock server as the base URL.
 
     Args:
-        regex (Optional[str], optional):
+        regex:
             The regex pattern to match.
-        example (Optional[str], optional):
+
+        example:
             An example URL to use.
-    """
-    return ConcreteGenerator("MockServerURL", {"regex": regex, "example": example})
+    """  # noqa: D214, D405  (false positive)
+    params: dict[builtins.str, builtins.str] = {}
+    if regex is not None:
+        params["regex"] = regex
+    if example is not None:
+        params["example"] = example
+    return GenericGenerator("MockServerURL", extra_fields=params)
