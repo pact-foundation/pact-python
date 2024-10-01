@@ -441,6 +441,13 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
     return GenericMatcher("boolean", value, generator=generate.bool())
 
 
+def boolean(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
+    """
+    Alias for [`match.bool`][pact.v3.match.bool].
+    """
+    return bool(value)
+
+
 def date(
     value: dt.date | builtins.str | Unset = UNSET,
     /,
