@@ -80,8 +80,8 @@ __all__ = [
     "bool",
     "date",
     "time",
-    "timestamp",
     "datetime",
+    "timestamp",
     "null",
     "type",
     "like",
@@ -148,6 +148,19 @@ def int(
     )
 
 
+def integer(
+    value: builtins.int | Unset = _Unset,
+    /,
+    *,
+    min: builtins.int | None = None,
+    max: builtins.int | None = None,
+) -> Matcher[builtins.int]:
+    """
+    Alias for [`match.int`][pact.v3.match.int].
+    """
+    return int(value, min=min, max=max)
+
+
 _NumberT = TypeVar("_NumberT", builtins.int, builtins.float, Decimal)
 
 
@@ -180,7 +193,7 @@ def decimal(
     precision: builtins.int | None = None,
 ) -> Matcher[_NumberT]:
     """
-    Alias for [`float`][pact.v3.match.float].
+    Alias for [`match.float`][pact.v3.match.float].
     """
     return float(value, precision=precision)
 
@@ -316,6 +329,19 @@ def str(
     )
 
 
+def string(
+    value: builtins.str | Unset = _Unset,
+    /,
+    *,
+    size: builtins.int | None = None,
+    generator: Generator | None = None,
+) -> Matcher[builtins.str]:
+    """
+    Alias for [`match.str`][pact.v3.match.str].
+    """
+    return str(value, size=size, generator=generator)
+
+
 def regex(
     value: builtins.str | Unset = _Unset,
     /,
@@ -379,7 +405,7 @@ def date(
             `SimpleDateFormat` format is done in
             [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
 
-            If not provided, an ISO 8601 date format will be used.
+            If not provided, an ISO 8601 date format will be used: `%Y-%m-%d`.
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -435,7 +461,7 @@ def time(
             `SimpleDateFormat` format is done in
             [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
 
-            If not provided, an ISO 8601 time format will be used.
+            If not provided, an ISO 8601 time format will be used: `%H:%M:%S`.
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -464,7 +490,7 @@ def time(
     )
 
 
-def timestamp(
+def datetime(
     value: dt.datetime | builtins.str | Unset = _Unset,
     /,
     format: builtins.str | None = None,
@@ -472,7 +498,7 @@ def timestamp(
     disable_conversion: builtins.bool = False,
 ) -> Matcher[builtins.str]:
     """
-    Match a timestamp value.
+    Match a datetime value.
 
     A timestamp value is a string that represents a date and time in a specific
     format.
@@ -490,12 +516,13 @@ def timestamp(
             `SimpleDateFormat` format is done in
             [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
 
-            If not provided, an ISO 8601 timestamp format will be used.
+            If not provided, an ISO 8601 timestamp format will be used:
+            `%Y-%m-%dT%H:%M:%S`.
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
-            in Java's `SimpleDateFormat` format. As a result, the value must
-            be a string as Python cannot format the timestamp in the target format.
+            in Java's `SimpleDateFormat` format. As a result, the value must be
+            a string as Python cannot format the timestamp in the target format.
     """
     if disable_conversion:
         if not isinstance(value, builtins.str):
@@ -506,10 +533,11 @@ def timestamp(
             value=value,
             format=format,
             generator=generate.date_time(
-                format or "yyyy-MM-dd'T'HH:mm:ss", disable_conversion=True
+                format or "yyyy-MM-dd'T'HH:mm:ss",
+                disable_conversion=True,
             ),
         )
-    format = format or "%Y-%m-%d'T'%H:%M:%S"
+    format = format or "%Y-%m-%dT%H:%M:%S"
     if isinstance(value, dt.datetime):
         value = value.strftime(format)
     format = strftime_to_simple_date_format(format)
@@ -521,7 +549,7 @@ def timestamp(
     )
 
 
-def datetime(
+def timestamp(
     value: dt.datetime | builtins.str | Unset = _Unset,
     /,
     format: builtins.str | None = None,
@@ -529,7 +557,7 @@ def datetime(
     disable_conversion: builtins.bool = False,
 ) -> Matcher[builtins.str]:
     """
-    Alias for [`timestamp`][pact.v3.match.timestamp].
+    Alias for [`match.datetime`][pact.v3.match.datetime].
     """
     return timestamp(value, format, disable_conversion=disable_conversion)
 
@@ -543,7 +571,7 @@ def none() -> Matcher[None]:
 
 def null() -> Matcher[None]:
     """
-    Alias for [`none`][pact.v3.match.none].
+    Alias for [`match.none`][pact.v3.match.none].
     """
     return none()
 
@@ -582,7 +610,7 @@ def like(
     generator: Generator | None = None,
 ) -> Matcher[_MatchableT]:
     """
-    Alias for [`type`][pact.v3.match.type].
+    Alias for [`match.type`][pact.v3.match.type].
     """
     return type(value, min=min, max=max, generator=generator)
 
