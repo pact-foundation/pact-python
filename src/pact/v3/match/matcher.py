@@ -16,70 +16,17 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Generic,
-    Literal,
-    Union,
 )
 
-from pact.v3.match.types import Matchable, _MatchableT
+from pact.v3.types import UNSET, Matchable, MatchableT, MatcherType, Unset
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from pact.v3.generate import Generator
 
-_MatcherTypeV3 = Literal[
-    "equality",
-    "regex",
-    "type",
-    "include",
-    "integer",
-    "decimal",
-    "number",
-    "timestamp",
-    "time",
-    "date",
-    "null",
-    "boolean",
-    "contentType",
-    "values",
-    "arrayContains",
-]
-"""
-Matchers defined in the V3 specification.
-"""
 
-_MatcherTypeV4 = Literal[
-    "statusCode",
-    "notEmpty",
-    "semver",
-    "eachKey",
-    "eachValue",
-]
-"""
-Matchers defined in the V4 specification.
-"""
-
-MatcherType = Union[_MatcherTypeV3, _MatcherTypeV4]
-"""
-All supported matchers.
-"""
-
-
-class Unset:
-    """
-    Special type to represent an unset value.
-
-    Typically, the value `None` is used to represent an unset value. However, we
-    need to differentiate between a null value and an unset value. For example,
-    a matcher may have a value of `None`, which is different from a matcher
-    having no value at all. This class is used to represent the latter.
-    """
-
-
-_Unset = Unset()
-
-
-class Matcher(ABC, Generic[_MatchableT]):
+class Matcher(ABC, Generic[MatchableT]):
     """
     Abstract matcher.
 
@@ -133,7 +80,7 @@ class Matcher(ABC, Generic[_MatchableT]):
         """
 
 
-class GenericMatcher(Matcher[_MatchableT]):
+class GenericMatcher(Matcher[MatchableT]):
     """
     Generic matcher.
 
@@ -146,7 +93,7 @@ class GenericMatcher(Matcher[_MatchableT]):
         self,
         type: MatcherType,  # noqa: A002
         /,
-        value: _MatchableT | Unset = _Unset,
+        value: MatchableT | Unset = UNSET,
         generator: Generator | None = None,
         extra_fields: Mapping[str, Matchable] | None = None,
         integration_fields: Mapping[str, Matchable] | None = None,
@@ -192,7 +139,7 @@ class GenericMatcher(Matcher[_MatchableT]):
         The type of the matcher.
         """
 
-        self.value: _MatchableT | Unset = value
+        self.value: MatchableT | Unset = value
         """
         Default value used by Pact when executing tests.
         """

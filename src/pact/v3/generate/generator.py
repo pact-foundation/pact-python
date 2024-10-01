@@ -5,33 +5,10 @@ Implementations of generators for the V3 and V4 specifications.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 
-_GeneratorTypeV3 = Literal[
-    "RandomInt",
-    "RandomDecimal",
-    "RandomHexadecimal",
-    "RandomString",
-    "Regex",
-    "Uuid",
-    "Date",
-    "Time",
-    "DateTime",
-    "RandomBoolean",
-]
-"""
-Generators defines in the V3 specification.
-"""
-
-_GeneratorTypeV4 = Literal["ProviderState", "MockServerURL"]
-"""
-Generators defined in the V4 specification.
-"""
-
-GeneratorType = Union[_GeneratorTypeV3, _GeneratorTypeV4]
-"""
-All supported generator types.
-"""
+if TYPE_CHECKING:
+    from pact.v3.types import GeneratorType
 
 
 class Generator(ABC):
