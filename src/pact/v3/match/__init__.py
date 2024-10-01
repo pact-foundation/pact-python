@@ -46,8 +46,13 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, Mapping, Sequence, TypeVar, overload
 
 from pact.v3 import generate
-from pact.v3.match.matcher import GenericMatcher, Matcher
-from pact.v3.types import UNSET, Matchable, MatchableT, Unset
+from pact.v3.match.matcher import (
+    EachKeyMatcher,
+    EachValueMatcher,
+    GenericMatcher,
+    Matcher,
+)
+from pact.v3.types import UNSET, Matchable, Unset
 from pact.v3.util import strftime_to_simple_date_format
 
 if TYPE_CHECKING:
@@ -91,6 +96,8 @@ __all__ = [
     "each_key_matches",
     "each_value_matches",
 ]
+
+_T = TypeVar("_T")
 
 
 # We prevent users from importing from this module to avoid shadowing built-ins.
@@ -144,7 +151,7 @@ def int(
     return GenericMatcher(
         "integer",
         value=value,
-        generator=generate.random_int(min, max),
+        generator=generate.int(min=min, max=max),
     )
 
 
@@ -182,7 +189,7 @@ def float(
     return GenericMatcher(
         "decimal",
         value,
-        generator=generate.random_decimal(precision),
+        generator=generate.float(precision),
     )
 
 
@@ -264,7 +271,7 @@ def number(
         return GenericMatcher(
             "number",
             value=value,
-            generator=generate.random_int(min, max),
+            generator=generate.int(min=min, max=max),
         )
 
     if isinstance(value, builtins.float):
@@ -276,7 +283,7 @@ def number(
         return GenericMatcher(
             "number",
             value=value,
-            generator=generate.random_decimal(precision),
+            generator=generate.float(precision),
         )
 
     if isinstance(value, Decimal):
@@ -288,7 +295,7 @@ def number(
         return GenericMatcher(
             "number",
             value=value,
-            generator=generate.random_decimal(precision),
+            generator=generate.float(precision),
         )
 
     msg = f"Unsupported number type: {builtins.type(value)}"
@@ -325,7 +332,7 @@ def str(
     return GenericMatcher(
         "type",
         value=value,
-        generator=generator or generate.random_string(size),
+        generator=generator or generate.str(size),
     )
 
 
@@ -418,7 +425,7 @@ def uuid(
         "regex",
         value=value,
         regex=pattern,
-        generator=generate.uuid(format),
+        generator=generate.uuid(format or "lowercase"),
     )
 
 
@@ -430,7 +437,7 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
         value:
             Default value to use when generating a consumer test.
     """
-    return GenericMatcher("boolean", value, generator=generate.random_boolean())
+    return GenericMatcher("boolean", value, generator=generate.bool())
 
 
 def date(
@@ -586,7 +593,7 @@ def datetime(
             "timestamp",
             value=value,
             format=format,
-            generator=generate.date_time(
+            generator=generate.datetime(
                 format or "yyyy-MM-dd'T'HH:mm:ss",
                 disable_conversion=True,
             ),
@@ -599,7 +606,7 @@ def datetime(
         "timestamp",
         value=value,
         format=format,
-        generator=generate.date_time(format, disable_conversion=True),
+        generator=generate.datetime(format, disable_conversion=True),
     )
 
 
@@ -631,13 +638,13 @@ def null() -> Matcher[None]:
 
 
 def type(
-    value: MatchableT,
+    value: _T,
     /,
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[MatchableT]:
+) -> Matcher[_T]:
     """
     Match a value by type.
 
@@ -656,13 +663,13 @@ def type(
 
 
 def like(
-    value: MatchableT,
+    value: _T,
     /,
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[MatchableT]:
+) -> Matcher[_T]:
     """
     Alias for [`match.type`][pact.v3.match.type].
     """
@@ -670,12 +677,12 @@ def like(
 
 
 def each_like(
-    value: MatchableT,
+    value: _T,
     /,
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Matcher[Sequence[MatchableT]]:
+) -> Matcher[Sequence[_T]]:  # type: ignore[type-var]
     """
     Match each item in an array against a given value.
 
@@ -695,7 +702,7 @@ def each_like(
             "The minimum number of items must be at least 1.",
             stacklevel=2,
         )
-    return GenericMatcher("type", value=[value], min=min, max=max)
+    return GenericMatcher("type", value=[value], min=min, max=max)  # type: ignore[return-value]
 
 
 def includes(
@@ -720,7 +727,7 @@ def includes(
     )
 
 
-def array_containing(variants: list[Matchable], /) -> Matcher[Matchable]:
+def array_containing(variants: Sequence[Matchable], /) -> Matcher[Matchable]:
     """
     Match an array that contains the given variants.
 
@@ -735,11 +742,11 @@ def array_containing(variants: list[Matchable], /) -> Matcher[Matchable]:
 
 
 def each_key_matches(
-    value: MatchableT,
+    value: _T,
     /,
     *,
-    rules: Matcher[Matchable] | list[Matcher[Matchable]],
-) -> Matcher[Mapping[MatchableT, Matchable]]:
+    rules: Matcher[_T] | list[Matcher[_T]],
+) -> Matcher[Mapping[_T, Matchable]]:
     """
     Match each key in a dictionary against a set of rules.
 
@@ -751,15 +758,15 @@ def each_key_matches(
     """
     if isinstance(rules, Matcher):
         rules = [rules]
-    return GenericMatcher("eachKey", value=value, rules=rules)
+    return EachKeyMatcher(value=value, rules=rules)
 
 
 def each_value_matches(
-    value: MatchableT,
+    value: _T,
     /,
     *,
-    rules: Matcher[Matchable] | list[Matcher[Matchable]],
-) -> Matcher[Mapping[Matchable, MatchableT]]:
+    rules: Matcher[_T] | list[Matcher[_T]],
+) -> Matcher[Mapping[Matchable, _T]]:
     """
     Returns a matcher that matches each value in a dictionary against a set of rules.
 
@@ -771,4 +778,4 @@ def each_value_matches(
     """
     if isinstance(rules, Matcher):
         rules = [rules]
-    return GenericMatcher("eachValue", value=value, rules=rules)
+    return EachValueMatcher(value=value, rules=rules)
