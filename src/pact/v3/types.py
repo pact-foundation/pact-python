@@ -6,7 +6,9 @@ the `types.pyi` stub file. The latter is used to provide much richer type
 information to static type checkers like `mypy`.
 """
 
-from typing import Any, TypeAlias
+from typing import Any
+
+from typing_extensions import TypeAlias
 
 Matchable: TypeAlias = Any
 """
