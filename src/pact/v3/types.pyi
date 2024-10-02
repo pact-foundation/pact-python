@@ -9,9 +9,10 @@ from collections.abc import Set as AbstractSet
 from datetime import date, datetime, time
 from decimal import Decimal
 from fractions import Fraction
-from typing import Literal, TypeAlias
+from typing import Literal
 
 from pydantic import BaseModel
+from typing_extensions import TypeAlias
 
 _BaseMatchable: TypeAlias = (
     int | float | complex | bool | str | bytes | bytearray | memoryview | None
