@@ -5,11 +5,11 @@ This module provides the functionality to define matching rules to be used
 within a Pact contract. These rules define the expected content of the data
 being exchanged in a way that is more flexible than a simple equality check.
 
-As an example, a contract may define how a new record is to be created through
-a POST request. The consumer would define the new information to be sent, and
-the expected response. The response may contain additional data added by the
-provider, such as an ID and a creation timestamp. The contract would define
-that the ID is of a specific format (e.g., an integer or a UUID), and that the
+As an example, a contract may define how a new record is to be created through a
+POST request. The consumer would define the new information to be sent, and the
+expected response. The response may contain additional data added by the
+provider, such as an ID and a creation timestamp. The contract would define that
+the ID is of a specific format (e.g., an integer or a UUID), and that the
 creation timestamp is ISO 8601 formatted.
 
 !!! warning
@@ -29,12 +29,17 @@ creation timestamp is ISO 8601 formatted.
     int(...)
     ```
 
-A number of functions in this module are named after the types they match
-(e.g., `int`, `str`, `bool`). These functions will have aliases as well for
-better interoperability with the rest of the Pact ecosystem. It is important
-to note that these functions will shadow the built-in types if imported directly
-from this module. This is why we recommend importing the `match` module and
-using the functions from there.
+A number of functions in this module are named after the types they match (e.g.,
+`int`, `str`, `bool`). These functions will have aliases as well for better
+interoperability with the rest of the Pact ecosystem. It is important to note
+that these functions will shadow the built-in types if imported directly from
+this module. This is why we recommend importing the `match` module and using the
+functions from there.
+
+Matching rules are frequently combined with generators which allow for Pact to
+generate values on the fly during contract testing. As a general rule for the
+functions below, if a `value` is _not_ provided, a generator will be used; and
+conversely, if a `value` is provided, a generator will _not_ be used.
 """
 
 from __future__ import annotations
@@ -149,10 +154,14 @@ def int(
         max:
             If provided, the maximum value of the integer to generate.
     """
+    if value is UNSET:
+        return GenericMatcher(
+            "integer",
+            generator=generate.int(min=min, max=max),
+        )
     return GenericMatcher(
         "integer",
         value=value,
-        generator=generate.int(min=min, max=max),
     )
 
 
@@ -187,10 +196,14 @@ def float(
         precision:
             The number of decimal precision to generate.
     """
+    if value is UNSET:
+        return GenericMatcher(
+            "decimal",
+            generator=generate.float(precision),
+        )
     return GenericMatcher(
         "decimal",
         value,
-        generator=generate.float(precision),
     )
 
 
@@ -248,8 +261,6 @@ def number(
     and [`decimal`][pact.v3.match.decimal] matchers. It can be used to match any
     number, whether it is an integer or a float.
 
-    Th
-
     Args:
         value:
             Default value to use when generating a consumer test.
@@ -263,6 +274,16 @@ def number(
             The number of decimal digits to generate. Only used when value is a
             float. Defaults to None.
     """
+    if value is UNSET:
+        if min is not None or max is not None:
+            generator = generate.int(min=min, max=max)
+        elif precision is not None:
+            generator = generate.float(precision)
+        else:
+            msg = "At least one of min, max, or precision must be provided."
+            raise ValueError(msg)
+        return GenericMatcher("number", generator=generator)
+
     if isinstance(value, builtins.int):
         if precision is not None:
             warnings.warn(
@@ -272,7 +293,6 @@ def number(
         return GenericMatcher(
             "number",
             value=value,
-            generator=generate.int(min=min, max=max),
         )
 
     if isinstance(value, builtins.float):
@@ -284,7 +304,6 @@ def number(
         return GenericMatcher(
             "number",
             value=value,
-            generator=generate.float(precision),
         )
 
     if isinstance(value, Decimal):
@@ -296,7 +315,6 @@ def number(
         return GenericMatcher(
             "number",
             value=value,
-            generator=generate.float(precision),
         )
 
     msg = f"Unsupported number type: {builtins.type(value)}"
@@ -325,15 +343,25 @@ def str(
         generator:
             Alternative generator to use when generating a consumer test.
     """
-    if size and generator:
+    if value is UNSET:
+        if size and generator:
+            warnings.warn(
+                "The size argument is ignored when a generator is provided.",
+                stacklevel=2,
+            )
+        return GenericMatcher(
+            "type",
+            generator=generator or generate.str(size),
+        )
+
+    if size is not None or generator:
         warnings.warn(
-            "The size argument is ignored when a generator is provided.",
+            "The size and generator arguments are ignored when a value is provided.",
             stacklevel=2,
         )
     return GenericMatcher(
         "type",
         value=value,
-        generator=generator or generate.str(size),
     )
 
 
@@ -368,10 +396,16 @@ def regex(
     if regex is None:
         msg = "A regex pattern must be provided."
         raise ValueError(msg)
+
+    if value is UNSET:
+        return GenericMatcher(
+            "regex",
+            generator=generate.regex(regex),
+            regex=regex,
+        )
     return GenericMatcher(
         "regex",
         value,
-        generator=generate.regex(regex),
         regex=regex,
     )
 
@@ -422,11 +456,16 @@ def uuid(
         if format
         else rf"^({_UUID_FORMATS['lowercase']}|{_UUID_FORMATS['uppercase']})$"
     )
+    if value is UNSET:
+        return GenericMatcher(
+            "regex",
+            generator=generate.uuid(format or "lowercase"),
+            regex=pattern,
+        )
     return GenericMatcher(
         "regex",
         value=value,
         regex=pattern,
-        generator=generate.uuid(format or "lowercase"),
     )
 
 
@@ -438,7 +477,9 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
         value:
             Default value to use when generating a consumer test.
     """
-    return GenericMatcher("boolean", value, generator=generate.bool())
+    if value is UNSET:
+        return GenericMatcher("boolean", generator=generate.bool())
+    return GenericMatcher("boolean", value)
 
 
 def boolean(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
@@ -485,22 +526,34 @@ def date(
         if not isinstance(value, builtins.str):
             msg = "When disable_conversion is True, the value must be a string."
             raise ValueError(msg)
+        format = format or "yyyy-MM-dd"
+        if value is UNSET:
+            return GenericMatcher(
+                "date",
+                format=format,
+                generator=generate.date(format, disable_conversion=True),
+            )
         return GenericMatcher(
             "date",
             value=value,
             format=format,
-            generator=generate.date(format or "yyyy-MM-dd", disable_conversion=True),
         )
 
     format = format or "%Y-%m-%d"
     if isinstance(value, dt.date):
         value = value.strftime(format)
     format = strftime_to_simple_date_format(format)
+
+    if value is UNSET:
+        return GenericMatcher(
+            "date",
+            format=format,
+            generator=generate.date(format, disable_conversion=True),
+        )
     return GenericMatcher(
         "date",
         value=value,
         format=format,
-        generator=generate.date(format, disable_conversion=True),
     )
 
 
@@ -541,21 +594,32 @@ def time(
         if not isinstance(value, builtins.str):
             msg = "When disable_conversion is True, the value must be a string."
             raise ValueError(msg)
+        format = format or "HH:mm:ss"
+        if value is UNSET:
+            return GenericMatcher(
+                "time",
+                format=format,
+                generator=generate.time(format, disable_conversion=True),
+            )
         return GenericMatcher(
             "time",
             value=value,
             format=format,
-            generator=generate.time(format or "HH:mm:ss", disable_conversion=True),
         )
     format = format or "%H:%M:%S"
     if isinstance(value, dt.time):
         value = value.strftime(format)
     format = strftime_to_simple_date_format(format)
+    if value is UNSET:
+        return GenericMatcher(
+            "time",
+            format=format,
+            generator=generate.time(format, disable_conversion=True),
+        )
     return GenericMatcher(
         "time",
         value=value,
         format=format,
-        generator=generate.time(format, disable_conversion=True),
     )
 
 
@@ -597,24 +661,32 @@ def datetime(
         if not isinstance(value, builtins.str):
             msg = "When disable_conversion is True, the value must be a string."
             raise ValueError(msg)
+        format = format or "yyyy-MM-dd'T'HH:mm:ss"
+        if value is UNSET:
+            return GenericMatcher(
+                "timestamp",
+                format=format,
+                generator=generate.datetime(format, disable_conversion=True),
+            )
         return GenericMatcher(
             "timestamp",
             value=value,
             format=format,
-            generator=generate.datetime(
-                format or "yyyy-MM-dd'T'HH:mm:ss",
-                disable_conversion=True,
-            ),
         )
     format = format or "%Y-%m-%dT%H:%M:%S"
     if isinstance(value, dt.datetime):
         value = value.strftime(format)
     format = strftime_to_simple_date_format(format)
+    if value is UNSET:
+        return GenericMatcher(
+            "timestamp",
+            format=format,
+            generator=generate.datetime(format, disable_conversion=True),
+        )
     return GenericMatcher(
         "timestamp",
         value=value,
         format=format,
-        generator=generate.datetime(format, disable_conversion=True),
     )
 
 
@@ -628,7 +700,7 @@ def timestamp(
     """
     Alias for [`match.datetime`][pact.v3.match.datetime].
     """
-    return timestamp(value, format, disable_conversion=disable_conversion)
+    return datetime(value, format, disable_conversion=disable_conversion)
 
 
 def none() -> Matcher[None]:
@@ -667,6 +739,11 @@ def type(
         generator:
             The generator to use when generating the value.
     """
+    if value is UNSET:
+        if not generator:
+            msg = "A generator must be provided when value is not set."
+            raise ValueError(msg)
+        return GenericMatcher("type", min=min, max=max, generator=generator)
     return GenericMatcher("type", value, min=min, max=max, generator=generator)
 
 
