@@ -79,8 +79,6 @@ class GenericGenerator(Generator):
         type: GeneratorType,  # noqa: A002
         /,
         extra_fields: Mapping[str, Any] | None = None,
-        integration_fields: Mapping[str, Any] | None = None,
-        generator_json_fields: Mapping[str, Any] | None = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """
@@ -95,14 +93,6 @@ class GenericGenerator(Generator):
                 These fields will be used when converting the generator to both an
                 integration JSON object and a generator JSON object.
 
-            integration_fields:
-                Additional configuration elements to pass to the generator when
-                converting to an integration JSON object.
-
-            generator_json_fields:
-                Additional configuration elements to pass to the generator when
-                converting to a generator JSON object.
-
             **kwargs:
                 Alternative way to pass additional configuration elements to the
                 generator. See the `extra_fields` argument for more information.
@@ -112,8 +102,6 @@ class GenericGenerator(Generator):
         The type of the generator.
         """
 
-        self._integration_fields = integration_fields or {}
-        self._generator_json_fields = generator_json_fields or {}
         self._extra_fields = dict(chain((extra_fields or {}).items(), kwargs.items()))
 
     def to_integration_json(self) -> dict[str, Any]:
@@ -133,7 +121,6 @@ class GenericGenerator(Generator):
         return {
             "pact:generator:type": self.type,
             **self._extra_fields,
-            **self._integration_fields,
         }
 
     def to_generator_json(self) -> dict[str, Any]:
@@ -157,5 +144,4 @@ class GenericGenerator(Generator):
         return {
             "type": self.type,
             **self._extra_fields,
-            **self._generator_json_fields,
         }
