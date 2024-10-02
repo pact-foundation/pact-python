@@ -83,15 +83,13 @@ class GenericMatcher(Matcher[_T]):
     for inclusion in the integration JSON object and matching rule.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         type: MatcherType,  # noqa: A002
         /,
         value: _T | Unset = UNSET,
         generator: Generator | None = None,
         extra_fields: Mapping[str, Any] | None = None,
-        integration_fields: Mapping[str, Any] | None = None,
-        matching_rule_fields: Mapping[str, Any] | None = None,
         **kwargs: Matchable,
     ) -> None:
         """
@@ -116,14 +114,6 @@ class GenericMatcher(Matcher[_T]):
                 fields will be used when converting the matcher to both an
                 integration JSON object and a matching rule.
 
-            integration_fields:
-                Additional configuration elements to pass to the matcher when
-                converting it to an integration JSON object.
-
-            matching_rule_fields:
-                Additional configuration elements to pass to the matcher when
-                converting it to a matching rule.
-
             **kwargs:
                 Alternative way to define extra fields. See the `extra_fields`
                 argument for more information.
@@ -143,8 +133,6 @@ class GenericMatcher(Matcher[_T]):
         Generator used to generate a value when the value is not provided.
         """
 
-        self._integration_fields: Mapping[str, Any] = integration_fields or {}
-        self._matching_rule_fields: Mapping[str, Any] = matching_rule_fields or {}
         self._extra_fields: Mapping[str, Any] = dict(
             chain((extra_fields or {}).items(), kwargs.items())
         )
@@ -179,7 +167,6 @@ class GenericMatcher(Matcher[_T]):
                 else {}
             ),
             **self._extra_fields,
-            **self._integration_fields,
         }
 
     def to_matching_rule(self) -> dict[str, Any]:
@@ -205,7 +192,6 @@ class GenericMatcher(Matcher[_T]):
             "match": self.type,
             **({"value": self.value} if not isinstance(self.value, Unset) else {}),
             **self._extra_fields,
-            **self._matching_rule_fields,
         }
 
 
