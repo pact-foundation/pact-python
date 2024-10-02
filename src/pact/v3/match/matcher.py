@@ -209,40 +209,6 @@ class GenericMatcher(Matcher[_T]):
         }
 
 
-class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
-    """
-    Each key matcher.
-
-    A matcher that applies a matcher to each key in a mapping.
-    """
-
-    def __init__(
-        self,
-        value: _T,
-        rules: list[Matcher[_T]] | None = None,
-    ) -> None:
-        """
-        Initialize the matcher.
-
-        Args:
-            value:
-                Example value to match against.
-
-            rules:
-                List of matchers to apply to each key in the mapping.
-        """
-        self._matcher: Matcher[Mapping[_T, Matchable]] = GenericMatcher(
-            "eachKey",
-            extra_fields={"rules": rules, "value": value},
-        )
-
-    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
-        return self._matcher.to_integration_json()
-
-    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
-        return self._matcher.to_matching_rule()
-
-
 class ArrayContainsMatcher(Matcher[Sequence[_T]]):
     """
     Array contains matcher.
@@ -270,6 +236,41 @@ class ArrayContainsMatcher(Matcher[Sequence[_T]]):
         return self._matcher.to_matching_rule()
 
 
+class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
+    """
+    Each key matcher.
+
+    A matcher that applies a matcher to each key in a mapping.
+    """
+
+    def __init__(
+        self,
+        value: Mapping[_T, Matchable],
+        rules: list[Matcher[_T]] | None = None,
+    ) -> None:
+        """
+        Initialize the matcher.
+
+        Args:
+            value:
+                Example value to match against.
+
+            rules:
+                List of matchers to apply to each key in the mapping.
+        """
+        self._matcher: Matcher[Mapping[_T, Matchable]] = GenericMatcher(
+            "eachKey",
+            value=value,
+            extra_fields={"rules": rules},
+        )
+
+    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_integration_json()
+
+    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+        return self._matcher.to_matching_rule()
+
+
 class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
     """
     Each value matcher.
@@ -279,7 +280,7 @@ class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
 
     def __init__(
         self,
-        value: _T,
+        value: Mapping[Matchable, _T],
         rules: list[Matcher[_T]] | None = None,
     ) -> None:
         """
@@ -294,7 +295,8 @@ class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
         """
         self._matcher: Matcher[Mapping[Matchable, _T]] = GenericMatcher(
             "eachValue",
-            extra_fields={"rules": rules, "value": value},
+            value=value,
+            extra_fields={"rules": rules},
         )
 
     def to_integration_json(self) -> dict[str, Any]:  # noqa: D102

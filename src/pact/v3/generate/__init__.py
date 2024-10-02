@@ -32,19 +32,25 @@ if TYPE_CHECKING:
 #
 # <https://github.com/pact-foundation/pact-reference/blob/303073c/rust/pact_models/src/generators/mod.rs#L121>
 __all__ = [
-    "Generator",
     "int",
+    "integer",
     "float",
+    "decimal",
     "hex",
+    "hexadecimal",
     "str",
+    "string",
     "regex",
     "uuid",
     "date",
     "time",
     "datetime",
+    "timestamp",
     "bool",
+    "boolean",
     "provider_state",
     "mock_server_url",
+    "Generator",
 ]
 
 # We prevent users from importing from this module to avoid shadowing built-ins.

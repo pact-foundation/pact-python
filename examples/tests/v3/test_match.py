@@ -21,9 +21,7 @@ def test_matchers() -> None:
         .with_query_parameter(
             "asOf",
             match.like(
-                [
-                    match.date("yyyy-MM-dd", "2024-01-01"),
-                ],
+                [match.date("2024-01-01", format="%Y-%m-%d")],
                 min=1,
                 max=1,
             ),
@@ -37,7 +35,7 @@ def test_matchers() -> None:
                         regex=r"^.*hello world'$",
                     ),
                     "randomRegexMatches": match.regex(
-                        r"1-8 digits: \d{1,8}, 1-8 random letters \w{1,8}"
+                        regex=r"1-8 digits: \d{1,8}, 1-8 random letters \w{1,8}"
                     ),
                     "integerMatches": match.int(42),
                     "decimalMatches": match.decimal(3.1415),
@@ -65,19 +63,18 @@ def test_matchers() -> None:
                         "intGeneratorMatches": match.number(2, max=10),
                         "decimalGeneratorMatches": match.number(3.1415, precision=4),
                     },
-                    "dateMatches": match.date("yyyy-MM-dd", "2024-01-01"),
-                    "randomDateMatches": match.date("yyyy-MM-dd"),
-                    "timeMatches": match.time("HH:mm:ss", "12:34:56"),
+                    "dateMatches": match.date("2024-01-01", format="%Y-%m-%d"),
+                    "randomDateMatches": match.date(format="%Y-%m-%d"),
+                    "timeMatches": match.time("12:34:56", format="%H:%M:%S"),
                     "timestampMatches": match.timestamp(
-                        "yyyy-MM-dd'T'HH:mm:ss.SSSSSS", "2024-01-01T12:34:56.000000"
+                        "2024-01-01T12:34:56.000000",
+                        format="%Y-%m-%dT%H:%M:%S.%f",
                     ),
                     "nullMatches": match.null(),
                     "eachKeyMatches": match.each_key_matches(
                         {
                             "id_1": match.each_value_matches(
-                                {
-                                    "name": match.string(size=30),
-                                },
+                                {"name": match.string(size=30)},
                                 rules=match.string("John Doe"),
                             )
                         },
@@ -88,7 +85,7 @@ def test_matchers() -> None:
             )
         })
         .with_header(
-            "SpecialHeader", match.regex("Special: Foo", regex=r"%Special: \w+")
+            "SpecialHeader", match.regex("Special: Foo", regex=r"^Special: \w+$")
         )
     )
     with pact.serve() as mockserver:
@@ -110,7 +107,7 @@ def test_matchers() -> None:
             == "2024-01-01T12:34:56.000000"
         )
         assert response_data["response"]["arrayContainingMatches"] == [1, 2]
-        assert response_data["response"]["nullMatches"] == ""
+        assert response_data["response"]["nullMatches"] is None
         # when a value is not passed to a matcher, a value should be generated
         random_regex_matcher = re.compile(
             r"1-8 digits: \d{1,8}, 1-8 random letters \w{1,8}"

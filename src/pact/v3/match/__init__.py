@@ -48,7 +48,7 @@ import builtins
 import datetime as dt
 import warnings
 from decimal import Decimal
-from typing import TYPE_CHECKING, Literal, Mapping, Sequence, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Literal, Mapping, Sequence, TypeVar, overload
 
 from pact.v3 import generate
 from pact.v3.match.matcher import (
@@ -81,18 +81,22 @@ if TYPE_CHECKING:
 #
 # <https://github.com/pact-foundation/pact-reference/blob/303073c/rust/pact_models/src/matchingrules/mod.rs#L62>
 __all__ = [
-    "Matcher",
     "int",
-    "decimal",
+    "integer",
     "float",
+    "decimal",
     "number",
     "str",
+    "string",
     "regex",
+    "uuid",
     "bool",
+    "boolean",
     "date",
     "time",
     "datetime",
     "timestamp",
+    "none",
     "null",
     "type",
     "like",
@@ -101,6 +105,7 @@ __all__ = [
     "array_containing",
     "each_key_matches",
     "each_value_matches",
+    "Matcher",
 ]
 
 _T = TypeVar("_T")
@@ -338,10 +343,10 @@ def str(
         value:
             Default value to use when generating a consumer test.
         size:
-            If no generator is provided, the size of the string to generate
-            during a consumer test.
+            The size of the string to generate during a consumer test.
         generator:
-            Alternative generator to use when generating a consumer test.
+            Alternative generator to use when generating a consumer test. If
+            set, the `size` argument is ignored.
     """
     if value is UNSET:
         if size and generator:
@@ -351,6 +356,7 @@ def str(
             )
         return GenericMatcher(
             "type",
+            value="string",
             generator=generator or generate.str(size),
         )
 
@@ -827,7 +833,7 @@ def array_containing(variants: Sequence[_T | Matcher[_T]], /) -> Matcher[Sequenc
 
 
 def each_key_matches(
-    value: _T,
+    value: Mapping[_T, Any],
     /,
     *,
     rules: Matcher[_T] | list[Matcher[_T]],
@@ -847,7 +853,7 @@ def each_key_matches(
 
 
 def each_value_matches(
-    value: _T,
+    value: Mapping[Any, _T],
     /,
     *,
     rules: Matcher[_T] | list[Matcher[_T]],
