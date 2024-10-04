@@ -62,9 +62,9 @@ def test_supports_adding_comments() -> None:
     "an HTTP interaction is being defined for a consumer test",
     target_fixture="pact_interaction",
 )
-def an_http_interaction_is_being_defined_for_a_consumer_test() -> (
-    Generator[PactInteractionTuple[HttpInteraction], Any, None]
-):
+def an_http_interaction_is_being_defined_for_a_consumer_test() -> Generator[
+    PactInteractionTuple[HttpInteraction], Any, None
+]:
     """An HTTP interaction is being defined for a consumer test."""
     pact = Pact("consumer", "provider")
     pact.with_specification("V4")
