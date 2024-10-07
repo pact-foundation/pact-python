@@ -49,7 +49,7 @@ def pact() -> Generator[Pact, None, None]:
     pact_dir = Path(Path(__file__).parent.parent.parent / "pacts")
     pact = Pact("v3_http_consumer", "v3_http_provider")
     yield pact.with_specification("V4")
-    pact.write_file(pact_dir, overwrite=True)
+    pact.write_file(pact_dir)
 
 
 def test_get_existing_user(pact: Pact) -> None:
