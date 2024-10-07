@@ -78,7 +78,7 @@ def test_get_existing_user(pact: Pact) -> None:
         "created_on": match.datetime(
             # Python datetime objects are automatically formatted
             datetime.now(tz=timezone.utc),
-            format="%Y-%m-%dT%H:%M:%S.%fZ",
+            format="%Y-%m-%dT%H:%M:%S%z",
         ),
     }
     (
@@ -142,7 +142,7 @@ def test_create_user(pact: Pact) -> None:
         "created_on": match.datetime(
             # Python datetime objects are automatically formatted
             datetime.now(tz=timezone.utc),
-            format="%Y-%m-%dT%H:%M:%S.%fZ",
+            format="%Y-%m-%dT%H:%M:%S%z",
         ),
     }
 

@@ -26,9 +26,10 @@ concerned with Pact, only the tests are.
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import requests
 
@@ -103,7 +104,10 @@ class UserConsumer:
         uri = f"{self.base_uri}/users/{user_id}"
         response = requests.get(uri, timeout=5)
         response.raise_for_status()
-        data: Dict[str, Any] = response.json()
+        data: dict[str, Any] = response.json()
+        # Python < 3.11 don't support ISO 8601 offsets without a colon
+        if sys.version_info < (3, 11) and data["created_on"][-4:].isdigit():
+            data["created_on"] = data["created_on"][:-2] + ":" + data["created_on"][-2:]
         return User(
             id=data["id"],
             name=data["name"],
@@ -130,7 +134,10 @@ class UserConsumer:
         uri = f"{self.base_uri}/users/"
         response = requests.post(uri, json={"name": name}, timeout=5)
         response.raise_for_status()
-        data: Dict[str, Any] = response.json()
+        data: dict[str, Any] = response.json()
+        # Python < 3.11 don't support ISO 8601 offsets without a colon
+        if sys.version_info < (3, 11) and data["created_on"][-4:].isdigit():
+            data["created_on"] = data["created_on"][:-2] + ":" + data["created_on"][-2:]
         return User(
             id=data["id"],
             name=data["name"],

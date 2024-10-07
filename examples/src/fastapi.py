@@ -28,9 +28,10 @@ concerned with Pact, only the tests are.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
-from datetime import UTC, datetime
-from typing import Any, Dict
+from datetime import datetime, timezone
+from typing import Annotated, Any, Dict, Optional
+
+from pydantic import BaseModel, PlainSerializer
 
 from fastapi import FastAPI, HTTPException
 
@@ -38,15 +39,21 @@ app = FastAPI()
 logger = logging.getLogger(__name__)
 
 
-@dataclass()
-class User:
+class User(BaseModel):
     """User data class."""
 
     id: int
     name: str
-    created_on: datetime
-    email: str | None
-    ip_address: str | None
+    created_on: Annotated[
+        datetime,
+        PlainSerializer(
+            lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            return_type=str,
+            when_used="json",
+        ),
+    ]
+    email: Optional[str]
+    ip_address: Optional[str]
     hobbies: list[str]
     admin: bool
 
@@ -120,7 +127,7 @@ async def create_new_user(user: dict[str, Any]) -> User:
     FAKE_DB[uid] = User(
         id=uid,
         name=user["name"],
-        created_on=datetime.now(tz=UTC),
+        created_on=datetime.now(tz=timezone.utc),
         email=user.get("email"),
         ip_address=user.get("ip_address"),
         hobbies=user.get("hobbies", []),
