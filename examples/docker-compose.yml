@@ -33,10 +33,10 @@ services:
       test:
         [
           "CMD",
-          "curl",
-          "--silent",
-          "--show-error",
-          "--fail",
+          "wget",
+          "-q",
+          "-O",
+          "-",
           "http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat",
         ]
       interval: 1s
