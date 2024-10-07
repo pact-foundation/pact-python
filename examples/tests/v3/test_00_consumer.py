@@ -26,7 +26,7 @@ import pytest
 import requests
 
 from examples.src.consumer import UserConsumer
-from pact.v3 import Pact
+from pact.v3 import Pact, match
 
 
 @pytest.fixture
@@ -75,24 +75,17 @@ def test_get_existing_user(pact: Pact) -> None:
     expected: Dict[str, Any] = {
         "id": 123,
         "name": "Verna Hampton",
-        "created_on": {
-            # This structure is using the Integration JSON format as described
-            # in the link below. The preview of V3 currently does not have
-            # built-in support for matchers and generators, though this is on
-            # the roadmap and will be available before the final release.
-            #
-            # <https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson>
-            "pact:matcher:type": "regex",
-            "regex": r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}(Z|(\+|-)\d{2}:\d{2})",
-            "value": datetime.now(tz=timezone.utc).isoformat(),
-        },
+        "created_on": match.datetime(
+            datetime.now(tz=timezone.utc).isoformat(),
+            format="%Y-%m-%dT%H:%M:%S.%fZ",
+        ),
     }
     (
         pact.upon_receiving("a request for user information")
         .given("user exists")
         .with_request(method="GET", path="/users/123")
         .will_respond_with(200)
-        .with_body(json.dumps(expected))
+        .with_body(expected)
     )
 
     with pact.serve() as srv:
@@ -145,17 +138,10 @@ def test_create_user(pact: Pact) -> None:
     expected_response: Dict[str, Any] = {
         "id": 124,
         "name": "Verna Hampton",
-        "created_on": {
-            # This structure is using the Integration JSON format as described
-            # in the link below. The preview of V3 currently does not have
-            # built-in support for matchers and generators, though this is on
-            # the roadmap and will be available before the final release.
-            #
-            # <https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson>
-            "pact:matcher:type": "regex",
-            "regex": r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}(Z|(\+|-)\d{2}:\d{2})",
-            "value": datetime.now(tz=timezone.utc).isoformat(),
-        },
+        "created_on": match.datetime(
+            datetime.now(tz=timezone.utc).isoformat(),
+            format="%Y-%m-%dT%H:%M:%S.%fZ",
+        ),
     }
 
     (
@@ -164,7 +150,7 @@ def test_create_user(pact: Pact) -> None:
         .with_request(method="POST", path="/users/")
         .with_body(json.dumps(body), content_type="application/json")
         .will_respond_with(status=200)
-        .with_body(content_type="application/json", body=json.dumps(expected_response))
+        .with_body(content_type="application/json", body=expected_response)
     )
 
     with pact.serve() as srv:
