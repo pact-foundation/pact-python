@@ -37,7 +37,7 @@ services:
           "-q",
           "-O",
           "-",
-          "http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat",
+          "http://pactbroker:pactbroker@broker:9292/diagnostic/status/heartbeat",
         ]
       interval: 1s
       timeout: 2s
