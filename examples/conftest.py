@@ -46,6 +46,7 @@ def broker(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
         EXAMPLE_DIR,
         compose_file_name=["docker-compose.yml"],
         pull=True,
+        wait=False,
     ) as _:
         yield URL("http://pactbroker:pactbroker@localhost:9292")
     return
