@@ -36,7 +36,7 @@ import subprocess
 import time
 import warnings
 from contextvars import ContextVar
-from datetime import datetime
+from datetime import datetime, timezone
 from threading import Thread
 from typing import TYPE_CHECKING, Any, NoReturn
 
@@ -63,13 +63,6 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from pact.v3.verifier import Verifier
-
-if sys.version_info < (3, 11):
-    from datetime import timezone
-
-    UTC = timezone.utc
-else:
-    from datetime import UTC
 
 
 logger = logging.getLogger(__name__)
@@ -239,10 +232,8 @@ class Provider:
                     msg = "State not found"
                     raise ValueError(msg)
 
-            json_file = (
-                self.provider_dir
-                / f"callback.{datetime.now(tz=UTC).strftime('%H:%M:%S.%f')}.json"
-            )
+            timestamp = datetime.now(tz=timezone.utc).strftime("%H:%M:%S.%f")
+            json_file = self.provider_dir / f"callback.{timestamp}.json"
             with json_file.open("w") as f:
                 json.dump(
                     {
@@ -276,10 +267,8 @@ class Provider:
             logger.debug("-> Body: %s", truncate(request.get_data().decode("utf-8")))
             logger.debug("-> Form: %s", serialize(request.form))
 
-            with (
-                self.provider_dir
-                / f"request.{datetime.now(tz=UTC).strftime('%H:%M:%S.%f')}.json"
-            ).open("w") as f:
+            timestamp = datetime.now(tz=timezone.utc).strftime("%H:%M:%S.%f")
+            with (self.provider_dir / f"request.{timestamp}.json").open("w") as f:
                 json.dump(
                     {
                         "method": request.method,
@@ -306,10 +295,8 @@ class Provider:
                 ),
             )
 
-            with (
-                self.provider_dir
-                / f"response.{datetime.now(tz=UTC).strftime('%H:%M:%S.%f')}.json"
-            ).open("w") as f:
+            timestamp = datetime.now(tz=timezone.utc).strftime("%H:%M:%S.%f")
+            with (self.provider_dir / f"response.{timestamp}.json").open("w") as f:
                 json.dump(
                     {
                         "status_code": response.status_code,

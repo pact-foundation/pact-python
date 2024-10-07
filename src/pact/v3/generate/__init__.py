@@ -300,15 +300,15 @@ def datetime(
             [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
 
             If not provided, an ISO 8601 timestamp format will be used:
-            `%Y-%m-%dT%H:%M:%S`.
+            `%Y-%m-%dT%H:%M:%S%z`.
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
             in Java's `SimpleDateFormat` format. As a result, the value must be
     """
     if not disable_conversion:
-        format = strftime_to_simple_date_format(format or "%Y-%m-%dT%H:%M:%S")
-    return GenericGenerator("DateTime", {"format": format or "yyyy-MM-dd'T'HH:mm:ss"})
+        format = strftime_to_simple_date_format(format or "%Y-%m-%dT%H:%M:%S%z")
+    return GenericGenerator("DateTime", {"format": format or "yyyy-MM-dd'T'HH:mm:ssZ"})
 
 
 def timestamp(

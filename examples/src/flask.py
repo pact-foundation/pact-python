@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Tuple
 
 from flask import Flask, Response, abort, jsonify, request
@@ -73,7 +73,7 @@ class User:
         return {
             "id": self.id,
             "name": self.name,
-            "created_on": self.created_on.isoformat(),
+            "created_on": self.created_on.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "email": self.email,
             "ip_address": self.ip_address,
             "hobbies": self.hobbies,
@@ -119,7 +119,7 @@ def create_user() -> Response:
     FAKE_DB[uid] = User(
         id=uid,
         name=user["name"],
-        created_on=datetime.now(tz=UTC),
+        created_on=datetime.now(tz=timezone.utc),
         email=user.get("email"),
         ip_address=user.get("ip_address"),
         hobbies=user.get("hobbies", []),

@@ -27,7 +27,7 @@ correct state.
 from __future__ import annotations
 
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from multiprocessing import Process
 from typing import TYPE_CHECKING, Callable, Dict, Literal
 from unittest.mock import MagicMock
@@ -200,7 +200,7 @@ def mock_user_exists() -> None:
         id=123,
         name="Verna Hampton",
         email="verna@example.com",
-        created_on=datetime.now(tz=UTC),
+        created_on=datetime.now(tz=timezone.utc),
         ip_address="10.1.2.3",
         hobbies=["hiking", "swimming"],
         admin=False,
@@ -256,7 +256,7 @@ def mock_delete_request_to_delete_user() -> None:
             id=123,
             name="Verna Hampton",
             email="verna@example.com",
-            created_on=datetime.now(tz=UTC),
+            created_on=datetime.now(tz=timezone.utc),
             ip_address="10.1.2.3",
             hobbies=["hiking", "swimming"],
             admin=False,
@@ -265,7 +265,7 @@ def mock_delete_request_to_delete_user() -> None:
             id=124,
             name="Jane Doe",
             email="jane@example.com",
-            created_on=datetime.now(tz=UTC),
+            created_on=datetime.now(tz=timezone.utc),
             ip_address="10.1.2.5",
             hobbies=["running", "dancing"],
             admin=False,
