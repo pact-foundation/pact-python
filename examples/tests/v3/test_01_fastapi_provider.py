@@ -340,7 +340,7 @@ def verify_mock_post_request_to_create_user() -> None:
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 
-    assert len(examples.src.fastapi.FAKE_DB.mock_calls) == 2
+    assert len(examples.src.fastapi.FAKE_DB.mock_calls) == 3
 
     examples.src.fastapi.FAKE_DB.__getitem__.assert_called_once()
     args, kwargs = examples.src.fastapi.FAKE_DB.__getitem__.call_args
