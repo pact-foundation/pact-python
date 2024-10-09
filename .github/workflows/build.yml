@@ -52,13 +52,18 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
 
       - name: Install hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Create source distribution
         run: |
@@ -231,10 +236,19 @@ jobs:
           path: wheels
           merge-multiple: true
 
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Install commitizen
+        run: uv tool install commitizen
 
       - name: Update changelog
         id: changelog

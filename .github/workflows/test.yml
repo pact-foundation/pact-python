@@ -86,14 +86,19 @@ jobs:
           cd tests/v3/compatibility_suite
           patch -p1 -d definition < definition-update.diff
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ matrix.python-version }}
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Ensure broker is live
         run: |
@@ -152,14 +157,19 @@ jobs:
           cd tests/v3/compatibility_suite
           patch -p1 -d definition < definition-update.diff
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ matrix.python-version }}
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Run tests
         run: hatch run test
@@ -186,14 +196,19 @@ jobs:
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
 
-      - name: Set up Python 3
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Ensure broker is live
         run: |
@@ -225,14 +240,19 @@ jobs:
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
 
-      - name: Set up Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Format
         run: hatch run format
@@ -245,14 +265,19 @@ jobs:
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
 
-      - name: Set up Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Format
         run: hatch run lint
@@ -265,14 +290,19 @@ jobs:
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
 
-      - name: Set up Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3.1.5
         with:
-          python-version: ${{ env.STABLE_PYTHON_VERSION }}
-          cache: pip
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
 
       - name: Install Hatch
-        run: pip install --upgrade hatch
+        run: uv tool install hatch
 
       - name: Format
         run: hatch run typecheck
@@ -283,10 +313,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
 
-    - name: Spell Check Repo
-      uses: crate-ci/typos@master
+      - name: Spell Check Repo
+        uses: crate-ci/typos@master
 
   pre-commit:
     name: Pre-commit
@@ -294,7 +324,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
 
-    - name: Run pre-commit
-      uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+      - name: Run pre-commit
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
