@@ -13,6 +13,7 @@ import aiohttp
 import pytest
 
 from pact.v3 import Pact, match
+from pact.v3.error import RequestMismatch, RequestNotFound
 from pact.v3.pact import MismatchesError
 
 if TYPE_CHECKING:
@@ -71,7 +72,7 @@ async def test_basic_request_method(pact: Pact, method: str) -> None:
 
         # As we are making unexpected requests, we should have mismatches
         for mismatch in srv.mismatches:
-            assert mismatch["type"] == "request-not-found"
+            assert isinstance(mismatch, RequestNotFound)
 
 
 @pytest.mark.parametrize(
@@ -208,7 +209,7 @@ async def test_set_header_request_repeat(
             assert resp.status == 500
 
         assert len(srv.mismatches) == 1
-        assert srv.mismatches[0]["type"] == "request-mismatch"
+        assert isinstance(srv.mismatches[0], RequestMismatch)
 
 
 @pytest.mark.parametrize(
