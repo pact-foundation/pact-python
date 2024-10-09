@@ -248,7 +248,7 @@ class Interaction(abc.ABC):
 
     def with_body(
         self,
-        body: str | dict | Matcher | None = None,
+        body: str | dict[str, Any] | Matcher[Any] | None = None,
         content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:

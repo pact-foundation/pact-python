@@ -97,7 +97,7 @@ class HttpInteraction(Interaction):
         """
         return self.__interaction_part
 
-    def with_request(self, method: str, path: str | Matcher) -> Self:
+    def with_request(self, method: str, path: str | Matcher[Any]) -> Self:
         """
         Set the request.
 
@@ -119,7 +119,7 @@ class HttpInteraction(Interaction):
     def with_header(
         self,
         name: str,
-        value: str | dict | Matcher,
+        value: str | dict[str, str] | Matcher[Any],
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         r"""
@@ -353,7 +353,11 @@ class HttpInteraction(Interaction):
             self.set_header(name, value, part)
         return self
 
-    def with_query_parameter(self, name: str, value: str | dict | Matcher) -> Self:
+    def with_query_parameter(
+        self,
+        name: str,
+        value: str | dict[str, str] | Matcher[Any],
+    ) -> Self:
         r"""
         Add a query to the request.
 
