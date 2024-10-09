@@ -12,9 +12,23 @@ from typing import TYPE_CHECKING, Any
 import pytest
 import requests
 from pytest_bdd import given, parsers, then, when
+from typing_extensions import TypeGuard
 from yarl import URL
 
 from pact.v3 import Pact
+from pact.v3.error import (
+    BodyMismatch,
+    BodyTypeMismatch,
+    HeaderMismatch,
+    MetadataMismatch,
+    Mismatch,
+    MissingRequest,
+    PathMismatch,
+    QueryMismatch,
+    RequestMismatch,
+    RequestNotFound,
+    StatusMismatch,
+)
 from tests.v3.compatibility_suite.util import (
     FIXTURES_ROOT,
     PactInteractionTuple,
@@ -34,6 +48,62 @@ if TYPE_CHECKING:
     )
 
 logger = logging.getLogger(__name__)
+
+
+MISMATCH_MAP: dict[str, type[Mismatch]] = {
+    "query": QueryMismatch,
+    "header": HeaderMismatch,
+    "body": BodyMismatch,
+    "body-content-type": BodyTypeMismatch,
+}
+
+
+def _mismatch_with_path(
+    mismatch: Mismatch,
+) -> TypeGuard[MissingRequest | RequestNotFound | RequestMismatch | BodyMismatch]:
+    """
+    Check if a mismatch has a `path` attribute.
+
+    This function is used to check if the mismatch in question is one of the
+    variants that have a `path` attribute. This has little purpose at runtime,
+    but is useful for type checking.
+    """
+    return isinstance(
+        mismatch, (MissingRequest, RequestNotFound, RequestMismatch, BodyMismatch)
+    )
+
+
+def _mismatch_with_mismatch(
+    mismatch: Mismatch,
+) -> TypeGuard[
+    PathMismatch
+    | StatusMismatch
+    | QueryMismatch
+    | HeaderMismatch
+    | BodyTypeMismatch
+    | BodyMismatch
+    | MetadataMismatch
+]:
+    """
+    Check if a mismatch has a `mismatch` attribute.
+
+    This function is used to check if the mismatch in question is one of the
+    variants that have a `mismatch` attribute. This has little purpose at runtime,
+    but is useful for type checking.
+    """
+    return isinstance(
+        mismatch,
+        (
+            PathMismatch,
+            StatusMismatch,
+            QueryMismatch,
+            HeaderMismatch,
+            BodyTypeMismatch,
+            BodyMismatch,
+            MetadataMismatch,
+        ),
+    )
+
 
 ################################################################################
 ## Given
@@ -285,7 +355,11 @@ def a_response_is_returned(stacklevel: int = 1) -> None:
                 indent=2,
             ),
         )
-        logger.info("Mismatches:\n%s", json.dumps(srv.mismatches, indent=2))
+        msg = "\n".join([
+            "Mismatches:",
+            *(f"  ({i + 1}) {m}" for i, m in enumerate(srv.mismatches)),
+        ])
+        logger.info(msg)
         assert response.status_code == code
 
 
@@ -363,9 +437,9 @@ def the_mock_server_status_will_be_an_expected_but_not_received_error_for_intera
 
         for mismatch in srv.mismatches:
             if (
-                mismatch["method"] == interaction_definitions[n].method
-                and mismatch["path"] == interaction_definitions[n].path
-                and mismatch["type"] == "missing-request"
+                isinstance(mismatch, MissingRequest)
+                and mismatch.method == interaction_definitions[n].method
+                and mismatch.path == interaction_definitions[n].path
             ):
                 return
         pytest.fail("Expected mismatch not found")
@@ -397,10 +471,10 @@ def the_mock_server_status_will_be_an_unexpected_request_received_for_interactio
 
         for mismatch in srv.mismatches:
             if (
-                mismatch["method"] == interaction_definitions[n].method
-                and mismatch["request"]["method"] == method
-                and mismatch["path"] == interaction_definitions[n].path
-                and mismatch["type"] == "request-not-found"
+                isinstance(mismatch, RequestNotFound)
+                and mismatch.method == interaction_definitions[n].method
+                and mismatch.method == method
+                and mismatch.path == interaction_definitions[n].path
             ):
                 return
         pytest.fail("Expected mismatch not found")
@@ -431,9 +505,9 @@ def the_mock_server_status_will_be_an_unexpected_request_received_for_path(
 
         for mismatch in srv.mismatches:
             if (
-                mismatch["request"]["method"] == method
-                and mismatch["path"] == path
-                and mismatch["type"] == "request-not-found"
+                isinstance(mismatch, RequestNotFound)
+                and mismatch.method == method
+                and mismatch.path == path
             ):
                 return
         pytest.fail("Expected mismatch not found")
@@ -470,27 +544,17 @@ def the_mismatches_will_contain_a_mismatch_with_the_error(stacklevel: int = 1) -
         """
         The mismatches will contain a mismatch with the error.
         """
-        if mismatch_type == "query":
-            mismatch_type = "QueryMismatch"
-        elif mismatch_type == "header":
-            mismatch_type = "HeaderMismatch"
-        elif mismatch_type == "body":
-            mismatch_type = "BodyMismatch"
-        elif mismatch_type == "body-content-type":
-            mismatch_type = "BodyTypeMismatch"
-        else:
-            msg = f"Unexpected mismatch type: {mismatch_type}"
-            raise ValueError(msg)
-
         logger.info("Expecting mismatch: %s", mismatch_type)
         logger.info("With error: %s", error)
         for mismatch in srv.mismatches:
-            for sub_mismatch in mismatch["mismatches"]:
-                if (
-                    error in sub_mismatch["mismatch"]
-                    and sub_mismatch["type"] == mismatch_type
-                ):
-                    return
+            if isinstance(mismatch, RequestMismatch):
+                for sub_mismatch in mismatch.mismatches:
+                    if (
+                        isinstance(sub_mismatch, MISMATCH_MAP[mismatch_type])
+                        and _mismatch_with_mismatch(sub_mismatch)
+                        and error in sub_mismatch.mismatch
+                    ):
+                        return
         pytest.fail("Expected mismatch not found")
 
 
@@ -514,13 +578,15 @@ def the_mismatches_will_contain_a_mismatch_with_path_with_the_error(
         """
         The mismatches will contain a mismatch with the error.
         """
-        mismatch_type = "BodyMismatch" if mismatch_type == "body" else mismatch_type
         for mismatch in srv.mismatches:
-            for sub_mismatch in mismatch["mismatches"]:
+            assert isinstance(mismatch, RequestMismatch)
+            for sub_mismatch in mismatch.mismatches:
                 if (
-                    sub_mismatch["mismatch"] == error
-                    and sub_mismatch["type"] == mismatch_type
-                    and sub_mismatch["path"] == path
+                    isinstance(sub_mismatch, MISMATCH_MAP[mismatch_type])
+                    and _mismatch_with_mismatch(sub_mismatch)
+                    and sub_mismatch.mismatch == error
+                    and _mismatch_with_path(sub_mismatch)
+                    and sub_mismatch.path == path
                 ):
                     return
         pytest.fail("Expected mismatch not found")
