@@ -42,7 +42,6 @@ jobs:
   build-sdist:
     name: Build source distribution
 
-    if: github.event_name == 'push' || ! github.event.pull_request.draft
     runs-on: ubuntu-20.04
 
     steps:
@@ -80,7 +79,6 @@ jobs:
   build-x86_64:
     name: Build wheels on ${{ matrix.os }} (x86, 64-bit)
 
-    if: github.event_name == 'push' || ! github.event.pull_request.draft
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -146,7 +144,7 @@ jobs:
     # As this requires emulation, it's not worth running on PRs or master
     if: >-
       github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags/v*')
+      startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -206,7 +204,9 @@ jobs:
   publish:
     name: Publish wheels and sdist
 
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    if: >-
+      github.event_name == 'push' &&
+      startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-20.04
     environment:
       name: pypi
