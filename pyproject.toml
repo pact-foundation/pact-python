@@ -313,7 +313,7 @@ exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
-skip = "pp38-*"
+skip = "pp*"
 before-build = """
 rm -rvf src/pact/v3/bin
 rm -rvf src/pact/v3/data
