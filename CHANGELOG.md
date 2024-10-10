@@ -1,3 +1,48 @@
+## v2.2.2 (2024-10-10)
+
+### BREAKING CHANGE
+
+-   Python 3.8 support dropped
+-   The `srv.mismatches` is changed from a `list[dict[str,
+Any]]` to a `list[Mismatch]`.
+
+### Feat
+
+-   add Python 3.13, drop 3.8
+-   improve mismatch error
+-   add ArrayContainsMatcher
+-   add each key/value matchers
+-   add uuid matcher
+-   add match aliases
+-   improve match module
+-   add strftime to java date format converter
+-   add matchable typevar
+-   **examples**: add post and delete
+
+### Fix
+
+-   ISO 8601 incompatibility
+-   typing annotations
+-   **examples**: do not publish postgres port
+-   **examples**: use wget for broker healthcheck
+-   **examples**: do not overwrite pact file on every test
+-   ensure matchers optionally use generators
+-   kwargs typing
+-   incompatible override
+-   missing typing arguments
+
+### Refactor
+
+-   match module
+-   generators module
+-   create pact.v3.types module
+-   generate module in style of match module
+-   rename generators to generate
+-   matcher
+-   split types into stub
+-   rename matchers to match
+-   prefer `|` over Optional and Union
+
 ## v2.2.1 (2024-07-22)
 
 ### Feat
