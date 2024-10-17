@@ -11,7 +11,7 @@ from pact.verifier import Verifier
 
 from pact.__version__ import __version__, __version_tuple__
 
-__url__ = "https://github.com/pactflow/accord"
+__url__ = "https://github.com/pact-foundation/pact-python"
 __license__ = "MIT"
 
 __all__ = [
