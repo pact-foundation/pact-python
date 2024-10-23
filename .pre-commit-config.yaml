@@ -68,7 +68,7 @@ repos:
           )
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.26.0
+    rev: v1.26.1
     hooks:
       - id: typos
 
