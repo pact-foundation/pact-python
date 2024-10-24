@@ -543,17 +543,17 @@ class InteractionDefinition:
             interaction.test_name(self.test_name)
 
         if self.query:
-            assert isinstance(
-                interaction, HttpInteraction
-            ), "Query parameters require an HTTP interaction"
+            assert isinstance(interaction, HttpInteraction), (
+                "Query parameters require an HTTP interaction"
+            )
             query = URL.build(query_string=self.query).query
             logger.info("with_query_parameters(%r)", query.items())
             interaction.with_query_parameters(query.items())
 
         if self.headers:
-            assert isinstance(
-                interaction, HttpInteraction
-            ), "Headers require an HTTP interaction"
+            assert isinstance(interaction, HttpInteraction), (
+                "Headers require an HTTP interaction"
+            )
             logger.info("with_headers(%r)", self.headers.items())
             interaction.with_headers(self.headers.items())
 
@@ -565,23 +565,23 @@ class InteractionDefinition:
             interaction.with_matching_rules(self.matching_rules)
 
         if self.response:
-            assert isinstance(
-                interaction, HttpInteraction
-            ), "Response requires an HTTP interaction"
+            assert isinstance(interaction, HttpInteraction), (
+                "Response requires an HTTP interaction"
+            )
             logger.info("will_respond_with(%r)", self.response)
             interaction.will_respond_with(self.response)
 
         if self.response_headers:
-            assert isinstance(
-                interaction, HttpInteraction
-            ), "Response headers require an HTTP interaction"
+            assert isinstance(interaction, HttpInteraction), (
+                "Response headers require an HTTP interaction"
+            )
             logger.info("with_headers(%r)", self.response_headers)
             interaction.with_headers(self.response_headers.items(), "Response")
 
         if self.response_body:
-            assert isinstance(
-                interaction, HttpInteraction
-            ), "Response body requires an HTTP interaction"
+            assert isinstance(interaction, HttpInteraction), (
+                "Response body requires an HTTP interaction"
+            )
             self.response_body.add_to_interaction(interaction)
 
         if self.response_matching_rules:

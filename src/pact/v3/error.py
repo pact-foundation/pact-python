@@ -269,7 +269,7 @@ class MissingRequest(Mismatch):
         extra = copy.deepcopy(self.request)
         extra.pop("method")
         extra.pop("path")
-        return "Missing request: " f"{self.method} {self.path}: {extra}"
+        return f"Missing request: {self.method} {self.path}: {extra}"
 
 
 class RequestNotFound(Mismatch):
@@ -342,7 +342,7 @@ class RequestNotFound(Mismatch):
         extra = copy.deepcopy(self.request)
         extra.pop("method")
         extra.pop("path")
-        return "Request not found: " f"{self.method} {self.path}: {extra}"
+        return f"Request not found: {self.method} {self.path}: {extra}"
 
 
 class RequestMismatch(Mismatch):
