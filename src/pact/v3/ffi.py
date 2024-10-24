@@ -169,8 +169,7 @@ class AsynchronousMessage:
         """
         if ffi.typeof(ptr).cname != "struct AsynchronousMessage *":
             msg = (
-                "ptr must be a struct AsynchronousMessage, got"
-                f" {ffi.typeof(ptr).cname}"
+                f"ptr must be a struct AsynchronousMessage, got {ffi.typeof(ptr).cname}"
             )
             raise TypeError(msg)
         self._ptr = ptr
@@ -238,7 +237,7 @@ class Generator:
                 If the `ptr` is not a `struct Generator`.
         """
         if ffi.typeof(ptr).cname != "struct Generator *":
-            msg = "ptr must be a struct Generator, got" f" {ffi.typeof(ptr).cname}"
+            msg = f"ptr must be a struct Generator, got {ffi.typeof(ptr).cname}"
             raise TypeError(msg)
         self._ptr = ptr
 
@@ -457,7 +456,7 @@ class MatchingRule:
                 If the `ptr` is not a `struct MatchingRule`.
         """
         if ffi.typeof(ptr).cname != "struct MatchingRule *":
-            msg = "ptr must be a struct MatchingRule, got" f" {ffi.typeof(ptr).cname}"
+            msg = f"ptr must be a struct MatchingRule, got {ffi.typeof(ptr).cname}"
             raise TypeError(msg)
         self._ptr = ptr
 
@@ -618,9 +617,7 @@ class MessageContents:
                 If the `ptr` is not a `struct MessageContents`.
         """
         if ffi.typeof(ptr).cname != "struct MessageContents *":
-            msg = (
-                "ptr must be a struct MessageContents, got" f" {ffi.typeof(ptr).cname}"
-            )
+            msg = f"ptr must be a struct MessageContents, got {ffi.typeof(ptr).cname}"
             raise TypeError(msg)
         self._ptr = ptr
         self._owned = owned
@@ -761,8 +758,7 @@ class MessageMetadataPair:
         """
         if ffi.typeof(ptr).cname != "struct MessageMetadataPair *":
             msg = (
-                "ptr must be a struct MessageMetadataPair, got"
-                f" {ffi.typeof(ptr).cname}"
+                f"ptr must be a struct MessageMetadataPair, got {ffi.typeof(ptr).cname}"
             )
             raise TypeError(msg)
         self._ptr = ptr
@@ -1146,7 +1142,7 @@ class ProviderState:
                 If the `ptr` is not a `struct ProviderState`.
         """
         if ffi.typeof(ptr).cname != "struct ProviderState *":
-            msg = "ptr must be a struct ProviderState, got" f" {ffi.typeof(ptr).cname}"
+            msg = f"ptr must be a struct ProviderState, got {ffi.typeof(ptr).cname}"
             raise TypeError(msg)
         self._ptr = ptr
 
@@ -1371,9 +1367,7 @@ class SynchronousHttp:
                 If the `ptr` is not a `struct SynchronousHttp`.
         """
         if ffi.typeof(ptr).cname != "struct SynchronousHttp *":
-            msg = (
-                "ptr must be a struct SynchronousHttp, got" f" {ffi.typeof(ptr).cname}"
-            )
+            msg = f"ptr must be a struct SynchronousHttp, got {ffi.typeof(ptr).cname}"
             raise TypeError(msg)
         self._ptr = ptr
         self._owned = owned
@@ -1452,8 +1446,7 @@ class SynchronousMessage:
         """
         if ffi.typeof(ptr).cname != "struct SynchronousMessage *":
             msg = (
-                "ptr must be a struct SynchronousMessage, got"
-                f" {ffi.typeof(ptr).cname}"
+                f"ptr must be a struct SynchronousMessage, got {ffi.typeof(ptr).cname}"
             )
             raise TypeError(msg)
         self._ptr = ptr
