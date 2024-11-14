@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
+        uses: codecov/codecov-action@968872560f81e7bdde9272853e65f2507c0eca7c # v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: tests
@@ -223,7 +223,7 @@ jobs:
           hatch run example --broker-url=http://pactbroker:pactbroker@localhost:9292
 
       - name: Upload coverage
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
+        uses: codecov/codecov-action@968872560f81e7bdde9272853e65f2507c0eca7c # v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: examples
