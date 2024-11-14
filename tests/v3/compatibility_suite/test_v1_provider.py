@@ -10,7 +10,7 @@ import sys
 import pytest
 from pytest_bdd import given, parsers, scenario
 
-from tests.v3.compatibility_suite.util import parse_markdown_table
+from tests.v3.compatibility_suite.util import parse_horizontal_table
 from tests.v3.compatibility_suite.util.interaction_definition import (
     InteractionDefinition,
 )
@@ -372,12 +372,11 @@ def test_response_with_multipart_body_negative_case() -> None:
 
 
 @given(
-    parsers.parse("the following HTTP interactions have been defined:\n{content}"),
+    parsers.parse("the following HTTP interactions have been defined:"),
     target_fixture="interaction_definitions",
-    converters={"content": parse_markdown_table},
 )
 def the_following_http_interactions_have_been_defined(
-    content: list[dict[str, str]],
+    datatable: list[list[str]],
 ) -> dict[int, InteractionDefinition]:
     """
     Parse the HTTP interactions table into a dictionary.
@@ -401,12 +400,13 @@ def the_following_http_interactions_have_been_defined(
     logger.debug("Parsing interaction definitions")
 
     # Check that the table is well-formed
-    assert len(content[0]) == 10, f"Expected 10 columns, got {len(content[0])}"
-    assert "No" in content[0], "'No' column not found"
+    definitions = parse_horizontal_table(datatable)
+    assert len(definitions[0]) == 10, f"Expected 10 columns, got {len(definitions[0])}"
+    assert "No" in definitions[0], "'No' column not found"
 
     # Parse the table into a more useful format
     interactions: dict[int, InteractionDefinition] = {}
-    for row in content:
+    for row in definitions:
         interactions[int(row["No"])] = InteractionDefinition(**row)  # type: ignore[arg-type]
     return interactions
 

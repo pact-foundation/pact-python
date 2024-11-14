@@ -150,9 +150,9 @@ def truncate(data: str | bytes) -> str:
     )
 
 
-def parse_markdown_table(content: str) -> list[dict[str, str]]:
+def parse_horizontal_table(content: list[list[str]]) -> list[dict[str, str]]:
     """
-    Parse a Markdown table into a list of dictionaries.
+    Parse a table into a list of dictionaries.
 
     The table is expected to be in the following format:
 
@@ -161,25 +161,28 @@ def parse_markdown_table(content: str) -> list[dict[str, str]]:
     | val1 | val2 | val3 |
     ```
 
-    Note that the first row is expected to be the column headers, and the
-    remaining rows are the values. There is no header/body separation.
-    """
-    rows = [
-        list(map(str.strip, row.split("|")))[1:-1]
-        for row in content.split("\n")
-        if row.strip()
-    ]
+    The parsing of the Markdown table into a list of lists is first done by
+    the `pytest-bdd` library. This function then converts this into a list of
+    dictionaries.
 
-    if len(rows) < 2:
-        msg = f"Expected at least two rows in the table, got {len(rows)}"
+    Args:
+        content:
+            The table contents as parsed by `pytest-bdd`.
+
+    Returns:
+        A list of dictionaries, where each dictionary represents a row in the
+        table.
+    """
+    if len(content) < 2:
+        msg = f"Expected at least two rows in the table, got {len(content)}"
         raise ValueError(msg)
 
-    return [dict(zip(rows[0], row)) for row in rows[1:]]
+    return [dict(zip(content[0], row)) for row in content[1:]]
 
 
-def parse_horizontal_markdown_table(content: str) -> dict[str, str]:
+def parse_vertical_table(content: list[list[str]]) -> dict[str, str]:
     """
-    Parse a Markdown table into a list of dictionaries.
+    Parse a table into a single dictionary.
 
     The table is expected to be in the following format:
 
@@ -188,18 +191,23 @@ def parse_horizontal_markdown_table(content: str) -> dict[str, str]:
     | key2 | val2 |
     | key3 | val3 |
     ```
-    """
-    rows = [
-        list(map(str.strip, row.split("|")))[1:-1]
-        for row in content.split("\n")
-        if row.strip()
-    ]
 
-    if len(rows[0]) > 2:
-        msg = f"Expected at most two columns in the table, got {len(rows[0])}"
+    The parsing of the Markdown table into a list of lists is first done by
+    the `pytest-bdd` library. This function then converts this into a single
+    dictionary for easier access.
+
+    Args:
+        content:
+            The table contents as parsed by `pytest-bdd`.
+
+    Returns:
+        A dictionary, where each key is a column in the table
+    """
+    if len(content[0]) != 2:
+        msg = f"Expected exactly two columns in the table, got {len(content[0])}"
         raise ValueError(msg)
 
-    return {row[0]: row[1] for row in rows}
+    return {row[0]: row[1] for row in content}
 
 
 def serialize(obj: Any) -> Any:  # noqa: ANN401, PLR0911

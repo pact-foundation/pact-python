@@ -19,7 +19,7 @@ from pytest_bdd import (
 from tests.v3.compatibility_suite.util import (
     FIXTURES_ROOT,
     PactInteractionTuple,
-    parse_markdown_table,
+    parse_horizontal_table,
 )
 from tests.v3.compatibility_suite.util.consumer import (
     a_message_integration_is_being_defined_for_a_consumer_test,
@@ -133,24 +133,35 @@ a_message_integration_is_being_defined_for_a_consumer_test("V3")
 
 @given(
     parsers.re(
-        r'a provider state "(?P<state>[^"]+)" for the message is specified'
-        r"( with the following data:\n)?(?P<table>.*)",
+        r'a provider state "(?P<state>[^"]+)" for the message is specified',
+    ),
+)
+def a_provider_state_for_the_message_is_specified(
+    pact_interaction: PactInteractionTuple[AsyncMessageInteraction],
+    state: str,
+) -> None:
+    """A provider state for the message is specified."""
+    logger.debug("Specifying provider state '%s'", state)
+    pact_interaction.interaction.given(state)
+
+
+@given(
+    parsers.re(
+        r'a provider state "(?P<state>[^"]+)" for the message is specified '
+        r"with the following data:",
         re.DOTALL,
     ),
-    converters={"table": lambda v: parse_markdown_table(v) if v else None},
 )
 def a_provider_state_for_the_message_is_specified_with_the_following_data(
     pact_interaction: PactInteractionTuple[AsyncMessageInteraction],
     state: str,
-    table: list[dict[str, str]] | None,
+    datatable: list[list[str]],
 ) -> None:
     """A provider state for the message is specified with the following data."""
-    logger.debug("Specifying provider state '%s': %s", state, table)
-    if table:
-        parameters = {k: ast.literal_eval(v) for k, v in table[0].items()}
-        pact_interaction.interaction.given(state, parameters=parameters)
-    else:
-        pact_interaction.interaction.given(state)
+    table = parse_horizontal_table(datatable)
+    logger.debug("Specifying provider state '%s' with data: %s", state, table)
+    parameters = {k: ast.literal_eval(v) for k, v in table[0].items()}
+    pact_interaction.interaction.given(state, parameters=parameters)
 
 
 @given("a message is defined")
@@ -160,18 +171,18 @@ def a_message_is_defined() -> None:
 
 @given(
     parsers.re(
-        r"the message contains the following metadata:\n(?P<table>.+)",
+        r"the message contains the following metadata:",
         re.DOTALL,
     ),
-    converters={"table": parse_markdown_table},
 )
 def the_message_contains_the_following_metadata(
     pact_interaction: PactInteractionTuple[AsyncMessageInteraction],
-    table: list[dict[str, Any]],
+    datatable: list[list[str]],
 ) -> None:
     """The message contains the following metadata."""
-    logger.debug("Adding metadata to message: %s", table)
-    for metadata in table:
+    metadatas = parse_horizontal_table(datatable)
+    logger.debug("Adding metadata to message: %s", metadatas)
+    for metadata in metadatas:
         if metadata.get("value", "").startswith("JSON: "):
             metadata["value"] = metadata["value"].replace("JSON:", "")
         pact_interaction.interaction.with_metadata({metadata["key"]: metadata["value"]})
@@ -179,16 +190,16 @@ def the_message_contains_the_following_metadata(
 
 @given(
     parsers.re(
-        r"the message is configured with the following:\n(?P<table>.+)",
+        r"the message is configured with the following:",
         re.DOTALL,
     ),
-    converters={"table": parse_markdown_table},
 )
 def the_message_is_configured_with_the_following(
     pact_interaction: PactInteractionTuple[AsyncMessageInteraction],
-    table: list[dict[str, Any]],
+    datatable: list[list[str]],
 ) -> None:
     """The message is configured with the following."""
+    table = parse_horizontal_table(datatable)
     assert len(table) == 1, "Only one row is expected"
     config: dict[str, str] = table[0]
 
@@ -506,20 +517,21 @@ def the_pact_file_will_contain_message_interaction(
 @then(
     parsers.re(
         r'the provider state "(?P<state>[^"]+)" for the message '
-        r"will contain the following parameters:\n(?P<table>.+)",
+        r"will contain the following parameters:",
         re.DOTALL,
     ),
-    converters={"table": parse_markdown_table},
 )
 def the_provider_state_for_the_message_will_contain_the_following_parameters(
     pact_interaction: PactInteractionTuple[AsyncMessageInteraction],
     pact_result: PactResult,
     state: str,
-    table: list[dict[str, Any]],
+    datatable: list[list[str]],
 ) -> None:
     """The provider state for the message will contain the following parameters."""
+    table = parse_horizontal_table(datatable)
     assert len(table) == 1, "Only one row is expected"
     expected = json.loads(table[0]["parameters"])
+    logger.debug("Checking provider state '%s' parameters: %s", state, expected)
 
     # It is unclear whether this test is meant to verify the `Interaction`
     # object, or the result as written to the Pact file. As a result, we
@@ -536,6 +548,7 @@ def the_provider_state_for_the_message_will_contain_the_following_parameters(
 
     assert len(message["providerStates"]) > 0, "At least one provider state is expected"
     provider_states = message["providerStates"]
+    logger.debug("Provider states: %s", provider_states)
     for provider_state_dict in provider_states:
         if provider_state_dict["name"] == state:
             assert expected == provider_state_dict["params"]

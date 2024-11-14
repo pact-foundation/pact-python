@@ -50,7 +50,7 @@ import pact.constants  # type: ignore[import-untyped]
 from pact.v3.pact import Pact
 from tests.v3.compatibility_suite.util import (
     parse_headers,
-    parse_markdown_table,
+    parse_horizontal_table,
     serialize,
     truncate,
 )
@@ -573,12 +573,11 @@ def a_provider_is_started_that_returns_the_responses_from_interactions_with_chan
         parsers.re(
             r"a provider is started that returns the responses?"
             r' from interactions? "?(?P<interactions>[0-9, ]+)"?'
-            r" with the following changes:\n(?P<changes>.+)",
+            r" with the following changes:",
             re.DOTALL,
         ),
         converters={
             "interactions": lambda x: [int(i) for i in x.split(",") if i],
-            "changes": parse_markdown_table,
         },
         target_fixture="provider_url",
         stacklevel=stacklevel + 1,
@@ -586,13 +585,14 @@ def a_provider_is_started_that_returns_the_responses_from_interactions_with_chan
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
         interactions: list[int],
-        changes: list[dict[str, str]],
+        datatable: list[list[str]],
         temp_dir: Path,
     ) -> Generator[URL, None, None]:
         """
         Start a provider that returns the responses from the given interactions.
         """
         logger.debug("Starting provider for modified interactions %s", interactions)
+        changes = parse_horizontal_table(datatable)
 
         assert len(changes) == 1, "Only one set of changes is supported"
         defns: list[InteractionDefinition] = []
@@ -810,17 +810,17 @@ def a_pact_file_for_interaction_is_to_be_verified_with_comments(
     @given(
         parsers.re(
             r"a Pact file for interaction (?P<interaction>\d+) is to be verified"
-            r" with the following comments:\n(?P<comments>.+)",
+            r" with the following comments:",
             re.DOTALL,
         ),
-        converters={"interaction": int, "comments": parse_markdown_table},
+        converters={"interaction": int},
         stacklevel=stacklevel + 1,
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
         verifier: Verifier,
         interaction: int,
-        comments: list[dict[str, str]],
+        datatable: list[list[str]],
         temp_dir: Path,
     ) -> None:
         """
@@ -831,7 +831,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_comments(
             interaction,
             interaction_definitions[interaction],
         )
-
+        comments = parse_horizontal_table(datatable)
         defn = interaction_definitions[interaction]
         for comment in comments:
             if comment["type"] == "text":
@@ -865,10 +865,9 @@ def a_pact_file_for_message_is_to_be_verified_with_comments(
     @given(
         parsers.re(
             r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)" is to be verified'
-            r" with the following comments:\n(?P<comments>.+)",
+            r" with the following comments:",
             re.DOTALL,
         ),
-        converters={"comments": parse_markdown_table},
         stacklevel=stacklevel + 1,
     )
     def _(
@@ -876,13 +875,14 @@ def a_pact_file_for_message_is_to_be_verified_with_comments(
         temp_dir: Path,
         name: str,
         fixture: str,
-        comments: list[dict[str, str]],
+        datatable: list[list[str]],
     ) -> None:
         defn = InteractionDefinition(
             type="Async",
             description=name,
             body=fixture,
         )
+        comments = parse_horizontal_table(datatable)
         for comment in comments:
             if comment["type"] == "text":
                 defn.text_comments.append(comment["comment"])
@@ -1047,22 +1047,23 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_states_defined
     @given(
         parsers.re(
             r"a Pact file for interaction (?P<interaction>\d+) is to be verified"
-            r" with the following provider states defined:\n(?P<states>.+)",
+            r" with the following provider states defined:",
             re.DOTALL,
         ),
-        converters={"interaction": int, "states": parse_markdown_table},
+        converters={"interaction": int},
         stacklevel=stacklevel + 1,
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
         verifier: Verifier,
         interaction: int,
-        states: list[dict[str, Any]],
+        datatable: list[list[str]],
         temp_dir: Path,
     ) -> None:
         """
         Verify the Pact file for the given interaction with provider states defined.
         """
+        states = parse_horizontal_table(datatable)
         logger.debug(
             "Adding interaction %d to be verified with provider states %s",
             interaction,
@@ -1091,14 +1092,11 @@ def a_request_filter_is_configured_to_make_the_following_changes(
     stacklevel: int = 1,
 ) -> None:
     @given(
-        parsers.parse(
-            "a request filter is configured to make the following changes:\n{content}"
-        ),
-        converters={"content": parse_markdown_table},
+        parsers.parse("a request filter is configured to make the following changes:"),
         stacklevel=stacklevel + 1,
     )
     def _(
-        content: list[dict[str, str]],
+        datatable: list[list[str]],
         verifier: Verifier,
     ) -> None:
         """
@@ -1106,8 +1104,9 @@ def a_request_filter_is_configured_to_make_the_following_changes(
         """
         logger.debug("Configuring request filter")
 
-        if "headers" in content[0]:
-            verifier.add_custom_headers(parse_headers(content[0]["headers"]).items())
+        changes = parse_horizontal_table(datatable)
+        if "headers" in changes[0]:
+            verifier.add_custom_headers(parse_headers(changes[0]["headers"]).items())
         else:
             msg = "Unsupported filter type"
             raise RuntimeError(msg)
@@ -1376,23 +1375,23 @@ def the_provider_state_callback_will_receive_a_setup_call_with_parameters(
             r"the provider state callback"
             r" will receive a (?P<action>setup|teardown) call"
             r' (with )?"(?P<state>[^"]*)"'
-            r" and the following parameters:\n(?P<parameters>.+)",
+            r" and the following parameters:",
             re.DOTALL,
         ),
-        converters={"parameters": parse_markdown_table},
         stacklevel=stacklevel + 1,
     )
     def _(
         temp_dir: Path,
         action: str,
         state: str,
-        parameters: list[dict[str, str]],
+        datatable: list[list[str]],
     ) -> None:
         """
         Check that the provider state callback received a setup call.
         """
         logger.info("Checking provider state callback received a %s call", action)
         logger.info("Callback files: %s", list(temp_dir.glob("callback.*.json")))
+        parameters = parse_horizontal_table(datatable)
         params: dict[str, str] = parameters[0]
         # If we have a string that looks quoted, unquote it
         for key, value in params.items():

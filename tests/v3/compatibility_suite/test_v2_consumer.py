@@ -6,7 +6,7 @@ import logging
 
 from pytest_bdd import given, parsers, scenario
 
-from tests.v3.compatibility_suite.util import parse_markdown_table
+from tests.v3.compatibility_suite.util import parse_horizontal_table
 from tests.v3.compatibility_suite.util.consumer import (
     a_response_is_returned,
     request_n_is_made_to_the_mock_server,
@@ -165,11 +165,11 @@ def test_supports_a_matcher_for_request_paths() -> None:
 
 
 @given(
-    parsers.parse("the following HTTP interactions have been defined:\n{content}"),
+    parsers.parse("the following HTTP interactions have been defined:"),
     target_fixture="interaction_definitions",
 )
 def the_following_http_interactions_have_been_defined(
-    content: str,
+    datatable: list[list[str]],
 ) -> dict[int, InteractionDefinition]:
     """
     Parse the HTTP interactions table into a dictionary.
@@ -187,15 +187,16 @@ def the_following_http_interactions_have_been_defined(
     The first row is ignored, as it is assumed to be the column headers. The
     order of the columns is similarly ignored.
     """
-    table = parse_markdown_table(content)
+    logger.debug("Parsing interaction definitions")
 
     # Check that the table is well-formed
-    assert len(table[0]) == 7, f"Expected 7 columns, got {len(table[0])}"
-    assert "No" in table[0], "'No' column not found"
+    definitions = parse_horizontal_table(datatable)
+    assert len(definitions[0]) == 7, f"Expected 7 columns, got {len(definitions[0])}"
+    assert "No" in definitions[0], "'No' column not found"
 
     # Parse the table into a more useful format
     interactions: dict[int, InteractionDefinition] = {}
-    for row in table:
+    for row in definitions:
         interactions[int(row["No"])] = InteractionDefinition(**row)  # type: ignore[arg-type]
 
     return interactions
