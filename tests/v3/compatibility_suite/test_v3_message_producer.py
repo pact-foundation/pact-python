@@ -8,7 +8,7 @@ import pickle
 import re
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from pytest_bdd import (
@@ -19,8 +19,8 @@ from pytest_bdd import (
 
 from pact.v3.pact import Pact
 from tests.v3.compatibility_suite.util import (
-    parse_horizontal_markdown_table,
-    parse_markdown_table,
+    parse_horizontal_table,
+    parse_vertical_table,
 )
 from tests.v3.compatibility_suite.util.interaction_definition import (
     InteractionDefinition,
@@ -280,17 +280,15 @@ a_pact_file_for_message_is_to_be_verified("V3")
 
 @given(
     parsers.re(
-        r'a Pact file for "(?P<name>[^"]+)" is to be verified with the following:\n'
-        r"(?P<table>.+)",
+        r'a Pact file for "(?P<name>[^"]+)" is to be verified with the following:',
         re.DOTALL,
     ),
-    converters={"table": parse_horizontal_markdown_table},
 )
 def a_pact_file_for_is_to_be_verified_with_the_following(
     verifier: Verifier,
     temp_dir: Path,
     name: str,
-    table: dict[str, str | dict[str, str]],
+    datatable: list[list[str]],
 ) -> None:
     """
     A Pact file for "basic" is to be verified with the following.
@@ -298,6 +296,7 @@ def a_pact_file_for_is_to_be_verified_with_the_following(
     pact = Pact("consumer", "provider")
     pact.with_specification("V3")
 
+    table: dict[str, Any] = parse_vertical_table(datatable)
     if "metadata" in table:
         assert isinstance(table["metadata"], str)
         metadata = {
@@ -351,20 +350,19 @@ def a_pact_file_for_is_to_be_verified_with_provider_state(
 @given(
     parsers.re(
         r'a Pact file for "(?P<name>[^"]+)":"(?P<fixture>[^"]+)" is '
-        "to be verified with the following metadata:\n"
-        r"(?P<metadata>.+)",
+        "to be verified with the following metadata:",
         re.DOTALL,
     ),
-    converters={"metadata": parse_markdown_table},
 )
 def a_pact_file_for_is_to_be_verified_with_the_following_metadata(
     temp_dir: Path,
     verifier: Verifier,
     name: str,
     fixture: str,
-    metadata: list[dict[str, str]],
+    datatable: list[list[str]],
 ) -> None:
     """A Pact file is to be verified with the following metadata."""
+    metadata = parse_horizontal_table(datatable)
     pact = Pact("consumer", "provider")
     pact.with_specification("V3")
     interaction_definition = InteractionDefinition(
@@ -387,21 +385,20 @@ def a_pact_file_for_is_to_be_verified_with_the_following_metadata(
 @given(
     parsers.re(
         r'a provider is started that can generate the "(?P<name>[^"]+)" '
-        r'message with "(?P<fixture>[^"]+)" and the following metadata:\n'
-        r"(?P<metadata>.+)",
+        r'message with "(?P<fixture>[^"]+)" and the following metadata:',
         re.DOTALL,
     ),
-    converters={"metadata": parse_markdown_table},
     target_fixture="provider_url",
 )
 def a_provider_is_started_that_can_generate_the_message_with_the_following_metadata(
     temp_dir: Path,
     name: str,
     fixture: str,
-    metadata: list[dict[str, str]],
+    datatable: list[list[str]],
 ) -> Generator[URL, None, None]:
     """A provider is started that can generate the message with the following metadata."""  # noqa: E501
     interaction_definitions: list[InteractionDefinition] = []
+    metadata = parse_horizontal_table(datatable)
     if (temp_dir / "interactions.pkl").exists():
         with (temp_dir / "interactions.pkl").open("rb") as pkl_file:
             interaction_definitions = pickle.load(pkl_file)  # noqa: S301

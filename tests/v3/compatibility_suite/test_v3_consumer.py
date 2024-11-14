@@ -10,7 +10,10 @@ from typing import TYPE_CHECKING, Any
 from pytest_bdd import given, parsers, scenario, then
 
 from pact.v3.pact import HttpInteraction, Pact
-from tests.v3.compatibility_suite.util import PactInteractionTuple, parse_markdown_table
+from tests.v3.compatibility_suite.util import (
+    PactInteractionTuple,
+    parse_horizontal_table,
+)
 from tests.v3.compatibility_suite.util.consumer import (
     the_pact_file_for_the_test_is_generated,
 )
@@ -71,18 +74,18 @@ def a_provider_state_is_specified(
 @given(
     parsers.re(
         r'a provider state "(?P<state>[^"]+)" is specified'
-        r" with the following data:\n(?P<table>.+)",
+        r" with the following data:",
         re.DOTALL,
     ),
-    converters={"table": parse_markdown_table},
 )
 def a_provider_state_is_specified_with_the_following_data(
     pact_interaction: PactInteractionTuple[HttpInteraction],
     state: str,
-    table: list[dict[str, Any]],
+    datatable: list[list[str]],
 ) -> None:
     """A provider state is specified."""
-    for row in table:
+    data: list[dict[str, Any]] = parse_horizontal_table(datatable)
+    for row in data:
         for key, value in row.items():
             if value.startswith('"') and value.endswith('"'):
                 row[key] = value[1:-1]
@@ -96,7 +99,7 @@ def a_provider_state_is_specified_with_the_following_data(
             elif value.replace(".", "", 1).isdigit():
                 row[key] = float(value)
 
-    pact_interaction.interaction.given(state, parameters=table[0])
+    pact_interaction.interaction.given(state, parameters=data[0])
 
 
 ################################################################################
@@ -154,20 +157,20 @@ def the_interaction_in_the_pact_file_will_container_provider_state(
 @then(
     parsers.re(
         r'the provider state "(?P<state>[^"]+)" in the Pact file'
-        r" will contain the following parameters:\n(?P<table>.+)",
+        r" will contain the following parameters:",
         re.DOTALL,
     ),
-    converters={"table": parse_markdown_table},
 )
 def the_provider_state_in_the_pact_file_will_contain_the_following_parameters(
     state: str,
-    table: list[dict[str, Any]],
     pact_data: dict[str, Any],
+    datatable: list[list[str]],
 ) -> None:
     """The provider state in the Pact file will contain the following parameters."""
     assert "interactions" in pact_data
     assert len(pact_data["interactions"]) == 1
     assert "providerStates" in pact_data["interactions"][0]
+    table = parse_horizontal_table(datatable)
     parameters: dict[str, Any] = json.loads(table[0]["parameters"])
 
     provider_state = next(

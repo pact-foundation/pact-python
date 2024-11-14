@@ -32,7 +32,7 @@ from pact.v3.error import (
 from tests.v3.compatibility_suite.util import (
     FIXTURES_ROOT,
     PactInteractionTuple,
-    parse_markdown_table,
+    parse_horizontal_table,
     string_to_int,
     truncate,
 )
@@ -177,23 +177,24 @@ def the_mock_server_is_started_with_interaction_n_but_with_the_following_changes
         parsers.re(
             r"the mock server is started"
             r" with interaction (?P<iid>\d+)"
-            r" but with the following changes?:\n(?P<content>.*)",
+            r" but with the following changes?:",
             re.DOTALL,
         ),
-        converters={"iid": int, "content": parse_markdown_table},
+        converters={"iid": int},
         target_fixture="srv",
         stacklevel=stacklevel + 1,
     )
     def _(
         iid: int,
         interaction_definitions: dict[int, InteractionDefinition],
-        content: list[dict[str, str]],
+        datatable: list[list[str]],
     ) -> Generator[PactServer, Any, None]:
         """The mock server is started with interactions."""
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
         definition = interaction_definitions[iid]
-        definition.update(**content[0])  # type: ignore[arg-type]
+        changes = parse_horizontal_table(datatable)
+        definition.update(**changes[0])  # type: ignore[arg-type]
         logger.info("Adding modified interaction %s", iid)
         definition.add_to_pact(pact, f"interaction {iid}")
 
@@ -249,17 +250,17 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
     @when(
         parsers.re(
             r"request (?P<request_id>\d+) is made to the mock server"
-            r" with the following changes?:\n(?P<content>.*)",
+            r" with the following changes?:",
             re.DOTALL,
         ),
-        converters={"request_id": int, "content": parse_markdown_table},
+        converters={"request_id": int},
         target_fixture="response",
         stacklevel=stacklevel + 1,
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
         request_id: int,
-        content: list[dict[str, str]],
+        datatable: list[list[str]],
         srv: PactServer,
     ) -> requests.Response:
         """
@@ -269,8 +270,9 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
         definition (as in the given step).
         """
         definition = interaction_definitions[request_id]
-        assert len(content) == 1, "Expected exactly one row in the table"
-        definition.update(**content[0])  # type: ignore[arg-type]
+        changes = parse_horizontal_table(datatable)
+        assert len(changes) == 1, "Expected exactly one row in the table"
+        definition.update(**changes[0])  # type: ignore[arg-type]
 
         if (
             definition.body
