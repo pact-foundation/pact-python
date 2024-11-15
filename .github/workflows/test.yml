@@ -87,7 +87,7 @@ jobs:
           patch -p1 -d definition < definition-update.diff
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2e657c127d5b1635d5a8e3fa40e0ac50a5bf6992 # v3.2.2
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -154,7 +154,7 @@ jobs:
           patch -p1 -d definition < definition-update.diff
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2e657c127d5b1635d5a8e3fa40e0ac50a5bf6992 # v3.2.2
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -193,7 +193,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2e657c127d5b1635d5a8e3fa40e0ac50a5bf6992 # v3.2.2
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -237,7 +237,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2e657c127d5b1635d5a8e3fa40e0ac50a5bf6992 # v3.2.2
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -262,7 +262,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2e657c127d5b1635d5a8e3fa40e0ac50a5bf6992 # v3.2.2
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -287,7 +287,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2e657c127d5b1635d5a8e3fa40e0ac50a5bf6992 # v3.2.2
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
