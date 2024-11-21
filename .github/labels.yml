@@ -1,11 +1,12 @@
+---
 - name: area:v3
   description: Relating to the pact.v3 module
-  color: "C2E0C6"
+  color: C2E0C6
 
 - name: area:v2
   description: Relating to v2 code
-  color: "C2E0C6"
+  color: C2E0C6
 
 - name: area:examples
   description: Relating to the examples
-  color: "C2E0C6"
+  color: C2E0C6

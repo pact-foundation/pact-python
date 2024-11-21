@@ -1,3 +1,4 @@
+---
 name: Trigger update to docs.pact.io
 
 on:
@@ -5,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - "**.md"
+      - '**.md'
 
 jobs:
   run:
