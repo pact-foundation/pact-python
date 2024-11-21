@@ -1,3 +1,4 @@
+---
 name: Labels
 
 on:
@@ -5,7 +6,7 @@ on:
   # so that updates propagate automatically. Weekly is probably
   # enough.
   schedule:
-    - cron: "20 0 * * 0"
+    - cron: 20 0 * * 0
   push:
     branches:
       - master
@@ -20,11 +21,11 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Synchronize labels
-        uses: EndBug/label-sync@52074158190acb45f3077f9099fea818aa43f97a # v2
+        uses: EndBug/label-sync@52074158190acb45f3077f9099fea818aa43f97a  # v2
         with:
-          config-file: |
+          config-file: |-
             https://raw.githubusercontent.com/pact-foundation/.github/master/.github/labels.yml
             .github/labels.yml

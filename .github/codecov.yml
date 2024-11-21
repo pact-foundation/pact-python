@@ -1,4 +1,5 @@
+---
 coverage:
   precision: 0
   round: down
-  range: "60...85"
+  range: 60...85

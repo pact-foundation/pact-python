@@ -1,6 +1,11 @@
+---
 name: 🐛 Bug Report
 description: Submit a bug report to help us improve
-labels: [bug, triage]
+
+labels:
+  - bug
+  - triage
+
 body:
   - type: markdown
     attributes:
@@ -33,7 +38,8 @@ body:
   - type: checkboxes
     attributes:
       label: Prerequisites
-      description: Please check the following items before creating a issue. This way we know you've done these steps first.
+      description: Please check the following items before creating a issue. This way we know you've done
+        these steps first.
       options:
         - label: I'm using the latest version of `pact-python`.
           required: true
@@ -65,7 +71,8 @@ body:
   - type: textarea
     attributes:
       label: Steps to reproduce
-      description: Write down the steps to reproduce the bug. You should start with a fresh installation, or your git repository linked above.
+      description: Write down the steps to reproduce the bug. You should start with a fresh installation,
+        or your git repository linked above.
       placeholder: |
         1. Step 1...
         2. Step 2...
@@ -76,7 +83,8 @@ body:
   - type: textarea
     attributes:
       label: Expected behavior
-      description: How did you expect your project to behave? It's fine if you're not sure your understanding is correct. Write down what you thought would happen.
+      description: How did you expect your project to behave? It's fine if you're not sure your understanding
+        is correct. Write down what you thought would happen.
       placeholder: Write what you thought would happen.
     validations:
       required: true

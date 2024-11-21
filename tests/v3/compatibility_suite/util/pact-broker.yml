@@ -1,10 +1,11 @@
-version: "3.9"
+---
+version: '3.9'
 
 services:
   postgres:
     image: postgres
     ports:
-      - "5432:5432"
+      - 5432:5432
     healthcheck:
       test: psql postgres -U postgres --command 'SELECT 1'
     environment:
@@ -17,27 +18,25 @@ services:
     depends_on:
       - postgres
     ports:
-      - "9292:9292"
+      - 9292:9292
     restart: always
     environment:
       # Basic auth credentials for the Broker
-      PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+      PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
       PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
       PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
       # Database
-      PACT_BROKER_DATABASE_URL: "postgres://postgres:postgres@postgres/postgres"
-      # PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite # Pending pact-foundation/pact-broker-docker#148
+      PACT_BROKER_DATABASE_URL: postgres://postgres:postgres@postgres/postgres
+      # PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite  # Pending pact-foundation/pact-broker-docker#148
 
     healthcheck:
       test:
-        [
-          "CMD",
-          "curl",
-          "--silent",
-          "--show-error",
-          "--fail",
-          "http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat",
-        ]
+        - CMD
+        - curl
+        - --silent
+        - --show-error
+        - --fail
+        - http://pactbroker:pactbroker@localhost:9292/diagnostic/status/heartbeat
       interval: 1s
       timeout: 2s
       retries: 5

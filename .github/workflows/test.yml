@@ -1,3 +1,4 @@
+---
 name: test
 
 on:
@@ -13,10 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  STABLE_PYTHON_VERSION: "3.13"
+  STABLE_PYTHON_VERSION: '3.13'
   PYTEST_ADDOPTS: --color=yes
-  HATCH_VERBOSE: "1"
-  FORCE_COLOR: "1"
+  HATCH_VERBOSE: '1'
+  FORCE_COLOR: '1'
 
 jobs:
   complete:
@@ -40,7 +41,8 @@ jobs:
     steps:
       - name: Failed
         run: exit 1
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result,
+          'skipped')
 
   test-linux:
     name: >-
@@ -54,10 +56,10 @@ jobs:
       broker:
         image: pactfoundation/pact-broker:latest@sha256:05e813c53cbc4d5fadb34a608baaf17348a50c669dc1e3e94dad55e364609912
         ports:
-          - "9292:9292"
+          - 9292:9292
         env:
           # Basic auth credentials for the Broker
-          PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+          PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
           PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
           PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
           # Database
@@ -66,17 +68,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        experimental: [false]
+        os:
+          - ubuntu-latest
+        python-version:
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
+        experimental:
+          - false
         include:
-          - # Run tests against the next Python version, but no need for the full list of OSes.
-            os: ubuntu-latest
-            python-version: "3.14"
+            # Run tests against the next Python version, but no need for the full list of OSes.
+          - os: ubuntu-latest
+            python-version: '3.14'
             experimental: true
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           submodules: true
 
@@ -87,7 +96,7 @@ jobs:
           patch -p1 -d definition < definition-update.diff
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -117,7 +126,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a  # v5.0.7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: tests
@@ -132,18 +141,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        os:
+          - windows-latest
+          - macos-latest
+        python-version:
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
         # Python 3.9 aren't supported on macos-latest (ARM)
         exclude:
           - os: macos-latest
-            python-version: "3.9"
+            python-version: '3.9'
         include:
           - os: macos-13
-            python-version: "3.9"
+            python-version: '3.9'
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           submodules: true
 
@@ -154,7 +170,7 @@ jobs:
           patch -p1 -d definition < definition-update.diff
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -180,20 +196,20 @@ jobs:
       broker:
         image: pactfoundation/pact-broker:latest@sha256:05e813c53cbc4d5fadb34a608baaf17348a50c669dc1e3e94dad55e364609912
         ports:
-          - "9292:9292"
+          - 9292:9292
         env:
           # Basic auth credentials for the Broker
-          PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+          PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
           PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
           PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
           # Database
           PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -223,7 +239,7 @@ jobs:
           hatch run example --broker-url=http://pactbroker:pactbroker@localhost:9292
 
       - name: Upload coverage
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a  # v5.0.7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: examples
@@ -234,10 +250,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -259,10 +275,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -284,10 +300,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -309,7 +325,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Spell Check Repo
         uses: crate-ci/typos@master
@@ -320,7 +336,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Run pre-commit
-        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # v3.0.1

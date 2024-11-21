@@ -352,3 +352,12 @@ before-build = [
 extend-ignore-re = [
   "(?Rm)^.*(#|//|<!--)\\s*spellchecker:\\s*ignore"
 ]
+
+################################################################################
+## Yamlfix
+################################################################################
+[tool.yamlfix]
+line_length = 100
+whitelines = 1
+section_whitelines = 1
+sequence_style = "block_style"

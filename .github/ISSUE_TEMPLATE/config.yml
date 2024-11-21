@@ -1,11 +1,15 @@
+---
 blank_issues_enabled: true
+
 contact_links:
   - name: ❓ Simple question - Slack chat
     url: https://slack.pact.io
     about: If you have a simple question, or want to discuss a feature request, join our Slack chat.
   - name: ❓ Simple question - Stack Overflow
     url: https://stackoverflow.com/questions/tagged/pact
-    about: The GitHub issue tracker is not for technical support. Please use Stack Overflow, and ask the community for help.
+    about: The GitHub issue tracker is not for technical support. Please use Stack Overflow, and ask the
+      community for help.
   - name: ❓ Advanced question - GitHub Discussions
     url: https://github.com/pact-foundation/pact-python/discussions
-    about: Use GitHub Discussions for advanced and unanswered questions only, requiring a maintainer's answer. Make sure the question wasn't already asked.
+    about: Use GitHub Discussions for advanced and unanswered questions only, requiring a maintainer's
+      answer. Make sure the question wasn't already asked.

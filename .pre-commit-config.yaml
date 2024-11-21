@@ -1,3 +1,4 @@
+---
 default_install_hook_types:
   - commit-msg
   - pre-commit
@@ -22,11 +23,11 @@ repos:
       # modify the formatting.
       - id: check-toml
       - id: check-xml
-      - id: check-yaml
-        exclude: |
-          (?x)^(
-            mkdocs.yml
-          )$
+
+  - repo: https://github.com/lyz-code/yamlfix/
+    rev: 1.17.0
+    hooks:
+      - id: yamlfix
 
   - repo: https://gitlab.com/bmares/check-json5
     rev: v1.0.0
@@ -36,10 +37,11 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v0.5.0" # Use the sha / tag you want to point at
+    rev: v0.5.0  # Use the sha / tag you want to point at
     hooks:
       - id: biome-check
-        additional_dependencies: ["@biomejs/biome@1.8.2"]
+        additional_dependencies:
+          - '@biomejs/biome@1.8.2'
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.3
@@ -48,7 +50,9 @@ repos:
         # Exclude python files in pact/** and tests/**, except for the
         # files in src/pact/v3/** and tests/v3/**.
         exclude: ^(src/pact|tests)/(?!v3/).*\.py$
-        args: [--fix, --exit-non-zero-on-fix]
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
       - id: ruff-format
         exclude: ^(pact|tests)/(?!v3/).*\.py$
 
@@ -80,6 +84,8 @@ repos:
         name: mypy
         entry: hatch run mypy
         language: system
-        types: [python]
+        types:
+          - python
         exclude: ^(src/pact|tests|examples|examples/tests)/(?!v3/).*\.py$
-        stages: [pre-push]
+        stages:
+          - pre-push
