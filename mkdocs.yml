@@ -1,3 +1,4 @@
+---
 site_name: Pact Python
 site_url: https://pact-foundation.github.io/pact-python/
 
@@ -42,8 +43,8 @@ plugins:
             show_category_heading: true
             # Members
             filters:
-              - "!^_"
-              - "!^__"
+              - '!^_'
+              - '!^__'
             group_by_category: true
             show_submodules: false
             # Docstrings
@@ -128,24 +129,25 @@ theme:
     - search.suggest
 
   palette:
-    - media: "(prefers-color-scheme)"
+    - media: (prefers-color-scheme)
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
-    - media: "(prefers-color-scheme: light)"
+    - media: '(prefers-color-scheme: light)'
       scheme: default
       primary: cyan
       accent: cyan
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
+    - media: '(prefers-color-scheme: dark)'
       scheme: slate
       primary: cyan
       accent: cyan
       toggle:
         icon: material/weather-night
         name: Switch to system preference
+
 extra:
   social:
     - icon: fontawesome/brands/github

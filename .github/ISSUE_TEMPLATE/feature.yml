@@ -1,6 +1,11 @@
+---
 name: 💡 Feature design / RFC
 description: Submit a detailed feature request with a concrete proposal
-labels: [feature, triage]
+
+labels:
+  - feature
+  - triage
+
 body:
   - type: markdown
     attributes:
@@ -27,7 +32,8 @@ body:
   - type: textarea
     attributes:
       label: Motivation
-      description: Please outline the motivation for the proposal and why it should be implemented. Has this been requested by a lot of users?
+      description: Please outline the motivation for the proposal and why it should be implemented. Has
+        this been requested by a lot of users?
     validations:
       required: true
 
