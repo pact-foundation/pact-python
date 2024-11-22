@@ -39,7 +39,7 @@ repos:
     rev: "v0.5.0" # Use the sha / tag you want to point at
     hooks:
       - id: biome-check
-        additional_dependencies: ["@biomejs/biome@1.8.2"]
+        additional_dependencies: ["@biomejs/biome@1.9.4"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.3
