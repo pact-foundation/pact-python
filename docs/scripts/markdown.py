@@ -116,7 +116,7 @@ def process_markdown(
 
         mkdocs_gen_files.set_edit_path(
             destination,
-            f"https://github.com/pact-foundation/pact-python/edit/master/{file}",
+            f"https://github.com/pact-foundation/pact-python/edit/main/{file}",
         )
 
 

@@ -19,15 +19,15 @@
         <td>
             <a
                 href="https://github.com/pact-foundation/pact-python/actions/workflows/test.yml"><img
-                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/test.yml?branch=master&label=test"
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/test.yml?branch=main&label=test"
                 alt="Test Status"></a>
             <a
                 href="https://github.com/pact-foundation/pact-python/actions/workflows/build.yml"><img
-                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/build.yml?branch=master&label=build"
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/build.yml?branch=main&label=build"
                 alt="Build Status"></a>
             <a
                 href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml"><img
-                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?branch=master&label=docs"
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?branch=main=docs"
                 alt="Build Status"></a>
         </td>
     </tr>

@@ -54,7 +54,7 @@ dependencies = [
 "Repository"    = "https://github.com/pact-foundation/pact-python"
 "Documentation" = "https://docs.pact.io"
 "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
-"Changelog"     = "https://github.com/pact-foundation/pact-python/blob/master/CHANGELOG.md"
+"Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
 
 [project.scripts]
 pact-verifier = "pact.cli.verify:main"

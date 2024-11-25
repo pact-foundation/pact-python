@@ -4,7 +4,7 @@ name: Trigger update to docs.pact.io
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - '**.md'
 

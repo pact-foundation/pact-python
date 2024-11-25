@@ -42,7 +42,7 @@ All pull requests will be checked by the continuous integration system, GitHub a
 
 ### Branch Organization
 
-Pact Python has one primary branch `master` and we use feature branches to deliver new features with pull requests. Typically, we scope the branch according to the [conventional commit](#conventional-commit-messages) categories. The more common ones are:
+Pact Python has one primary branch `main` and we use feature branches to deliver new features with pull requests. Typically, we scope the branch according to the [conventional commit](#conventional-commit-messages) categories. The more common ones are:
 
 -   `feature/<name>` or `feat/<name>` for new features
 -   `fix/<name>` for bug fixes
@@ -137,7 +137,7 @@ Please make sure the following is done when submitting a pull request:
 2.  **Use descriptive titles.** It is recommended to follow this [commit message style](#conventional-commit-messages).
 3.  **Test your changes.** Describe your [**test plan**](#test-plan) in your pull request description.
 
-All pull requests should be opened against the `master` branch.
+All pull requests should be opened against the `main` branch.
 
 We have a lot of integration systems that run automated tests to guard against mistakes. The maintainers will also review your code and may fix obvious issues for you. These systems' duty is to make you worry as little about the chores as possible. Your code contributions are more important than sticking to any procedures, although completing the checklist will surely save everyone's time.
 

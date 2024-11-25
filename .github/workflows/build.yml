@@ -6,10 +6,10 @@ on:
     tags:
       - v*
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -142,7 +142,7 @@ jobs:
   build-arm64:
     name: Build wheels on ${{ matrix.os }} (arm64)
 
-    # As this requires emulation, it's not worth running on PRs or master
+    # As this requires emulation, it's not worth running on PRs or main
     if: >-
       github.event_name == 'push' &&
       startsWith(github.event.ref, 'refs/tags/v')
@@ -293,4 +293,4 @@ jobs:
           body: |
             This PR updates the changelog for ${{ github.ref_name }}.
           branch: chore/update-changelog
-          base: master
+          base: main
