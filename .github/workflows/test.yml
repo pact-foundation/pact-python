@@ -327,8 +327,8 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
-      - name: Spell Check Repo
-        uses: crate-ci/typos@main
+      - name: Spell Check Repo   https://github.com/crate-ci/typos/commit/
+        uses: crate-ci/typos@b74202f74b4346efdbce7801d187ec57b266bac8  # v1.27.3
 
   pre-commit:
     name: Pre-commit
