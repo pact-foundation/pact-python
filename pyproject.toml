@@ -87,7 +87,7 @@ devel-test = [
   "pytest-cov        ~=6.0",
   "testcontainers    ~=4.0",
 ]
-devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.7.4"]
+devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.8.0"]
 
 ################################################################################
 ## Hatch Build Configuration
@@ -276,8 +276,6 @@ ignore = [
   "D200",   # Require single line docstrings to be on one line.
   "D203",   # Require blank line before class docstring
   "D212",   # Multi-line docstring summary must start at the first line
-  "ANN101", # `self` must be typed
-  "ANN102", # `cls` must be typed
   "FIX002", # Forbid TODO in comments
   "TD002",  # Assign someone to 'TODO' comments
 

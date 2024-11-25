@@ -76,8 +76,8 @@ from pact.v3.interaction._http_interaction import HttpInteraction
 from pact.v3.interaction._sync_message_interaction import SyncMessageInteraction
 
 __all__ = [
-    "Interaction",
-    "HttpInteraction",
     "AsyncMessageInteraction",
+    "HttpInteraction",
+    "Interaction",
     "SyncMessageInteraction",
 ]
