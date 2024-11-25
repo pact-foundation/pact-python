@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
+        uses: astral-sh/setup-uv@d8db0a86d3d88f3017a4e6b8a1e2b234e7a0a1b5 # v4.0.0
         with:
           enable-cache: true
           cache-dependency-glob: |
@@ -238,7 +238,7 @@ jobs:
           merge-multiple: true
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d  # v3.2.3
+        uses: astral-sh/setup-uv@d8db0a86d3d88f3017a4e6b8a1e2b234e7a0a1b5 # v4.0.0
         with:
           enable-cache: true
           cache-dependency-glob: |
