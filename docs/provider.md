@@ -141,9 +141,9 @@ The CLI options are available as keyword arguments to the various methods of the
 
 You can see more details in the examples
 
--   [Message Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_03_message_provider.py)
--   [Flask Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_flask.py)
--   [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/master/examples/tests/test_01_provider_fastapi.py)
+-   [Message Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/main/examples/tests/test_03_message_provider.py)
+-   [Flask Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/main/examples/tests/test_01_provider_flask.py)
+-   [FastAPI Provider Verifier Test](https://github.com/pact-foundation/pact-python/blob/main/examples/tests/test_01_provider_fastapi.py)
 
 ## Provider States
 

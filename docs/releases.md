@@ -2,7 +2,7 @@
 
 Pact Python is made available through both GitHub releases and PyPI. The GitHub releases also come with a summary of changes and contributions since the last release.
 
-The entire process is automated through the [build](https://github.com/pact-foundation/pact-python/actions/workflows/build.yml?query=branch%3Amaster) GitHub Action. A description of the process is provided [below](#build-pipeline).
+The entire process is automated through the [build](https://github.com/pact-foundation/pact-python/actions/workflows/build.yml?query=branch%3Amain) GitHub Action. A description of the process is provided [below](#build-pipeline).
 
 ## Versioning
 
@@ -23,7 +23,7 @@ The version is stored in `pact/__version__.py`. This file is automatically gener
 
 ## Build Pipeline
 
-The build pipeline is defined in `.github/workflows/build.yml`. It is triggered on PRs targeting `master`, pushes to the `master` branch, and on every new tag. The pipeline is responsible for building the package (both as source distribution, and compiled wheels), creating the GitHub release, and uploading artifacts to PyPI.
+The build pipeline is defined in `.github/workflows/build.yml`. It is triggered on PRs targeting `main`, pushes to the `main` branch, and on every new tag. The pipeline is responsible for building the package (both as source distribution, and compiled wheels), creating the GitHub release, and uploading artifacts to PyPI.
 
 ### Build Steps
 
@@ -34,7 +34,7 @@ In order to reduce the build time, the pipeline builds different sets of wheels 
 | Trigger      | Platforms         | Wheels    |
 | ------------ | ----------------- | --------- |
 | Tag          | `x86_64`, `arm64` | all       |
-| `master`     | `x86_64`          | all       |
+| `main`     | `x86_64`          | all       |
 | Pull Request | `x86_64`          | `cp312-*` |
 
 ### Publish Step

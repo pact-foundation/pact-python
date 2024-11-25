@@ -4,10 +4,10 @@ name: docs
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 env:
   STABLE_PYTHON_VERSION: '3.13'
@@ -52,7 +52,7 @@ jobs:
   publish:
     name: Publish docs
 
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
 
     needs: build
     runs-on: ubuntu-latest

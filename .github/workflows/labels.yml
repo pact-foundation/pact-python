@@ -9,7 +9,7 @@ on:
     - cron: 20 0 * * 0
   push:
     branches:
-      - master
+      - main
     paths:
       - .github/labels.yml
 
@@ -27,5 +27,5 @@ jobs:
         uses: EndBug/label-sync@52074158190acb45f3077f9099fea818aa43f97a  # v2
         with:
           config-file: |-
-            https://raw.githubusercontent.com/pact-foundation/.github/master/.github/labels.yml
+            https://raw.githubusercontent.com/pact-foundation/.github/main/.github/labels.yml
             .github/labels.yml

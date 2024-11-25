@@ -4,10 +4,10 @@ name: test
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -328,7 +328,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Spell Check Repo
-        uses: crate-ci/typos@master
+        uses: crate-ci/typos@main
 
   pre-commit:
     name: Pre-commit
