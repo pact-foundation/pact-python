@@ -335,8 +335,30 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      PRE_COMMIT_HOME: ${{ github.workspace }}/.pre-commit
+
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.PRE_COMMIT_HOME }}
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pre-commit-
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d8db0a86d3d88f3017a4e6b8a1e2b234e7a0a1b5  # v4.0.0
+        with:
+          enable-cache: true
+          cache-suffix: pre-commit
+          cache-dependency-glob: ''
+
+      - name: Install pre-commit
+        run: uv tool install pre-commit
+
       - name: Run pre-commit
-        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # v3.0.1
+        run: pre-commit run --show-diff-on-failure --color=always --all-files
