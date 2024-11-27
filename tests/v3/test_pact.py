@@ -44,6 +44,7 @@ def test_empty_provider() -> None:
 
 def test_serve(pact: Pact) -> None:
     with pact.serve() as srv:
+        assert srv.port is not None
         assert srv.port > 0
         assert srv.host == "localhost"
         assert str(srv).startswith("http://localhost")
