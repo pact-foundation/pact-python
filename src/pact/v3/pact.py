@@ -75,6 +75,7 @@ from typing import (
 from yarl import URL
 
 import pact.v3.ffi
+from pact.v3._util import find_free_port
 from pact.v3.error import (
     InteractionVerificationError,
     Mismatch,
@@ -84,7 +85,6 @@ from pact.v3.error import (
 from pact.v3.interaction._async_message_interaction import AsyncMessageInteraction
 from pact.v3.interaction._http_interaction import HttpInteraction
 from pact.v3.interaction._sync_message_interaction import SyncMessageInteraction
-from pact.v3.util import _find_free_port
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -603,7 +603,7 @@ class PactServer:
                 independently of `raises`.
         """
         self._host = host
-        self._port = port or _find_free_port()
+        self._port = port or find_free_port()
         self._transport = transport
         self._transport_config = transport_config
         self._pact_handle = pact_handle

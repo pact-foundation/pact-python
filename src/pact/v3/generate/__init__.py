@@ -8,11 +8,11 @@ import builtins
 import warnings
 from typing import TYPE_CHECKING, Literal
 
+from pact.v3._util import strftime_to_simple_date_format
 from pact.v3.generate.generator import (
     Generator,
     GenericGenerator,
 )
-from pact.v3.util import strftime_to_simple_date_format
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence

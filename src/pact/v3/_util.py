@@ -3,8 +3,8 @@ Utility functions for Pact.
 
 This module defines a number of utility functions that are used in specific
 contexts within the Pact library. These functions are not intended to be
-used directly by consumers of the library, but are still made available for
-reference.
+used directly by consumers of the library and as such, may change without
+notice.
 """
 
 import socket
@@ -84,7 +84,7 @@ def strftime_to_simple_date_format(python_format: str) -> str:
             if escaped:
                 result += "'"
                 escaped = False
-            result += _format_code_to_java_format(c)
+            result += format_code_to_java_format(c)
             # Increment another time to skip the second character of the
             # Python format code.
             idx += 1
@@ -108,7 +108,7 @@ def strftime_to_simple_date_format(python_format: str) -> str:
     return result
 
 
-def _format_code_to_java_format(code: str) -> str:
+def format_code_to_java_format(code: str) -> str:
     """
     Convert a single Python format code to a Java SimpleDateFormat format.
 
@@ -144,7 +144,7 @@ def _format_code_to_java_format(code: str) -> str:
     raise ValueError(msg)
 
 
-def _find_free_port() -> int:
+def find_free_port() -> int:
     """
     Find a free port.
 

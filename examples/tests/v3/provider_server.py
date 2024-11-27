@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, NoReturn
 
 import requests
 
-from pact.v3.util import _find_free_port
+from pact.v3._util import find_free_port
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
@@ -120,7 +120,7 @@ class Provider:
         """
         Start the provider.
         """
-        url = URL(f"http://localhost:{_find_free_port()}")
+        url = URL(f"http://localhost:{find_free_port()}")
         sys.stderr.write(f"Starting provider on {url}\n")
 
         self.app.run(

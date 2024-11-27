@@ -4,7 +4,7 @@ Tests of pact.v3.util functions.
 
 import pytest
 
-from pact.v3.util import strftime_to_simple_date_format
+from pact.v3._util import strftime_to_simple_date_format
 
 
 def test_convert_python_to_java_datetime_format_basic() -> None:
