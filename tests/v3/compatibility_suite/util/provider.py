@@ -19,10 +19,11 @@ from pathlib import Path
 
 import pytest
 
+from pact.v3.util import _find_free_port
+
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 
-import contextlib
 import copy
 import json
 import logging
@@ -31,7 +32,6 @@ import pickle
 import re
 import shutil
 import signal
-import socket
 import subprocess
 import time
 import warnings
@@ -105,23 +105,6 @@ def next_version() -> str:
     version = version_var.get()
     version_var.set(str(int(version) + 1))
     return version
-
-
-def _find_free_port() -> int:
-    """
-    Find a free port.
-
-    This is used to find a free port to host the API on when running locally. It
-    is allocated, and then released immediately so that it can be used by the
-    API.
-
-    Returns:
-        The port number.
-    """
-    with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(("", 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
 
 
 def _setup_logging(log_level: int) -> None:

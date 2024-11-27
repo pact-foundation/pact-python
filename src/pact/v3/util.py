@@ -7,7 +7,9 @@ used directly by consumers of the library, but are still made available for
 reference.
 """
 
+import socket
 import warnings
+from contextlib import closing
 
 _PYTHON_FORMAT_TO_JAVA_DATETIME = {
     "a": "EEE",
@@ -140,3 +142,20 @@ def _format_code_to_java_format(code: str) -> str:
 
     msg = f"Unsupported Python format code `%{code}`"
     raise ValueError(msg)
+
+
+def _find_free_port() -> int:
+    """
+    Find a free port.
+
+    This is used to find a free port to host the API on when running locally. It
+    is allocated, and then released immediately so that it can be used by the
+    API.
+
+    Returns:
+        The port number.
+    """
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]

@@ -84,6 +84,7 @@ from pact.v3.error import (
 from pact.v3.interaction._async_message_interaction import AsyncMessageInteraction
 from pact.v3.interaction._http_interaction import HttpInteraction
 from pact.v3.interaction._sync_message_interaction import SyncMessageInteraction
+from pact.v3.util import _find_free_port
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -565,7 +566,7 @@ class PactServer:
         self,
         pact_handle: pact.v3.ffi.PactHandle,
         host: str = "localhost",
-        port: int = 0,
+        port: int | None = None,
         transport: str = "HTTP",
         transport_config: str | None = None,
         *,
@@ -583,8 +584,8 @@ class PactServer:
                 Hostname of IP for the mock server.
 
             port:
-                Port to bind the mock server to. The value of `0` will select a
-                random available port.
+                Port to bind the mock server to. The value of `None` will select
+                a random available port.
 
             transport:
                 Transport to use for the mock server.
@@ -602,7 +603,7 @@ class PactServer:
                 independently of `raises`.
         """
         self._host = host
-        self._port = port
+        self._port = port or _find_free_port()
         self._transport = transport
         self._transport_config = transport_config
         self._pact_handle = pact_handle
@@ -611,16 +612,16 @@ class PactServer:
         self._verbose = verbose
 
     @property
-    def port(self) -> int:
+    def port(self) -> int | None:
         """
         Port on which the server is running.
 
-        If the server is not running, then this will be `0`.
+        If the server is not running, then this will be `None`.
         """
         # Unlike the other properties, this value might be different to what was
         # passed in to the constructor as the server can be started on a random
         # port.
-        return self._handle.port if self._handle else 0
+        return self._handle.port if self._handle else None
 
     @property
     def host(self) -> str:

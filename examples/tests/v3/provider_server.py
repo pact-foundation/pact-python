@@ -7,17 +7,18 @@ from __future__ import annotations
 import logging
 import re
 import signal
-import socket
 import subprocess
 import sys
 import time
-from contextlib import closing, contextmanager
+from contextlib import contextmanager
 from importlib import import_module
 from pathlib import Path
 from threading import Thread
 from typing import TYPE_CHECKING, NoReturn
 
 import requests
+
+from pact.v3.util import _find_free_port
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
@@ -115,27 +116,11 @@ class Provider:
                 self.state_provider_function(flask.request.args["state"])
             return "Provider state set", 200
 
-    def _find_free_port(self) -> int:
-        """
-        Find a free port.
-
-        This is used to find a free port to host the API on when running locally. It
-        is allocated, and then released immediately so that it can be used by the
-        API.
-
-        Returns:
-            The port number.
-        """
-        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-            s.bind(("", 0))
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            return s.getsockname()[1]
-
     def run(self) -> None:
         """
         Start the provider.
         """
-        url = URL(f"http://localhost:{self._find_free_port()}")
+        url = URL(f"http://localhost:{_find_free_port()}")
         sys.stderr.write(f"Starting provider on {url}\n")
 
         self.app.run(
