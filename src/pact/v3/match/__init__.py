@@ -51,6 +51,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 from pact.v3 import generate
+from pact.v3._util import strftime_to_simple_date_format
 from pact.v3.match.matcher import (
     ArrayContainsMatcher,
     EachKeyMatcher,
@@ -59,7 +60,6 @@ from pact.v3.match.matcher import (
     Matcher,
 )
 from pact.v3.types import UNSET, Matchable, Unset
-from pact.v3.util import strftime_to_simple_date_format
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
