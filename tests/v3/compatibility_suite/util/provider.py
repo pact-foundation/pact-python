@@ -1117,7 +1117,7 @@ def the_verification_is_run(
         """
         logger.debug("Running verification on %r", verifier)
 
-        verifier.set_info("provider", url=provider_url)
+        verifier.add_transport(url=provider_url)
         verifier.add_transport(
             protocol="message",
             port=provider_url.port,

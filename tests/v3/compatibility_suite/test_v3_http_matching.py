@@ -178,7 +178,7 @@ def the_comparison_should_not_be_ok(
     negated: bool,  # noqa: FBT001
 ) -> Verifier:
     """The comparison should NOT be OK."""
-    verifier.set_info("provider", url=provider_url)
+    verifier.add_transport(url=provider_url)
     verifier.add_transport(
         protocol="http",
         port=provider_url.port,

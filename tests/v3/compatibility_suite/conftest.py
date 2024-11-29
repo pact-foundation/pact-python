@@ -39,7 +39,7 @@ def _submodule_init() -> None:
 @pytest.fixture
 def verifier() -> Verifier:
     """Return a new Verifier."""
-    return Verifier()
+    return Verifier("provider")
 
 
 @pytest.fixture(scope="session")

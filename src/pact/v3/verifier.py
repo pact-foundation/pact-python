@@ -31,13 +31,19 @@ from pact.v3 import Verifier
 
 
 # In the case of local Pact files
-verifier = Verifier().set_info("My Provider", url="http://localhost:8080")
-verifier.add_source("pact/to/pacts/")
+verifier = (
+    Verifier("My Provider")
+    .add_transport("http", url="http://localhost:8080")
+    .add_source("pact/to/pacts/")
+)
 verifier.verify()
 
 # In the case of a Pact Broker
-verifier = Verifier().set_info("My Provider", url="http://localhost:8080")
-verifier.broker_source("https://broker.example.com/")
+verifier = (
+    Verifier("My Provider")
+    .add_transport("http", url="http://localhost:8080")
+    .broker_source("https://broker.example.com/")
+)
 verifier.verify()
 ```
 
@@ -68,17 +74,60 @@ databases are already in use.
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypedDict, overload
 
 from typing_extensions import Self
 from yarl import URL
 
 import pact.v3.ffi
+from pact.v3._server import MessageRelay
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+
+class _ProviderTransport(TypedDict):
+    """
+    Provider transport information.
+
+    When the verifier is set up, it needs to communicate with the Provider. This
+    is typically done over a single transport method (e.g., HTTP); however, Pact
+    _does_ support multiple transport methods.
+
+    This dictionary is used to store information for each transport method and
+    is a reflection of Rust's [`ProviderTransport`
+    struct](https://github.com/pact-foundation/pact-reference/blob/b55407ef2be897d286af9330506219d17d2a746c/rust/pact_verifier/src/lib.rs#L168).
+    """
+
+    transport: str
+    """
+    The transport method for payloads.
+
+    This is typically one of `http` or `message`. Any other value is used as a
+    custom plugin (e.g., `grpc`).
+    """
+    port: int | None
+    """
+    The port on which the provider is listening.
+    """
+    path: str | None
+    """
+    The path under which the provider is listening.
+
+    This is prefixed to all paths in interactions. For example, if the path is
+    `/api`, and the interaction path is `/users`, the request will be made to
+    `/api/users`.
+    """
+    scheme: str | None
+    """
+    The scheme to use for the provider.
+
+    This is typically only used for the `http` transport method, where this
+    value can either be `http` or `https`.
+    """
 
 
 class Verifier:
@@ -91,16 +140,31 @@ class Verifier:
     match the expectations set by the consumer.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, name: str, host: str | None = None) -> None:
         """
         Create a new Verifier.
+
+        Args:
+            name:
+                The name of the provider to verify. This is used to identify
+                which interactions the provider is involved in, and then Pact
+                will replay these interactions against the provider.
+
+            host:
+                The host on which the Pact verifier is running. This is used to
+                communicate with the provider. If not specified, the default
+                value is `localhost`.
         """
-        self._handle: pact.v3.ffi.VerifierHandle = (
-            pact.v3.ffi.verifier_new_for_application()
-        )
+        self._name = name
+        self._host = host or "localhost"
+        self._handle = pact.v3.ffi.verifier_new_for_application()
 
         # In order to provide a fluent interface, we remember some options which
-        # are set using the same FFI method.
+        # are set using the same FFI method. In particular, we remember
+        # transport methods defined, and then before verification call the
+        # `set_info` and `add_transport` FFI methods as needed.
+        self._transports: list[_ProviderTransport] = []
+        self._message_relay: MessageRelay | nullcontext[None] = nullcontext()
         self._disable_ssl_verification = False
         self._request_timeout = 5000
 
@@ -108,107 +172,19 @@ class Verifier:
         """
         Informal string representation of the Verifier.
         """
-        return "Verifier"
+        return f"Verifier({self._name})"
 
     def __repr__(self) -> str:
         """
         Information-rish string representation of the Verifier.
         """
-        return f"<Verifier: {self._handle}>"
-
-    def set_info(  # noqa: PLR0913
-        self,
-        name: str,
-        *,
-        url: str | URL | None = None,
-        scheme: str | None = None,
-        host: str | None = None,
-        port: int | None = None,
-        path: str | None = None,
-    ) -> Self:
-        """
-        Set the provider information.
-
-        This sets up information about the provider as well as the way it
-        communicates with the consumer. Note that for historical reasons, a
-        HTTP(S) transport method is always added.
-
-        For a provider which uses other protocols (such as message queues), the
-        [`add_transport`][pact.v3.verifier.Verifier.add_transport] must be used.
-        This method can be called multiple times to add multiple transport
-        methods.
-
-        Args:
-            name:
-                A user-friendly name for the provider.
-
-            url:
-                The URL on which requests are made to the provider by Pact.
-
-                It is recommended to use this parameter to set the provider URL.
-                If the port is not explicitly set, the default port for the
-                scheme will be used.
-
-                This parameter is mutually exclusive with the individual
-                parameters.
-
-            scheme:
-                The provider scheme. This must be one of `http` or `https`.
-
-            host:
-                The provider hostname or IP address. If the provider is running
-                on the same machine as the verifier, `localhost` can be used.
-
-            port:
-                The provider port. If not specified, the default port for the
-                schema will be used.
-
-            path:
-                The provider context path. If not specified, the root path will
-                be used.
-
-                If a non-root path is used, the path given here will be
-                prepended to the path in the interaction. For example, if the
-                path is `/api`, and the interaction path is `/users`, the
-                request will be made to `/api/users`.
-        """
-        if url is not None:
-            if any(param is not None for param in (scheme, host, port, path)):
-                msg = "Cannot specify both `url` and individual parameters"
-                raise ValueError(msg)
-
-            url = URL(url)
-            scheme = url.scheme
-            host = url.host
-            port = url.explicit_port
-            path = url.path
-
-            if port is None:
-                msg = "Unable to determine default port for scheme {scheme}"
-                raise ValueError(msg)
-
-            pact.v3.ffi.verifier_set_provider_info(
-                self._handle,
-                name,
-                scheme,
-                host,
-                port,
-                path,
-            )
-            return self
-
-        url = URL.build(
-            scheme=scheme or "http",
-            host=host or "localhost",
-            port=port,
-            path=path or "",
-        )
-        return self.set_info(name, url=url)
+        return f"<Verifier: {self._name}, handle={self._handle}>"
 
     def add_transport(
         self,
         *,
-        protocol: str,
+        url: str | URL | None = None,
+        protocol: str | None = None,
         port: int | None = None,
         path: str | None = None,
         scheme: str | None = None,
@@ -222,24 +198,28 @@ class Verifier:
         methods.
 
         As some transport methods may not use ports, paths or schemes, these
-        parameters are optional.
+        parameters are optional. Note that while optional, these _may_ still be
+        used during testing as Pact uses HTTP(S) to communicate with the
+        provider. For example, if you are implementing your own message
+        verification, it needs to be exposed over HTTP and the `port` and `path`
+        arguments are used for this testing communication.
 
         Args:
+            url:
+                A convenient way to set the provider transport. This option
+                is mutually exclusive with the other options.
+
             protocol:
                 The protocol to use. This will typically be one of:
 
-                -   `http` for communications over HTTP(S). Note that when
-                    setting up the provider information in
-                    [`set_info`][pact.v3.verifier.Verifier.set_info], a HTTP
-                    transport method is always added and it is unlikely that an
-                    additional HTTP transport method will be needed unless the
-                    provider is running on additional ports.
+                -   `http` for communications over HTTP(S)
 
-                -   `message` for non-plugin synchronous message-based
-                    communications.
+                -   `message` for non-plugin message-based communications
 
                 Any other protocol will be treated as a custom protocol and will
                 be handled by a plugin.
+
+                If `url` is _not_ specified, this parameter is required.
 
             port:
                 The provider port.
@@ -269,18 +249,82 @@ class Verifier:
                 This is typically only used for the `http` protocol, where this
                 value can either be `http` (the default) or `https`.
         """
+        if url and any(x is not None for x in (protocol, port, path, scheme)):
+            msg = "The `url` parameter is mutually exclusive with other parameters"
+            raise ValueError(msg)
+
+        if url:
+            url = URL(url)
+            if url.host != self._host:
+                msg = f"Host mismatch: {url.host} != {self._host}"
+                raise ValueError(msg)
+            protocol = url.scheme
+            if protocol == "https":
+                protocol = "http"
+            port = url.port
+            path = url.path
+            scheme = url.scheme
+            return self.add_transport(
+                protocol=protocol,
+                port=port,
+                path=path,
+                scheme=scheme,
+            )
+
+        if not protocol:
+            msg = "A protocol must be specified"
+            raise ValueError(msg)
+
         if port is None and scheme:
             if scheme.lower() == "http":
                 port = 80
             elif scheme.lower() == "https":
                 port = 443
 
-        pact.v3.ffi.verifier_add_provider_transport(
-            self._handle,
-            protocol,
-            port or 0,
-            path,
-            scheme,
+        self._transports.append(
+            _ProviderTransport(
+                transport=protocol,
+                port=port,
+                path=path,
+                scheme=scheme,
+            )
+        )
+
+        return self
+
+    def message_handler(self, handler: Callable[[Any, Any], None]) -> Self:
+        """
+        Set the message handler.
+
+        This method can be used to set a custom message handler for the
+        verifier. The message handler is called when the verifier needs to send
+        a message to the provider.
+
+        As message interactions abstract the transport layer, the message
+        handler is responsible for receiving (and possibly responding) to the
+        messages.
+
+        ## Implementation
+
+        Internally, Pact Python uses a lightweight HTTP server as we need to use
+        _some_ transport method to communicate between the Pact Core library and
+        the Python provider. The lightweight HTTP server receives the payloads
+        and then passes them to the message handler.
+
+        It is possible to use your own HTTP server to handle messages by using
+        the `add_transport` method. It is not possible to use both this method
+        and `add_transport` to handle messages.
+
+        Args:
+            handler:
+                The message handler. This should be a callable that takes no
+                arguments.
+        """
+        self._message_relay = MessageRelay(handler)
+        self.add_transport(
+            protocol="message",
+            port=self._message_relay.port,
+            path="/_pact/message",
         )
         return self
 
@@ -766,7 +810,33 @@ class Verifier:
         Returns:
             Whether the interactions were verified successfully.
         """
-        pact.v3.ffi.verifier_execute(self._handle)
+        if not self._transports:
+            msg = "No transports have been set"
+            raise RuntimeError(msg)
+
+        first, *rest = self._transports
+
+        pact.v3.ffi.verifier_set_provider_info(
+            self._handle,
+            self._name,
+            first["scheme"],
+            self._host,
+            first["port"],
+            first["path"],
+        )
+
+        for transport in rest:
+            pact.v3.ffi.verifier_add_provider_transport(
+                self._handle,
+                transport["transport"],
+                transport["port"] or 0,
+                transport["path"],
+                transport["scheme"],
+            )
+
+        with self._message_relay:
+            pact.v3.ffi.verifier_execute(self._handle)
+
         return self
 
     @property
