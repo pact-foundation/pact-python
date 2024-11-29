@@ -18,30 +18,21 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 
 @pytest.fixture
 def verifier() -> Verifier:
-    return Verifier()
+    return Verifier("Tester")
 
 
 def test_str_repr(verifier: Verifier) -> None:
-    assert str(verifier) == "Verifier"
-    assert re.match(r"<Verifier: VerifierHandle\(0x[0-9a-f]+\)>", repr(verifier))
+    assert str(verifier) == "Verifier(Tester)"
+    assert re.match(
+        r"<Verifier: Tester, handle=VerifierHandle\(0x[0-9a-f]+\)>",
+        repr(verifier),
+    )
 
 
 def test_set_provider_info(verifier: Verifier) -> None:
-    name = "test_provider"
     url = "http://localhost:8888/api"
-    verifier.set_info(name, url=url)
-
-    scheme = "http"
-    host = "localhost"
-    port = 8888
-    path = "/api"
-    verifier.set_info(
-        name,
-        scheme=scheme,
-        host=host,
-        port=port,
-        path=path,
-    )
+    verifier.add_transport(url=url)
+    verifier.verify()
 
 
 def test_add_provider_transport(verifier: Verifier) -> None:
@@ -163,6 +154,7 @@ def test_broker_source_selector(verifier: Verifier) -> None:
 
 
 def test_verify(verifier: Verifier) -> None:
+    verifier.add_transport(url="http://localhost:8080")
     verifier.verify()
 
 

@@ -61,12 +61,12 @@ def test_producer() -> None:
         state_provider_function="state_provider_function",
     ) as provider_url:
         verifier = (
-            Verifier()
+            Verifier("provider")
+            .add_transport(url=f"{provider_url}/produce_message")
             .set_state(
                 provider_url / "set_provider_state",
                 teardown=True,
             )
-            .set_info("provider", url=f"{provider_url}/produce_message")
             .filter_consumers("v3_message_consumer")
             .add_source(PACT_DIR / "v3_message_consumer-v3_message_provider.json")
         )

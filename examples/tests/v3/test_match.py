@@ -127,8 +127,8 @@ def test_matchers() -> None:
     pact.write_file(pact_dir, overwrite=True)
     with start_provider() as url:
         verifier = (
-            Verifier()
-            .set_info("My Provider", url=url)
+            Verifier("My Provider")
+            .add_transport(url=url)
             .add_source(pact_dir / "consumer-provider.json")
         )
         verifier.verify()

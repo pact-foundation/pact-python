@@ -157,11 +157,14 @@ def test_provider() -> None:
     proc = Process(target=run_server, daemon=True)
     proc.start()
     time.sleep(2)
-    verifier = Verifier().set_info("v3_http_provider", url=PROVIDER_URL)
-    verifier.add_source("examples/pacts/v3_http_consumer-v3_http_provider.json")
-    verifier.set_state(
-        PROVIDER_URL / "_pact" / "callback",
-        teardown=True,
+    verifier = (
+        Verifier("v3_http_provider")
+        .add_transport(url=PROVIDER_URL)
+        .add_source("examples/pacts/v3_http_consumer-v3_http_provider.json")
+        .set_state(
+            PROVIDER_URL / "_pact" / "callback",
+            teardown=True,
+        )
     )
     verifier.verify()
 
