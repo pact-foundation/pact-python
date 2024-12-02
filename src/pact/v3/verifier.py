@@ -73,20 +73,73 @@ databases are already in use.
 
 from __future__ import annotations
 
+import inspect
 import json
+import typing
 from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Literal, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypeAlias, TypedDict, overload
 
 from typing_extensions import Self
 from yarl import URL
 
 import pact.v3.ffi
-from pact.v3._server import MessageRelay
+from pact.v3._server import MessageRelay, StateCallback
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+
+StateHandlerFull: TypeAlias = Callable[[str, str, dict[str, Any] | None], None]
+"""
+Full state handler signature.
+
+This is the signature for a state handler that takes three arguments:
+
+1.  The state name, as a string.
+2.  The action (either `setup` or `teardown`), as a string.
+3.  A dictionary of parameters, or `None` if no parameters are provided.
+"""
+StateHandlerNoAction: TypeAlias = Callable[[str, dict[str, Any] | None], None]
+"""
+State handler signature without the action.
+
+This is the signature for a state handler that takes two arguments:
+
+1.  The state name, as a string.
+2.  A dictionary of parameters, or `None` if no parameters are provided.
+"""
+StateHandlerNoState: TypeAlias = Callable[[str, dict[str, Any] | None], None]
+"""
+State handler signature without the state.
+
+This is the signature for a state handler that takes two arguments:
+
+1.  The action (either `setup` or `teardown`), as a string.
+2.  A dictionary of parameters, or `None` if no parameters are provided.
+
+This function must be provided as part of a dictionary mapping state names to
+functions.
+"""
+StateHandlerNoActionNoState: TypeAlias = Callable[[dict[str, Any] | None], None]
+"""
+State handler signature without the state or action.
+
+This is the signature for a state handler that takes one argument:
+
+1.  A dictionary of parameters, or `None` if no parameters are provided.
+
+This function must be provided as part of a dictionary mapping state names to
+functions.
+"""
+StateHandlerUrl: TypeAlias = str | URL
+"""
+State handler URL signature.
+
+Instead of providing a function to handle state changes, it is possible to
+provide a URL endpoint to which the request should be made.
+"""
 
 
 class _ProviderTransport(TypedDict):
@@ -165,6 +218,7 @@ class Verifier:
         # `set_info` and `add_transport` FFI methods as needed.
         self._transports: list[_ProviderTransport] = []
         self._message_relay: MessageRelay | nullcontext[None] = nullcontext()
+        self._state_handler: StateCallback | nullcontext[None] = nullcontext()
         self._disable_ssl_verification = False
         self._request_timeout = 5000
 
@@ -363,26 +417,157 @@ class Verifier:
         )
         return self
 
-    def set_state(
+    # Cases where the handler takes the state name.
+    @overload
+    def state_handler(
         self,
-        url: str | URL,
+        handler: StateHandlerFull,
+        *,
+        teardown: Literal[True],
+        body: None = None,
+    ) -> Self: ...
+    @overload
+    def state_handler(
+        self,
+        handler: StateHandlerNoAction,
+        *,
+        teardown: Literal[False] = False,
+        body: None = None,
+    ) -> Self: ...
+    # Cases where the handler takes a dictionary of functions
+    @overload
+    def state_handler(
+        self,
+        handler: dict[str, StateHandlerNoState],
+        *,
+        teardown: Literal[True],
+        body: None = None,
+    ) -> Self: ...
+    @overload
+    def state_handler(
+        self,
+        handler: dict[str, StateHandlerNoActionNoState],
+        *,
+        teardown: Literal[False] = False,
+        body: None = None,
+    ) -> Self: ...
+    # Cases where the handler takes a URL
+    @overload
+    def state_handler(
+        self,
+        handler: StateHandlerUrl,
         *,
         teardown: bool = False,
-        body: bool = False,
+        body: bool,
+    ) -> Self: ...
+
+    def state_handler(
+        self,
+        handler: StateHandlerFull
+        | StateHandlerNoAction
+        | dict[str, StateHandlerNoState]
+        | dict[str, StateHandlerNoActionNoState]
+        | StateHandlerUrl,
+        *,
+        teardown: bool = False,
+        body: bool | None = None,
     ) -> Self:
         """
-        Set the provider state URL.
+        Set the state handler.
 
-        The URL is used when the provider's internal state needs to be changed.
-        For example, a consumer might have an interaction that requires a
-        specific user to be present in the database. The provider state URL is
-        used to change the provider's internal state to include the required
-        user.
+        In many interactions, the consumer will assume that the provider is in a
+        certain state. For example, a consumer requesting information about a
+        user with ID `123` will have specified `given("user with ID 123
+        exists")`.
+
+        The state handler is responsible for changing the provider's internal
+        state to match the expected state before the interaction is replayed.
+
+        This can be done in one of three ways:
+
+        1.  By providing a single function that will be called for all state
+            changes.
+        2.  By providing a mapping of state names to functions.
+        3.  By providing the URL endpoint to which the request should be made.
+
+        The first two options are most straightforward to use.
+
+        When providing a function, the arguments should be:
+
+        1.  The state name, as a string.
+        2.  The action (either `setup` or `teardown`), as a string.
+        3.  A dictionary of parameters, or `None` if no parameters are provided.
+
+        Note that these arguments will change in the following ways:
+
+        1.  If a dictionary mapping is used, the state name is _not_ provided to
+            the function.
+        2.  If `teardown` is `False` thereby indicating that the function is
+            only called for setup, the `action` argument is not provided.
+
+        This means that in the case of a dictionary mapping of function with
+        `teardown=False`, the function should take only one argument: the
+        dictionary of parameters (which itself may be `None`, albeit still an
+        argument).
 
         Args:
-            url:
-                The URL to which a `GET` request will be made to change the
-                provider's internal state.
+            handler:
+                The handler for the state changes. This can be one of the
+                following:
+
+                -   A single function that will be called for all state changes.
+                -   A dictionary mapping state names to functions.
+                -   A URL endpoint to which the request should be made.
+
+                See above for more information on the function signature.
+
+            teardown:
+                Whether to teardown the provider state after an interaction is
+                validated.
+
+            body:
+                Whether to include the state change request in the body (`True`)
+                or in the query string (`False`). This must be left as `None` if
+                providing one or more handler functions; and it must be set to
+                a boolean if providing a URL.
+        """
+        if isinstance(handler, StateHandlerUrl):
+            if body is None:
+                msg = "The `body` parameter must be a boolean when providing a URL"
+                raise ValueError(msg)
+            return self._state_handler_url(handler, teardown=teardown, body=body)
+
+        if isinstance(handler, dict):
+            if body is not None:
+                msg = "The `body` parameter must be `None` when providing a dictionary"
+                raise ValueError(msg)
+            return self._state_handler_dict(handler, teardown=teardown)
+
+        if callable(handler):
+            if body is not None:
+                msg = "The `body` parameter must be `None` when providing a function"
+                raise ValueError(msg)
+            return self._set_function_state_handler(handler, teardown=teardown)
+
+        msg = "Invalid handler type"
+        raise TypeError(msg)
+
+    def _state_handler_url(
+        self,
+        handler: StateHandlerUrl,
+        *,
+        teardown: bool,
+        body: bool,
+    ) -> Self:
+        """
+        Set the state handler to a URL.
+
+        This method is used to set the state handler to a URL endpoint. This
+        endpoint will be called to change the provider's state.
+
+        Args:
+            handler:
+                The URL endpoint to which the request should be made.
 
             teardown:
                 Whether to teardown the provider state after an interaction is
@@ -391,13 +576,159 @@ class Verifier:
             body:
                 Whether to include the state change request in the body (`True`)
                 or in the query string (`False`).
+
+        Returns:
+            The verifier instance.
         """
         pact.v3.ffi.verifier_set_provider_state(
             self._handle,
-            url if isinstance(url, str) else str(url),
+            str(handler),
             teardown=teardown,
             body=body,
         )
+        return self
+
+    def _state_handler_dict(
+        self,
+        handler: dict[str, StateHandlerNoState]
+        | dict[str, StateHandlerNoActionNoState],
+        *,
+        teardown: bool,
+    ) -> Self:
+        """
+        Set the state handler to a dictionary of functions.
+
+        This method is used to set the state handler to a dictionary of functions.
+        Each function is called when the provider's state needs to be changed.
+
+        Args:
+            handler:
+                The dictionary mapping state names to functions. If `teardown`
+                is `True`, the functions must take two arguments: the action and
+                the parameters. If `teardown` is `False`, the functions must take
+                one argument: the parameters.
+
+            teardown:
+                Whether to teardown the provider state after an interaction is
+                validated.
+
+        Returns:
+            The verifier instance.
+        """
+        if any(not callable(f) for f in handler.values()):
+            msg = "All values in the dictionary must be callable"
+            raise TypeError(msg)
+
+        if teardown:
+            if any(
+                len(inspect.signature(f).parameters) != 2  # noqa: PLR2004
+                for f in handler.values()
+            ):
+                msg = "All functions must take two arguments: action and parameters"
+                raise TypeError(msg)
+
+            handler_map = typing.cast(dict[str, StateHandlerNoState], handler)
+
+            def _handler(
+                state: str,
+                action: str,
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_map[state](action, parameters)
+
+        else:
+            if any(len(inspect.signature(f).parameters) != 1 for f in handler.values()):
+                msg = "All functions must take one argument: parameters"
+                raise TypeError(msg)
+
+            handler_map_no_action = typing.cast(
+                dict[str, StateHandlerNoActionNoState],
+                handler,
+            )
+
+            def _handler(
+                state: str,
+                action: str,  # noqa: ARG001
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_map_no_action[state](parameters)
+
+        self._state_handler = StateCallback(_handler)
+        pact.v3.ffi.verifier_set_provider_state(
+            self._handle,
+            self._state_handler.url,
+            teardown=teardown,
+            body=True,
+        )
+
+        return self
+
+    def _set_function_state_handler(
+        self,
+        handler: StateHandlerFull | StateHandlerNoAction,
+        *,
+        teardown: bool,
+    ) -> Self:
+        """
+        Set the state handler to a single function.
+
+        This method is used to set the state handler to a single function. This
+        function will be called when the provider's state needs to be changed.
+
+        Args:
+            handler:
+                The function to call when the provider's state needs to be
+                changed. If `teardown` is `True`, the function must take three
+                arguments: the state, the action, and the parameters. If
+                `teardown` is `False`, the function must take two arguments: the
+                state and the parameters.
+
+            teardown:
+                Whether to teardown the provider state after an interaction is
+                validated.
+
+        Returns:
+            The verifier instance.
+        """
+        if teardown:
+            if len(inspect.signature(handler).parameters) != 3:  # noqa: PLR2004
+                msg = (
+                    "The function must take three arguments: "
+                    "state, action, and parameters."
+                )
+                raise TypeError(msg)
+
+            handler_fn_full = typing.cast(StateHandlerFull, handler)
+
+            def _handler(
+                state: str,
+                action: str,
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_fn_full(state, action, parameters)
+
+        else:
+            if len(inspect.signature(handler).parameters) != 2:  # noqa: PLR2004
+                msg = "The function must take two arguments: state and parameters"
+                raise TypeError(msg)
+
+            handler_fn_no_action = typing.cast(StateHandlerNoAction, handler)
+
+            def _handler(
+                state: str,
+                action: str,  # noqa: ARG001
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_fn_no_action(state, parameters)
+
+        self._state_handler = StateCallback(_handler)
+        pact.v3.ffi.verifier_set_provider_state(
+            self._handle,
+            self._state_handler.url,
+            teardown=teardown,
+            body=True,
+        )
+
         return self
 
     def disable_ssl_verification(self) -> Self:
@@ -834,7 +1165,7 @@ class Verifier:
                 transport["scheme"],
             )
 
-        with self._message_relay:
+        with self._message_relay, self._state_handler:
             pact.v3.ffi.verifier_execute(self._handle)
 
         return self
