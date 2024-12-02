@@ -973,9 +973,10 @@ def a_provider_state_callback_is_configured(
             with (temp_dir / "fail_callback").open("w") as f:
                 f.write("true")
 
-        verifier.set_state(
+        verifier.state_handler(
             provider_url / "_pact" / "callback",
             teardown=True,
+            body=False,
         )
 
 
