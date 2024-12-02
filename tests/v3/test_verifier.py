@@ -71,9 +71,7 @@ def test_set_filter(verifier: Verifier) -> None:
 
 
 def test_set_state(verifier: Verifier) -> None:
-    verifier.set_state("test_state")
-    verifier.set_state("test_state", teardown=True)
-    verifier.set_state("test_state", body=True)
+    verifier.state_handler("test_state", body=True)
 
 
 def test_disable_ssl_verification(verifier: Verifier) -> None:
