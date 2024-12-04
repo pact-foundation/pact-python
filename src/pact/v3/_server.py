@@ -29,7 +29,7 @@ import warnings
 from collections.abc import Callable
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Generic, Self, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 from urllib.parse import parse_qs, urlparse
 
 from pact import __version__
@@ -37,6 +37,8 @@ from pact.v3._util import find_free_port
 
 if TYPE_CHECKING:
     from types import TracebackType
+
+    from pact.v3.types import MessageProducerFull, StateHandlerFull
 
 logger = logging.getLogger(__name__)
 
@@ -85,14 +87,9 @@ class HandlerHttpServer(ThreadingHTTPServer, Generic[_C]):
 ################################################################################
 
 
-MessageHandlerCallable: TypeAlias = Callable[
-    [bytes | None, dict[str, Any] | None], bytes | None
-]
-
-
-class MessageRelay:
+class MessageProducer:
     """
-    Internal message relay server.
+    Internal message producer server.
 
     The Pact server is a lightweight HTTP server which translates communications
     from the underlying Pact Core library with direct Python function calls.
@@ -104,7 +101,7 @@ class MessageRelay:
 
     def __init__(
         self,
-        handler: MessageHandlerCallable,
+        handler: MessageProducerFull,
         host: str = "localhost",
         port: int | None = None,
     ) -> None:
@@ -136,7 +133,7 @@ class MessageRelay:
 
         self._handler = handler
 
-        self._server: HandlerHttpServer[MessageHandlerCallable] | None = None
+        self._server: HandlerHttpServer[MessageProducerFull] | None = None
         self._thread: Thread | None = None
 
     @property
@@ -154,11 +151,18 @@ class MessageRelay:
         return self._port
 
     @property
+    def path(self) -> str:
+        """
+        Server path.
+        """
+        return MessageProducerHandler.MESSAGE_PATH
+
+    @property
     def url(self) -> str:
         """
         Server URL.
         """
-        return f"http://{self.host}:{self.port}"
+        return f"http://{self.host}:{self.port}{self.path}"
 
     def __enter__(self) -> Self:
         """
@@ -169,7 +173,7 @@ class MessageRelay:
         """
         self._server = HandlerHttpServer(
             (self.host, self.port),
-            MessageRelayHandler,
+            MessageProducerHandler,
             handler=self._handler,
         )
         self._thread = Thread(
@@ -199,7 +203,7 @@ class MessageRelay:
         self._thread.join()
 
 
-class MessageRelayHandler(SimpleHTTPRequestHandler):
+class MessageProducerHandler(SimpleHTTPRequestHandler):
     """
     Request handler for the message relay server.
 
@@ -222,7 +226,7 @@ class MessageRelayHandler(SimpleHTTPRequestHandler):
     """
 
     if TYPE_CHECKING:
-        server: HandlerHttpServer[MessageHandlerCallable]
+        server: HandlerHttpServer[MessageProducerFull]
 
     MESSAGE_PATH = "/_pact/message"
 
@@ -280,17 +284,39 @@ class MessageRelayHandler(SimpleHTTPRequestHandler):
         )
         self.close_connection = True
         if self.path != self.MESSAGE_PATH:
-            self.send_response(404)
-            self.end_headers()
+            self.send_error(404, "Not Found")
             return
 
-        body, metadata = self._process()
-        self.send_response(200, "OK")
-        self.end_headers()
+        data: dict[str, Any] = json.loads(
+            self.rfile.read(int(self.headers.get("Content-Length", -1)))
+        )
 
-        response = self.server.handler(body, metadata)
-        if response:
-            self.wfile.write(response)
+        description: str | None = data.pop("description", None)
+        if not description:
+            logger.error("No description provided in message.")
+            self.send_error(400, "Bad Request")
+            return
+
+        self.send_response(200, "OK")
+
+        message = self.server.handler(description, data)
+
+        metadata = message.get("metadata") or {}
+        if content_type := message.get("content_type"):
+            self.send_header("Content-Type", content_type)
+            if "contentType" not in metadata:
+                metadata["contentType"] = content_type
+
+        if metadata:
+            self.send_header(
+                "Pact-Message-Metadata",
+                base64.b64encode(json.dumps(metadata).encode()).decode(),
+            )
+
+        contents = message.get("contents", b"")
+        self.send_header("Content-Length", str(len(contents)))
+        self.end_headers()
+        self.wfile.write(contents)
 
     def do_GET(self) -> None:  # noqa: N802
         """
@@ -304,36 +330,12 @@ class MessageRelayHandler(SimpleHTTPRequestHandler):
             extra={"headers": self.headers},
         )
         self.close_connection = True
-        if self.path != self.MESSAGE_PATH:
-            self.send_response(404)
-            self.end_headers()
-            return
-
-        body, metadata = self._process()
-        response = self.server.handler(body, metadata)
-        self.send_response(200, "OK")
-        self.end_headers()
-
-        if response:
-            self.wfile.write(response)
+        self.send_error(404, "Not Found")
 
 
 ################################################################################
 ## State Handler
 ################################################################################
-
-
-StateHandlerCallable: TypeAlias = Callable[[str, str, dict[str, Any] | None], None]
-"""
-State handler function.
-
-It must accept three positional arguments:
-
--   The state name, for example "user exists"
--   The state action, which is either "setup" or "teardown"
--   The metadata of the request if present as a dictionary, or `None`. For
-    example, `{"user_id": 123}`.
-"""
 
 
 class StateCallback:
@@ -347,7 +349,7 @@ class StateCallback:
 
     def __init__(
         self,
-        handler: StateHandlerCallable,
+        handler: StateHandlerFull,
         host: str = "localhost",
         port: int | None = None,
     ) -> None:
@@ -373,7 +375,7 @@ class StateCallback:
 
         self._handler = handler
 
-        self._server: HandlerHttpServer[StateHandlerCallable] | None = None
+        self._server: HandlerHttpServer[StateHandlerFull] | None = None
         self._thread: Thread | None = None
 
     @property
@@ -395,7 +397,7 @@ class StateCallback:
         """
         Server URL.
         """
-        return f"http://{self.host}:{self.port}"
+        return f"http://{self.host}:{self.port}{StateCallbackHandler.CALLBACK_PATH}"
 
     def __enter__(self) -> Self:
         """
@@ -445,7 +447,7 @@ class StateCallbackHandler(SimpleHTTPRequestHandler):
     """
 
     if TYPE_CHECKING:
-        server: HandlerHttpServer[StateHandlerCallable]
+        server: HandlerHttpServer[StateHandlerFull]
 
     CALLBACK_PATH = "/_pact/state"
 
@@ -471,8 +473,7 @@ class StateCallbackHandler(SimpleHTTPRequestHandler):
         self.close_connection = True
         url = urlparse(self.path)
         if url.path != self.CALLBACK_PATH:
-            self.send_response(404)
-            self.end_headers()
+            self.send_error(404, "Not Found")
             return
 
         if query := url.query:
@@ -485,20 +486,19 @@ class StateCallbackHandler(SimpleHTTPRequestHandler):
         else:
             content_length = self.headers.get("Content-Length")
             if not content_length:
-                self.send_response(400, "Bad Request")
-                self.end_headers()
+                self.send_error(400, "Bad Request")
                 return
             data = json.loads(self.rfile.read(int(content_length)))
 
         state = data.pop("state")
         action = data.pop("action")
+        params = data.pop("params")
 
-        if not state or not action:
-            self.send_response(400, "Bad Request")
-            self.end_headers()
+        if state is None or action is None:
+            self.send_error(400, "Bad Request")
             return
 
-        self.server.handler(state, action, data)
+        self.server.handler(state, action, params)
         self.send_response(200, "OK")
         self.end_headers()
 
@@ -514,5 +514,4 @@ class StateCallbackHandler(SimpleHTTPRequestHandler):
             extra={"headers": self.headers},
         )
         self.close_connection = True
-        self.send_response(404)
-        self.end_headers()
+        self.send_error(404, "Not Found")

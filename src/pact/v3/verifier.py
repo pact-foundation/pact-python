@@ -75,71 +75,33 @@ from __future__ import annotations
 
 import inspect
 import json
+import logging
 import typing
 from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Literal, TypeAlias, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
 
 from typing_extensions import Self
 from yarl import URL
 
 import pact.v3.ffi
-from pact.v3._server import MessageRelay, StateCallback
+from pact.v3._server import MessageProducer, StateCallback
+from pact.v3.types import (
+    Message,
+    MessageProducerFull,
+    MessageProducerNoName,
+    StateHandlerFull,
+    StateHandlerNoAction,
+    StateHandlerNoActionNoState,
+    StateHandlerNoState,
+    StateHandlerUrl,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-
-StateHandlerFull: TypeAlias = Callable[[str, str, dict[str, Any] | None], None]
-"""
-Full state handler signature.
-
-This is the signature for a state handler that takes three arguments:
-
-1.  The state name, as a string.
-2.  The action (either `setup` or `teardown`), as a string.
-3.  A dictionary of parameters, or `None` if no parameters are provided.
-"""
-StateHandlerNoAction: TypeAlias = Callable[[str, dict[str, Any] | None], None]
-"""
-State handler signature without the action.
-
-This is the signature for a state handler that takes two arguments:
-
-1.  The state name, as a string.
-2.  A dictionary of parameters, or `None` if no parameters are provided.
-"""
-StateHandlerNoState: TypeAlias = Callable[[str, dict[str, Any] | None], None]
-"""
-State handler signature without the state.
-
-This is the signature for a state handler that takes two arguments:
-
-1.  The action (either `setup` or `teardown`), as a string.
-2.  A dictionary of parameters, or `None` if no parameters are provided.
-
-This function must be provided as part of a dictionary mapping state names to
-functions.
-"""
-StateHandlerNoActionNoState: TypeAlias = Callable[[dict[str, Any] | None], None]
-"""
-State handler signature without the state or action.
-
-This is the signature for a state handler that takes one argument:
-
-1.  A dictionary of parameters, or `None` if no parameters are provided.
-
-This function must be provided as part of a dictionary mapping state names to
-functions.
-"""
-StateHandlerUrl: TypeAlias = str | URL
-"""
-State handler URL signature.
-
-Instead of providing a function to handle state changes, it is possible to
-provide a URL endpoint to which the request should be made.
-"""
+logger = logging.getLogger(__name__)
 
 
 class _ProviderTransport(TypedDict):
@@ -217,7 +179,7 @@ class Verifier:
         # transport methods defined, and then before verification call the
         # `set_info` and `add_transport` FFI methods as needed.
         self._transports: list[_ProviderTransport] = []
-        self._message_relay: MessageRelay | nullcontext[None] = nullcontext()
+        self._message_producer: MessageProducer | nullcontext[None] = nullcontext()
         self._state_handler: StateCallback | nullcontext[None] = nullcontext()
         self._disable_ssl_verification = False
         self._request_timeout = 5000
@@ -335,6 +297,15 @@ class Verifier:
             elif scheme.lower() == "https":
                 port = 443
 
+        logger.debug(
+            "Adding transport to verifier",
+            extra={
+                "protocol": protocol,
+                "port": port,
+                "path": path,
+                "scheme": scheme,
+            },
+        )
         self._transports.append(
             _ProviderTransport(
                 transport=protocol,
@@ -346,40 +317,103 @@ class Verifier:
 
         return self
 
-    def message_handler(self, handler: Callable[[Any, Any], None]) -> Self:
+    @overload
+    def message_handler(self, handler: MessageProducerFull) -> Self: ...
+    @overload
+    def message_handler(
+        self,
+        handler: dict[str, MessageProducerNoName | Message],
+    ) -> Self: ...
+
+    def message_handler(
+        self,
+        handler: MessageProducerFull | dict[str, MessageProducerNoName | Message],
+    ) -> Self:
         """
         Set the message handler.
 
-        This method can be used to set a custom message handler for the
-        verifier. The message handler is called when the verifier needs to send
-        a message to the provider.
+        This method sets a custom message handler for the verifier. The handler
+        can be called to produce a specific message to send to the provider.
 
-        As message interactions abstract the transport layer, the message
-        handler is responsible for receiving (and possibly responding) to the
-        messages.
+        This can be provided in one of two ways:
+
+        1.  A fully fledged function that will be called for all messages. The
+            function must take two arguments: the name of the message (as a
+            string), and optional parameters (as a dictionary). This then
+            returns the message as bytes.
+
+            This is the most powerful option as it allows for full control over
+            the message generation.
+
+        2.  A dictionary mapping message names to producer functions, or bytes.
+            In this case, the producer function must take optional parameters
+            (as a dictionary) and return the message as bytes.
+
+            If the message to be produced is static, the bytes can be provided
+            directly.
 
         ## Implementation
 
-        Internally, Pact Python uses a lightweight HTTP server as we need to use
-        _some_ transport method to communicate between the Pact Core library and
-        the Python provider. The lightweight HTTP server receives the payloads
-        and then passes them to the message handler.
+        There are a large number of ways to send messages, and the specifics of
+        the transport methods are not specifically relevant to Pact. As such,
+        Pact abstracts the transport layer away and uses a lightweight HTTP
+        server to handle messages.
 
-        It is possible to use your own HTTP server to handle messages by using
-        the `add_transport` method. It is not possible to use both this method
-        and `add_transport` to handle messages.
+        Pact Python is capable of setting up this server and handling the
+        messages internally using user-provided handlers. It is possible to use
+        your own HTTP server to handle messages by using the `add_transport`
+        method. It is not possible to use both this method and `add_transport`
+        to handle messages.
 
         Args:
             handler:
                 The message handler. This should be a callable that takes no
-                arguments.
+                arguments: the
         """
-        self._message_relay = MessageRelay(handler)
-        self.add_transport(
-            protocol="message",
-            port=self._message_relay.port,
-            path="/_pact/message",
+        logger.debug(
+            "Setting message handler for verifier",
+            extra={
+                "path": "/_pact/message",
+            },
         )
+
+        if callable(handler):
+            if len(inspect.signature(handler).parameters) != 2:  # noqa: PLR2004
+                msg = "The function must take two arguments: name and parameters"
+                raise TypeError(msg)
+
+            self._message_producer = MessageProducer(handler)
+            self.add_transport(
+                protocol="message",
+                port=self._message_producer.port,
+                path=self._message_producer.path,
+            )
+
+        if isinstance(handler, dict):
+            # Check that all values are either callable with one argument, or
+            # bytes.
+            for value in handler.values():
+                if callable(value) and len(inspect.signature(value).parameters) != 1:
+                    msg = "All functions must take one argument: parameters"
+                    raise TypeError(msg)
+                if not callable(value) and not isinstance(value, dict):
+                    msg = "All values must be callable or dictionaries"
+                    raise TypeError(msg)
+
+            def _handler(name: str, parameters: dict[str, Any] | None) -> Message:
+                logger.info("Internal handler called")
+                val = handler[name]
+                if callable(val):
+                    return val(parameters)
+                return val
+
+            self._message_producer = MessageProducer(_handler)
+            self.add_transport(
+                protocol="message",
+                port=self._message_producer.port,
+                path=self._message_producer.path,
+            )
+
         return self
 
     def filter(
@@ -409,6 +443,14 @@ class Verifier:
             no_state:
                 Whether to include interactions with no state.
         """
+        logger.debug(
+            "Setting filter for verifier",
+            extra={
+                "description": description,
+                "state": state,
+                "no_state": no_state,
+            },
+        )
         pact.v3.ffi.verifier_set_filter_info(
             self._handle,
             description,
@@ -580,6 +622,14 @@ class Verifier:
         Returns:
             The verifier instance.
         """
+        logger.debug(
+            "Setting URL state handler for verifier",
+            extra={
+                "handler": handler,
+                "teardown": teardown,
+                "body": body,
+            },
+        )
         pact.v3.ffi.verifier_set_provider_state(
             self._handle,
             str(handler),
@@ -618,6 +668,14 @@ class Verifier:
         if any(not callable(f) for f in handler.values()):
             msg = "All values in the dictionary must be callable"
             raise TypeError(msg)
+
+        logger.debug(
+            "Setting dictionary state handler for verifier",
+            extra={
+                "handler": handler,
+                "teardown": teardown,
+            },
+        )
 
         if teardown:
             if any(
@@ -690,6 +748,14 @@ class Verifier:
         Returns:
             The verifier instance.
         """
+        logger.debug(
+            "Setting function state handler for verifier",
+            extra={
+                "handler": handler,
+                "teardown": teardown,
+            },
+        )
+
         if teardown:
             if len(inspect.signature(handler).parameters) != 3:  # noqa: PLR2004
                 msg = (
@@ -1165,8 +1231,9 @@ class Verifier:
                 transport["scheme"],
             )
 
-        with self._message_relay, self._state_handler:
+        with self._message_producer, self._state_handler:
             pact.v3.ffi.verifier_execute(self._handle)
+            logger.debug("Verifier executed")
 
         return self
 
