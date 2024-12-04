@@ -9,12 +9,12 @@ from unittest.mock import MagicMock
 import aiohttp
 import pytest
 
-from pact.v3._server import MessageRelay, StateCallback
+from pact.v3._server import MessageProducer, StateCallback
 
 
 def test_relay_default_init() -> None:
     handler = MagicMock()
-    server = MessageRelay(handler)
+    server = MessageProducer(handler)
 
     assert server.host == "localhost"
     assert server.port > 1024  # Random non-privileged port
@@ -24,7 +24,7 @@ def test_relay_default_init() -> None:
 @pytest.mark.asyncio
 async def test_relay_invalid_path_http() -> None:
     handler = MagicMock(return_value="Not OK")
-    server = MessageRelay(handler)
+    server = MessageProducer(handler)
 
     with server:
         async with aiohttp.ClientSession() as session:
@@ -36,7 +36,7 @@ async def test_relay_invalid_path_http() -> None:
 @pytest.mark.asyncio
 async def test_relay_get_http() -> None:
     handler = MagicMock(return_value=b"Pact Python is awesome!")
-    server = MessageRelay(handler)
+    server = MessageProducer(handler)
 
     with server:
         async with aiohttp.ClientSession() as session:
@@ -51,7 +51,7 @@ async def test_relay_get_http() -> None:
 @pytest.mark.asyncio
 async def test_relay_post_http() -> None:
     handler = MagicMock(return_value=b"Pact Python is awesome!")
-    server = MessageRelay(handler)
+    server = MessageProducer(handler)
 
     with server:
         async with aiohttp.ClientSession() as session:
@@ -69,7 +69,7 @@ async def test_relay_post_http() -> None:
 @pytest.mark.asyncio
 async def test_relay_get_with_metadata() -> None:
     handler = MagicMock(return_value=b"Pact Python is awesome!")
-    server = MessageRelay(handler)
+    server = MessageProducer(handler)
     metadata = base64.b64encode(json.dumps({"key": "value"}).encode()).decode()
 
     with server:
@@ -88,7 +88,7 @@ async def test_relay_get_with_metadata() -> None:
 @pytest.mark.asyncio
 async def test_relay_post_with_metadata() -> None:
     handler = MagicMock(return_value=b"Pact Python is awesome!")
-    server = MessageRelay(handler)
+    server = MessageProducer(handler)
     metadata = base64.b64encode(json.dumps({"key": "value"}).encode()).decode()
 
     with server:
