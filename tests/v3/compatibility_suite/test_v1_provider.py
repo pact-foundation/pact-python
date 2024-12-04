@@ -27,7 +27,6 @@ from tests.v3.compatibility_suite.util.provider import (
     a_verification_result_will_not_be_published_back,
     a_warning_will_be_displayed_that_there_was_no_callback_configured,
     publishing_of_verification_results_is_enabled,
-    reset_broker_var,
     the_provider_state_callback_will_be_called_after_the_verification_is_run,
     the_provider_state_callback_will_be_called_before_the_verification_is_run,
     the_provider_state_callback_will_not_receive_a_setup_call,
@@ -93,7 +92,6 @@ def test_incorrect_request_is_made_to_provider() -> None:
 )
 def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
     """Verifying a simple HTTP request via a Pact broker."""
-    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -107,7 +105,6 @@ def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
 )
 def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> None:
     """Verifying a simple HTTP request via a Pact broker with publishing."""
-    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -121,7 +118,6 @@ def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> 
 )
 def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
     """Verifying multiple Pact files via a Pact broker."""
-    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -135,7 +131,6 @@ def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
 )
 def test_incorrect_request_is_made_to_provider_via_a_pact_broker() -> None:
     """Incorrect request is made to provider via a Pact broker."""
-    reset_broker_var.set(True)
 
 
 @pytest.mark.skipif(
@@ -397,7 +392,7 @@ def the_following_http_interactions_have_been_defined(
     The first row is ignored, as it is assumed to be the column headers. The
     order of the columns is similarly ignored.
     """
-    logger.debug("Parsing interaction definitions")
+    logger.info("Parsing interaction definitions")
 
     # Check that the table is well-formed
     definitions = parse_horizontal_table(datatable)

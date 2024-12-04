@@ -126,6 +126,7 @@ def a_message_integration_is_being_defined_for_a_consumer_test(
         """
         A message integration is being defined for a consumer test.
         """
+        logger.info("Creating a message interaction")
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
         return PactInteractionTuple(
@@ -158,6 +159,7 @@ def the_mock_server_is_started_with_interactions(
         interaction_definitions: dict[int, InteractionDefinition],
     ) -> Generator[PactServer, Any, None]:
         """The mock server is started with interactions."""
+        logger.info("Starting Pact mock server")
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
         for iid in ids:

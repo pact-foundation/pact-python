@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import pickle
 import re
 import sys
 from pathlib import Path
@@ -30,7 +29,6 @@ from tests.v3.compatibility_suite.util.provider import (
     a_pact_file_for_message_is_to_be_verified,
     a_provider_is_started_that_can_generate_the_message,
     a_provider_state_callback_is_configured,
-    start_provider,
     the_provider_state_callback_will_be_called_after_the_verification_is_run,
     the_provider_state_callback_will_be_called_before_the_verification_is_run,
     the_provider_state_callback_will_receive_a_setup_call,
@@ -40,10 +38,6 @@ from tests.v3.compatibility_suite.util.provider import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
-
-    from yarl import URL
-
     from pact.v3.verifier import Verifier
 
 TEST_PACT_FILE_DIRECTORY = Path(Path(__file__).parent / "pacts")
@@ -388,22 +382,18 @@ def a_pact_file_for_is_to_be_verified_with_the_following_metadata(
         r'message with "(?P<fixture>[^"]+)" and the following metadata:',
         re.DOTALL,
     ),
-    target_fixture="provider_url",
+    target_fixture="provider",
 )
 def a_provider_is_started_that_can_generate_the_message_with_the_following_metadata(
-    temp_dir: Path,
+    verifier: Verifier,
     name: str,
     fixture: str,
     datatable: list[list[str]],
-) -> Generator[URL, None, None]:
+) -> None:
     """A provider is started that can generate the message with the following metadata."""  # noqa: E501
-    interaction_definitions: list[InteractionDefinition] = []
     metadata = parse_horizontal_table(datatable)
-    if (temp_dir / "interactions.pkl").exists():
-        with (temp_dir / "interactions.pkl").open("rb") as pkl_file:
-            interaction_definitions = pickle.load(pkl_file)  # noqa: S301
 
-    interaction_definition = InteractionDefinition(
+    interaction = InteractionDefinition(
         type="Async",
         description=name,
         body=fixture,
@@ -414,12 +404,8 @@ def a_provider_is_started_that_can_generate_the_message_with_the_following_metad
             for row in metadata
         },
     )
-    interaction_definitions.append(interaction_definition)
 
-    with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-        pickle.dump(interaction_definitions, pkl_file)
-
-    yield from start_provider(temp_dir)
+    verifier.message_handler(interaction.message_producer)
 
 
 ################################################################################
