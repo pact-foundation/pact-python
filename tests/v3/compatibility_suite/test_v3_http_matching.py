@@ -1,6 +1,5 @@
 """Matching HTTP parts (request or response) feature tests."""
 
-import pickle
 import re
 import sys
 from collections.abc import Generator
@@ -14,14 +13,13 @@ from pytest_bdd import (
     then,
     when,
 )
-from yarl import URL
 
 from pact.v3 import Pact
 from pact.v3.verifier import Verifier
 from tests.v3.compatibility_suite.util.interaction_definition import (
     InteractionDefinition,
 )
-from tests.v3.compatibility_suite.util.provider import start_provider
+from tests.v3.compatibility_suite.util.provider import Provider
 
 ################################################################################
 ## Scenarios
@@ -122,20 +120,20 @@ def test_comparing_content_type_headers_which_are_equal() -> None:
 @given(
     parsers.re(
         r'a request is received with an? "(?P<name>[^"]+)" header of "(?P<value>[^"]+)"'
-    )
+    ),
+    target_fixture="interaction_definition",
 )
-def a_request_is_received_with_header(name: str, value: str, temp_dir: Path) -> None:
+def a_request_is_received_with_header(name: str, value: str) -> InteractionDefinition:
     """A request is received with a "content-type" header of "application/json"."""
     interaction_definition = InteractionDefinition(method="GET", path="/", type="HTTP")
     interaction_definition.response_headers.update({name: value})
-    with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-        pickle.dump([interaction_definition], pkl_file)
+    return interaction_definition
 
 
 @given(
     parsers.re(
         r'an expected request with an? "(?P<name>[^"]+)" header of "(?P<value>[^"]+)"'
-    ),
+    )
 )
 def an_expected_request_with_header(name: str, value: str, temp_dir: Path) -> None:
     """An expected request with a "content-type" header of "application/json"."""
@@ -153,12 +151,16 @@ def an_expected_request_with_header(name: str, value: str, temp_dir: Path) -> No
 ################################################################################
 
 
-@when("the request is compared to the expected one", target_fixture="provider_url")
+@when("the request is compared to the expected one", target_fixture="provider")
 def the_request_is_compared_to_the_expected_one(
-    temp_dir: Path,
-) -> Generator[URL, None, None]:
+    interaction_definition: InteractionDefinition,
+) -> Generator[Provider, None, None]:
     """The request is compared to the expected one."""
-    yield from start_provider(temp_dir)
+    provider = Provider()
+    provider.add_interaction(interaction_definition)
+
+    with provider:
+        yield provider
 
 
 ################################################################################
@@ -172,16 +174,16 @@ def the_request_is_compared_to_the_expected_one(
     target_fixture="verifier_result",
 )
 def the_comparison_should_not_be_ok(
-    provider_url: URL,
+    provider: Provider,
     verifier: Verifier,
     temp_dir: Path,
     negated: bool,  # noqa: FBT001
 ) -> Verifier:
     """The comparison should NOT be OK."""
-    verifier.add_transport(url=provider_url)
+    verifier.add_transport(url=provider.url)
     verifier.add_transport(
         protocol="http",
-        port=provider_url.port,
+        port=provider.url.port,
         path="/",
     )
     verifier.add_source(temp_dir / "pacts")

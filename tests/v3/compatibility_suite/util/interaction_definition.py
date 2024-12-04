@@ -8,17 +8,14 @@ with the `Pact` and `Interaction` classes.
 
 from __future__ import annotations
 
-import base64
 import contextlib
 import json
 import logging
-import sys
 import typing
+import warnings
 from typing import Any, Literal
 from xml.etree import ElementTree as ET
 
-import flask
-from flask import request
 from multidict import MultiDict
 from typing_extensions import Self
 from yarl import URL
@@ -32,11 +29,12 @@ from tests.v3.compatibility_suite.util import (
 )
 
 if typing.TYPE_CHECKING:
+    from http.server import SimpleHTTPRequestHandler
     from pathlib import Path
 
     from pact.v3.interaction import Interaction
     from pact.v3.pact import Pact
-    from tests.v3.compatibility_suite.util.provider import Provider
+    from pact.v3.types import Message
 
 logger = logging.getLogger(__name__)
 
@@ -595,26 +593,55 @@ class InteractionDefinition:
                 else:
                     interaction.with_metadata({key: json.dumps(value)})
 
-    def add_to_provider(self, provider: Provider) -> None:
+    def matches_request(self, request: SimpleHTTPRequestHandler) -> bool:
         """
-        Add an interaction to a Flask app.
+        Check if a request matches the interaction.
 
         Args:
-            provider:
-                The test provider to add the interaction to.
+            request:
+                The request to check.
+
+        Returns:
+            Whether the request matches the interaction.
         """
-        logger.debug("Adding %s interaction to Flask app", self.type)
         if self.type == "HTTP":
-            self._add_http_to_provider(provider)
-        elif self.type == "Sync":
-            self._add_sync_to_provider(provider)
-        elif self.type == "Async":
-            self._add_async_to_provider(provider)
+            logger.debug(
+                "Checking whether request '%s %s' matches '%s %s'",
+                request.command,
+                request.path,
+                self.method,
+                self.path,
+            )
+            return (
+                request.command == self.method
+                and request.path.split("?")[0] == self.path
+            )
+        return False
+
+    def handle_request(self, request: SimpleHTTPRequestHandler) -> None:
+        """
+        Handle a HTTP request.
+
+        Internally, we use Python's built-in [`http.server`][http.server] module
+        to handle the request. For each request, Pythhon instantiates a new
+        [`SimpleHTTPRequestHandler`][http.server.SimpleHTTPRequestHandler]
+        object with the request details and provider the interface to respond.
+
+        Args:
+            request:
+                The request to handle.
+        """
+        logger.debug("Handling request: %s %s", request.command, request.path)
+        if self.type == "HTTP":
+            self._handle_request_http(request)
+        elif self.type in ("Sync", "Async"):
+            msg = "Sync and Async interactions are handled by message relay."
+            raise ValueError(msg)
         else:
             msg = f"Unknown interaction type: {self.type}"
             raise ValueError(msg)
 
-    def _add_http_to_provider(self, provider: Provider) -> None:
+    def _handle_request_http(self, request: SimpleHTTPRequestHandler) -> None:  # noqa: C901, PLR0912
         """
         Add a HTTP interaction to a Flask app.
 
@@ -623,137 +650,125 @@ class InteractionDefinition:
         route.
 
         Args:
-            provider:
-                The test provider to add the interaction to.
+            request:
+                The request to handle.
         """
         assert isinstance(self.method, str), "Method must be a string"
         assert isinstance(self.path, str), "Path must be a string"
 
         logger.info(
-            "Adding HTTP '%s %s' interaction to Flask app",
+            "Handling HTTP '%s %s' interaction",
             self.method,
             self.path,
         )
-        logger.debug("-> Query: %s", self.query)
-        logger.debug("-> Headers: %s", self.headers)
-        logger.debug("-> Body: %s", self.body)
-        logger.debug("-> Response Status: %s", self.response)
-        logger.debug("-> Response Headers: %s", self.response_headers)
-        logger.debug("-> Response Body: %s", self.response_body)
 
-        def route_fn() -> flask.Response:
-            if self.query:
-                query = URL.build(query_string=self.query).query
-                # Perform a two-way check to ensure that the query parameters
-                # are present in the request, and that the request contains no
-                # unexpected query parameters.
-                for k, v in query.items():
-                    assert request.args[k] == v
-                for k, v in request.args.items():
-                    assert query[k] == v
+        # Check the request method
+        if request.command != self.method:
+            logger.error("Method mismatch: %s != %s", request.command, self.method)
+            request.send_error(405, "Method Not Allowed")
+            return
 
-            if self.headers:
-                # Perform a one-way check to ensure that the expected headers
-                # are present in the request, but don't check for any unexpected
-                # headers.
-                for k, v in self.headers.items():
-                    assert k in request.headers
-                    assert request.headers[k] == v
+        # Check the request path
+        if request.path.split("?")[0] != self.path:
+            logger.error("Path mismatch: %s != %s", request.path, self.path)
+            request.send_error(404, "Not Found")
+            return
 
-            if self.body:
-                assert request.data == self.body.bytes
-
-            return flask.Response(
-                response=self.response_body.bytes or self.response_body.string or None
-                if self.response_body
-                else None,
-                status=self.response,
-                headers=dict(**self.response_headers),
-                content_type=self.response_body.mime_type
-                if self.response_body
-                else None,
-                direct_passthrough=True,
-            )
-
-        # The route function needs to have a unique name
-        clean_name = self.path.replace("/", "_").replace("__", "_")
-        route_fn.__name__ = f"{self.method.lower()}_{clean_name}"
-
-        provider.app.add_url_rule(
-            self.path,
-            view_func=route_fn,
-            methods=[self.method],
-        )
-
-    def _add_sync_to_provider(self, provider: Provider) -> None:
-        """
-        Add a synchronous message interaction to a Flask app.
-
-        Args:
-            provider:
-                The test provider to add the interaction to.
-        """
-        raise NotImplementedError
-
-    def _add_async_to_provider(self, provider: Provider) -> None:
-        """
-        Add a synchronous message interaction to a Flask app.
-
-        Args:
-            provider:
-                The test provider to add the interaction to.
-        """
-        assert self.description, "Description must be set for async messages"
-        provider.messages[self.description] = self
-
-        # All messages are handled by the same route. So we just need to check
-        # whether the route has been defined, and if not, define it.
-        for rule in provider.app.url_map.iter_rules():
-            if rule.rule == "/_pact/message":
-                sys.stderr.write("Async message route already defined\n")
+        # Check the query parameters
+        #
+        # We expect an exact match of the query parameters (unlike the headers)
+        if self.query:
+            logger.info("Checking request query parameters")
+            expected_query = URL.build(query_string=self.query).query
+            request_query = URL.build(
+                query_string=request.path.split("?")[1] if "?" in request.path else ""
+            ).query
+            if (expected_keys := set(expected_query.keys())) != (
+                request_keys := set(request_query.keys())
+            ):
+                logger.error(
+                    "Query parameter mismatch: %s != %s",
+                    request_keys,
+                    expected_keys,
+                )
+                request.send_error(400, "Bad Request")
                 return
 
-        sys.stderr.write("Adding async message route\n")
+            for k in expected_query:
+                if (request_vals := request_query.getall(k)) != (
+                    expected_vals := expected_query.getall(k)
+                ):
+                    logger.error(
+                        "Query parameter mismatch: %s != %s",
+                        request_vals,
+                        expected_vals,
+                    )
+                    request.send_error(400, "Bad Request")
+                    return
 
-        @provider.app.post("/_pact/message")
-        def post_message() -> flask.Response:
-            body: dict[str, Any] = json.loads(request.data)
-            description: str = body["description"]
+        # Check the headers
+        #
+        # We only check for the headers we expect from the interaction
+        # definition. It is very likely that the request will contain additional
+        # headers (e.g. `Host`, `User-Agent`, etc.) that we do not care about.
+        if self.headers:
+            logger.info("Checking request headers")
+            for k, v in self.headers.items():
+                if (rv := request.headers.get(k)) != v:
+                    logger.error("Header mismatch: %s != %s", rv, v)
+                    request.send_error(400, "Bad Request")
+                    return
 
-            if description not in provider.messages:
-                return flask.Response(
-                    response=json.dumps({
-                        "error": f"Message {description} not found",
-                    }),
-                    status=404,
-                    headers={"Content-Type": "application/json"},
-                    content_type="application/json",
-                )
+        # Check the body
+        if self.body:
+            content_length = int(request.headers.get("Content-Length", 0))
+            request_body = request.rfile.read(content_length)
+            if request_body != self.body.bytes:
+                request.send_error(400, "Bad Request")
+                return
 
-            interaction: InteractionDefinition = provider.messages[description]
-            return interaction.create_async_message_response()
+        # Send the response
+        if not self.response:
+            warnings.warn(
+                "No response defined, defaulting to 200",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
-    def create_async_message_response(self) -> flask.Response:
+        request.send_response(self.response or 200)
+        for k, v in self.response_headers.items():
+            request.send_header(k, v)
+        if self.response_body and self.response_body.mime_type:
+            request.send_header("Content-Type", self.response_body.mime_type)
+        request.end_headers()
+        if self.response_body and self.response_body.bytes:
+            request.wfile.write(self.response_body.bytes)
+
+    def message_producer(
+        self,
+        name: str,
+        metadata: dict[str, Any] | None,
+    ) -> Message:
         """
-        Convert the interaction to a Flask response.
+        Handle a message interaction.
 
-        When an async message needs to be produced, Pact expects the response
-        from the special `/_pact/message` endppoint to generate the expected
-        message.
+        Args:
+            name:
+                The name of the message to produce.
 
-        Whilst this is a Response from Flask's perspective, the attributes
-        returned
+            metadata:
+                Metadata for the message.
         """
-        assert self.type == "Async", "Only async messages are supported"
+        logger.info("Handling message interaction")
+        logger.info("  -> Body: %r", name)
+        logger.info("  -> Metadata: %r", metadata)
+        assert self.type in ("Sync", "Async"), "Message interactions only"
 
-        if self.metadata:
-            self.headers["Pact-Message-Metadata"] = base64.b64encode(
-                json.dumps(self.metadata).encode("utf-8")
-            ).decode("utf-8")
+        assert name == self.description, "Description mismatch"
 
-        return flask.Response(
-            response=self.body.bytes or self.body.string or None if self.body else None,
-            headers=((k, v) for k, v in self.headers.items()),
-            content_type=self.body.mime_type if self.body else None,
-            direct_passthrough=True,
-        )
+        contents = self.body.bytes if self.body else None
+        return {
+            "contents": contents or b"",
+            "content_type": self.body.mime_type if self.body else None,
+            "metadata": self.metadata,
+        }

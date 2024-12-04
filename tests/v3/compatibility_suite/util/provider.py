@@ -14,45 +14,35 @@ steps for the compatibility suite tests.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-import pytest
-
-from pact.v3._util import find_free_port
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-
 import copy
+import inspect
 import json
 import logging
 import os
-import pickle
 import re
 import shutil
-import signal
 import subprocess
-import time
 import warnings
-from contextvars import ContextVar
-from datetime import datetime, timezone
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from io import BytesIO
 from threading import Thread
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING, Any, ClassVar, Self, TypedDict
+from unittest.mock import MagicMock
 
-import flask
+import pytest
 import requests
-from flask import request
+from multidict import CIMultiDict
 from pytest_bdd import given, parsers, then, when
 from yarl import URL
 
 import pact.constants  # type: ignore[import-untyped]
+from pact import __version__
+from pact.v3._server import MessageProducer
+from pact.v3._util import find_free_port
 from pact.v3.pact import Pact
 from tests.v3.compatibility_suite.util import (
     parse_headers,
     parse_horizontal_table,
-    serialize,
-    truncate,
 )
 from tests.v3.compatibility_suite.util.interaction_definition import (
     InteractionDefinition,
@@ -61,28 +51,14 @@ from tests.v3.compatibility_suite.util.interaction_definition import (
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from pathlib import Path
+    from types import TracebackType
 
+    from pact.v3.types import Message
     from pact.v3.verifier import Verifier
 
 
 logger = logging.getLogger(__name__)
-
-version_var = ContextVar("version_var", default="0")
-"""
-Shared context variable to store the version of the consumer application.
-
-This is used to generate a new version for the consumer application to use when
-publishing the interactions to the Pact Broker.
-"""
-reset_broker_var = ContextVar("reset_broker", default=True)
-"""
-This context variable is used to determine whether the Pact broker should be
-cleaned up. It is used to ensure that the broker is only cleaned up once, even
-if a step is run multiple times.
-
-All scenarios which make use of the Pact broker should set this to `True` at the
-start of the scenario.
-"""
 
 VERIFIER_ERROR_MAP: dict[str, str] = {
     "Response status did not match": "StatusMismatch",
@@ -92,7 +68,7 @@ VERIFIER_ERROR_MAP: dict[str, str] = {
 }
 
 
-def next_version() -> str:
+def _next_version() -> Generator[str, None, None]:
     """
     Get the next version for the consumer.
 
@@ -102,221 +78,245 @@ def next_version() -> str:
     Returns:
         The next version.
     """
-    version = version_var.get()
-    version_var.set(str(int(version) + 1))
-    return version
+    version = 0
+    while True:
+        yield str(version)
+        version += 1
 
 
-def _setup_logging(log_level: int) -> None:
-    """
-    Set up logging for the provider.
-
-    Pytest is responsible for setting up the logging for the main Python
-    process, but the provider runs in a subprocess and does not automatically
-    inherit the logging configuration.
-
-    This function sets up the logging within the provider subprocess, provided
-    that it wasn't already set up (in case any logging configuration is
-    inherited).
-    """
-    if logging.getLogger().handlers:
-        return
-
-    logging.basicConfig(
-        level=log_level,
-        format="%(asctime)s.%(msec)03d [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
-    logger.debug("Debug logging enabled")
+version_iter = _next_version()
 
 
 class Provider:
     """
-    HTTP Provider.
+    HTTP provider for the compatibility suite tests.
+
+    As we are testing specific scenarios, this provider server is designed to
+    be easily customized to return specific responses for specific requests.
     """
 
-    def __init__(self, provider_dir: Path | str, log_level: int) -> None:
+    interactions: ClassVar[list[InteractionDefinition]] = []
+
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int | None = None,
+    ) -> None:
         """
-        Instantiate a new provider.
+        Initialize the provider.
 
         Args:
-            provider_dir:
-                The directory containing various files used to configure the
-                provider. At a minimum, this directory must contain a file
-                called `interactions.pkl`. This file must contain a list of
-                [`InteractionDefinition`] objects.
+            host:
+                The host for the provider.
 
-            log_level:
-                The log level for the provider.
+            port:
+                The port for the provider. If not provided, then a free port
+                will be found.
         """
-        _setup_logging(log_level)
+        self._host = host
+        self._port = port or find_free_port()
 
-        self.messages: dict[str, InteractionDefinition] = {}
-        self.provider_dir = Path(provider_dir)
-        if not self.provider_dir.is_dir():
-            msg = f"Directory {self.provider_dir} does not exist"
-            raise ValueError(msg)
+        self._interactions: list[InteractionDefinition] = []
+        self.requests: list[ProviderRequestDict] | None = None
+        self._server: ProviderServer | None = None
+        self._thread: Thread | None = None
 
-        self.app: flask.Flask = flask.Flask("provider")
-        self._add_ping()
-        self._add_callback()
-        self._add_after_request()
-        self._add_interactions()
-
-    def _add_ping(self) -> None:
+    @property
+    def host(self) -> str:
         """
-        Add a ping endpoint to the provider.
-
-        This is used to check that the provider is running.
+        Server host.
         """
+        return self._host
 
-        @self.app.get("/_test/ping")
-        def ping() -> str:
-            """Simple ping endpoint for testing."""
-            return "pong"
-
-    def _add_callback(self) -> None:
+    @property
+    def port(self) -> int:
         """
-        Add a callback endpoint to the provider.
-
-        This is used to receive any callbacks from Pact to configure any
-        internal state (e.g., "given a user exists"). As far as the testing
-        is concerned, this is just a simple endpoint that records the request
-        and returns an empty response.
-
-        If the provider directory contains a file called `fail_callback`, then
-        the callback will return a 404 response.
-
-        If the provider directory contains a file called `provider_state`, then
-        the callback will check that the `state` query parameter matches the
-        contents of the file.
+        Server port.
         """
+        return self._port
 
-        @self.app.route("/_pact/callback", methods=["GET", "POST"])
-        def callback() -> tuple[str, int] | str:
-            if (self.provider_dir / "fail_callback").exists():
-                return "Provider state not found", 404
-
-            provider_states_path = self.provider_dir / "provider_states"
-            if provider_states_path.exists():
-                logger.debug("Provider states file found")
-                with provider_states_path.open() as f:
-                    states = [InteractionState(**s) for s in json.load(f)]
-                logger.debug("Provider states: %s", states)
-                for state in states:
-                    if request.args["state"] == state.name:
-                        logger.debug("State found: %s", state)
-                        for k, v in state.parameters.items():
-                            assert k in request.args
-                            assert str(request.args[k]) == str(v)
-                        logger.debug("State parameters match")
-                        break
-                else:
-                    msg = "State not found"
-                    raise ValueError(msg)
-
-            timestamp = datetime.now(tz=timezone.utc).strftime("%H:%M:%S.%f")
-            json_file = self.provider_dir / f"callback.{timestamp}.json"
-            with json_file.open("w") as f:
-                json.dump(
-                    {
-                        "method": request.method,
-                        "path": request.path,
-                        "query_string": request.query_string.decode("utf-8"),
-                        "query_params": serialize(request.args),
-                        "headers_list": serialize(request.headers),
-                        "headers_dict": serialize(dict(request.headers)),
-                        "body": request.data.decode("utf-8", errors="backslashreplace"),
-                        "form": serialize(request.form),
-                    },
-                    f,
-                )
-
-            return ""
-
-    def _add_after_request(self) -> None:
+    @property
+    def url(self) -> URL:
         """
-        Add a handler to log requests and responses.
-
-        This is used to log the requests and responses to the provider
-        application (both to the logger as well as to files).
+        Server URL.
         """
+        return URL(f"http://{self.host}:{self.port}")
 
-        @self.app.after_request
-        def log_request(response: flask.Response) -> flask.Response:
-            logger.debug("Received request: %s %s", request.method, request.path)
-            logger.debug("-> Query string: %s", request.query_string.decode("utf-8"))
-            logger.debug("-> Headers: %s", serialize(request.headers))
-            logger.debug("-> Body: %s", truncate(request.get_data().decode("utf-8")))
-            logger.debug("-> Form: %s", serialize(request.form))
-
-            timestamp = datetime.now(tz=timezone.utc).strftime("%H:%M:%S.%f")
-            with (self.provider_dir / f"request.{timestamp}.json").open("w") as f:
-                json.dump(
-                    {
-                        "method": request.method,
-                        "path": request.path,
-                        "query_string": request.query_string.decode("utf-8"),
-                        "query_params": serialize(request.args),
-                        "headers_list": serialize(request.headers),
-                        "headers_dict": serialize(dict(request.headers)),
-                        "body": request.data.decode("utf-8", errors="backslashreplace"),
-                        "form": serialize(request.form),
-                    },
-                    f,
-                )
-            return response
-
-        @self.app.after_request
-        def log_response(response: flask.Response) -> flask.Response:
-            logger.debug("Returning response: %d", response.status_code)
-            logger.debug("-> Headers: %s", serialize(response.headers))
-            logger.debug(
-                "-> Body: %s",
-                truncate(
-                    response.get_data().decode("utf-8", errors="backslashreplace")
-                ),
-            )
-
-            timestamp = datetime.now(tz=timezone.utc).strftime("%H:%M:%S.%f")
-            with (self.provider_dir / f"response.{timestamp}.json").open("w") as f:
-                json.dump(
-                    {
-                        "status_code": response.status_code,
-                        "headers_list": serialize(response.headers),
-                        "headers_dict": serialize(dict(response.headers)),
-                        "body": response.get_data().decode(
-                            "utf-8", errors="backslashreplace"
-                        ),
-                    },
-                    f,
-                )
-            return response
-
-    def _add_interactions(self) -> None:
+    def add_interaction(self, interaction: InteractionDefinition) -> None:
         """
-        Add the interactions to the provider.
+        Add an interaction to the provider.
+
+        Args:
+            interaction:
+                The interaction to add.
         """
-        with (self.provider_dir / "interactions.pkl").open("rb") as f:
-            interactions: list[InteractionDefinition] = pickle.load(f)  # noqa: S301
+        self._interactions.append(interaction)
 
-        for interaction in interactions:
-            interaction.add_to_provider(self)
-
-    def run(self) -> None:
+    def __enter__(self) -> Self:
         """
         Start the provider.
         """
-        url = URL(f"http://localhost:{find_free_port()}")
-        sys.stderr.write(f"Starting provider on {url}\n")
-        for endpoint in self.app.url_map.iter_rules():
-            sys.stderr.write(f"  * {endpoint}\n")
-
-        self.app.run(
-            host=url.host,
-            port=url.port,
-            debug=True,
+        logger.info(
+            "Starting provider on %s with %s interaction(s)",
+            self.url,
+            len(self._interactions),
         )
+        self._server = ProviderServer(
+            (self.host, self.port),
+            ProviderRequestHandler,
+            interactions=self._interactions,
+        )
+        self._thread = Thread(
+            target=self._server.serve_forever,
+            name="Compatibility Suite Provider Server",
+        )
+        self._thread.start()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """
+        Exit the Provider context.
+        """
+        if not self._thread or not self._server:
+            warnings.warn(
+                "Exiting server context despite server not being started.",
+                stacklevel=2,
+            )
+            return
+
+        self.requests = self._server.requests
+        self._server.shutdown()
+        self._thread.join()
+
+
+class ProviderServer(ThreadingHTTPServer):
+    """
+    Simple HTTP server for the provider.
+    """
+
+    def __init__(
+        self,
+        *args: Any,  # noqa: ANN401
+        interactions: list[InteractionDefinition],
+        **kwargs: Any,  # noqa: ANN401
+    ) -> None:
+        """
+        Initialize the server.
+
+        Args:
+            interactions:
+                The interactions to use for the server.
+
+            *args:
+                Positional arguments to pass to the base `ThreadingHTTPServer`
+                class.
+
+            **kwargs:
+                Keyword arguments to pass to the base `ThreadingHTTPServer`
+                class.
+        """
+        self.interactions = interactions
+        self.requests: list[ProviderRequestDict] = []
+        super().__init__(*args, **kwargs)
+
+
+class ProviderRequestDict(TypedDict):
+    """
+    Request dictionary for the provider server.
+    """
+
+    method: str | None
+    path: str | None
+    query: str | None
+    headers: CIMultiDict[str] | None
+    body: bytes | None
+
+
+class ProviderRequestHandler(SimpleHTTPRequestHandler):
+    """
+    Request handler for the provider server.
+
+    This class is responsible for handling the requests made to the provider
+    server. It uses the standard library's
+    [`SimpleHTTPRequestHandler`][http.server.SimpleHTTPRequestHandler].
+    """
+
+    if TYPE_CHECKING:
+        server: ProviderServer
+
+    def version_string(self) -> str:
+        """
+        Get the server version string.
+
+        Returns:
+            The server version string.
+        """
+        return f"Compatibility Suite Provider/{__version__}"
+
+    def _record_request(self) -> None:
+        """
+        Record the request.
+
+        Parses the request and records it in the server's request list.
+
+        The `rfile` attribute, being a file-like object, can only be read once.
+        This method reads the request body and then replaces the `rfile`
+        attribute with a new `BytesIO` object containing the request body.
+        """
+        size = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(size)
+        request: ProviderRequestDict = {
+            "method": self.command,
+            "path": self.path,
+            "query": self.path.split("?", 1)[1] if "?" in self.path else None,
+            "headers": CIMultiDict(self.headers.items()),
+            "body": body,
+        }
+        self.server.requests.append(request)
+        self.rfile = BytesIO(body)
+
+    def do_POST(self) -> None:  # noqa: N802
+        """
+        Handle a POST request.
+        """
+        logger.info("Handling %s %s", self.command, self.path)
+        self._record_request()
+
+        for interaction in self.server.interactions:
+            if interaction.matches_request(self):
+                interaction.handle_request(self)
+                return
+
+        logger.warning(
+            "No matching interaction found for %s %s",
+            self.command,
+            self.path,
+        )
+        self.send_error(404, "Not Found")
+
+    def do_GET(self) -> None:  # noqa: N802
+        """
+        Handle a GET request.
+        """
+        logger.info("Handling %s %s", self.command, self.path)
+        self._record_request()
+
+        for interaction in self.server.interactions:
+            if interaction.matches_request(self):
+                interaction.handle_request(self)
+                return
+
+        logger.warning(
+            "No matching interaction found for %s %s",
+            self.command,
+            self.path,
+        )
+        self.send_error(404, "Not Found")
 
 
 class PactBroker:
@@ -408,7 +408,7 @@ class PactBroker:
         if self.password:
             cmd.extend(["--broker-password", self.password])
 
-        cmd.extend(["--consumer-app-version", version or next_version()])
+        cmd.extend(["--consumer-app-version", version or next(version_iter)])
 
         subprocess.run(  # noqa: S603
             cmd,
@@ -503,16 +503,6 @@ class PactBroker:
         return response
 
 
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) != 3:
-        sys.stderr.write(f"Usage: {sys.argv[0]} <dir> <log_level>\n")
-        sys.exit(1)
-
-    Provider(sys.argv[1], int(sys.argv[2])).run()
-
-
 ################################################################################
 ## Given
 ################################################################################
@@ -527,26 +517,25 @@ def a_provider_is_started_that_returns_the_responses_from_interactions(
             r'from interactions? "?(?P<interactions>[0-9, ]+)"?',
         ),
         converters={"interactions": lambda x: [int(i) for i in x.split(",") if i]},
-        target_fixture="provider_url",
+        target_fixture="provider",
         stacklevel=stacklevel + 1,
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
         interactions: list[int],
-        temp_dir: Path,
-    ) -> Generator[URL, None, None]:
+    ) -> Generator[Provider, None, None]:
         """
         Start a provider that returns the responses from the given interactions.
         """
-        logger.debug("Starting provider for interactions %s", interactions)
+        logger.info("Starting provider for interactions %s", interactions)
 
+        provider = Provider()
         for i in interactions:
-            logger.debug("Interaction %d: %s", i, interaction_definitions[i])
+            logger.info("Interaction %d: %s", i, interaction_definitions[i])
+            provider.add_interaction(interaction_definitions[i])
 
-        with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-            pickle.dump([interaction_definitions[i] for i in interactions], pkl_file)
-
-        yield from start_provider(temp_dir)
+        with provider:
+            yield provider
 
 
 def a_provider_is_started_that_returns_the_responses_from_interactions_with_changes(
@@ -555,44 +544,42 @@ def a_provider_is_started_that_returns_the_responses_from_interactions_with_chan
     @given(
         parsers.re(
             r"a provider is started that returns the responses?"
-            r' from interactions? "?(?P<interactions>[0-9, ]+)"?'
+            r' from interactions? "?(?P<ids>[0-9, ]+)"?'
             r" with the following changes:",
             re.DOTALL,
         ),
-        converters={
-            "interactions": lambda x: [int(i) for i in x.split(",") if i],
-        },
-        target_fixture="provider_url",
+        converters={"ids": lambda x: [int(i) for i in x.split(",") if i]},
+        target_fixture="provider",
         stacklevel=stacklevel + 1,
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
-        interactions: list[int],
+        ids: list[int],
         datatable: list[list[str]],
-        temp_dir: Path,
-    ) -> Generator[URL, None, None]:
+    ) -> Generator[Provider, None, None]:
         """
         Start a provider that returns the responses from the given interactions.
         """
-        logger.debug("Starting provider for modified interactions %s", interactions)
+        logger.info("Starting provider for modified interactions %s", ids)
         changes = parse_horizontal_table(datatable)
 
         assert len(changes) == 1, "Only one set of changes is supported"
-        defns: list[InteractionDefinition] = []
-        for interaction in interactions:
-            defn = copy.deepcopy(interaction_definitions[interaction])
-            defn.update(**changes[0])  # type: ignore[arg-type]
-            defns.append(defn)
-            logger.debug(
+        interactions: list[InteractionDefinition] = []
+        for id_ in ids:
+            interaction = copy.deepcopy(interaction_definitions[id_])
+            interaction.update(**changes[0])  # type: ignore[arg-type]
+            interactions.append(interaction)
+            logger.info(
                 "Updated interaction %d: %s",
+                id_,
                 interaction,
-                defn,
             )
 
-        with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-            pickle.dump(defns, pkl_file)
-
-        yield from start_provider(temp_dir)
+        provider = Provider()
+        for interaction in interactions:
+            provider.add_interaction(interaction)
+        with provider:
+            yield provider
 
 
 def a_provider_is_started_that_can_generate_the_message(
@@ -604,20 +591,15 @@ def a_provider_is_started_that_can_generate_the_message(
             r' that can generate the "(?P<name>[^"]+)" message'
             r' with "(?P<body>.+)"$'
         ),
-        target_fixture="provider_url",
+        target_fixture="provider",
         stacklevel=stacklevel + 1,
     )
     def _(
-        temp_dir: Path,
+        verifier: Verifier,
         name: str,
         body: str,
-    ) -> Generator[URL, None, None]:
-        interactions: list[InteractionDefinition] = []
-        interactions_pkl = temp_dir / "interactions.pkl"
-        if interactions_pkl.exists():
-            with interactions_pkl.open("rb") as f:
-                interactions = pickle.load(f)  # noqa: S301
-
+    ) -> None:
+        logger.info("Starting provider for message %s", name)
         interaction = InteractionDefinition(
             type="Async",
             description=name,
@@ -626,78 +608,23 @@ def a_provider_is_started_that_can_generate_the_message(
         # If there's no content type, then it is a `text/plain` message
         if interaction.body and not interaction.body.mime_type:
             interaction.body.mime_type = "text/plain"
-        interactions.append(interaction)
 
-        with (temp_dir / "interactions.pkl").open("wb") as pkl_file:
-            pickle.dump(interactions, pkl_file)
+        # The following is a hack to allow for multiple message interactions to
+        # be defined. Typically, the end user would know all messages to be
+        # produced; however, we don't have this luxury in this context.
+        if isinstance(verifier._message_producer, MessageProducer):  # noqa: SLF001
+            original_handler = verifier._message_producer._handler  # noqa: SLF001
 
-        yield from start_provider(temp_dir)
+            def handler(*args: Any, **kwargs: Any) -> Message:  # noqa: ANN401
+                try:
+                    return original_handler(*args, **kwargs)
+                except AssertionError:
+                    return interaction.message_producer(*args, **kwargs)
 
+            verifier.message_handler(handler)
 
-def start_provider(provider_dir: str | Path) -> Generator[URL, None, None]:  # noqa: C901
-    """Start the provider app with the given interactions."""
-    process = subprocess.Popen(  # noqa: S603
-        [
-            sys.executable,
-            Path(__file__),
-            str(provider_dir),
-            str(logger.getEffectiveLevel()),
-        ],
-        cwd=Path.cwd(),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8",
-    )
-
-    pattern = re.compile(r" \* Running on (?P<url>[^ ]+)")
-    while True:
-        if process.poll() is not None:
-            logger.error("Provider process exited with code %d", process.returncode)
-            logger.error(
-                "Provider stdout: %s", process.stdout.read() if process.stdout else ""
-            )
-            logger.error(
-                "Provider stderr: %s", process.stderr.read() if process.stderr else ""
-            )
-            msg = f"Provider process exited with code {process.returncode}"
-            raise RuntimeError(msg)
-        if (
-            process.stderr
-            and (line := process.stderr.readline())
-            and (match := pattern.match(line))
-        ):
-            break
-        time.sleep(0.1)
-
-    url = URL(match.group("url"))
-    logger.debug("Provider started on %s", url)
-    for _ in range(50):
-        try:
-            response = requests.get(str(url / "_test" / "ping"), timeout=1)
-            assert response.text == "pong"
-            break
-        except (requests.RequestException, AssertionError):
-            time.sleep(0.1)
-            continue
-    else:
-        msg = "Failed to ping provider"
-        raise RuntimeError(msg)
-
-    def redirect() -> NoReturn:
-        while True:
-            if process.stdout:
-                while line := process.stdout.readline():
-                    logger.debug("Provider stdout: %s", line.rstrip())
-            if process.stderr:
-                while line := process.stderr.readline():
-                    logger.debug("Provider stderr: %s", line.rstrip())
-
-    thread = Thread(target=redirect, daemon=True)
-    thread.start()
-
-    yield url
-
-    process.send_signal(signal.SIGINT)
+        else:
+            verifier.message_handler(interaction.message_producer)
 
 
 def a_pact_file_for_interaction_is_to_be_verified(
@@ -722,7 +649,7 @@ def a_pact_file_for_interaction_is_to_be_verified(
         """
         Verify the Pact file for the given interaction.
         """
-        logger.debug(
+        logger.info(
             "Adding interaction %d to be verified: %s",
             interaction,
             interaction_definitions[interaction],
@@ -742,7 +669,7 @@ def a_pact_file_for_interaction_is_to_be_verified(
             encoding="utf-8",
         ) as f:
             for line in f:
-                logger.debug("Pact file: %s", line.rstrip())
+                logger.info("Pact file: %s", line.rstrip())
 
         verifier.add_source(temp_dir / "pacts")
 
@@ -772,7 +699,7 @@ def a_pact_file_for_message_is_to_be_verified(
             body=fixture,
         )
         defn.pending = pending
-        logger.debug("Adding message interaction: %s", defn)
+        logger.info("Adding message interaction: %s", defn)
 
         pact = Pact("consumer", "provider")
         pact.with_specification(version)
@@ -781,7 +708,7 @@ def a_pact_file_for_message_is_to_be_verified(
         pact.write_file(temp_dir / "pacts")
 
         with (temp_dir / "pacts" / "consumer-provider.json").open() as f:
-            logger.debug("Pact file contents: %s", f.read())
+            logger.info("Pact file contents: %s", f.read())
 
         verifier.add_source(temp_dir / "pacts")
 
@@ -809,7 +736,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_comments(
         """
         Verify the Pact file for the given interaction.
         """
-        logger.debug(
+        logger.info(
             "Adding interaction %d to be verified: %s",
             interaction,
             interaction_definitions[interaction],
@@ -836,7 +763,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_comments(
             encoding="utf-8",
         ) as f:
             for line in f:
-                logger.debug("Pact file: %s", line.rstrip())
+                logger.info("Pact file: %s", line.rstrip())
 
         verifier.add_source(temp_dir / "pacts")
 
@@ -860,6 +787,7 @@ def a_pact_file_for_message_is_to_be_verified_with_comments(
         fixture: str,
         datatable: list[list[str]],
     ) -> None:
+        logger.info("Adding message interaction %s with comments", name)
         defn = InteractionDefinition(
             type="Async",
             description=name,
@@ -882,7 +810,7 @@ def a_pact_file_for_message_is_to_be_verified_with_comments(
         pact.write_file(temp_dir / "pacts")
 
         with (temp_dir / "pacts" / "consumer-provider.json").open() as f:
-            logger.debug("Pact file contents: %s", f.read())
+            logger.info("Pact file contents: %s", f.read())
 
         verifier.add_source(temp_dir / "pacts")
 
@@ -910,7 +838,7 @@ def a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker(
         """
         Verify the Pact file for the given interaction from a Pact broker.
         """
-        logger.debug(
+        logger.info(
             "Adding interaction %d to be verified from a Pact broker", interaction
         )
 
@@ -925,10 +853,6 @@ def a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker(
         pact.write_file(pacts_dir)
 
         pact_broker = PactBroker(broker_url)
-        if reset_broker_var.get():
-            logger.debug("Resetting Pact broker")
-            pact_broker.reset()
-            reset_broker_var.set(False)
         pact_broker.publish(pacts_dir)
         verifier.broker_source(pact_broker.url)
         yield pact_broker
@@ -940,7 +864,7 @@ def publishing_of_verification_results_is_enabled(stacklevel: int = 1) -> None:
         """
         Enable publishing of verification results.
         """
-        logger.debug("Publishing verification results")
+        logger.info("Publishing verification results")
 
         verifier.set_publish_options(
             "0.0.0",
@@ -955,29 +879,36 @@ def a_provider_state_callback_is_configured(
             r"a provider state callback is configured"
             r"(?P<failure>(, but will return a failure)?)",
         ),
+        target_fixture="provider_callback",
         converters={"failure": lambda x: x != ""},
         stacklevel=stacklevel + 1,
     )
     def _(
         verifier: Verifier,
-        provider_url: URL,
-        temp_dir: Path,
         failure: bool,  # noqa: FBT001
-    ) -> None:
+    ) -> MagicMock:
         """
         Configure a provider state callback.
         """
-        logger.debug("Configuring provider state callback")
+        logger.info("Configuring provider state callback")
 
+        def _callback(
+            _name: str,
+            _action: str,
+            _params: dict[str, str] | None,
+        ) -> None:
+            pass
+
+        provider_callback = MagicMock(return_value=None, spec=_callback)
+        provider_callback.__signature__ = inspect.signature(_callback)
         if failure:
-            with (temp_dir / "fail_callback").open("w") as f:
-                f.write("true")
+            provider_callback.side_effect = RuntimeError("Provider state change failed")
 
         verifier.state_handler(
-            provider_url / "_pact" / "callback",
+            provider_callback,
             teardown=True,
-            body=False,
         )
+        return provider_callback
 
 
 def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
@@ -1002,7 +933,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
         """
         Verify the Pact file for the given interaction with a provider state defined.
         """
-        logger.debug(
+        logger.info(
             "Adding interaction %d to be verified with provider state %s",
             interaction,
             state,
@@ -1020,7 +951,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_state_defined(
         verifier.add_source(temp_dir / "pacts")
 
         with (temp_dir / "provider_states").open("w") as f:
-            logger.debug("Writing provider state to %s", temp_dir / "provider_states")
+            logger.info("Writing provider state to %s", temp_dir / "provider_states")
             json.dump([s.as_dict() for s in defn.states], f)
 
 
@@ -1048,7 +979,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_states_defined
         Verify the Pact file for the given interaction with provider states defined.
         """
         states = parse_horizontal_table(datatable)
-        logger.debug(
+        logger.info(
             "Adding interaction %d to be verified with provider states %s",
             interaction,
             states,
@@ -1068,7 +999,7 @@ def a_pact_file_for_interaction_is_to_be_verified_with_a_provider_states_defined
         verifier.add_source(temp_dir / "pacts")
 
         with (temp_dir / "provider_states").open("w") as f:
-            logger.debug("Writing provider state to %s", temp_dir / "provider_states")
+            logger.info("Writing provider state to %s", temp_dir / "provider_states")
             json.dump([s.as_dict() for s in defn.states], f)
 
 
@@ -1086,7 +1017,7 @@ def a_request_filter_is_configured_to_make_the_following_changes(
         """
         Configure a request filter to make the given changes.
         """
-        logger.debug("Configuring request filter")
+        logger.info("Configuring request filter")
 
         changes = parse_horizontal_table(datatable)
         if "headers" in changes[0]:
@@ -1111,19 +1042,16 @@ def the_verification_is_run(
     )
     def _(
         verifier: Verifier,
-        provider_url: URL,
+        provider: Provider | None,
     ) -> tuple[Verifier, Exception | None]:
         """
         Run the verification.
         """
-        logger.debug("Running verification on %r", verifier)
+        logger.info("Running verification on %r", verifier)
 
-        verifier.add_transport(url=provider_url)
-        verifier.add_transport(
-            protocol="message",
-            port=provider_url.port,
-            path="/_pact/message",
-        )
+        if provider:
+            verifier.add_transport(url=provider.url)
+
         try:
             verifier.verify()
         except Exception as e:  # noqa: BLE001
@@ -1151,8 +1079,8 @@ def the_verification_will_be_successful(
         """
         Check that the verification was successful.
         """
-        logger.debug("Checking verification result")
-        logger.debug("Verifier result: %s", verifier_result)
+        logger.info("Checking verification result")
+        logger.info("Verifier result: %s", verifier_result)
 
         if negated:
             assert verifier_result[1] is not None
@@ -1171,10 +1099,10 @@ def the_verification_results_will_contain_a_error(
         """
         Check that the verification results contain the given error.
         """
-        logger.debug("Checking that verification results contain error %s", error)
+        logger.info("Checking that verification results contain error %s", error)
 
         verifier = verifier_result[0]
-        logger.debug("Verification results: %s", json.dumps(verifier.results, indent=2))
+        logger.info("Verification results: %s", json.dumps(verifier.results, indent=2))
 
         mismatch_type = VERIFIER_ERROR_MAP.get(error)
         if not mismatch_type:
@@ -1212,7 +1140,7 @@ def a_verification_result_will_not_be_published_back(
         """
         Check that the verification result was published back to the Pact broker.
         """
-        logger.debug("Checking that verification result was not published back")
+        logger.info("Checking that verification result was not published back")
 
         response = pact_broker.latest_verification_results()
         if response:
@@ -1239,7 +1167,7 @@ def a_successful_verification_result_will_be_published_back(
         """
         Check that the verification result was published back to the Pact broker.
         """
-        logger.debug(
+        logger.info(
             "Checking that verification result was published back for interaction %d",
             interaction,
         )
@@ -1279,7 +1207,7 @@ def a_failed_verification_result_will_be_published_back(
         """
         Check that the verification result was published back to the Pact broker.
         """
-        logger.debug(
+        logger.info(
             "Checking that failed verification result"
             " was published back for interaction %d",
             interaction,
@@ -1312,7 +1240,7 @@ def the_provider_state_callback_will_be_called_before_the_verification_is_run(
         """
         Check that the provider state callback was called before the verification.
         """
-        logger.debug("Checking provider state callback was called before verification")
+        logger.info("Checking provider state callback was called before verification")
 
 
 def the_provider_state_callback_will_receive_a_setup_call(
@@ -1327,7 +1255,7 @@ def the_provider_state_callback_will_receive_a_setup_call(
         stacklevel=stacklevel + 1,
     )
     def _(
-        temp_dir: Path,
+        provider_callback: MagicMock,
         action: str,
         state: str,
     ) -> None:
@@ -1335,20 +1263,14 @@ def the_provider_state_callback_will_receive_a_setup_call(
         Check that the provider state callback received a setup call.
         """
         logger.info("Checking provider state callback received a %s call", action)
-        logger.info("Callback files: %s", list(temp_dir.glob("callback.*.json")))
-        for file in temp_dir.glob("callback.*.json"):
-            with file.open("r") as f:
-                data: dict[str, Any] = json.load(f)
-                logger.debug("Checking callback data: %s", data)
-                if (
-                    "action" in data["query_params"]
-                    and data["query_params"]["action"] == action
-                    and data["query_params"]["state"] == state
-                ):
-                    break
-        else:
-            msg = f"No {action} call found"
-            raise AssertionError(msg)
+        logger.debug("Calls: %s", provider_callback.call_args_list)
+        provider_callback.assert_called()
+        for calls in provider_callback.call_args_list:
+            if calls.args[0] == state and calls.args[1] == action:
+                return
+
+        msg = f"No {action} call found"
+        raise AssertionError(msg)
 
 
 def the_provider_state_callback_will_receive_a_setup_call_with_parameters(
@@ -1365,7 +1287,7 @@ def the_provider_state_callback_will_receive_a_setup_call_with_parameters(
         stacklevel=stacklevel + 1,
     )
     def _(
-        temp_dir: Path,
+        provider_callback: MagicMock,
         action: str,
         state: str,
         datatable: list[list[str]],
@@ -1374,30 +1296,19 @@ def the_provider_state_callback_will_receive_a_setup_call_with_parameters(
         Check that the provider state callback received a setup call.
         """
         logger.info("Checking provider state callback received a %s call", action)
-        logger.info("Callback files: %s", list(temp_dir.glob("callback.*.json")))
         parameters = parse_horizontal_table(datatable)
-        params: dict[str, str] = parameters[0]
-        # If we have a string that looks quoted, unquote it
+        params: dict[str, Any] = parameters[0]
+        # Values are JSON values, so parse them
         for key, value in params.items():
-            if value.startswith('"') and value.endswith('"'):
-                params[key] = value[1:-1]
+            params[key] = json.loads(value)
 
-        for file in temp_dir.glob("callback.*.json"):
-            with file.open("r") as f:
-                data: dict[str, Any] = json.load(f)
-                logger.debug("Checking callback data: %s", data)
-                if (
-                    "action" in data["query_params"]
-                    and data["query_params"]["action"] == action
-                    and data["query_params"]["state"] == state
-                ):
-                    for key, value in params.items():
-                        assert key in data["query_params"], f"Parameter {key} not found"
-                        assert data["query_params"][key] == value
-                    break
-        else:
-            msg = f"No {action} call found"
-            raise AssertionError(msg)
+        provider_callback.assert_called()
+        for calls in provider_callback.call_args_list:
+            if calls.args[0] == state and calls.args[1] == action:
+                assert calls.args[2] == params
+                return
+        msg = f"No {action} call found"
+        raise AssertionError(msg)
 
 
 def the_provider_state_callback_will_not_receive_a_setup_call(
@@ -1420,7 +1331,7 @@ def the_provider_state_callback_will_not_receive_a_setup_call(
         for file in temp_dir.glob("callback.*.json"):
             with file.open("r") as f:
                 data: dict[str, Any] = json.load(f)
-                logger.debug("Checking callback data: %s", data)
+                logger.info("Checking callback data: %s", data)
                 if (
                     "action" in data["query_params"]
                     and data["query_params"]["action"] == action
@@ -1459,7 +1370,7 @@ def a_warning_will_be_displayed_that_there_was_no_callback_configured(
         """
         Check that a warning was displayed that there was no callback configured.
         """
-        logger.debug("Checking for warning about missing provider state callback")
+        logger.info("Checking for warning about missing provider state callback")
         assert state
 
 
@@ -1474,27 +1385,24 @@ def the_request_to_the_provider_will_contain_the_header(
         stacklevel=stacklevel + 1,
     )
     def _(
-        verifier_result: tuple[Verifier, Exception | None],
+        provider: Provider,
         header: dict[str, str],
-        temp_dir: Path,
+        # verifier_result: tuple[Verifier, Exception | None],
+        # temp_dir: Path,
     ) -> None:
         """
         Check that the request to the provider contained the given header.
         """
-        verifier = verifier_result[0]
-        logger.debug("verifier output: %s", verifier.output(strip_ansi=True))
-        logger.debug("verifier results: %s", json.dumps(verifier.results, indent=2))
-        for request_path in temp_dir.glob("request.*.json"):
-            with request_path.open("r") as f:
-                data: dict[str, Any] = json.load(f)
-                if data["path"].startswith("/_test"):
-                    continue
-                logger.debug("Checking request data: %s", data)
-                assert all([k, v] in data["headers_list"] for k, v in header.items())
-                break
-        else:
-            msg = "No request found"
-            raise AssertionError(msg)
+        logger.info("Checking for header %r in provider requests", header)
+        provider.__exit__(None, None, None)
+        assert provider.requests
+        assert len(provider.requests) == 1
+        request = provider.requests[0]
+        assert request["headers"]
+
+        for key, value in header.items():
+            assert key in request["headers"]
+            assert request["headers"][key] == value
 
 
 def there_will_be_a_pending_error(
@@ -1511,7 +1419,7 @@ def there_will_be_a_pending_error(
         """
         There will be a pending error.
         """
-        logger.debug("Checking for pending error")
+        logger.info("Checking for pending error")
         verifier, err = verifier_result
 
         if error == "Body had differences":
@@ -1551,8 +1459,8 @@ def the_comment_will_have_been_printed_to_the_console(stacklevel: int = 1) -> No
         Check that the given comment was printed to the console.
         """
         verifier, err = verifier_result
-        logger.debug("Checking for comment %r in verifier output", comment)
-        logger.debug("Verifier output: %s", verifier.output(strip_ansi=True))
+        logger.info("Checking for comment %r in verifier output", comment)
+        logger.info("Verifier output: %s", verifier.output(strip_ansi=True))
         assert err is None
         assert comment in verifier.output(strip_ansi=True)
 
@@ -1574,7 +1482,7 @@ def the_name_of_the_test_will_be_displayed_as_the_original_test_name(
         Check that the given test name was displayed as the original test name.
         """
         verifier, err = verifier_result
-        logger.debug("Checking for test name %r in verifier output", test_name)
-        logger.debug("Verifier output: %s", verifier.output(strip_ansi=True))
+        logger.info("Checking for test name %r in verifier output", test_name)
+        logger.info("Verifier output: %s", verifier.output(strip_ansi=True))
         assert err is None
         assert test_name in verifier.output(strip_ansi=True)
