@@ -87,7 +87,7 @@ jobs:
         include:
           - os: ubuntu-20.04
             archs: x86_64
-          - os: macos-12
+          - os: macos-13
             archs: x86_64
           - os: windows-2019
             archs: AMD64
