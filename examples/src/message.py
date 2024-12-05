@@ -2,9 +2,19 @@
 Handler for non-HTTP interactions.
 
 This module implements a very basic handler to handle JSON payloads which might
-be sent from Kafka, or some queueing system. Unlike a HTTP interaction, the
-handler is solely responsible for processing the message, and does not
-necessarily need to send a response.
+be sent through a messaging system. Unlike a HTTP interaction, the handler is
+solely responsible for processing the message, and does not necessarily need to
+send a response. This specific example handles file system events.
+
+Due to the broad range of possible technologies underpinning message systems
+(e.g., Kafka, RabbitMQ, SQS, SNS, etc.), Pact's implementation is agnostic to
+the transport mechanism. Instead, Pact Python v3 allows to provide a simple
+function (or mapping of functions) to produce messages. Under the hood, Pact
+uses HTTP to communicate
+
+Note that the code in this module is agnostic of Pact (i.e., this would be your
+production code). The `pact-python` dependency only appears in the tests. This
+is because the consumer is not concerned with Pact, only the tests are.
 """
 
 from __future__ import annotations
