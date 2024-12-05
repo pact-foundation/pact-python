@@ -2,7 +2,6 @@
 Tests for `pact.v3._server` module.
 """
 
-import base64
 import json
 from unittest.mock import MagicMock
 
@@ -12,17 +11,17 @@ import pytest
 from pact.v3._server import MessageProducer, StateCallback
 
 
-def test_relay_default_init() -> None:
+def test_message_default_init() -> None:
     handler = MagicMock()
     server = MessageProducer(handler)
 
     assert server.host == "localhost"
     assert server.port > 1024  # Random non-privileged port
-    assert server.url == f"http://{server.host}:{server.port}"
+    assert server.url == f"http://{server.host}:{server.port}/_pact/message"
 
 
 @pytest.mark.asyncio
-async def test_relay_invalid_path_http() -> None:
+async def test_message_invalid_path_http() -> None:
     handler = MagicMock(return_value="Not OK")
     server = MessageProducer(handler)
 
@@ -34,75 +33,42 @@ async def test_relay_invalid_path_http() -> None:
 
 
 @pytest.mark.asyncio
-async def test_relay_get_http() -> None:
+async def test_message_get_http() -> None:
     handler = MagicMock(return_value=b"Pact Python is awesome!")
     server = MessageProducer(handler)
 
     with server:
         async with aiohttp.ClientSession() as session:
-            async with session.get(server.url + "/_pact/message") as response:
-                assert response.status == 200
-                assert await response.text() == "Pact Python is awesome!"
+            async with session.get(server.url) as response:
+                assert response.status == 404
 
-    handler.assert_called_once()
-    assert handler.call_args.args == (None, None)
+    handler.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_relay_post_http() -> None:
-    handler = MagicMock(return_value=b"Pact Python is awesome!")
+async def test_message_post_http() -> None:
+    handler = MagicMock(
+        return_value={
+            "contents": json.dumps({"hello": "world"}).encode(),
+            "metadata": None,
+            "content_type": "application/json",
+        }
+    )
     server = MessageProducer(handler)
 
     with server:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                server.url + "/_pact/message",
-                data='{"hello": "world"}',
+                server.url,
+                data=json.dumps({
+                    "description": "A simple message",
+                }),
             ) as response:
                 assert response.status == 200
-                assert await response.text() == "Pact Python is awesome!"
+                assert await response.text() == '{"hello": "world"}'
 
     handler.assert_called_once()
-    assert handler.call_args.args == (b'{"hello": "world"}', None)
-
-
-@pytest.mark.asyncio
-async def test_relay_get_with_metadata() -> None:
-    handler = MagicMock(return_value=b"Pact Python is awesome!")
-    server = MessageProducer(handler)
-    metadata = base64.b64encode(json.dumps({"key": "value"}).encode()).decode()
-
-    with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                server.url + "/_pact/message",
-                headers={"Pact-Message-Metadata": metadata},
-            ) as response:
-                assert response.status == 200
-                assert await response.text() == "Pact Python is awesome!"
-
-    handler.assert_called_once()
-    assert handler.call_args.args == (None, {"key": "value"})
-
-
-@pytest.mark.asyncio
-async def test_relay_post_with_metadata() -> None:
-    handler = MagicMock(return_value=b"Pact Python is awesome!")
-    server = MessageProducer(handler)
-    metadata = base64.b64encode(json.dumps({"key": "value"}).encode()).decode()
-
-    with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                server.url + "/_pact/message",
-                data='{"hello": "world"}',
-                headers={"Pact-Message-Metadata": metadata},
-            ) as response:
-                assert response.status == 200
-                assert await response.text() == "Pact Python is awesome!"
-
-    handler.assert_called_once()
-    assert handler.call_args.args == (b'{"hello": "world"}', {"key": "value"})
+    assert handler.call_args.args == ("A simple message", {})
 
 
 def test_callback_default_init() -> None:
@@ -111,7 +77,7 @@ def test_callback_default_init() -> None:
 
     assert server.host == "localhost"
     assert server.port > 1024  # Random non-privileged port
-    assert server.url == f"http://{server.host}:{server.port}"
+    assert server.url == f"http://{server.host}:{server.port}/_pact/state"
 
 
 @pytest.mark.asyncio
@@ -133,52 +99,27 @@ async def test_callback_get_http() -> None:
 
     with server:
         async with aiohttp.ClientSession() as session:
-            async with session.get(server.url + "/_pact/state") as response:
+            async with session.get(server.url) as response:
                 assert response.status == 404
 
     handler.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_callback_post_query() -> None:
+async def test_callback_post() -> None:
     handler = MagicMock(return_value=None)
     server = StateCallback(handler)
 
     with server:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                server.url + "/_pact/state",
-                params={
-                    "state": "user exists",
-                    "action": "setup",
-                    "foo": "bar",
-                    "1": 2,
-                },
-            ) as response:
-                assert response.status == 200
-
-    handler.assert_called_once()
-    assert handler.call_args.args == (
-        "user exists",
-        "setup",
-        {"foo": "bar", "1": "2"},
-    )
-
-
-@pytest.mark.asyncio
-async def test_callback_post_body() -> None:
-    handler = MagicMock(return_value=None)
-    server = StateCallback(handler)
-
-    with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                server.url + "/_pact/state",
+                server.url,
                 json={
                     "state": "user exists",
                     "action": "setup",
-                    "foo": "bar",
-                    "1": 2,
+                    "params": {
+                        "id": 123,
+                    },
                 },
             ) as response:
                 assert response.status == 200
@@ -187,5 +128,5 @@ async def test_callback_post_body() -> None:
     assert handler.call_args.args == (
         "user exists",
         "setup",
-        {"foo": "bar", "1": 2},
+        {"id": 123},
     )
