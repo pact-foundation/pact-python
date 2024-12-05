@@ -22,7 +22,6 @@ process), is _not_ thread-safe.
 from __future__ import annotations
 
 import base64
-import binascii
 import json
 import logging
 import warnings
@@ -30,7 +29,7 @@ from collections.abc import Callable
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import urlparse
 
 from pact import __version__
 from pact.v3._util import find_free_port
@@ -238,39 +237,6 @@ class MessageProducerHandler(SimpleHTTPRequestHandler):
         """
         return f"Pact Python Message Relay/{__version__}"
 
-    def _process(self) -> tuple[bytes | None, dict[str, str] | None]:
-        """
-        Process the request.
-
-        Read the body and headers from the request and perform some common logic
-        shared between GET and POST requests.
-
-        Returns:
-            body:
-                The body of the request as a byte string, if present.
-
-            metadata:
-                The metadata of the request, if present.
-        """
-        if content_length := self.headers.get("Content-Length"):
-            body = self.rfile.read(int(content_length))
-        else:
-            body = None
-
-        if data := self.headers.get("Pact-Message-Metadata"):
-            try:
-                metadata = json.loads(base64.b64decode(data))
-            except binascii.Error as err:
-                msg = "Unable to base64 decode Pact metadata header."
-                raise RuntimeError(msg) from err
-            except json.JSONDecodeError as err:
-                msg = "Unable to JSON decode Pact metadata header."
-                raise RuntimeError(msg) from err
-            else:
-                return body, metadata
-
-        return body, None
-
     def do_POST(self) -> None:  # noqa: N802
         """
         Handle a POST request.
@@ -476,19 +442,11 @@ class StateCallbackHandler(SimpleHTTPRequestHandler):
             self.send_error(404, "Not Found")
             return
 
-        if query := url.query:
-            data: dict[str, Any] = parse_qs(query)
-            # Convert single-element lists to single values
-            for k, v in data.items():
-                if isinstance(v, list) and len(v) == 1:
-                    data[k] = v[0]
-
-        else:
-            content_length = self.headers.get("Content-Length")
-            if not content_length:
-                self.send_error(400, "Bad Request")
-                return
-            data = json.loads(self.rfile.read(int(content_length)))
+        content_length = self.headers.get("Content-Length")
+        if not content_length:
+            self.send_error(400, "Bad Request")
+            return
+        data = json.loads(self.rfile.read(int(content_length)))
 
         state = data.pop("state")
         action = data.pop("action")
