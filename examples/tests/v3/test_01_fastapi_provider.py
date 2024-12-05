@@ -18,99 +18,79 @@ will need to have a user with the given ID in the database. In order to avoid
 side effects, the provider's database calls are mocked out using functionalities
 from `unittest.mock`.
 
-In order to set the provider into the correct state, this test module defines an
-additional endpoint on the provider, in this case `/_pact/callback`. Calls to
-this endpoint mock the relevant database calls to set the provider into the
-correct state.
+Note that Pact requires tat the provider be running on an accessible URL. This
+means that FastAPI's [`TestClient`][fastapi.testclient.TestClient] cannot be used
+to test the provider. Instead, the provider is run in a separate thread using
+Python's [`Thread`][threading.Thread] class.
 """
 
 from __future__ import annotations
 
+import contextlib
 import time
 from datetime import datetime, timezone
-from multiprocessing import Process
-from typing import TYPE_CHECKING, Callable, Literal
+from threading import Thread
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
+import pytest
 import uvicorn
 from yarl import URL
 
-from examples.src.fastapi import User, app
+from examples.src.fastapi import User
 from pact.v3 import Verifier
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 PROVIDER_URL = URL("http://localhost:8000")
 
 
-@app.post("/_pact/callback")
-async def mock_pact_provider_states(
-    action: Literal["setup", "teardown"],
-    state: str,
-) -> dict[Literal["result"], str]:
+class Server(uvicorn.Server):
     """
-    Handler for the provider state callback.
+    Custom server class to run the FastAPI server in a separate thread.
 
-    For Pact to be able to correctly tests compliance with the contract, the
-    internal state of the provider needs to be set up correctly. For example, if
-    the consumer expects a user to exist in the database, the provider needs to
-    have a user with the given ID in the database.
-
-    Naïvely, this can be achieved by setting up the database with the correct
-    data for the test, but this can be slow and error-prone, and requires
-    standing up additional infrastructure. The alternative showcased here is to
-    mock the relevant calls to the database so as to avoid any side effects. The
-    `unittest.mock` library is used to achieve this as part of the `setup`
-    action.
-
-    The added benefit of using this approach is that the mock can subsequently
-    be inspected to ensure that the correct calls were made to the database. For
-    example, asserting that the correct user ID was retrieved from the database.
-    These checks are performed as part of the `teardown` action. This action can
-    also be used to reset the mock, or in the case were a real database is used,
-    to clean up any side effects.
-
-    Args:
-        action:
-            One of `setup` or `teardown`. Determines whether the provider state
-            should be set up or torn down.
-
-        state:
-            The name of the state to set up or tear down.
-
-    Returns:
-        A dictionary containing the result of the action.
+    Thanks to [this StackOverflow
+    answer](https://stackoverflow.com/a/64521239/1573761) for this solution.
     """
-    mapping: dict[str, dict[str, Callable[[], None]]] = {}
-    mapping["setup"] = {
-        "user doesn't exists": mock_user_doesnt_exist,
-        "user exists": mock_user_exists,
-        "the specified user doesn't exist": mock_post_request_to_create_user,
-        "user is present in DB": mock_delete_request_to_delete_user,
-    }
-    mapping["teardown"] = {
-        "user doesn't exists": verify_user_doesnt_exist_mock,
-        "user exists": verify_user_exists_mock,
-        "the specified user doesn't exist": verify_mock_post_request_to_create_user,
-        "user is present in DB": verify_mock_delete_request_to_delete_user,
-    }
 
-    mapping[action][state]()
-    return {"result": f"{action} {state} completed"}
+    def install_signal_handlers(self) -> None:
+        """
+        Prevent the server from installing signal handlers.
+
+        This is required to run the FastAPI server in a separate process. The
+        default behaviour of `uvicorn.Server` is to install signal handlers which
+        would interfere with the signal handlers of the main process.
+        """
+
+    @contextlib.contextmanager
+    def run_in_thread(self) -> Generator[str, None, None]:
+        """
+        Run the FastAPI server in a separate thread.
+
+        This method runs the FastAPI server in a separate thread and yields the
+        URL of the server. The server is started in a separate thread to allow the
+        tests to run in the main thread.
+        """
+        thread = Thread(target=self.run)
+        thread.start()
+        try:
+            while not self.started:
+                time.sleep(0.01)
+            yield f"http://{self.config.host}:{self.config.port}"
+        finally:
+            self.should_exit = True
+            thread.join()
 
 
-def run_server() -> None:
-    """
-    Run the FastAPI server.
-
-    This function is required to run the FastAPI server in a separate process. A
-    lambda cannot be used as the target of a `multiprocessing.Process` as it
-    cannot be pickled.
-    """
-    host = PROVIDER_URL.host if PROVIDER_URL.host else "localhost"
-    port = PROVIDER_URL.port if PROVIDER_URL.port else 8000
-    uvicorn.run(app, host=host, port=port)
+@pytest.fixture(scope="session")
+def server() -> Generator[str, None, None]:
+    server = Server(uvicorn.Config("examples.src.fastapi:app", host="localhost"))
+    with server.run_in_thread() as url:
+        yield url
 
 
-def test_provider() -> None:
+def test_provider(server: str) -> None:
     """
     Test the FastAPI provider with Pact.
 
@@ -154,21 +134,68 @@ def test_provider() -> None:
     the tests will fail and the output will show which interactions failed and
     why.
     """
-    proc = Process(target=run_server, daemon=True)
-    proc.start()
-    time.sleep(2)
     verifier = (
         Verifier("v3_http_provider")
-        .add_transport(url=PROVIDER_URL)
+        .add_transport(url=server)
         .add_source("examples/pacts/v3_http_consumer-v3_http_provider.json")
-        .set_state(
-            PROVIDER_URL / "_pact" / "callback",
-            teardown=True,
-        )
+        .state_handler(provider_state_handler, teardown=True)
     )
     verifier.verify()
 
-    proc.terminate()
+
+def provider_state_handler(
+    state: str,
+    action: str,
+    _parameters: dict[str, Any] | None,
+) -> None:
+    """
+    Handler for the provider state callback.
+
+    For Pact to be able to correctly tests compliance with the contract, the
+    internal state of the provider needs to be set up correctly. For example, if
+    the consumer expects a user to exist in the database, the provider needs to
+    have a user with the given ID in the database.
+
+    Naïvely, this can be achieved by setting up the database with the correct
+    data for the test, but this can be slow and error-prone, and requires
+    standing up additional infrastructure. The alternative showcased here is to
+    mock the relevant calls to the database so as to avoid any side effects. The
+    `unittest.mock` library is used to achieve this as part of the `setup`
+    action.
+
+    The added benefit of using this approach is that the mock can subsequently
+    be inspected to ensure that the correct calls were made to the database. For
+    example, asserting that the correct user ID was retrieved from the database.
+    These checks are performed as part of the `teardown` action. This action can
+    also be used to reset the mock, or in the case were a real database is used,
+    to clean up any side effects.
+
+    Args:
+        action:
+            One of `setup` or `teardown`. Determines whether the provider state
+            should be set up or torn down.
+
+        state:
+            The name of the state to set up or tear down.
+
+    Returns:
+        A dictionary containing the result of the action.
+    """
+    if action == "setup":
+        {
+            "user doesn't exists": mock_user_doesnt_exist,
+            "user exists": mock_user_exists,
+            "the specified user doesn't exist": mock_post_request_to_create_user,
+            "user is present in DB": mock_delete_request_to_delete_user,
+        }[state]()
+
+    if action == "teardown":
+        {
+            "user doesn't exists": verify_user_doesnt_exist_mock,
+            "user exists": verify_user_exists_mock,
+            "the specified user doesn't exist": verify_mock_post_request_to_create_user,
+            "user is present in DB": verify_mock_delete_request_to_delete_user,
+        }[state]()
 
 
 def mock_user_doesnt_exist() -> None:
