@@ -37,7 +37,7 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: v0.5.0  # Use the sha / tag you want to point at
+    rev: v0.6.0  # Use the sha / tag you want to point at
     hooks:
       - id: biome-check
         additional_dependencies:
