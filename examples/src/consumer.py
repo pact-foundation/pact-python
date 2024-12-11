@@ -19,9 +19,9 @@ below that as far as this consumer is concerned, the only information needed
 from the provider is the user's ID, name, and creation date. This is despite the
 provider having additional fields in the response.
 
-Note that the code in this module is agnostic of Pact. The `pact-python`
-dependency only appears in the tests. This is because the consumer is not
-concerned with Pact, only the tests are.
+Note that the code in this module is agnostic of Pact (i.e., this would be your
+production code). The `pact-python` dependency only appears in the tests. This
+is because the consumer is not concerned with Pact, only the tests are.
 """
 
 from __future__ import annotations

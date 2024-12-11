@@ -20,9 +20,9 @@ the provider later decide to add or remove fields, Pact's consumer-driven
 testing will provide feedback on whether the consumer is compatible with the
 provider's changes.
 
-Note that the code in this module is agnostic of Pact. The `pact-python`
-dependency only appears in the tests. This is because the consumer is not
-concerned with Pact, only the tests are.
+Note that the code in this module is agnostic of Pact (i.e., this would be your
+production code). The `pact-python` dependency only appears in the tests. This
+is because the consumer is not concerned with Pact, only the tests are.
 """
 
 from __future__ import annotations

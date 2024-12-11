@@ -3,6 +3,10 @@ Message producer for non-HTTP interactions.
 
 This modules implements a very basic message producer which could
 send to an eventing system, such as Kafka, or a message queue.
+
+Note that the code in this module is agnostic of Pact (i.e., this would be your
+production code). The `pact-python` dependency only appears in the tests. This
+is because the consumer is not concerned with Pact, only the tests are.
 """
 
 from __future__ import annotations
