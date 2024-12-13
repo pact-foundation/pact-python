@@ -81,10 +81,11 @@ devel-test = [
   "flask[async]      ~=3.0",
   "httpx             ~=0.0",
   "mock              ~=5.0",
-  "pytest            ~=8.0",
   "pytest-asyncio    ~=0.0",
   "pytest-bdd        ~=8.0",
   "pytest-cov        ~=6.0",
+  "pytest-xdist      ~=3.0",
+  "pytest            ~=8.0",
   "testcontainers    ~=4.0",
 ]
 devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.8.4"]
@@ -160,7 +161,7 @@ lint       = "ruff check --output-format=full --show-fixes {args}"
 typecheck  = "mypy {args:.}"
 format     = "ruff format {args}"
 test       = "pytest tests/ {args}"
-example    = "pytest examples/ {args}"
+example    = "pytest --numprocesses=1 examples/ {args}"
 all        = ["format", "lint", "typecheck", "test", "example"]
 docs       = "mkdocs serve {args}"
 docs-build = "mkdocs build {args}"
@@ -183,9 +184,13 @@ pythonpath = "."
 asyncio_default_fixture_loop_scope = "session"
 addopts = [
   "--import-mode=importlib",
+  # Coverage options
   "--cov-config=pyproject.toml",
   "--cov=pact",
   "--cov-report=xml",
+  # Xdist options
+  "--numprocesses=logical",
+  "--dist=worksteal",
 ]
 filterwarnings = [
   "ignore::DeprecationWarning:examples",
