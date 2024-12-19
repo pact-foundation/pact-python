@@ -312,7 +312,7 @@ def the_following_http_interactions_have_been_defined(
     The first row is ignored, as it is assumed to be the column headers. The
     order of the columns is similarly ignored.
     """
-    logger.debug("Parsing interaction definitions")
+    logger.info("Parsing interaction definitions")
 
     # Check that the table is well-formed
     definitions = parse_horizontal_table(datatable)
