@@ -31,13 +31,19 @@ from pact.v3 import Verifier
 
 
 # In the case of local Pact files
-verifier = Verifier().set_info("My Provider", url="http://localhost:8080")
-verifier.add_source("pact/to/pacts/")
+verifier = (
+    Verifier("My Provider")
+    .add_transport("http", url="http://localhost:8080")
+    .add_source("pact/to/pacts/")
+)
 verifier.verify()
 
 # In the case of a Pact Broker
-verifier = Verifier().set_info("My Provider", url="http://localhost:8080")
-verifier.broker_source("https://broker.example.com/")
+verifier = (
+    Verifier("My Provider")
+    .add_transport("http", url="http://localhost:8080")
+    .broker_source("https://broker.example.com/")
+)
 verifier.verify()
 ```
 
@@ -67,18 +73,76 @@ databases are already in use.
 
 from __future__ import annotations
 
+import inspect
 import json
+import logging
+import typing
+from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
 
 from typing_extensions import Self
 from yarl import URL
 
 import pact.v3.ffi
+from pact.v3._server import MessageProducer, StateCallback
+from pact.v3.types import (
+    Message,
+    MessageProducerFull,
+    MessageProducerNoName,
+    StateHandlerFull,
+    StateHandlerNoAction,
+    StateHandlerNoActionNoState,
+    StateHandlerNoState,
+    StateHandlerUrl,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+logger = logging.getLogger(__name__)
+
+
+class _ProviderTransport(TypedDict):
+    """
+    Provider transport information.
+
+    When the verifier is set up, it needs to communicate with the Provider. This
+    is typically done over a single transport method (e.g., HTTP); however, Pact
+    _does_ support multiple transport methods.
+
+    This dictionary is used to store information for each transport method and
+    is a reflection of Rust's [`ProviderTransport`
+    struct](https://github.com/pact-foundation/pact-reference/blob/b55407ef2be897d286af9330506219d17d2a746c/rust/pact_verifier/src/lib.rs#L168).
+    """
+
+    transport: str
+    """
+    The transport method for payloads.
+
+    This is typically one of `http` or `message`. Any other value is used as a
+    custom plugin (e.g., `grpc`).
+    """
+    port: int | None
+    """
+    The port on which the provider is listening.
+    """
+    path: str | None
+    """
+    The path under which the provider is listening.
+
+    This is prefixed to all paths in interactions. For example, if the path is
+    `/api`, and the interaction path is `/users`, the request will be made to
+    `/api/users`.
+    """
+    scheme: str | None
+    """
+    The scheme to use for the provider.
+
+    This is typically only used for the `http` transport method, where this
+    value can either be `http` or `https`.
+    """
 
 
 class Verifier:
@@ -91,16 +155,32 @@ class Verifier:
     match the expectations set by the consumer.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, name: str, host: str | None = None) -> None:
         """
         Create a new Verifier.
+
+        Args:
+            name:
+                The name of the provider to verify. This is used to identify
+                which interactions the provider is involved in, and then Pact
+                will replay these interactions against the provider.
+
+            host:
+                The host on which the Pact verifier is running. This is used to
+                communicate with the provider. If not specified, the default
+                value is `localhost`.
         """
-        self._handle: pact.v3.ffi.VerifierHandle = (
-            pact.v3.ffi.verifier_new_for_application()
-        )
+        self._name = name
+        self._host = host or "localhost"
+        self._handle = pact.v3.ffi.verifier_new_for_application()
 
         # In order to provide a fluent interface, we remember some options which
-        # are set using the same FFI method.
+        # are set using the same FFI method. In particular, we remember
+        # transport methods defined, and then before verification call the
+        # `set_info` and `add_transport` FFI methods as needed.
+        self._transports: list[_ProviderTransport] = []
+        self._message_producer: MessageProducer | nullcontext[None] = nullcontext()
+        self._state_handler: StateCallback | nullcontext[None] = nullcontext()
         self._disable_ssl_verification = False
         self._request_timeout = 5000
 
@@ -108,107 +188,19 @@ class Verifier:
         """
         Informal string representation of the Verifier.
         """
-        return "Verifier"
+        return f"Verifier({self._name})"
 
     def __repr__(self) -> str:
         """
         Information-rish string representation of the Verifier.
         """
-        return f"<Verifier: {self._handle}>"
-
-    def set_info(  # noqa: PLR0913
-        self,
-        name: str,
-        *,
-        url: str | URL | None = None,
-        scheme: str | None = None,
-        host: str | None = None,
-        port: int | None = None,
-        path: str | None = None,
-    ) -> Self:
-        """
-        Set the provider information.
-
-        This sets up information about the provider as well as the way it
-        communicates with the consumer. Note that for historical reasons, a
-        HTTP(S) transport method is always added.
-
-        For a provider which uses other protocols (such as message queues), the
-        [`add_transport`][pact.v3.verifier.Verifier.add_transport] must be used.
-        This method can be called multiple times to add multiple transport
-        methods.
-
-        Args:
-            name:
-                A user-friendly name for the provider.
-
-            url:
-                The URL on which requests are made to the provider by Pact.
-
-                It is recommended to use this parameter to set the provider URL.
-                If the port is not explicitly set, the default port for the
-                scheme will be used.
-
-                This parameter is mutually exclusive with the individual
-                parameters.
-
-            scheme:
-                The provider scheme. This must be one of `http` or `https`.
-
-            host:
-                The provider hostname or IP address. If the provider is running
-                on the same machine as the verifier, `localhost` can be used.
-
-            port:
-                The provider port. If not specified, the default port for the
-                schema will be used.
-
-            path:
-                The provider context path. If not specified, the root path will
-                be used.
-
-                If a non-root path is used, the path given here will be
-                prepended to the path in the interaction. For example, if the
-                path is `/api`, and the interaction path is `/users`, the
-                request will be made to `/api/users`.
-        """
-        if url is not None:
-            if any(param is not None for param in (scheme, host, port, path)):
-                msg = "Cannot specify both `url` and individual parameters"
-                raise ValueError(msg)
-
-            url = URL(url)
-            scheme = url.scheme
-            host = url.host
-            port = url.explicit_port
-            path = url.path
-
-            if port is None:
-                msg = "Unable to determine default port for scheme {scheme}"
-                raise ValueError(msg)
-
-            pact.v3.ffi.verifier_set_provider_info(
-                self._handle,
-                name,
-                scheme,
-                host,
-                port,
-                path,
-            )
-            return self
-
-        url = URL.build(
-            scheme=scheme or "http",
-            host=host or "localhost",
-            port=port,
-            path=path or "",
-        )
-        return self.set_info(name, url=url)
+        return f"<Verifier: {self._name}, handle={self._handle}>"
 
     def add_transport(
         self,
         *,
-        protocol: str,
+        url: str | URL | None = None,
+        protocol: str | None = None,
         port: int | None = None,
         path: str | None = None,
         scheme: str | None = None,
@@ -222,24 +214,28 @@ class Verifier:
         methods.
 
         As some transport methods may not use ports, paths or schemes, these
-        parameters are optional.
+        parameters are optional. Note that while optional, these _may_ still be
+        used during testing as Pact uses HTTP(S) to communicate with the
+        provider. For example, if you are implementing your own message
+        verification, it needs to be exposed over HTTP and the `port` and `path`
+        arguments are used for this testing communication.
 
         Args:
+            url:
+                A convenient way to set the provider transport. This option
+                is mutually exclusive with the other options.
+
             protocol:
                 The protocol to use. This will typically be one of:
 
-                -   `http` for communications over HTTP(S). Note that when
-                    setting up the provider information in
-                    [`set_info`][pact.v3.verifier.Verifier.set_info], a HTTP
-                    transport method is always added and it is unlikely that an
-                    additional HTTP transport method will be needed unless the
-                    provider is running on additional ports.
+                -   `http` for communications over HTTP(S)
 
-                -   `message` for non-plugin synchronous message-based
-                    communications.
+                -   `message` for non-plugin message-based communications
 
                 Any other protocol will be treated as a custom protocol and will
                 be handled by a plugin.
+
+                If `url` is _not_ specified, this parameter is required.
 
             port:
                 The provider port.
@@ -269,19 +265,155 @@ class Verifier:
                 This is typically only used for the `http` protocol, where this
                 value can either be `http` (the default) or `https`.
         """
+        if url and any(x is not None for x in (protocol, port, path, scheme)):
+            msg = "The `url` parameter is mutually exclusive with other parameters"
+            raise ValueError(msg)
+
+        if url:
+            url = URL(url)
+            if url.host != self._host:
+                msg = f"Host mismatch: {url.host} != {self._host}"
+                raise ValueError(msg)
+            protocol = url.scheme
+            if protocol == "https":
+                protocol = "http"
+            port = url.port
+            path = url.path
+            scheme = url.scheme
+            return self.add_transport(
+                protocol=protocol,
+                port=port,
+                path=path,
+                scheme=scheme,
+            )
+
+        if not protocol:
+            msg = "A protocol must be specified"
+            raise ValueError(msg)
+
         if port is None and scheme:
             if scheme.lower() == "http":
                 port = 80
             elif scheme.lower() == "https":
                 port = 443
 
-        pact.v3.ffi.verifier_add_provider_transport(
-            self._handle,
-            protocol,
-            port or 0,
-            path,
-            scheme,
+        logger.debug(
+            "Adding transport to verifier",
+            extra={
+                "protocol": protocol,
+                "port": port,
+                "path": path,
+                "scheme": scheme,
+            },
         )
+        self._transports.append(
+            _ProviderTransport(
+                transport=protocol,
+                port=port,
+                path=path,
+                scheme=scheme,
+            )
+        )
+
+        return self
+
+    @overload
+    def message_handler(self, handler: MessageProducerFull) -> Self: ...
+    @overload
+    def message_handler(
+        self,
+        handler: dict[str, MessageProducerNoName | Message],
+    ) -> Self: ...
+
+    def message_handler(
+        self,
+        handler: MessageProducerFull | dict[str, MessageProducerNoName | Message],
+    ) -> Self:
+        """
+        Set the message handler.
+
+        This method sets a custom message handler for the verifier. The handler
+        can be called to produce a specific message to send to the provider.
+
+        This can be provided in one of two ways:
+
+        1.  A fully fledged function that will be called for all messages. The
+            function must take two arguments: the name of the message (as a
+            string), and optional parameters (as a dictionary). This then
+            returns the message as bytes.
+
+            This is the most powerful option as it allows for full control over
+            the message generation.
+
+        2.  A dictionary mapping message names to producer functions, or bytes.
+            In this case, the producer function must take optional parameters
+            (as a dictionary) and return the message as bytes.
+
+            If the message to be produced is static, the bytes can be provided
+            directly.
+
+        ## Implementation
+
+        There are a large number of ways to send messages, and the specifics of
+        the transport methods are not specifically relevant to Pact. As such,
+        Pact abstracts the transport layer away and uses a lightweight HTTP
+        server to handle messages.
+
+        Pact Python is capable of setting up this server and handling the
+        messages internally using user-provided handlers. It is possible to use
+        your own HTTP server to handle messages by using the `add_transport`
+        method. It is not possible to use both this method and `add_transport`
+        to handle messages.
+
+        Args:
+            handler:
+                The message handler. This should be a callable that takes no
+                arguments: the
+        """
+        logger.debug(
+            "Setting message handler for verifier",
+            extra={
+                "path": "/_pact/message",
+            },
+        )
+
+        if callable(handler):
+            if len(inspect.signature(handler).parameters) != 2:  # noqa: PLR2004
+                msg = "The function must take two arguments: name and parameters"
+                raise TypeError(msg)
+
+            self._message_producer = MessageProducer(handler)
+            self.add_transport(
+                protocol="message",
+                port=self._message_producer.port,
+                path=self._message_producer.path,
+            )
+
+        if isinstance(handler, dict):
+            # Check that all values are either callable with one argument, or
+            # bytes.
+            for value in handler.values():
+                if callable(value) and len(inspect.signature(value).parameters) != 1:
+                    msg = "All functions must take one argument: parameters"
+                    raise TypeError(msg)
+                if not callable(value) and not isinstance(value, dict):
+                    msg = "All values must be callable or dictionaries"
+                    raise TypeError(msg)
+
+            def _handler(name: str, parameters: dict[str, Any] | None) -> Message:
+                logger.info("Internal handler called")
+                val = handler[name]
+                if callable(val):
+                    return val(parameters)
+                return val
+
+            self._message_producer = MessageProducer(_handler)
+            self.add_transport(
+                protocol="message",
+                port=self._message_producer.port,
+                path=self._message_producer.path,
+            )
+
         return self
 
     def filter(
@@ -311,6 +443,14 @@ class Verifier:
             no_state:
                 Whether to include interactions with no state.
         """
+        logger.debug(
+            "Setting filter for verifier",
+            extra={
+                "description": description,
+                "state": state,
+                "no_state": no_state,
+            },
+        )
         pact.v3.ffi.verifier_set_filter_info(
             self._handle,
             description,
@@ -319,26 +459,157 @@ class Verifier:
         )
         return self
 
-    def set_state(
+    # Cases where the handler takes the state name.
+    @overload
+    def state_handler(
         self,
-        url: str | URL,
+        handler: StateHandlerFull,
+        *,
+        teardown: Literal[True],
+        body: None = None,
+    ) -> Self: ...
+    @overload
+    def state_handler(
+        self,
+        handler: StateHandlerNoAction,
+        *,
+        teardown: Literal[False] = False,
+        body: None = None,
+    ) -> Self: ...
+    # Cases where the handler takes a dictionary of functions
+    @overload
+    def state_handler(
+        self,
+        handler: dict[str, StateHandlerNoState],
+        *,
+        teardown: Literal[True],
+        body: None = None,
+    ) -> Self: ...
+    @overload
+    def state_handler(
+        self,
+        handler: dict[str, StateHandlerNoActionNoState],
+        *,
+        teardown: Literal[False] = False,
+        body: None = None,
+    ) -> Self: ...
+    # Cases where the handler takes a URL
+    @overload
+    def state_handler(
+        self,
+        handler: StateHandlerUrl,
         *,
         teardown: bool = False,
-        body: bool = False,
+        body: bool,
+    ) -> Self: ...
+
+    def state_handler(
+        self,
+        handler: StateHandlerFull
+        | StateHandlerNoAction
+        | dict[str, StateHandlerNoState]
+        | dict[str, StateHandlerNoActionNoState]
+        | StateHandlerUrl,
+        *,
+        teardown: bool = False,
+        body: bool | None = None,
     ) -> Self:
         """
-        Set the provider state URL.
+        Set the state handler.
 
-        The URL is used when the provider's internal state needs to be changed.
-        For example, a consumer might have an interaction that requires a
-        specific user to be present in the database. The provider state URL is
-        used to change the provider's internal state to include the required
-        user.
+        In many interactions, the consumer will assume that the provider is in a
+        certain state. For example, a consumer requesting information about a
+        user with ID `123` will have specified `given("user with ID 123
+        exists")`.
+
+        The state handler is responsible for changing the provider's internal
+        state to match the expected state before the interaction is replayed.
+
+        This can be done in one of three ways:
+
+        1.  By providing a single function that will be called for all state
+            changes.
+        2.  By providing a mapping of state names to functions.
+        3.  By providing the URL endpoint to which the request should be made.
+
+        The first two options are most straightforward to use.
+
+        When providing a function, the arguments should be:
+
+        1.  The state name, as a string.
+        2.  The action (either `setup` or `teardown`), as a string.
+        3.  A dictionary of parameters, or `None` if no parameters are provided.
+
+        Note that these arguments will change in the following ways:
+
+        1.  If a dictionary mapping is used, the state name is _not_ provided to
+            the function.
+        2.  If `teardown` is `False` thereby indicating that the function is
+            only called for setup, the `action` argument is not provided.
+
+        This means that in the case of a dictionary mapping of function with
+        `teardown=False`, the function should take only one argument: the
+        dictionary of parameters (which itself may be `None`, albeit still an
+        argument).
 
         Args:
-            url:
-                The URL to which a `GET` request will be made to change the
-                provider's internal state.
+            handler:
+                The handler for the state changes. This can be one of the
+                following:
+
+                -   A single function that will be called for all state changes.
+                -   A dictionary mapping state names to functions.
+                -   A URL endpoint to which the request should be made.
+
+                See above for more information on the function signature.
+
+            teardown:
+                Whether to teardown the provider state after an interaction is
+                validated.
+
+            body:
+                Whether to include the state change request in the body (`True`)
+                or in the query string (`False`). This must be left as `None` if
+                providing one or more handler functions; and it must be set to
+                a boolean if providing a URL.
+        """
+        if isinstance(handler, StateHandlerUrl):
+            if body is None:
+                msg = "The `body` parameter must be a boolean when providing a URL"
+                raise ValueError(msg)
+            return self._state_handler_url(handler, teardown=teardown, body=body)
+
+        if isinstance(handler, dict):
+            if body is not None:
+                msg = "The `body` parameter must be `None` when providing a dictionary"
+                raise ValueError(msg)
+            return self._state_handler_dict(handler, teardown=teardown)
+
+        if callable(handler):
+            if body is not None:
+                msg = "The `body` parameter must be `None` when providing a function"
+                raise ValueError(msg)
+            return self._set_function_state_handler(handler, teardown=teardown)
+
+        msg = "Invalid handler type"
+        raise TypeError(msg)
+
+    def _state_handler_url(
+        self,
+        handler: StateHandlerUrl,
+        *,
+        teardown: bool,
+        body: bool,
+    ) -> Self:
+        """
+        Set the state handler to a URL.
+
+        This method is used to set the state handler to a URL endpoint. This
+        endpoint will be called to change the provider's state.
+
+        Args:
+            handler:
+                The URL endpoint to which the request should be made.
 
             teardown:
                 Whether to teardown the provider state after an interaction is
@@ -347,13 +618,183 @@ class Verifier:
             body:
                 Whether to include the state change request in the body (`True`)
                 or in the query string (`False`).
+
+        Returns:
+            The verifier instance.
         """
+        logger.debug(
+            "Setting URL state handler for verifier",
+            extra={
+                "handler": handler,
+                "teardown": teardown,
+                "body": body,
+            },
+        )
         pact.v3.ffi.verifier_set_provider_state(
             self._handle,
-            url if isinstance(url, str) else str(url),
+            str(handler),
             teardown=teardown,
             body=body,
         )
+        return self
+
+    def _state_handler_dict(
+        self,
+        handler: dict[str, StateHandlerNoState]
+        | dict[str, StateHandlerNoActionNoState],
+        *,
+        teardown: bool,
+    ) -> Self:
+        """
+        Set the state handler to a dictionary of functions.
+
+        This method is used to set the state handler to a dictionary of functions.
+        Each function is called when the provider's state needs to be changed.
+
+        Args:
+            handler:
+                The dictionary mapping state names to functions. If `teardown`
+                is `True`, the functions must take two arguments: the action and
+                the parameters. If `teardown` is `False`, the functions must take
+                one argument: the parameters.
+
+            teardown:
+                Whether to teardown the provider state after an interaction is
+                validated.
+
+        Returns:
+            The verifier instance.
+        """
+        if any(not callable(f) for f in handler.values()):
+            msg = "All values in the dictionary must be callable"
+            raise TypeError(msg)
+
+        logger.debug(
+            "Setting dictionary state handler for verifier",
+            extra={
+                "handler": handler,
+                "teardown": teardown,
+            },
+        )
+
+        if teardown:
+            if any(
+                len(inspect.signature(f).parameters) != 2  # noqa: PLR2004
+                for f in handler.values()
+            ):
+                msg = "All functions must take two arguments: action and parameters"
+                raise TypeError(msg)
+
+            handler_map = typing.cast(dict[str, StateHandlerNoState], handler)
+
+            def _handler(
+                state: str,
+                action: str,
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_map[state](action, parameters)
+
+        else:
+            if any(len(inspect.signature(f).parameters) != 1 for f in handler.values()):
+                msg = "All functions must take one argument: parameters"
+                raise TypeError(msg)
+
+            handler_map_no_action = typing.cast(
+                dict[str, StateHandlerNoActionNoState],
+                handler,
+            )
+
+            def _handler(
+                state: str,
+                action: str,  # noqa: ARG001
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_map_no_action[state](parameters)
+
+        self._state_handler = StateCallback(_handler)
+        pact.v3.ffi.verifier_set_provider_state(
+            self._handle,
+            self._state_handler.url,
+            teardown=teardown,
+            body=True,
+        )
+
+        return self
+
+    def _set_function_state_handler(
+        self,
+        handler: StateHandlerFull | StateHandlerNoAction,
+        *,
+        teardown: bool,
+    ) -> Self:
+        """
+        Set the state handler to a single function.
+
+        This method is used to set the state handler to a single function. This
+        function will be called when the provider's state needs to be changed.
+
+        Args:
+            handler:
+                The function to call when the provider's state needs to be
+                changed. If `teardown` is `True`, the function must take three
+                arguments: the state, the action, and the parameters. If
+                `teardown` is `False`, the function must take two arguments: the
+                state and the parameters.
+
+            teardown:
+                Whether to teardown the provider state after an interaction is
+                validated.
+
+        Returns:
+            The verifier instance.
+        """
+        logger.debug(
+            "Setting function state handler for verifier",
+            extra={
+                "handler": handler,
+                "teardown": teardown,
+            },
+        )
+
+        if teardown:
+            if len(inspect.signature(handler).parameters) != 3:  # noqa: PLR2004
+                msg = (
+                    "The function must take three arguments: "
+                    "state, action, and parameters."
+                )
+                raise TypeError(msg)
+
+            handler_fn_full = typing.cast(StateHandlerFull, handler)
+
+            def _handler(
+                state: str,
+                action: str,
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_fn_full(state, action, parameters)
+
+        else:
+            if len(inspect.signature(handler).parameters) != 2:  # noqa: PLR2004
+                msg = "The function must take two arguments: state and parameters"
+                raise TypeError(msg)
+
+            handler_fn_no_action = typing.cast(StateHandlerNoAction, handler)
+
+            def _handler(
+                state: str,
+                action: str,  # noqa: ARG001
+                parameters: dict[str, Any] | None,
+            ) -> None:
+                handler_fn_no_action(state, parameters)
+
+        self._state_handler = StateCallback(_handler)
+        pact.v3.ffi.verifier_set_provider_state(
+            self._handle,
+            self._state_handler.url,
+            teardown=teardown,
+            body=True,
+        )
+
         return self
 
     def disable_ssl_verification(self) -> Self:
@@ -766,7 +1207,34 @@ class Verifier:
         Returns:
             Whether the interactions were verified successfully.
         """
-        pact.v3.ffi.verifier_execute(self._handle)
+        if not self._transports:
+            msg = "No transports have been set"
+            raise RuntimeError(msg)
+
+        first, *rest = self._transports
+
+        pact.v3.ffi.verifier_set_provider_info(
+            self._handle,
+            self._name,
+            first["scheme"],
+            self._host,
+            first["port"],
+            first["path"],
+        )
+
+        for transport in rest:
+            pact.v3.ffi.verifier_add_provider_transport(
+                self._handle,
+                transport["transport"],
+                transport["port"] or 0,
+                transport["path"],
+                transport["scheme"],
+            )
+
+        with self._message_producer, self._state_handler:
+            pact.v3.ffi.verifier_execute(self._handle)
+            logger.debug("Verifier executed")
+
         return self
 
     @property
