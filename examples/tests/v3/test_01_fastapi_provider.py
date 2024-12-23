@@ -18,7 +18,7 @@ will need to have a user with the given ID in the database. In order to avoid
 side effects, the provider's database calls are mocked out using functionalities
 from `unittest.mock`.
 
-Note that Pact requires tat the provider be running on an accessible URL. This
+Note that Pact requires that the provider be running on an accessible URL. This
 means that FastAPI's [`TestClient`][fastapi.testclient.TestClient] cannot be used
 to test the provider. Instead, the provider is run in a separate thread using
 Python's [`Thread`][threading.Thread] class.
@@ -151,7 +151,7 @@ def provider_state_handler(
     """
     Handler for the provider state callback.
 
-    For Pact to be able to correctly tests compliance with the contract, the
+    For Pact to be able to correctly test compliance with the contract, the
     internal state of the provider needs to be set up correctly. For example, if
     the consumer expects a user to exist in the database, the provider needs to
     have a user with the given ID in the database.

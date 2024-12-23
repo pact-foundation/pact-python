@@ -48,7 +48,7 @@ async def mock_pact_provider_states() -> dict[str, str | None]:
     """
     Define the provider state.
 
-    For Pact to be able to correctly tests compliance with the contract, the
+    For Pact to be able to correctly test compliance with the contract, the
     internal state of the provider needs to be set up correctly. Naively, this
     would be achieved by setting up the database with the correct data for the
     test, but this can be slow and error-prone. Instead this is best achieved by
