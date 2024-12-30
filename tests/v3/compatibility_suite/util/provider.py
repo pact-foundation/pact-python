@@ -26,13 +26,14 @@ import warnings
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from io import BytesIO
 from threading import Thread
-from typing import TYPE_CHECKING, Any, ClassVar, Self, TypedDict
+from typing import TYPE_CHECKING, Any, ClassVar, TypedDict
 from unittest.mock import MagicMock
 
 import pytest
 import requests
 from multidict import CIMultiDict
 from pytest_bdd import given, parsers, then, when
+from typing_extensions import Self
 from yarl import URL
 
 import pact.constants  # type: ignore[import-untyped]

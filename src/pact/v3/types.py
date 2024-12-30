@@ -9,7 +9,7 @@ information to static type checkers like `mypy`.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, TypedDict
+from typing import Any, Optional, TypedDict, Union
 
 from typing_extensions import TypeAlias
 from yarl import URL
@@ -57,7 +57,7 @@ class Message(TypedDict):
     """
 
 
-MessageProducerFull: TypeAlias = Callable[[str, dict[str, Any] | None], Message]
+MessageProducerFull: TypeAlias = Callable[[str, Optional[dict[str, Any]]], Message]
 """
 Full message producer signature.
 
@@ -69,7 +69,7 @@ This is the signature for a message producer that takes two arguments:
 The function must return a `bytes` object.
 """
 
-MessageProducerNoName: TypeAlias = Callable[[dict[str, Any] | None], Message]
+MessageProducerNoName: TypeAlias = Callable[[Optional[dict[str, Any]]], Message]
 """
 Message producer signature without the name.
 
@@ -83,7 +83,7 @@ This function must be provided as part of a dictionary mapping message names to
 functions.
 """
 
-StateHandlerFull: TypeAlias = Callable[[str, str, dict[str, Any] | None], None]
+StateHandlerFull: TypeAlias = Callable[[str, str, Optional[dict[str, Any]]], None]
 """
 Full state handler signature.
 
@@ -93,7 +93,7 @@ This is the signature for a state handler that takes three arguments:
 2.  The action (either `setup` or `teardown`), as a string.
 3.  A dictionary of parameters, or `None` if no parameters are provided.
 """
-StateHandlerNoAction: TypeAlias = Callable[[str, dict[str, Any] | None], None]
+StateHandlerNoAction: TypeAlias = Callable[[str, Optional[dict[str, Any]]], None]
 """
 State handler signature without the action.
 
@@ -102,7 +102,7 @@ This is the signature for a state handler that takes two arguments:
 1.  The state name, as a string.
 2.  A dictionary of parameters, or `None` if no parameters are provided.
 """
-StateHandlerNoState: TypeAlias = Callable[[str, dict[str, Any] | None], None]
+StateHandlerNoState: TypeAlias = Callable[[str, Optional[dict[str, Any]]], None]
 """
 State handler signature without the state.
 
@@ -114,7 +114,7 @@ This is the signature for a state handler that takes two arguments:
 This function must be provided as part of a dictionary mapping state names to
 functions.
 """
-StateHandlerNoActionNoState: TypeAlias = Callable[[dict[str, Any] | None], None]
+StateHandlerNoActionNoState: TypeAlias = Callable[[Optional[dict[str, Any]]], None]
 """
 State handler signature without the state or action.
 
@@ -125,7 +125,7 @@ This is the signature for a state handler that takes one argument:
 This function must be provided as part of a dictionary mapping state names to
 functions.
 """
-StateHandlerUrl: TypeAlias = str | URL
+StateHandlerUrl: TypeAlias = Union[str, URL]
 """
 State handler URL signature.
 

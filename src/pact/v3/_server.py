@@ -28,8 +28,10 @@ import warnings
 from collections.abc import Callable
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from urllib.parse import urlparse
+
+from typing_extensions import Self
 
 from pact import __version__
 from pact.v3._util import find_free_port
