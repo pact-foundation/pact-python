@@ -4,7 +4,6 @@ Example test to show usage of matchers (and generators by extension).
 
 import logging
 import re
-import signal
 import subprocess
 import sys
 import time
@@ -90,7 +89,7 @@ def start_provider() -> Generator[URL, None, None]:  # noqa: C901
     try:
         yield url
     finally:
-        process.send_signal(signal.SIGINT)
+        process.terminate()
 
 
 if __name__ == "__main__":
