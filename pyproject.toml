@@ -76,17 +76,18 @@ devel-docs = [
   "mkdocstrings[python]     ~= 0.23",
 ]
 devel-test = [
-  "aiohttp[speedups] ~=3.0",
-  "coverage[toml]    ~=7.0",
-  "flask[async]      ~=3.0",
-  "httpx             ~=0.0",
-  "mock              ~=5.0",
-  "pytest-asyncio    ~=0.0",
-  "pytest-bdd        ~=8.0",
-  "pytest-cov        ~=6.0",
-  "pytest-xdist      ~=3.0",
-  "pytest            ~=8.0",
-  "testcontainers    ~=4.0",
+  "aiohttp[speedups]    ~=3.0",
+  "coverage[toml]       ~=7.0",
+  "flask[async]         ~=3.0",
+  "httpx                ~=0.0",
+  "mock                 ~=5.0",
+  "pytest-asyncio       ~=0.0",
+  "pytest-bdd           ~=8.0",
+  "pytest-cov           ~=6.0",
+  "pytest-rerunfailures ~=15.0",
+  "pytest-xdist         ~=3.0",
+  "pytest               ~=8.0",
+  "testcontainers       ~=4.0",
 ]
 devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.8.4"]
 
@@ -191,6 +192,9 @@ addopts = [
   # Xdist options
   "--numprocesses=logical",
   "--dist=worksteal",
+  # Rerun options
+  "--reruns=3",
+  "--rerun-except=assert",
 ]
 filterwarnings = [
   "ignore::DeprecationWarning:examples",
