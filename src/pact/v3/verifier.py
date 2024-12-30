@@ -573,7 +573,9 @@ class Verifier:
                 providing one or more handler functions; and it must be set to
                 a boolean if providing a URL.
         """
-        if isinstance(handler, StateHandlerUrl):
+        # A tuple is required instead of `StateHandlerUrl` for support for
+        # Python 3.9. This should be changed to `StateHandlerUrl` in the future.
+        if isinstance(handler, (str, URL)):
             if body is None:
                 msg = "The `body` parameter must be a boolean when providing a URL"
                 raise ValueError(msg)
