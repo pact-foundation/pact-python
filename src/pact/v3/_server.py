@@ -308,7 +308,7 @@ class MessageProducerHandler(SimpleHTTPRequestHandler):
 
 class StateCallback:
     """
-    Internal server for handlng state callbacks.
+    Internal server for handling state callbacks.
 
     The state handler is a lightweight HTTP server which listens for state
     change requests from the underlying Pact Core library. It then calls a
