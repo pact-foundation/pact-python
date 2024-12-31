@@ -1,3 +1,21 @@
+## v2.3.0 (2024-12-31)
+
+### BREAKING CHANGE
+
+-   `message_handler` signature has been changed and expanded.
+-   `set_state` has been renamed to `state_handler`. If using a URL still, the `body` keyword argument is now a _required_ parameter.
+-   The provider name must be given as an argument of the `Verifier` constructor, instead of the first argument of the `set_info` method.
+-   The `set_info` verifier method is removed, with `add_transport` needing to be used.
+-   `pact.v3.util` has been renamed to `pact.v3._util` and is now private.
+-   The PactServer `__exit__` arguments no longer have leading underscores. This is typically handled by Python itself and therefore is unlikely to be a change for any user, unless the end user was calling the `__exit__` method explicitly _and_ using keyword arguments.
+
+### Feat
+
+-   **v3**: further simplify message interface
+-   **v3**: add state handler server
+-   **v3**: integrate message relay server
+-   **v3**: add message relay and callback servers
+
 ## v2.2.2 (2024-10-10)
 
 ### BREAKING CHANGE
