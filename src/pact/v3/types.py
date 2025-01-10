@@ -1,3 +1,4 @@
+# noqa: A005
 """
 Typing definitions for the matchers.
 
