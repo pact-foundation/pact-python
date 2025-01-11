@@ -44,7 +44,7 @@ repos:
           - '@biomejs/biome@1.9.4'
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+    rev: v0.9.1
     hooks:
       - id: ruff
         # Exclude python files in pact/** and tests/**, except for the
