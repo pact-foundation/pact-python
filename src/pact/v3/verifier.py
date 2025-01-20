@@ -80,7 +80,7 @@ import typing
 from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypedDict, overload
 
 from typing_extensions import Self
 from yarl import URL
@@ -183,6 +183,11 @@ class Verifier:
         self._state_handler: StateCallback | nullcontext[None] = nullcontext()
         self._disable_ssl_verification = False
         self._request_timeout = 5000
+        # Using a broker source requires knowing the provider name, which is
+        # only provided to the FFI just before verification. As such, we store
+        # the broker source as a hook to be called just before verification, and
+        # after the provider name is set.
+        self._broker_source_hook: Callable[[], None] | None = None
 
     def __str__(self) -> str:
         """
@@ -1193,13 +1198,15 @@ class Verifier:
                 password,
                 token,
             )
-        pact.v3.ffi.verifier_broker_source(
+
+        self._broker_source_hook = lambda: pact.v3.ffi.verifier_broker_source(
             self._handle,
             str(url.with_user(None).with_password(None)),
             username,
             password,
             token,
         )
+
         return self
 
     def verify(self) -> Self:
@@ -1232,6 +1239,9 @@ class Verifier:
                 transport["path"],
                 transport["scheme"],
             )
+
+        if self._broker_source_hook:
+            self._broker_source_hook()
 
         with self._message_producer, self._state_handler:
             pact.v3.ffi.verifier_execute(self._handle)
@@ -1381,18 +1391,20 @@ class BrokerSelectorBuilder:
         Returns:
             The Verifier instance with the broker source added.
         """
-        pact.v3.ffi.verifier_broker_source_with_selectors(
-            self._verifier._handle,  # noqa: SLF001
-            self._url,
-            self._username,
-            self._password,
-            self._token,
-            self._include_pending,
-            self._include_wip_since,
-            self._provider_tags or [],
-            self._provider_branch,
-            self._consumer_versions or [],
-            self._consumer_tags or [],
+        self._verifier._broker_source_hook = (  # noqa: SLF001
+            lambda: pact.v3.ffi.verifier_broker_source_with_selectors(
+                self._verifier._handle,  # noqa: SLF001
+                self._url,
+                self._username,
+                self._password,
+                self._token,
+                self._include_pending,
+                self._include_wip_since,
+                self._provider_tags or [],
+                self._provider_branch,
+                self._consumer_versions or [],
+                self._consumer_tags or [],
+            )
         )
         self._built = True
         return self._verifier
