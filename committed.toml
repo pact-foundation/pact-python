@@ -2,16 +2,24 @@
 ##
 ## See <https://github.com/crate-ci/committed/blob/master/docs/reference.md>
 style = "conventional"
+
+line_length         = 80
+merge_commit        = false
+no_fixup            = false
+subject_capitalized = false
+
 allowed_types = [
-  "fix",
-  "feat",
   "chore",
   "docs",
-  "style",
-  "refactor",
+  "feat",
+  "fix",
   "perf",
+  "refactor",
+  "revert",
+  "style",
   "test",
-  "release",
 ]
-merge_commit = false
-subject_capitalized = false
+
+# The author string is of the form `Name <email>`. We want to ignore all bots
+# which typically have are ofthe form `some-name[bot] <email>`.
+ignore_author_re = "(?i)^.*\\[bot\\] <.*>$"
