@@ -1,3 +1,9 @@
+## v2.3.1 (2025-01-23)
+
+### Fix
+
+-   **v3**: defer setting pact broker source
+
 ## v2.3.0 (2024-12-31)
 
 ### BREAKING CHANGE
