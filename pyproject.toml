@@ -1,17 +1,19 @@
+#:schema https://json.schemastore.org/pyproject.json
 [project]
-name        = "pact-python"
 description = "Tool for creating and verifying consumer-driven contracts using the Pact framework."
-dynamic     = ["version"]
+name        = "pact-python"
+
+dynamic  = ["version"]
+keywords = ["contract-testing", "pact", "testing"]
+license  = { file = "LICENSE" }
+readme   = "README.md"
 
 authors = [
-  { name = "Matthew Balvanz", email = "matthew.balvanz@workiva.com" },
   { name = "Joshua Ellis", email = "josh@jpellis.me" },
+  { name = "Matthew Balvanz", email = "matthew.balvanz@workiva.com" },
 ]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 
-readme = "README.md"
-license = { file = "LICENSE" }
-keywords = ["pact", "contract-testing", "testing"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -20,13 +22,13 @@ classifiers = [
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
   "Topic :: Software Development :: Testing",
 ]
 
@@ -49,53 +51,46 @@ dependencies = [
   "yarl              ~=1.0",
 ]
 
-[project.urls]
-"Homepage"      = "https://pact.io"
-"Repository"    = "https://github.com/pact-foundation/pact-python"
-"Documentation" = "https://docs.pact.io"
-"Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
-"Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
+  [project.urls]
+  "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
+  "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
+  "Documentation" = "https://docs.pact.io"
+  "Homepage"      = "https://pact.io"
+  "Repository"    = "https://github.com/pact-foundation/pact-python"
 
-[project.scripts]
-pact-verifier = "pact.cli.verify:main"
+  [project.scripts]
+  pact-verifier = "pact.cli.verify:main"
 
-[project.optional-dependencies]
-# Linting and formatting tools use a more narrow specification to ensure
-# developper consistency. All other dependencies are as above.
-devel-types = [
-  "mypy           ==1.14.1",
-  "types-cffi     ~=1.0",
-  "types-requests ~=2.0",
-]
-devel-docs = [
-  "mkdocs                   ~= 1.5",
-  "mkdocs-material[imaging] ~= 9.4",
-  "mkdocs_gen_files         ~= 0.5",
-  "mkdocs-literate-nav      ~= 0.6",
-  "mkdocs-section-index     ~= 0.3",
-  "mkdocstrings[python]     ~= 0.23",
-]
-devel-test = [
-  "aiohttp[speedups]    ~=3.0",
-  "coverage[toml]       ~=7.0",
-  "flask[async]         ~=3.0",
-  "httpx                ~=0.0",
-  "mock                 ~=5.0",
-  "pytest-asyncio       ~=0.0",
-  "pytest-bdd           ~=8.0",
-  "pytest-cov           ~=6.0",
-  "pytest-rerunfailures ~=15.0",
-  "pytest-xdist         ~=3.0",
-  "pytest               ~=8.0",
-  "testcontainers       ~=4.0",
-]
-devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.9.2"]
-
-################################################################################
-## Hatch Build Configuration
-################################################################################
+  [project.optional-dependencies]
+  # Linting and formatting tools use a more narrow specification to ensure
+  # developper consistency. All other dependencies are as above.
+  devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.9.2"]
+  devel-docs = [
+    "mkdocs-literate-nav~=0.6",
+    "mkdocs-material[imaging]~=9.4",
+    "mkdocs-section-index~=0.3",
+    "mkdocs_gen_files~=0.5",
+    "mkdocstrings[python]~=0.23",
+    "mkdocs~=1.5",
+  ]
+  devel-test = [
+    "aiohttp[speedups]~=3.0",
+    "coverage[toml]~=7.0",
+    "flask[async]~=3.0",
+    "httpx~=0.0",
+    "mock~=5.0",
+    "pytest-asyncio~=0.0",
+    "pytest-bdd~=8.0",
+    "pytest-cov~=6.0",
+    "pytest-rerunfailures~=15.0",
+    "pytest-xdist~=3.0",
+    "pytest~=8.0",
+    "testcontainers~=4.0",
+  ]
+  devel-types = ["mypy==1.14.1", "types-cffi~=1.0", "types-requests~=2.0"]
 
 [build-system]
+build-backend = "hatchling.build"
 requires = [
   "cffi",
   "hatch-vcs",
@@ -104,141 +99,149 @@ requires = [
   "requests",
   "setuptools ; python_version >= '3.12'",
 ]
-build-backend = "hatchling.build"
-
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "src/pact/__version__.py"
-
-[tool.hatch.build.targets.sdist]
-include = [
-  # Source
-  "/src/pact/**/*.py",
-  "/src/pact/**/*.pyi",
-  "/src/pact/**/py.typed",
-
-  # Metadata
-  "*.md",
-  "LICENSE",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = ["/src/pact"]
-include = [
-  # Source
-  "/src/pact/**/*.py",
-  "/src/pact/**/*.pyi",
-  "/src/pact/**/py.typed",
-]
-artifacts = [
-  "/src/pact/bin/*",     # Ruby executables
-  "/src/pact/lib/*",     # Ruby library
-  "/src/pact/v3/_ffi.*", # Rust library
-]
-
-[tool.hatch.build.targets.wheel.hooks.custom]
 
 ################################################################################
-## Hatch Environment Configuration
+## Hatch Configuration
 ################################################################################
+[tool.hatch]
 
-# Install dev dependencies in the default environment to simplify the developer
-# workflow.
-[tool.hatch.envs.default]
-installer = "uv"
-features = ["devel"]
-extra-dependencies = [
-  "hatchling",
-  "packaging",
-  "requests",
-  "cffi",
-  "setuptools ; python_version >= '3.12'",
-]
+  [tool.hatch.version]
+  source = "vcs"
 
-[tool.hatch.envs.default.scripts]
-lint       = "ruff check --output-format=full --show-fixes {args}"
-typecheck  = "mypy {args:.}"
-format     = "ruff format {args}"
-test       = "pytest tests/ {args}"
-example    = "pytest --numprocesses=1 examples/ {args}"
-all        = ["format", "lint", "typecheck", "test", "example"]
-docs       = "mkdocs serve {args}"
-docs-build = "mkdocs build {args}"
+  [tool.hatch.build]
 
-# Test environment for running unit tests. This automatically tests against all
-# supported Python versions.
-[tool.hatch.envs.test]
-installer = "uv"
-features = ["devel-test"]
+    [tool.hatch.build.hooks.vcs]
+    version-file = "src/pact/__version__.py"
 
-[[tool.hatch.envs.test.matrix]]
-python = ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    [tool.hatch.build.targets.sdist]
+    include = [
+      # Source
+      "/src/pact/**/*.py",
+      "/src/pact/**/*.pyi",
+      "/src/pact/**/py.typed",
+
+      # Metadata
+      "*.md",
+      "LICENSE",
+    ]
+
+    [tool.hatch.build.targets.wheel]
+    artifacts = [
+      "/src/pact/bin/*",     # Ruby executables
+      "/src/pact/lib/*",     # Ruby library
+      "/src/pact/v3/_ffi.*", # Rust library
+    ]
+    include = [
+      # Source
+      "/src/pact/**/*.py",
+      "/src/pact/**/*.pyi",
+      "/src/pact/**/py.typed",
+    ]
+    packages = ["/src/pact"]
+
+      [tool.hatch.build.targets.wheel.hooks.custom]
+
+  ########################################
+  ## Hatch Environment Configuration
+  ########################################
+  [tool.hatch.envs]
+
+    # Install dev dependencies in the default environment to simplify the developer
+    # workflow.
+    [tool.hatch.envs.default]
+    extra-dependencies = [
+      "cffi",
+      "hatchling",
+      "packaging",
+      "requests",
+      "setuptools ; python_version >= '3.12'",
+    ]
+    features = ["devel"]
+    installer = "uv"
+
+      [tool.hatch.envs.default.scripts]
+      all        = ["example", "format", "lint", "test", "typecheck"]
+      docs       = "mkdocs serve {args}"
+      docs-build = "mkdocs build {args}"
+      example    = "pytest --numprocesses=1 examples/ {args}"
+      format     = "ruff format {args}"
+      lint       = "ruff check --output-format=full --show-fixes {args}"
+      test       = "pytest tests/ {args}"
+      typecheck  = "mypy {args:.}"
+
+    # Test environment for running unit tests. This automatically tests against all
+    # supported Python versions.
+    [tool.hatch.envs.test]
+    features  = ["devel-test"]
+    installer = "uv"
+
+      [[tool.hatch.envs.test.matrix]]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
 
 ################################################################################
 ## PyTest Configuration
 ################################################################################
+[tool.pytest]
 
-[tool.pytest.ini_options]
-pythonpath = "."
-asyncio_default_fixture_loop_scope = "session"
-addopts = [
-  "--import-mode=importlib",
-  # Coverage options
-  "--cov-config=pyproject.toml",
-  "--cov=pact",
-  "--cov-report=xml",
-  # Xdist options
-  "--numprocesses=logical",
-  "--dist=worksteal",
-  # Rerun options
-  "--reruns=3",
-  "--rerun-except=assert",
-]
-filterwarnings = [
-  "ignore::DeprecationWarning:examples",
-  "ignore::DeprecationWarning:pact",
-  "ignore::DeprecationWarning:tests",
-  "ignore::PendingDeprecationWarning:examples",
-  "ignore::PendingDeprecationWarning:pact",
-  "ignore::PendingDeprecationWarning:tests",
-]
+  [tool.pytest.ini_options]
+  addopts = [
+    "--import-mode=importlib",
+    # Coverage options
+    "--cov-config=pyproject.toml",
+    "--cov-report=xml",
+    "--cov=pact",
+    # Xdist options
+    "--dist=worksteal",
+    "--numprocesses=logical",
+    # Rerun options
+    "--rerun-except=assert",
+    "--reruns=3",
+  ]
+  asyncio_default_fixture_loop_scope = "session"
+  filterwarnings = [
+    "ignore::DeprecationWarning:examples",
+    "ignore::DeprecationWarning:pact",
+    "ignore::DeprecationWarning:tests",
+    "ignore::PendingDeprecationWarning:examples",
+    "ignore::PendingDeprecationWarning:pact",
+    "ignore::PendingDeprecationWarning:tests",
+  ]
+  pythonpath = "."
 
-log_level       = "NOTSET"
-log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-log_date_format = "%H:%M:%S"
+  log_date_format = "%H:%M:%S"
+  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level       = "NOTSET"
 
-markers = [
-  # Marker for tests that require a container
-  "container",
+  markers = [
+    # Marker for tests that require a container
+    "container",
 
-  # Markers for the compatibility suite
-  "consumer",
-  "provider",
-  "message",
-]
+    # Markers for the compatibility suite
+    "consumer",
+    "message",
+    "provider",
+  ]
 
 ################################################################################
 ## Coverage
 ################################################################################
+[tool.coverage]
 
-[tool.coverage.paths]
-pact  = ["/src/pact"]
-tests = ["/examples", "/tests"]
+  [tool.coverage.paths]
+  pact  = ["/src/pact"]
+  tests = ["/examples", "/tests"]
 
-[tool.coverage.report]
-exclude_lines = [
-  "if __name__ == .__main__.:", # Ignore non-runnable code
-  "if TYPE_CHECKING:",          # Ignore typing
-  "raise NotImplementedError",  # Ignore defensive assertions
-  "@(abc\\.)?abstractmethod",   # Ignore abstract methods
-]
+  [tool.coverage.report]
+  exclude_lines = [
+    "@(abc\\.)?abstractmethod",   # Ignore abstract methods
+    "if TYPE_CHECKING:",          # Ignore typing
+    "if __name__ == .__main__.:", # Ignore non-runnable code
+    "raise NotImplementedError",  # Ignore defensive assertions
+  ]
 
 ################################################################################
 ## Ruff Configuration
 ################################################################################
-
 [tool.ruff]
 
 # TODO: Remove the explicity extend-exclude once astral-sh/ruff#6262 is fixed.
@@ -279,41 +282,40 @@ extend-exclude = [
   "tests/test_verify_wrapper.py",
 ]
 
-[tool.ruff.lint]
-select = ["ALL"]
+  [tool.ruff.lint]
+  select = ["ALL"]
 
-ignore = [
-  "D200",   # Require single line docstrings to be on one line.
-  "D203",   # Require blank line before class docstring
-  "D212",   # Multi-line docstring summary must start at the first line
-  "FIX002", # Forbid TODO in comments
-  "TD002",  # Assign someone to 'TODO' comments
+  ignore = [
+    "D200",   # Require single line docstrings to be on one line.
+    "D203",   # Require blank line before class docstring
+    "D212",   # Multi-line docstring summary must start at the first line
+    "FIX002", # Forbid TODO in comments
+    "TD002",  # Assign someone to 'TODO' comments
 
-  # The following are disabled for compatibility with the formatter
-  "COM812", # enforce trailing commas
-  "ISC001", # require imports to be sorted
-]
+    # The following are disabled for compatibility with the formatter
+    "COM812", # enforce trailing commas
+    "ISC001", # require imports to be sorted
+  ]
 
-[tool.ruff.lint.pyupgrade]
-keep-runtime-typing = true
+    [tool.ruff.lint.pyupgrade]
+    keep-runtime-typing = true
 
-[tool.ruff.lint.pydocstyle]
-convention = "google"
+    [tool.ruff.lint.pydocstyle]
+    convention = "google"
 
-[tool.ruff.lint.isort]
-known-first-party = ["pact"]
+    [tool.ruff.lint.isort]
+    known-first-party = ["pact"]
 
-[tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
+    [tool.ruff.lint.flake8-tidy-imports]
+    ban-relative-imports = "all"
 
-[tool.ruff.format]
-preview               = true
-docstring-code-format = true
+  [tool.ruff.format]
+  docstring-code-format = true
+  preview               = true
 
 ################################################################################
 ## Mypy Configuration
 ################################################################################
-
 [tool.mypy]
 exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
 
@@ -321,7 +323,6 @@ exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
-skip = "pp*"
 before-build = """
 rm -rvf src/pact/v3/bin
 rm -rvf src/pact/v3/data
@@ -330,6 +331,7 @@ mv -v src/pact/v3/_ffi.pyi _ffi.pyi
 rm -rvf src/pact/v3/_ffi.*
 mv -v _ffi.pyi src/pact/v3/_ffi.pyi
 """
+skip = "pp*"
 test-command = """
 python -c \
 "from pact import EachLike; \
@@ -339,33 +341,32 @@ assert \
 import pact.v3.ffi; \
 assert isinstance(pact.v3.ffi.version(), str);\""""
 
-[tool.cibuildwheel.macos]
-# The repair tool unfortunately did not like the bundled Ruby distributable.
-# TODO: Check whether delocate-wheel can be configured.
-repair-wheel-command = ""
+  [tool.cibuildwheel.macos]
+  # The repair tool unfortunately did not like the bundled Ruby distributable.
+  # TODO: Check whether delocate-wheel can be configured.
+  repair-wheel-command = ""
 
-[tool.cibuildwheel.windows]
-before-build = [
-  'FOR /R src\pact\v3 %G IN (_ffi.*) DO IF NOT %~nxG == _ffi.pyi DEL /F /Q "%G"',
-  'IF EXIST src\pact\v3\bin\ RMDIR /S /Q src\pact\v3\bin',
-  'IF EXIST src\pact\v3\data\ RMDIR /S /Q src\pact\v3\data',
-  'IF EXIST src\pact\v3\lib\ RMDIR /S /Q src\pact\v3\lib',
-]
+  [tool.cibuildwheel.windows]
+  before-build = [
+    'FOR /R src\pact\v3 %G IN (_ffi.*) DO IF NOT %~nxG == _ffi.pyi DEL /F /Q "%G"',
+    'IF EXIST src\pact\v3\bin\ RMDIR /S /Q src\pact\v3\bin',
+    'IF EXIST src\pact\v3\data\ RMDIR /S /Q src\pact\v3\data',
+    'IF EXIST src\pact\v3\lib\ RMDIR /S /Q src\pact\v3\lib',
+  ]
 
 ################################################################################
 ## Typos
 ################################################################################
+[tool.typos]
 
-[tool.typos.default]
-extend-ignore-re = [
-  "(?Rm)^.*(#|//|<!--)\\s*spellchecker:\\s*ignore"
-]
+  [tool.typos.default]
+  extend-ignore-re = ["(?Rm)^.*(#|//|<!--)\\s*spellchecker:\\s*ignore"]
 
 ################################################################################
 ## Yamlfix
 ################################################################################
 [tool.yamlfix]
-line_length = 100
-whitelines = 1
+line_length        = 100
 section_whitelines = 1
-sequence_style = "block_style"
+sequence_style     = "block_style"
+whitelines         = 1

@@ -1,0 +1,10 @@
+[schema]
+path = "taplo://taplo.toml"
+
+[formatting]
+align_entries         = true
+indent_entries        = false
+indent_tables         = true
+reorder_arrays        = true
+reorder_inline_tables = true
+reorder_keys          = true
