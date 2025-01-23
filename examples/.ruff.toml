@@ -1,15 +1,16 @@
+#:schema https://json.schemastore.org/ruff.json
 extend = "../pyproject.toml"
 
 [lint]
 ignore = [
-  "S101",    # Forbid assert statements
   "D103",    # Require docstring in public function
   "D104",    # Require docstring in public package
   "PLR2004", # Forbid Magic Numbers
+  "S101",    # Forbid assert statements
 ]
 
-[lint.per-file-ignores]
-"tests/**.py" = [
-  "INP001",  # Forbid implicit namespaces
-  "PLR2004", # Forbid magic values
-]
+  [lint.per-file-ignores]
+  "tests/**.py" = [
+    "INP001",  # Forbid implicit namespaces
+    "PLR2004", # Forbid magic values
+  ]

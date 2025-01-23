@@ -1,3 +1,4 @@
+#:schema https://json.schemastore.org/ruff.json
 extend = "../pyproject.toml"
 
 [lint]

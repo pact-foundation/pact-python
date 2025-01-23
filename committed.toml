@@ -1,3 +1,4 @@
+#:schema https://raw.githubusercontent.com/crate-ci/committed/refs/heads/master/config.schema.json
 ## Configuration for committed
 ##
 ## See <https://github.com/crate-ci/committed/blob/master/docs/reference.md>
