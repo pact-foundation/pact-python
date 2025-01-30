@@ -64,7 +64,7 @@ dependencies = [
   [project.optional-dependencies]
   # Linting and formatting tools use a more narrow specification to ensure
   # developper consistency. All other dependencies are as above.
-  devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.9.3"]
+  devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.9.4"]
   devel-docs = [
     "mkdocs-literate-nav~=0.6",
     "mkdocs-material[imaging]~=9.4",
