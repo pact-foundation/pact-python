@@ -232,7 +232,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install git cliff and typos
-        uses: taiki-e/install-action@82c3ccf997338625b2600b840b51cd18a38568fd  # v2.48.7
+        uses: taiki-e/install-action@995f97569c4a8ae84dcd7e1a0107f65ca6ebf139  # v2.48.9
         with:
           tool: git-cliff,typos
 
