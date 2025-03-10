@@ -354,7 +354,7 @@ def provider_state(expression: builtins.str | None = None) -> Generator:
     return GenericGenerator("ProviderState", extra_fields=params)
 
 
-def mock_server_url(  # noqa: D417 (false positive)
+def mock_server_url(
     regex: builtins.str | None = None,
     example: builtins.str | None = None,
 ) -> Generator:
@@ -369,7 +369,7 @@ def mock_server_url(  # noqa: D417 (false positive)
 
         example:
             An example URL to use.
-    """  # noqa: D214, D405  (false positive)
+    """
     params: dict[builtins.str, builtins.str] = {}
     if regex is not None:
         params["regex"] = regex
