@@ -87,19 +87,20 @@ from yarl import URL
 
 import pact.v3.ffi
 from pact.v3._server import MessageProducer, StateCallback
-from pact.v3.types import (
-    Message,
-    MessageProducerFull,
-    MessageProducerNoName,
-    StateHandlerFull,
-    StateHandlerNoAction,
-    StateHandlerNoActionNoState,
-    StateHandlerNoState,
-    StateHandlerUrl,
-)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from pact.v3.types import (
+        Message,
+        MessageProducerFull,
+        MessageProducerNoName,
+        StateHandlerFull,
+        StateHandlerNoAction,
+        StateHandlerNoActionNoState,
+        StateHandlerNoState,
+        StateHandlerUrl,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -692,7 +693,7 @@ class Verifier:
                 msg = "All functions must take two arguments: action and parameters"
                 raise TypeError(msg)
 
-            handler_map = typing.cast(dict[str, StateHandlerNoState], handler)
+            handler_map = typing.cast("dict[str, StateHandlerNoState]", handler)
 
             def _handler(
                 state: str,
@@ -707,7 +708,7 @@ class Verifier:
                 raise TypeError(msg)
 
             handler_map_no_action = typing.cast(
-                dict[str, StateHandlerNoActionNoState],
+                "dict[str, StateHandlerNoActionNoState]",
                 handler,
             )
 
@@ -771,7 +772,7 @@ class Verifier:
                 )
                 raise TypeError(msg)
 
-            handler_fn_full = typing.cast(StateHandlerFull, handler)
+            handler_fn_full = typing.cast("StateHandlerFull", handler)
 
             def _handler(
                 state: str,
@@ -785,7 +786,7 @@ class Verifier:
                 msg = "The function must take two arguments: state and parameters"
                 raise TypeError(msg)
 
-            handler_fn_no_action = typing.cast(StateHandlerNoAction, handler)
+            handler_fn_no_action = typing.cast("StateHandlerNoAction", handler)
 
             def _handler(
                 state: str,

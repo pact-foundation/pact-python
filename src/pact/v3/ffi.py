@@ -1755,7 +1755,7 @@ class StringResult:
         if ffi.typeof(cdata).cname != "struct StringResult":
             msg = f"cdata must be a struct StringResult, got {ffi.typeof(cdata).cname}"
             raise TypeError(msg)
-        self._cdata = typing.cast(StringResult._StringResultCData, cdata)
+        self._cdata = typing.cast("StringResult._StringResultCData", cdata)
 
     def __str__(self) -> str:
         """

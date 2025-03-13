@@ -111,7 +111,7 @@ class InteractionBody:
         if content_type is None:
             msg = "Invalid XML fixture document: no contentType"
             raise ValueError(msg)
-        self.string = typing.cast(str, contents.text)
+        self.string = typing.cast("str", contents.text)
 
         if eol := contents.attrib.get("eol", None):
             if eol == "CRLF":
