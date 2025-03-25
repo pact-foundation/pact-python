@@ -14,6 +14,10 @@
     {
       "groupName": "Ruff",
       "matchPackageNames": ["astral-sh/ruff-pre-commit", "ruff"]
+    },
+    {
+      "matchPackageNames": ["taiki-e/install-action"],
+      "schedule": "before 4am on monday"
     }
   ]
 }
