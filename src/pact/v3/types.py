@@ -8,8 +8,7 @@ information to static type checkers like `mypy`.
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any, Optional, TypedDict, Union
+from typing import Any, Literal, TypedDict, Union
 
 from typing_extensions import TypeAlias
 from yarl import URL
@@ -57,74 +56,83 @@ class Message(TypedDict):
     """
 
 
-MessageProducerFull: TypeAlias = Callable[[str, Optional[dict[str, Any]]], Message]
-"""
-Full message producer signature.
+class MessageProducerArgs(TypedDict, total=False):
+    """
+    Arguments for the message handler functions.
 
-This is the signature for a message producer that takes two arguments:
+    The message producer function must be able to accept these arguments. Pact
+    Python will inspect the function's type signature to determine how best to
+    pass the arguments in (e.g., as keyword arguments, position arguments,
+    variadic arguments, or a combination of these). Note that Pact Python will
+    prefer the use of keyword arguments if available, and therefore it is
+    recommended to allow keyword arguments for the fields below if possible.
+    """
 
-1.  The message name, as a string.
-2.  A dictionary of parameters, or `None` if no parameters are provided.
+    name: str
+    """
+    The name of the message.
 
-The function must return a `bytes` object.
-"""
+    This is used to identify the message so that the function knows which
+    message to generate. This is typically a string that describes the
+    message. For example, `"a request to create a new user"` or `"a metric event
+    for a user login"`.
 
-MessageProducerNoName: TypeAlias = Callable[[Optional[dict[str, Any]]], Message]
-"""
-Message producer signature without the name.
+    This may be omitted if the message producer functions are passed through a
+    dictionary where the key is used to identify the message.
+    """
 
-This is the signature for a message producer that takes one argument:
+    metadata: dict[str, Any] | None
+    """
+    Metadata associated with the message.
+    """
 
-1.  A dictionary of parameters, or `None` if no parameters are provided.
 
-The function must return a `bytes` object.
+class StateHandlerArgs(TypedDict, total=False):
+    """
+    Arguments for the state handler functions.
 
-This function must be provided as part of a dictionary mapping message names to
-functions.
-"""
+    The state handler function must be able to accept these arguments. Pact
+    Python will inspect the function's type signature to determine how best to
+    pass the arguments in (e.g., as keyword arguments, position arguments,
+    variadic arguments, or a combination of these). Note that Pact Python will
+    prefer the use of keyword arguments if available, and therefore it is
+    recommended to allow keyword arguments for the fields below if possible.
+    """
 
-StateHandlerFull: TypeAlias = Callable[[str, str, Optional[dict[str, Any]]], None]
-"""
-Full state handler signature.
+    state: str
+    """
+    The name of the state.
 
-This is the signature for a state handler that takes three arguments:
+    This is used to identify the state so that the function knows which state to
+    generate. This is typically a string that describes the state. For example,
+    `"user exists"`.
 
-1.  The state name, as a string.
-2.  The action (either `setup` or `teardown`), as a string.
-3.  A dictionary of parameters, or `None` if no parameters are provided.
-"""
-StateHandlerNoAction: TypeAlias = Callable[[str, Optional[dict[str, Any]]], None]
-"""
-State handler signature without the action.
+    If the function is passed through a dictionary where the key is used to
+    identify the state, this argument is not required.
+    """
 
-This is the signature for a state handler that takes two arguments:
+    action: Literal["setup", "teardown"]
+    """
+    The action to perform.
 
-1.  The state name, as a string.
-2.  A dictionary of parameters, or `None` if no parameters are provided.
-"""
-StateHandlerNoState: TypeAlias = Callable[[str, Optional[dict[str, Any]]], None]
-"""
-State handler signature without the state.
+    This is either `"setup"` or `"teardown"`, and indicates whether the state
+    should be set up or torn down.
 
-This is the signature for a state handler that takes two arguments:
+    This argument is only used if the state handler is expected to perform both
+    setup and teardown actions (i.e., if `teardown=True` is used when calling
+    [`Verifier.state_handler][pact.v3.verifier.Verifier.state_handler]`).
+    """
 
-1.  The action (either `setup` or `teardown`), as a string.
-2.  A dictionary of parameters, or `None` if no parameters are provided.
+    parameters: dict[str, Any] | None
+    """
+    Parameters required to generate the state.
 
-This function must be provided as part of a dictionary mapping state names to
-functions.
-"""
-StateHandlerNoActionNoState: TypeAlias = Callable[[Optional[dict[str, Any]]], None]
-"""
-State handler signature without the state or action.
+    This can be used to pass in any additional parameters that are required to
+    generate the state. For example, if the state requires a user ID, this can
+    be passed in here.
+    """
 
-This is the signature for a state handler that takes one argument:
 
-1.  A dictionary of parameters, or `None` if no parameters are provided.
-
-This function must be provided as part of a dictionary mapping state names to
-functions.
-"""
 StateHandlerUrl: TypeAlias = Union[str, URL]
 """
 State handler URL signature.
