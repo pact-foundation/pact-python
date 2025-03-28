@@ -90,7 +90,7 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
     def provider_state_callback(
         name: str,  # (1)
         action: Literal["setup", "teardown"],  # (2)
-        params: dict[str, Any] | None,  # (3)
+        parameters: dict[str, Any] | None,  # (3)
     ) -> None:
         """
         Callback to set up and tear down the provider state.
@@ -105,7 +105,7 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
                 action should create the provider state, and the teardown action
                 should remove it.
 
-            params:
+            parameters:
                 If the provider state has additional parameters, they will be
                 passed here. For example, instead of `"a user with ID 123 exists"`,
                 the provider state might be `"a user with the given ID exists"` and
@@ -123,9 +123,11 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
     3.  The `params` parameter is a dictionary of additional parameters that the provider state requires. For example, instead of `"a user with ID 123 exists"`, the provider state might be `"a user with the given ID exists"` and the specific ID would be passed in the `params` dictionary. Note that `params` is always present, but may be `None` if no parameters are specified by the consumer.
 <!-- markdownlint-enable code-block-style -->
 
+The function arguments must include the relevant keys from the [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
+
 This snippet showcases a way to set up the provider state with a function that is fully parameterized. The `state_handler` method also handles the following scenarios:
 
--   If teardowns are never required, then one should specify `teardown=False` in which case the `action` parameter is _not_ passed to the callback function.
+-   If teardowns are never required, then one should specify `teardown=False` in which case the `action` parameter can be omitted from the signature of the callback function. This is useful when the provider state does not require any cleanup after the test has run.
 
     <!-- markdownlint-disable code-block-style -->
     ??? example
@@ -135,7 +137,7 @@ This snippet showcases a way to set up the provider state with a function that i
 
         def provider_state_callback(
             name: str,
-            params: dict[str, Any] | None,
+            parameters: dict[str, Any] | None,
         ) -> None:
             ...
 
@@ -155,13 +157,13 @@ This snippet showcases a way to set up the provider state with a function that i
 
         def user_state_callback(
             action: Literal["setup", "teardown"],
-            params: dict[str, Any] | None,
+            parameters: dict[str, Any] | None,
         ) -> None:
             ...
 
         def no_users_state_callback(
             action: Literal["setup", "teardown"],
-            params: dict[str, Any] | None,
+            parameters: dict[str, Any] | None,
         ) -> None:
             ...
 
@@ -176,7 +178,7 @@ This snippet showcases a way to set up the provider state with a function that i
         ```
     <!-- markdownlint-enable code-block-style -->
 
--   Both scenarios can be combined, in which a mapping of provide state names to functions is provided, and the `teardown=False` option is specified. In this case, the function should expect only one argument: the `params` dictionary (which itself may be `None`).
+-   Both scenarios can be combined, in which a mapping of provide state names to functions is provided, and the `teardown=False` option is specified. In this case, the function should expect only one argument: the `parameters` dictionary (which itself may be `None`).
 
     <!-- markdownlint-disable code-block-style -->
     ??? example
@@ -185,12 +187,12 @@ This snippet showcases a way to set up the provider state with a function that i
         from pact.v3 import Verifier
 
         def user_state_callback(
-            params: dict[str, Any] | None,
+            parameters: dict[str, Any] | None,
         ) -> None:
             ...
 
         def no_users_state_callback(
-            params: dict[str, Any] | None,
+            parameters: dict[str, Any] | None,
         ) -> None:
             ...
 
@@ -220,7 +222,7 @@ With the update to 2.3.0, the `Verifier` class has a new `message_handler` metho
 
     def message_producer_callback(
         name: str,  # (1)
-        params: dict[str, Any] | None,  # (2)
+        metadata: dict[str, Any] | None,  # (2)
     ) -> Message:
         """
         Callback to produce the message that the consumer expects.
@@ -229,10 +231,8 @@ With the update to 2.3.0, the `Verifier` class has a new `message_handler` metho
             name:
                 The name of the message. For example `"request to delete a user"`.
 
-            params:
-                If the message has additional parameters, they will be passed here.
-                For example, one could specify the user ID to delete in the
-                parameters instead of the message.
+            metadata:
+                Metadata that is passed along with the message. This could include information about the queue name, message type, creation timestamp, etc.
 
         Returns:
             The message that the consumer expects.
@@ -247,6 +247,7 @@ With the update to 2.3.0, the `Verifier` class has a new `message_handler` metho
     1.  The `name` parameter is the name of the message. For example, `"request to delete a user"`. If you instead use a mapping of message names to functions, this parameter is not passed to the function.
     2.  The `params` parameter is a dictionary of additional parameters that the message requires. For example, one could specify the user ID to delete in the parameters instead of the message. Note that `params` is always present, but may be `None` if no parameters are specified by the consumer.
 <!-- markdownlint-enable code-block-style -->
+The function arguments must include the relevant keys from the [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
 
 The output of the callback function should be an instance of the `Message` type. This is a simple [TypedDict][typing.TypedDict] that represents the message that the consumer expects and can be specified as a simple dictionary, or with typing hints through the `Message` constructor:
 
@@ -289,7 +290,7 @@ The output of the callback function should be an instance of the `Message` type.
         }
     ```
 
-In much the same way as the `state_handler` method, the `message_handler` method can also accept a mapping of message names to functions or raw messages. The function should expect only one argument: the `params` dictionary (which itself may be `None`); or if the message is static, the message can be provided directly:
+In much the same way as the `state_handler` method, the `message_handler` method can also accept a mapping of message names to functions or raw messages. The function should expect only one argument: the `metadata` dictionary (which itself may be `None`); or if the message is static, the message can be provided directly:
 
 <!-- markdownlint-disable code-block-style -->
 ???+ example
@@ -298,7 +299,7 @@ In much the same way as the `state_handler` method, the `message_handler` method
     from pact.v3 import Verifier
     from pact.v3.types import Message
 
-    def delete_user_message(params: dict[str, Any] | None) -> Message:
+    def delete_user_message(metadata: dict[str, Any] | None) -> Message:
         ...
 
     def test_provider():
@@ -314,4 +315,13 @@ In much the same way as the `state_handler` method, the `message_handler` method
             },
         )
     ```
+<!-- markdownlint-enable code-block-style -->
+
+----
+
+<!-- markdownlint-disable code-block-style -->
+28 March 2025
+:   This blog post was updated on 28 March 2025 to reflect changes to the way functional arguments are handled. Instead of requiring positional arguments, Pact Python now inspects the function signature in order to determine whether to pass the arguments as positional or keyword arguments. It will fallback to passing the arguments through variadic arguments (`*args` and `**kwargs`) if present. This was done specific to allow for functions with optional arguments.
+
+    For this added flexibility, the function signatures must have parameters that align with the [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs] and [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] typed dictionaries. This allows Pact Python to match a `parameters=...` argument with the `parameters` key in the dictionary. Using an alternative name (e.g., `params`) will not work.
 <!-- markdownlint-enable code-block-style -->
