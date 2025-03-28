@@ -73,10 +73,9 @@ databases are already in use.
 
 from __future__ import annotations
 
-import inspect
 import json
 import logging
-import typing
+from collections.abc import Mapping
 from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
@@ -87,20 +86,13 @@ from yarl import URL
 
 import pact.v3.ffi
 from pact.v3._server import MessageProducer, StateCallback
+from pact.v3._util import apply_args
+from pact.v3.types import Message, MessageProducerArgs, StateHandlerArgs
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from pact.v3.types import (
-        Message,
-        MessageProducerFull,
-        MessageProducerNoName,
-        StateHandlerFull,
-        StateHandlerNoAction,
-        StateHandlerNoActionNoState,
-        StateHandlerNoState,
-        StateHandlerUrl,
-    )
+    from pact.v3.types import StateHandlerUrl
 
 logger = logging.getLogger(__name__)
 
@@ -180,8 +172,12 @@ class Verifier:
         # transport methods defined, and then before verification call the
         # `set_info` and `add_transport` FFI methods as needed.
         self._transports: list[_ProviderTransport] = []
-        self._message_producer: MessageProducer | nullcontext[None] = nullcontext()
-        self._state_handler: StateCallback | nullcontext[None] = nullcontext()
+        self._message_producer: (
+            MessageProducer[Callable[..., Message]] | nullcontext[None]
+        ) = nullcontext()
+        self._state_handler: StateCallback[Callable[..., None]] | nullcontext[None] = (
+            nullcontext()
+        )
         self._disable_ssl_verification = False
         self._request_timeout = 5000
         # Using a broker source requires knowing the provider name, which is
@@ -323,17 +319,10 @@ class Verifier:
 
         return self
 
-    @overload
-    def message_handler(self, handler: MessageProducerFull) -> Self: ...
-    @overload
     def message_handler(
         self,
-        handler: dict[str, MessageProducerNoName | Message],
-    ) -> Self: ...
-
-    def message_handler(
-        self,
-        handler: MessageProducerFull | dict[str, MessageProducerNoName | Message],
+        handler: Callable[..., Message]
+        | dict[str, Callable[..., Message] | Message | bytes],
     ) -> Self:
         """
         Set the message handler.
@@ -343,20 +332,15 @@ class Verifier:
 
         This can be provided in one of two ways:
 
-        1.  A fully fledged function that will be called for all messages. The
-            function must take two arguments: the name of the message (as a
-            string), and optional parameters (as a dictionary). This then
-            returns the message as bytes.
+        1.  A fully fledged function that will be called for all messages. This
+            is the most powerful option as it allows for full control over the
+            message generation. The function's signature must be compatible with
+            the [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] type.
 
-            This is the most powerful option as it allows for full control over
-            the message generation.
-
-        2.  A dictionary mapping message names to producer functions, or bytes.
-            In this case, the producer function must take optional parameters
-            (as a dictionary) and return the message as bytes.
-
-            If the message to be produced is static, the bytes can be provided
-            directly.
+        2.  A dictionary mapping message names to either (a) producer functions,
+            (b) [`Message`][pact.v3.types.Message] dictionaries, or (c) raw
+            bytes. If using a producer function, it must be compatible with the
+            [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] type.
 
         ## Implementation
 
@@ -384,34 +368,50 @@ class Verifier:
         )
 
         if callable(handler):
-            if len(inspect.signature(handler).parameters) != 2:  # noqa: PLR2004
-                msg = "The function must take two arguments: name and parameters"
-                raise TypeError(msg)
 
-            self._message_producer = MessageProducer(handler)
+            def _handler(
+                name: str,
+                metadata: dict[str, Any] | None,
+            ) -> Message:
+                logger.info("Internal message produced called.")
+                return apply_args(
+                    handler,
+                    MessageProducerArgs(name=name, metadata=metadata),
+                )
+
+            self._message_producer = MessageProducer(_handler)
             self.add_transport(
                 protocol="message",
                 port=self._message_producer.port,
                 path=self._message_producer.path,
             )
+            return self
 
         if isinstance(handler, dict):
-            # Check that all values are either callable with one argument, or
-            # bytes.
-            for value in handler.values():
-                if callable(value) and len(inspect.signature(value).parameters) != 1:
-                    msg = "All functions must take one argument: parameters"
-                    raise TypeError(msg)
-                if not callable(value) and not isinstance(value, dict):
-                    msg = "All values must be callable or dictionaries"
-                    raise TypeError(msg)
 
-            def _handler(name: str, parameters: dict[str, Any] | None) -> Message:
-                logger.info("Internal handler called")
+            def _handler(
+                name: str,
+                metadata: dict[str, Any] | None,
+            ) -> Message:
+                logger.info("Internal message produced called.")
                 val = handler[name]
+
                 if callable(val):
-                    return val(parameters)
-                return val
+                    return apply_args(
+                        val,
+                        MessageProducerArgs(name=name, metadata=metadata),
+                    )
+                if isinstance(val, bytes):
+                    return Message(contents=val, metadata=None, content_type=None)
+                if isinstance(val, dict):
+                    return Message(
+                        contents=val["contents"],
+                        metadata=val.get("metadata"),
+                        content_type=val.get("content_type"),
+                    )
+
+                msg = "Invalid message handler value"
+                raise TypeError(msg)
 
             self._message_producer = MessageProducer(_handler)
             self.add_transport(
@@ -420,7 +420,10 @@ class Verifier:
                 path=self._message_producer.path,
             )
 
-        return self
+            return self
+
+        msg = "Invalid message handler type"
+        raise TypeError(msg)
 
     def filter(
         self,
@@ -465,41 +468,25 @@ class Verifier:
         )
         return self
 
-    # Cases where the handler takes the state name.
+    # Functional argument, either direct or via a dictionary.
     @overload
     def state_handler(
         self,
-        handler: StateHandlerFull,
+        handler: Callable[..., None],
         *,
-        teardown: Literal[True],
+        teardown: bool = False,
         body: None = None,
     ) -> Self: ...
     @overload
     def state_handler(
         self,
-        handler: StateHandlerNoAction,
+        handler: Mapping[str, Callable[..., None]],
         *,
-        teardown: Literal[False] = False,
+        teardown: bool = False,
         body: None = None,
     ) -> Self: ...
-    # Cases where the handler takes a dictionary of functions
-    @overload
-    def state_handler(
-        self,
-        handler: dict[str, StateHandlerNoState],
-        *,
-        teardown: Literal[True],
-        body: None = None,
-    ) -> Self: ...
-    @overload
-    def state_handler(
-        self,
-        handler: dict[str, StateHandlerNoActionNoState],
-        *,
-        teardown: Literal[False] = False,
-        body: None = None,
-    ) -> Self: ...
-    # Cases where the handler takes a URL
+    # Cases where the handler takes a URL. The `body` argument is required in
+    # this case.
     @overload
     def state_handler(
         self,
@@ -511,10 +498,8 @@ class Verifier:
 
     def state_handler(
         self,
-        handler: StateHandlerFull
-        | StateHandlerNoAction
-        | dict[str, StateHandlerNoState]
-        | dict[str, StateHandlerNoActionNoState]
+        handler: Callable[..., None]
+        | Mapping[str, Callable[..., None]]
         | StateHandlerUrl,
         *,
         teardown: bool = False,
@@ -538,25 +523,15 @@ class Verifier:
         2.  By providing a mapping of state names to functions.
         3.  By providing the URL endpoint to which the request should be made.
 
-        The first two options are most straightforward to use.
+        The last option is more complicated as it requires the provider to be
+        able to handle the state change requests. The first two options handle
+        this internally and are the preferred options if the provider is written
+        in Python.
 
-        When providing a function, the arguments should be:
-
-        1.  The state name, as a string.
-        2.  The action (either `setup` or `teardown`), as a string.
-        3.  A dictionary of parameters, or `None` if no parameters are provided.
-
-        Note that these arguments will change in the following ways:
-
-        1.  If a dictionary mapping is used, the state name is _not_ provided to
-            the function.
-        2.  If `teardown` is `False` thereby indicating that the function is
-            only called for setup, the `action` argument is not provided.
-
-        This means that in the case of a dictionary mapping of function with
-        `teardown=False`, the function should take only one argument: the
-        dictionary of parameters (which itself may be `None`, albeit still an
-        argument).
+        The function signature must be compatible with the
+        [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs]. If the function
+        has additional arguments, these must either have default values, or be
+        filled by using the [`partial`][functools.partial] function.
 
         Args:
             handler:
@@ -576,8 +551,8 @@ class Verifier:
             body:
                 Whether to include the state change request in the body (`True`)
                 or in the query string (`False`). This must be left as `None` if
-                providing one or more handler functions; and it must be set to
-                a boolean if providing a URL.
+                providing one or more handler functions; and it must be set to a
+                boolean if providing a URL.
         """
         # A tuple is required instead of `StateHandlerUrl` for support for
         # Python 3.9. This should be changed to `StateHandlerUrl` in the future.
@@ -587,7 +562,7 @@ class Verifier:
                 raise ValueError(msg)
             return self._state_handler_url(handler, teardown=teardown, body=body)
 
-        if isinstance(handler, dict):
+        if isinstance(handler, Mapping):
             if body is not None:
                 msg = "The `body` parameter must be `None` when providing a dictionary"
                 raise ValueError(msg)
@@ -648,8 +623,7 @@ class Verifier:
 
     def _state_handler_dict(
         self,
-        handler: dict[str, StateHandlerNoState]
-        | dict[str, StateHandlerNoActionNoState],
+        handler: Mapping[str, Callable[..., None]],
         *,
         teardown: bool,
     ) -> Self:
@@ -685,39 +659,15 @@ class Verifier:
             },
         )
 
-        if teardown:
-            if any(
-                len(inspect.signature(f).parameters) != 2  # noqa: PLR2004
-                for f in handler.values()
-            ):
-                msg = "All functions must take two arguments: action and parameters"
-                raise TypeError(msg)
-
-            handler_map = typing.cast("dict[str, StateHandlerNoState]", handler)
-
-            def _handler(
-                state: str,
-                action: str,
-                parameters: dict[str, Any] | None,
-            ) -> None:
-                handler_map[state](action, parameters)
-
-        else:
-            if any(len(inspect.signature(f).parameters) != 1 for f in handler.values()):
-                msg = "All functions must take one argument: parameters"
-                raise TypeError(msg)
-
-            handler_map_no_action = typing.cast(
-                "dict[str, StateHandlerNoActionNoState]",
-                handler,
+        def _handler(
+            state: str,
+            action: Literal["setup", "teardown"],
+            parameters: dict[str, Any] | None,
+        ) -> None:
+            apply_args(
+                handler[state],
+                StateHandlerArgs(state=state, action=action, parameters=parameters),
             )
-
-            def _handler(
-                state: str,
-                action: str,  # noqa: ARG001
-                parameters: dict[str, Any] | None,
-            ) -> None:
-                handler_map_no_action[state](parameters)
 
         self._state_handler = StateCallback(_handler)
         pact.v3.ffi.verifier_set_provider_state(
@@ -731,7 +681,7 @@ class Verifier:
 
     def _set_function_state_handler(
         self,
-        handler: StateHandlerFull | StateHandlerNoAction,
+        handler: Callable[..., None],
         *,
         teardown: bool,
     ) -> Self:
@@ -764,36 +714,15 @@ class Verifier:
             },
         )
 
-        if teardown:
-            if len(inspect.signature(handler).parameters) != 3:  # noqa: PLR2004
-                msg = (
-                    "The function must take three arguments: "
-                    "state, action, and parameters."
-                )
-                raise TypeError(msg)
-
-            handler_fn_full = typing.cast("StateHandlerFull", handler)
-
-            def _handler(
-                state: str,
-                action: str,
-                parameters: dict[str, Any] | None,
-            ) -> None:
-                handler_fn_full(state, action, parameters)
-
-        else:
-            if len(inspect.signature(handler).parameters) != 2:  # noqa: PLR2004
-                msg = "The function must take two arguments: state and parameters"
-                raise TypeError(msg)
-
-            handler_fn_no_action = typing.cast("StateHandlerNoAction", handler)
-
-            def _handler(
-                state: str,
-                action: str,  # noqa: ARG001
-                parameters: dict[str, Any] | None,
-            ) -> None:
-                handler_fn_no_action(state, parameters)
+        def _handler(
+            state: str,
+            action: Literal["setup", "teardown"],
+            parameters: dict[str, Any] | None,
+        ) -> None:
+            apply_args(
+                handler,
+                StateHandlerArgs(state=state, action=action, parameters=parameters),
+            )
 
         self._state_handler = StateCallback(_handler)
         pact.v3.ffi.verifier_set_provider_state(

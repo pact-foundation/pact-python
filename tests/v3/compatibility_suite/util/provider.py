@@ -894,9 +894,9 @@ def a_provider_state_callback_is_configured(
         logger.info("Configuring provider state callback")
 
         def _callback(
-            _name: str,
-            _action: str,
-            _params: dict[str, str] | None,
+            state: str,
+            action: str,
+            parameters: dict[str, str] | None,
         ) -> None:
             pass
 
@@ -1267,7 +1267,10 @@ def the_provider_state_callback_will_receive_a_setup_call(
         logger.debug("Calls: %s", provider_callback.call_args_list)
         provider_callback.assert_called()
         for calls in provider_callback.call_args_list:
-            if calls.args[0] == state and calls.args[1] == action:
+            if (
+                calls.kwargs.get("state") == state
+                and calls.kwargs.get("action") == action
+            ):
                 return
 
         msg = f"No {action} call found"
@@ -1305,8 +1308,11 @@ def the_provider_state_callback_will_receive_a_setup_call_with_parameters(
 
         provider_callback.assert_called()
         for calls in provider_callback.call_args_list:
-            if calls.args[0] == state and calls.args[1] == action:
-                assert calls.args[2] == params
+            if (
+                calls.kwargs.get("state") == state
+                and calls.kwargs.get("action") == action
+                and calls.kwargs.get("parameters") == params
+            ):
                 return
         msg = f"No {action} call found"
         raise AssertionError(msg)
