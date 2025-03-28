@@ -120,7 +120,7 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
 
     1.  The `name` parameter is the name of the provider state. For example, `"a user with ID 123 exists"` or `"no users exist"`. If you instead use a mapping of provider state names to functions, this parameter is not passed to the function.
     2.  The `action` parameter is either `"setup"` or `"teardown"`. The setup action should create the provider state, and the teardown action should remove it. If you specify `teardown=False`, then the `action` parameter is _not_ passed to the callback function.
-    3.  The `params` parameter is a dictionary of additional parameters that the provider state requires. For example, instead of `"a user with ID 123 exists"`, the provider state might be `"a user with the given ID exists"` and the specific ID would be passed in the `params` dictionary. Note that `params` is always present, but may be `None` if no parameters are specified by the consumer.
+    3.  The `parameters` parameter is a dictionary of additional parameters that the provider state requires. For example, instead of `"a user with ID 123 exists"`, the provider state might be `"a user with the given ID exists"` and the specific ID would be passed in the `parameters` dictionary. Note that `parameters` is always present, but may be `None` if no parameters are specified by the consumer.
 <!-- markdownlint-enable code-block-style -->
 
 The function arguments must include the relevant keys from the [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
