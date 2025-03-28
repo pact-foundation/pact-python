@@ -7,9 +7,17 @@ used directly by consumers of the library and as such, may change without
 notice.
 """
 
+import inspect
+import logging
 import socket
 import warnings
+from collections.abc import Callable, Mapping
 from contextlib import closing
+from functools import partial
+from inspect import Parameter, _ParameterKind
+from typing import TypeVar
+
+logger = logging.getLogger(__name__)
 
 _PYTHON_FORMAT_TO_JAVA_DATETIME = {
     "a": "EEE",
@@ -41,6 +49,8 @@ _PYTHON_FORMAT_TO_JAVA_DATETIME = {
     "%": "%",
     ":z": "XXX",
 }
+
+_T = TypeVar("_T")
 
 
 def strftime_to_simple_date_format(python_format: str) -> str:
@@ -159,3 +169,103 @@ def find_free_port() -> int:
         s.bind(("", 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
+
+def apply_args(f: Callable[..., _T], args: Mapping[str, object]) -> _T:
+    """
+    Apply arguments to a function.
+
+    This function passes through the arguments to the function, doing so
+    intelligently by performing runtime introspection to determine whether
+    it is possible to pass arguments by name, and falling back to positional
+    arguments if not.
+
+    Args:
+        f:
+            The function to apply the arguments to.
+
+        args:
+            The arguments to apply. The dictionary is ordered such that, if an
+            argument cannot be passed by name, it will be passed by position
+            as per the order of the keys in the dictionary.
+
+    Returns:
+        The result of the function.
+    """
+    signature = inspect.signature(f)
+    f_name = (
+        f.__qualname__
+        if hasattr(f, "__qualname__")
+        else f"{type(f).__module__}.{type(f).__name__}"
+    )
+    args = dict(args)
+
+    # If the signature has a `*args` parameter, then parameters which appear as
+    # positional-or-keyword must be passed as positional arguments.
+    if any(
+        param.kind == Parameter.VAR_POSITIONAL
+        for param in signature.parameters.values()
+    ):
+        positional_match: list[_ParameterKind] = [
+            Parameter.POSITIONAL_ONLY,
+            Parameter.POSITIONAL_OR_KEYWORD,
+        ]
+        keyword_match: list[_ParameterKind] = [Parameter.KEYWORD_ONLY]
+    else:
+        positional_match = [Parameter.POSITIONAL_ONLY]
+        keyword_match = [Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY]
+
+    # First, we inspect the keyword arguments and try and pass in some arguments
+    # by currying them in.
+    for param in signature.parameters.values():
+        if param.name not in args:
+            # If a parameter is not known, we will ignore it.
+            #
+            # If the ignored parameter doesn't have a default value, it will
+            # result in a exception, but we will also warn the user here.
+            if param.default == Parameter.empty and param.kind not in [
+                Parameter.VAR_POSITIONAL,
+                Parameter.VAR_KEYWORD,
+            ]:
+                msg = (
+                    f"Function {f_name} appears to have required "
+                    f"parameter '{param.name}' that will not be passed"
+                )
+                warnings.warn(msg, stacklevel=2)
+
+            continue
+
+        if param.kind in positional_match:
+            # We iterate through the parameters in order that they are defined,
+            # making it fine to pass them in by position one at a time.
+            f = partial(f, args[param.name])
+            del args[param.name]
+
+        if param.kind in keyword_match:
+            f = partial(f, **{param.name: args[param.name]})
+            del args[param.name]
+            continue
+
+    # At this stage, we have checked all arguments. If we have any arguments
+    # remaining, we will try and pass them through variadic arguments if the
+    # function accepts them.
+    if args:
+        if Parameter.VAR_KEYWORD in [
+            param.kind for param in signature.parameters.values()
+        ]:
+            f = partial(f, **args)
+            args.clear()
+        elif Parameter.VAR_POSITIONAL in [
+            param.kind for param in signature.parameters.values()
+        ]:
+            f = partial(f, *args.values())
+            args.clear()
+        else:
+            logger.debug(
+                "Function %s does not accept any additional arguments. "
+                "remaining arguments: %s",
+                f_name,
+                list(args.keys()),
+            )
+
+    return f()
