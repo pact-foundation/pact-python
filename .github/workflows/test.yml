@@ -125,6 +125,12 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: tests
 
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@f2dba722c67b86c6caa034178c6e4d35335f6706  # v1.1.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   test-other:
     name: >-
       Test Python ${{ matrix.python-version }}
@@ -230,6 +236,12 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: examples
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@f2dba722c67b86c6caa034178c6e4d35335f6706  # v1.1.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   format:
     name: Format
