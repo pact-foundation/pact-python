@@ -4,7 +4,7 @@ Tests of pact.v3.util functions.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import pytest
 
@@ -46,39 +46,87 @@ def test_convert_python_to_java_datetime_format_with_single_quote() -> None:
     assert strftime_to_simple_date_format("%Y'%m'%d") == "yyyy''MM''dd"
 
 
+class Args(NamedTuple):
+    """
+    Named tuple to hold the arguments passed to a function.
+    """
+
+    args: dict[str, Any]
+    kwargs: dict[str, Any]
+    variadic_args: list[Any]
+    variadic_kwargs: dict[str, Any]
+
+
 def no_annotations(a, b, c, d=b"d"):  # noqa: ANN001, ANN201  # type: ignore[reportUnknownArgumentType]
-    return f"{a}:{b}:{c}:{d!r}"
+    return Args(
+        args={"a": a, "b": b, "c": c, "d": d},
+        kwargs={},
+        variadic_args=[],
+        variadic_kwargs={},
+    )
 
 
-def annotated(a: int, b: str, c: float, d: bytes = b"d") -> str:
-    return f"{a}:{b}:{c}:{d!r}"
+def annotated(a: int, b: str, c: float, d: bytes = b"d") -> Args:
+    return Args(
+        args={"a": a, "b": b, "c": c, "d": d},
+        kwargs={},
+        variadic_args=[],
+        variadic_kwargs={},
+    )
 
 
-def mixed(a: int, /, b: str, *, c: float, d: bytes = b"d") -> str:
-    return f"{a}:{b}:{c}:{d!r}"
+def mixed(a: int, /, b: str, *, c: float, d: bytes = b"d") -> Args:
+    return Args(
+        args={"a": a, "b": b, "c": c, "d": d},
+        kwargs={},
+        variadic_args=[],
+        variadic_kwargs={},
+    )
 
 
-def variadic_args(*args: Any) -> str:  # noqa: ANN401
-    return ":".join(str(arg) for arg in args)
+def variadic_args(*args: Any) -> Args:  # noqa: ANN401
+    return Args(
+        args={},
+        kwargs={},
+        variadic_args=list(args),
+        variadic_kwargs={},
+    )
 
 
-def variadic_kwargs(**kwargs: Any) -> str:  # noqa: ANN401
-    return ":".join(str(v) for v in kwargs.values())
+def variadic_kwargs(**kwargs: Any) -> Args:  # noqa: ANN401
+    return Args(
+        args={},
+        kwargs=kwargs,
+        variadic_args=[],
+        variadic_kwargs={**kwargs},
+    )
 
 
-def variadic_args_kwargs(*args: Any, **kwargs: Any) -> list[str]:  # noqa: ANN401
-    return [
-        ":".join(str(arg) for arg in args),
-        ":".join(str(v) for v in kwargs.values()),
-    ]
+def variadic_args_kwargs(*args: Any, **kwargs: Any) -> Args:  # noqa: ANN401
+    return Args(
+        args={},
+        kwargs=kwargs,
+        variadic_args=list(args),
+        variadic_kwargs={**kwargs},
+    )
 
 
-def mixed_variadic_args(a: int, *args: Any, d: bytes = b"d") -> list[str]:  # noqa: ANN401
-    return [f"{a}:{d!r}", ":".join(str(arg) for arg in args)]
+def mixed_variadic_args(a: int, *args: Any, d: bytes = b"d") -> Args:  # noqa: ANN401
+    return Args(
+        args={"a": a, "d": d},
+        kwargs={},
+        variadic_args=list(args),
+        variadic_kwargs={},
+    )
 
 
-def mixed_variadic_kwargs(a: int, d: bytes = b"d", **kwargs: Any) -> list[str]:  # noqa: ANN401
-    return [f"{a}:{d!r}", ":".join(str(v) for v in kwargs.values())]
+def mixed_variadic_kwargs(a: int, d: bytes = b"d", **kwargs: Any) -> Args:  # noqa: ANN401
+    return Args(
+        args={"a": a, "d": d},
+        kwargs=kwargs,
+        variadic_args=[],
+        variadic_kwargs={**kwargs},
+    )
 
 
 def mixed_variadic_args_kwargs(
@@ -86,119 +134,192 @@ def mixed_variadic_args_kwargs(
     *args: Any,  # noqa: ANN401
     d: bytes = b"d",
     **kwargs: Any,  # noqa: ANN401
-) -> list[str]:
-    return [
-        f"{a}:{d!r}",
-        ":".join(str(arg) for arg in args),
-        ":".join(str(v) for v in kwargs.values()),
-    ]
+) -> Args:
+    return Args(
+        args={"a": a, "d": d},
+        kwargs=kwargs,
+        variadic_args=list(args),
+        variadic_kwargs={**kwargs},
+    )
 
 
 class Foo:  # noqa: D101
     def __init__(self) -> None:  # noqa: D107
         pass
 
-    def __call__(self, a: int, b: str, c: float, d: bytes = b"d") -> str:  # noqa: D102
-        return f"{a}:{b}:{c}:{d!r}"
+    def __call__(self, a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+        return Args(
+            args={"a": a, "b": b, "c": c, "d": d},
+            kwargs={},
+            variadic_args=[],
+            variadic_kwargs={},
+        )
 
-    def method(self, a: int, b: str, c: float, d: bytes = b"d") -> str:  # noqa: D102
-        return f"{a}:{b}:{c}:{d!r}"
+    def method(self, a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+        return Args(
+            args={"a": a, "b": b, "c": c, "d": d},
+            kwargs={},
+            variadic_args=[],
+            variadic_kwargs={},
+        )
 
     @classmethod
-    def class_method(cls, a: int, b: str, c: float, d: bytes = b"d") -> str:  # noqa: D102
-        return f"{a}:{b}:{c}:{d!r}"
+    def class_method(cls, a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+        return Args(
+            args={"a": a, "b": b, "c": c, "d": d},
+            kwargs={},
+            variadic_args=[],
+            variadic_kwargs={},
+        )
 
     @staticmethod
-    def static_method(a: int, b: str, c: float, d: bytes = b"d") -> str:  # noqa: D102
-        return f"{a}:{b}:{c}:{d!r}"
+    def static_method(a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+        return Args(
+            args={"a": a, "b": b, "c": c, "d": d},
+            kwargs={},
+            variadic_args=[],
+            variadic_kwargs={},
+        )
 
 
 @pytest.mark.parametrize(
     ("func", "args", "expected"),
     [
-        (no_annotations, {"a": 1, "b": "b", "c": 3.14}, "1:b:3.14:b'd'"),
-        (no_annotations, {"a": 1, "b": "b", "c": 3.14, "d": b"e"}, "1:b:3.14:b'e'"),
-        (annotated, {"a": 1, "b": "b", "c": 3.14}, "1:b:3.14:b'd'"),
-        (annotated, {"a": 1, "b": "b", "c": 3.14, "d": b"e"}, "1:b:3.14:b'e'"),
-        (mixed, {"a": 1, "b": "b", "c": 3.14}, "1:b:3.14:b'd'"),
-        (mixed, {"a": 1, "b": "b", "c": 3.14, "d": b"e"}, "1:b:3.14:b'e'"),
-        (variadic_args, {"a": 1, "b": "b", "c": 3.14}, "1:b:3.14"),
-        (variadic_args, {"a": 1, "b": "b", "c": 3.14, "d": b"e"}, "1:b:3.14:b'e'"),
-        (variadic_kwargs, {"a": 1, "b": "b", "c": 3.14}, "1:b:3.14"),
-        (variadic_kwargs, {"a": 1, "b": "b", "c": 3.14, "d": b"e"}, "1:b:3.14:b'e'"),
-        (variadic_args_kwargs, {"a": 1, "b": "b", "c": 3.14}, ["", "1:b:3.14"]),
+        (
+            no_annotations,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"d"}, {}, [], {}),
+        ),
+        (
+            no_annotations,
+            {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"e"}, {}, [], {}),
+        ),
+        (
+            annotated,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"d"}, {}, [], {}),
+        ),
+        (
+            annotated,
+            {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"e"}, {}, [], {}),
+        ),
+        (
+            mixed,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"d"}, {}, [], {}),
+        ),
+        (
+            mixed,
+            {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"e"}, {}, [], {}),
+        ),
+        (
+            variadic_args,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({}, {}, [1, "b", 3.14], {}),
+        ),
+        (
+            variadic_args,
+            {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            Args({}, {}, [1, "b", 3.14, b"e"], {}),
+        ),
+        (
+            variadic_kwargs,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({}, {"a": 1, "b": "b", "c": 3.14}, [], {"a": 1, "b": "b", "c": 3.14}),
+        ),
+        (
+            variadic_kwargs,
+            {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            Args(
+                {},
+                {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+                [],
+                {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            ),
+        ),
+        (
+            variadic_args_kwargs,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({}, {"a": 1, "b": "b", "c": 3.14}, [], {"a": 1, "b": "b", "c": 3.14}),
+        ),
         (
             variadic_args_kwargs,
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            ["", "1:b:3.14:b'e'"],
+            Args(
+                {},
+                {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+                [],
+                {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
+            ),
         ),
-        (mixed_variadic_args, {"a": 1, "b": "b", "c": 3.14}, ["1:b'd'", "b:3.14"]),
+        (
+            mixed_variadic_args,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({"a": 1, "d": b"d"}, {}, ["b", 3.14], {}),
+        ),
         (
             mixed_variadic_args,
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            ["1:b'e'", "b:3.14"],
+            Args({"a": 1, "d": b"e"}, {}, ["b", 3.14], {}),
         ),
-        (mixed_variadic_kwargs, {"a": 1, "b": "b", "c": 3.14}, ["1:b'd'", "b:3.14"]),
+        (
+            mixed_variadic_kwargs,
+            {"a": 1, "b": "b", "c": 3.14},
+            Args({"a": 1, "d": b"d"}, {"b": "b", "c": 3.14}, [], {"b": "b", "c": 3.14}),
+        ),
         (
             mixed_variadic_kwargs,
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            ["1:b'e'", "b:3.14"],
+            Args({"a": 1, "d": b"e"}, {"b": "b", "c": 3.14}, [], {"b": "b", "c": 3.14}),
         ),
         (
             mixed_variadic_args_kwargs,
             {"a": 1, "b": "b", "c": 3.14},
-            ["1:b'd'", "", "b:3.14"],
+            Args({"a": 1, "d": b"d"}, {"b": "b", "c": 3.14}, [], {"b": "b", "c": 3.14}),
         ),
         (
             mixed_variadic_args_kwargs,
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            ["1:b'e'", "", "b:3.14"],
-        ),
-        (
-            mixed_variadic_args_kwargs,
-            {"a": 1, "b": "b", "c": 3.14, "e": "f"},
-            ["1:b'd'", "", "b:3.14:f"],
-        ),
-        (
-            mixed_variadic_args_kwargs,
-            {"a": 1, "b": "b", "c": 3.14, "e": "f", "d": b"e"},
-            ["1:b'e'", "", "b:3.14:f"],
+            Args({"a": 1, "d": b"e"}, {"b": "b", "c": 3.14}, [], {"b": "b", "c": 3.14}),
         ),
         (
             Foo(),
             {"a": 1, "b": "b", "c": 3.14},
-            "1:b:3.14:b'd'",
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"d"}, {}, [], {}),
         ),
         (
             Foo(),
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            "1:b:3.14:b'e'",
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"e"}, {}, [], {}),
         ),
         (
             Foo().class_method,
             {"a": 1, "b": "b", "c": 3.14},
-            "1:b:3.14:b'd'",
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"d"}, {}, [], {}),
         ),
         (
             Foo().class_method,
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            "1:b:3.14:b'e'",
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"e"}, {}, [], {}),
         ),
         (
             Foo().static_method,
             {"a": 1, "b": "b", "c": 3.14},
-            "1:b:3.14:b'd'",
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"d"}, {}, [], {}),
         ),
         (
             Foo().static_method,
             {"a": 1, "b": "b", "c": 3.14, "d": b"e"},
-            "1:b:3.14:b'e'",
+            Args({"a": 1, "b": "b", "c": 3.14, "d": b"e"}, {}, [], {}),
         ),
     ],  # type: ignore[reportUnknownArgumentType]
 )
 def test_apply_expected(
-    func: Callable[..., Any],
+    func: Callable[..., Args],
     args: dict[str, Any],
-    expected: str | list[str],
+    expected: Args,
 ) -> None:
     assert apply_args(func, args) == expected
