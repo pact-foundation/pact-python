@@ -170,6 +170,11 @@ def provider_state_handler(
     also be used to reset the mock, or in the case were a real database is used,
     to clean up any side effects.
 
+    This example showcases how a _full_ provider state handler can be
+    implemented. The handler can also be specified through a mapping of provider
+    states to functions. See the documentation of the
+    [`state_handler`][pact.v3.Verifier.state_handler] method for more details.
+
     Args:
         action:
             One of `setup` or `teardown`. Determines whether the provider state
