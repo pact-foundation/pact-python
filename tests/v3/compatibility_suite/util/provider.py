@@ -896,7 +896,7 @@ def a_provider_state_callback_is_configured(
         def _callback(
             state: str,
             action: str,
-            parameters: dict[str, str] | None,
+            parameters: dict[str, Any] | None,
         ) -> None:
             pass
 
