@@ -146,7 +146,7 @@ def test_provider(server: str) -> None:
 def provider_state_handler(
     state: str,
     action: str,
-    _parameters: dict[str, Any] | None,
+    parameters: dict[str, Any] | None = None,  # noqa: ARG001
 ) -> None:
     """
     Handler for the provider state callback.
@@ -170,6 +170,11 @@ def provider_state_handler(
     also be used to reset the mock, or in the case were a real database is used,
     to clean up any side effects.
 
+    This example showcases how a _full_ provider state handler can be
+    implemented. The handler can also be specified through a mapping of provider
+    states to functions. See the documentation of the
+    [`state_handler`][pact.v3.Verifier.state_handler] method for more details.
+
     Args:
         action:
             One of `setup` or `teardown`. Determines whether the provider state
@@ -177,6 +182,10 @@ def provider_state_handler(
 
         state:
             The name of the state to set up or tear down.
+
+        parameters:
+            A dictionary of parameters to pass to the state handler. This is
+            not used in this example, but is included for completeness.
 
     Returns:
         A dictionary containing the result of the action.

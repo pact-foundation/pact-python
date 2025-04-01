@@ -35,16 +35,18 @@ from typing_extensions import Self
 
 from pact import __version__
 from pact.v3._util import find_free_port
+from pact.v3.types import Message
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from pact.v3.types import MessageProducerFull, StateHandlerFull
 
 logger = logging.getLogger(__name__)
 
 
 _C = TypeVar("_C", bound=Callable[..., Any])
+_CM = TypeVar("_CM", bound=Callable[..., Message])
+_CN = TypeVar("_CN", bound=Callable[..., None])
 
 
 class HandlerHttpServer(ThreadingHTTPServer, Generic[_C]):
@@ -88,7 +90,7 @@ class HandlerHttpServer(ThreadingHTTPServer, Generic[_C]):
 ################################################################################
 
 
-class MessageProducer:
+class MessageProducer(Generic[_CM]):
     """
     Internal message producer server.
 
@@ -102,7 +104,7 @@ class MessageProducer:
 
     def __init__(
         self,
-        handler: MessageProducerFull,
+        handler: _CM,
         host: str = "localhost",
         port: int | None = None,
     ) -> None:
@@ -134,7 +136,7 @@ class MessageProducer:
 
         self._handler = handler
 
-        self._server: HandlerHttpServer[MessageProducerFull] | None = None
+        self._server: HandlerHttpServer[_CM] | None = None
         self._thread: Thread | None = None
 
     @property
@@ -204,7 +206,7 @@ class MessageProducer:
         self._thread.join()
 
 
-class MessageProducerHandler(SimpleHTTPRequestHandler):
+class MessageProducerHandler(SimpleHTTPRequestHandler, Generic[_CM]):
     """
     Request handler for the message relay server.
 
@@ -227,7 +229,7 @@ class MessageProducerHandler(SimpleHTTPRequestHandler):
     """
 
     if TYPE_CHECKING:
-        server: HandlerHttpServer[MessageProducerFull]
+        server: HandlerHttpServer[_CM]
 
     MESSAGE_PATH = "/_pact/message"
 
@@ -306,7 +308,7 @@ class MessageProducerHandler(SimpleHTTPRequestHandler):
 ################################################################################
 
 
-class StateCallback:
+class StateCallback(Generic[_CN]):
     """
     Internal server for handling state callbacks.
 
@@ -317,7 +319,7 @@ class StateCallback:
 
     def __init__(
         self,
-        handler: StateHandlerFull,
+        handler: _CN,
         host: str = "localhost",
         port: int | None = None,
     ) -> None:
@@ -343,7 +345,7 @@ class StateCallback:
 
         self._handler = handler
 
-        self._server: HandlerHttpServer[StateHandlerFull] | None = None
+        self._server: HandlerHttpServer[_CN] | None = None
         self._thread: Thread | None = None
 
     @property
@@ -406,7 +408,7 @@ class StateCallback:
         self._thread.join()
 
 
-class StateCallbackHandler(SimpleHTTPRequestHandler):
+class StateCallbackHandler(SimpleHTTPRequestHandler, Generic[_CN]):
     """
     Request handler for the state callback server.
 
@@ -415,7 +417,7 @@ class StateCallbackHandler(SimpleHTTPRequestHandler):
     """
 
     if TYPE_CHECKING:
-        server: HandlerHttpServer[StateHandlerFull]
+        server: HandlerHttpServer[_CN]
 
     CALLBACK_PATH = "/_pact/state"
 
