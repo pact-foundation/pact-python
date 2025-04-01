@@ -146,7 +146,7 @@ def test_provider(server: str) -> None:
 def provider_state_handler(
     state: str,
     action: str,
-    _parameters: dict[str, Any] | None,
+    parameters: dict[str, Any] | None = None,  # noqa: ARG001
 ) -> None:
     """
     Handler for the provider state callback.
@@ -177,6 +177,10 @@ def provider_state_handler(
 
         state:
             The name of the state to set up or tear down.
+
+        parameters:
+            A dictionary of parameters to pass to the state handler. This is
+            not used in this example, but is included for completeness.
 
     Returns:
         A dictionary containing the result of the action.
