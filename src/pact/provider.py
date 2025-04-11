@@ -21,4 +21,10 @@ class Provider(object):
             PendingDeprecationWarning,
             stacklevel=2,
         )
+        if len(name.split()) > 1:
+            warnings.warn(
+                "Provider name should not contain spaces.",
+                UserWarning,
+                stacklevel=2,
+            )
         self.name = name
