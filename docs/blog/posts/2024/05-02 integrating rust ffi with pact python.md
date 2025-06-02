@@ -19,12 +19,12 @@ In this blog post, I will delve into how this is all achieved. From explaining h
 
 Python, known for its dynamic typing and automated memory management, is fundamentally an interpreted language. Despite not having innate capabilities to directly interact with binary libraries, most Python interpreters bridge this gap efficiently. For instance, CPython—the principal interpreter—enables the creation of binary extensions[^binary_extension] and similarly, PyPy—a widely-used alternative—offers comparable functionalities[^pypy].
 
-[^binary_extension]: You can find extensive documentation on building extensions for CPython [here](https://docs.python.org/3/extending/extending.html).
-[^pypy]: PyPy extension-building documentation is available [here](https://doc.pypy.org/en/latest/extending.html).
+[^binary_extension]: You can find extensive documentation on building extensions for CPython [in the official documentation](https://docs.python.org/3/extending/extending.html).
+[^pypy]: Refer to the [PyPy extension-building documentation](https://doc.pypy.org/en/latest/extending.html).
 
 However, each interpreter has a distinct API tailored for crafting these binary extensions, which unfortunately leads to a lack of universal solutions across different environments. Furthermore, interpreters like [Jython](https://jython.org) and [Pyodide](https://pyodide.org/en/stable/), which are based on Java and WebAssembly respectively, present unique challenges that often preclude the straightforward use of such extensions due to their distinct runtime architectures.[^pyodide]
 
-[^pyodide]: It would appear that Pyodide can support C extensions as explained [here](https://pyodide.org/en/stable/development/new-packages.html), though by and large Pyodide appears to be intended for pure Python packages.
+[^pyodide]: It would appear that Pyodide [can support C extensions](https://pyodide.org/en/stable/development/new-packages.html), though by and large Pyodide appears to be intended for pure Python packages.
 
 While it is possible for the extension to contain all the logic, our specific requirement is merely to provide a bridge between Python and the Rust core library. This is the niche that [Python C Foreign Function Interface (CFFI)](https://cffi.readthedocs.io/en/stable/) fills. By parsing a C header file, CFFI automates the generation of extension code needed for Python to interface with the binary library. Consequently, this library can be imported into Python as if it were any standard module—streamlining development and potentially improving performance by leveraging optimized native code.
 

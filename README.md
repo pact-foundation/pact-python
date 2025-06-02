@@ -115,7 +115,7 @@ This readme provides a high-level overview of the Pact Python library. For detai
 -   [Provider testing](docs/provider.md)
 -   [Examples](examples/README.md)
 
-Documentation for the API is generated from the docstrings in the code which you can view [here](https://pact-foundation.github.io/pact-python/pact). Please be aware that only the [`pact.v3` module][pact.v3] is thoroughly documented at this time.
+Documentation for the API is generated from the docstrings in the code which you can view at [`pact-foundation.github.io/pact-python/pact`](https://pact-foundation.github.io/pact-python/pact). Please be aware that only the [`pact.v3` module][pact.v3] is thoroughly documented at this time.
 
 ### Need Help
 
