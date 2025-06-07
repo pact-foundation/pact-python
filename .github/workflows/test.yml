@@ -54,7 +54,7 @@ jobs:
 
     services:
       broker:
-        image: pactfoundation/pact-broker:latest@sha256:b1cdf96a80dba0fb655dd325bb0f99e715f62b33463c3bc9612a793287af85d3
+        image: pactfoundation/pact-broker:latest@sha256:1cbd6145671095fba7b4d865f5bce8bc6db1248f32f9945fb2101e7d8d3ff15a
         ports:
           - 9292:9292
         env:
@@ -187,7 +187,7 @@ jobs:
 
     services:
       broker:
-        image: pactfoundation/pact-broker:latest@sha256:b1cdf96a80dba0fb655dd325bb0f99e715f62b33463c3bc9612a793287af85d3
+        image: pactfoundation/pact-broker:latest@sha256:1cbd6145671095fba7b4d865f5bce8bc6db1248f32f9945fb2101e7d8d3ff15a
         ports:
           - 9292:9292
         env:
