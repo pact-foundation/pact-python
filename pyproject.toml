@@ -331,7 +331,6 @@ mv -v src/pact/v3/_ffi.pyi _ffi.pyi
 rm -rvf src/pact/v3/_ffi.*
 mv -v _ffi.pyi src/pact/v3/_ffi.pyi
 """
-skip = "pp*"
 test-command = """
 python -c \
 "from pact import EachLike; \
