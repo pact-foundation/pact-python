@@ -323,14 +323,12 @@ exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
-before-build = """
-rm -rvf src/pact/v3/bin
-rm -rvf src/pact/v3/data
-rm -rvf src/pact/v3/lib
-mv -v src/pact/v3/_ffi.pyi _ffi.pyi
-rm -rvf src/pact/v3/_ffi.*
-mv -v _ffi.pyi src/pact/v3/_ffi.pyi
-"""
+before-build = [
+  "for f in src/pact/v3/_ffi.*; do case \"$f\" in */_ffi.pyi) ;; *) rm -v \"$f\" ;; esac; done",
+  "rm -rvf src/pact/v3/bin",
+  "rm -rvf src/pact/v3/data",
+  "rm -rvf src/pact/v3/lib",
+]
 test-command = """
 python -c \
 "from pact import EachLike; \
