@@ -87,7 +87,7 @@ dependencies = [
     "pytest~=8.0",
     "testcontainers~=4.0",
   ]
-  devel-types = ["mypy==1.16.0", "types-cffi~=1.0", "types-requests~=2.0"]
+  devel-types = ["mypy==1.16.1", "types-cffi~=1.0", "types-requests~=2.0"]
 
 [build-system]
 build-backend = "hatchling.build"
