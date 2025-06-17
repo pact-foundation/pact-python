@@ -37,6 +37,7 @@ import pytest
 import uvicorn
 from yarl import URL
 
+import examples.src.fastapi
 from examples.src.fastapi import User
 from pact.v3 import Verifier
 
@@ -211,8 +212,6 @@ def mock_user_doesnt_exist() -> None:
     """
     Mock the database for the user doesn't exist state.
     """
-    import examples.src.fastapi
-
     mock_db = MagicMock()
     mock_db.get.return_value = None
     examples.src.fastapi.FAKE_DB = mock_db
@@ -232,8 +231,6 @@ def mock_user_exists() -> None:
     and removing fields) without fear of breaking the interactions with the
     consumers.
     """
-    import examples.src.fastapi
-
     mock_db = MagicMock()
     mock_db.get.return_value = User(
         id=123,
@@ -263,8 +260,6 @@ def mock_post_request_to_create_user() -> None:
     also be used to reset the mock, or in the case were a real database is used,
     to clean up any side effects.
     """
-    import examples.src.fastapi
-
     local_db: dict[int, User] = {}
 
     def local_setitem(key: int, value: User) -> None:
@@ -288,8 +283,6 @@ def mock_delete_request_to_delete_user() -> None:
     local dictionary to avoid side effects. This function replaces the calls to
     the database with a local dictionary to avoid side effects.
     """
-    import examples.src.fastapi
-
     local_db = {
         123: User(
             id=123,
@@ -331,8 +324,6 @@ def verify_user_doesnt_exist_mock() -> None:
     that it returned `None`, and ensures that it was called with an integer
     argument. It then resets the mock for future tests.
     """
-    import examples.src.fastapi
-
     if TYPE_CHECKING:
         # During setup, the `FAKE_DB` is replaced with a MagicMock object.
         # We need to inform the type checker that this has happened.
@@ -357,8 +348,6 @@ def verify_user_exists_mock() -> None:
     that it returned the expected user data, and ensures that it was called with
     the integer argument `1`. It then resets the mock for future tests.
     """
-    import examples.src.fastapi
-
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 
@@ -374,8 +363,6 @@ def verify_user_exists_mock() -> None:
 
 
 def verify_mock_post_request_to_create_user() -> None:
-    import examples.src.fastapi
-
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 
@@ -396,8 +383,6 @@ def verify_mock_post_request_to_create_user() -> None:
 
 
 def verify_mock_delete_request_to_delete_user() -> None:
-    import examples.src.fastapi
-
     if TYPE_CHECKING:
         examples.src.fastapi.FAKE_DB = MagicMock()
 

@@ -87,6 +87,7 @@ docstring.
 from __future__ import annotations
 
 import gc
+import inspect
 import json
 import logging
 import typing
@@ -94,6 +95,7 @@ import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
+from pact import __version__
 from pact.v3._ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
@@ -1880,6 +1882,15 @@ class OwnedString(str):
             return self._string == other
         return super().__eq__(other)
 
+    def __hash__(self) -> int:
+        """
+        Hash the Owned String.
+
+        Returns:
+            The hash of the Owned String.
+        """
+        return hash(self._string)
+
 
 def version() -> str:
     """
@@ -1977,8 +1988,6 @@ def log_message(
     if isinstance(log_level, str):
         log_level = LevelFilter[log_level.upper()]
     if source is None:
-        import inspect
-
         source = inspect.stack()[1].function
     lib.pactffi_log_message(
         source.encode("utf-8"),
@@ -6750,8 +6759,6 @@ def verifier_new_for_application() -> VerifierHandle:
     [Rust
     `pactffi_verifier_new_for_application`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_new_for_application)
     """
-    from pact import __version__
-
     result: cffi.FFI.CData = lib.pactffi_verifier_new_for_application(
         b"pact-python",
         __version__.encode("utf-8"),
