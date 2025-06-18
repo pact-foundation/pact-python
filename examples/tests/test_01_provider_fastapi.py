@@ -35,6 +35,7 @@ import uvicorn
 from pydantic import BaseModel
 from yarl import URL
 
+import examples.src.fastapi
 from examples.src.fastapi import User, app
 from pact import Verifier  # type: ignore[import-untyped]
 
@@ -108,8 +109,6 @@ def verifier() -> Generator[Verifier, Any, None]:
 
 def mock_user_123_doesnt_exist() -> None:
     """Mock the database for the user 123 doesn't exist state."""
-    import examples.src.fastapi
-
     examples.src.fastapi.FAKE_DB = MagicMock()
     examples.src.fastapi.FAKE_DB.get.return_value = None
 
@@ -128,8 +127,6 @@ def mock_user_123_exists() -> None:
     and removing fields) without fear of breaking the interactions with the
     consumers.
     """
-    import examples.src.fastapi
-
     mock_db = MagicMock()
     mock_db.get.return_value = User(
         id=123,
@@ -147,8 +144,6 @@ def mock_post_request_to_create_user() -> None:
     """
     Mock the database for the post request to create a user.
     """
-    import examples.src.fastapi
-
     local_db: dict[int, User] = {}
 
     def local_setitem(key: int, value: User) -> None:
@@ -168,8 +163,6 @@ def mock_delete_request_to_delete_user() -> None:
     """
     Mock the database for the delete request to delete a user.
     """
-    import examples.src.fastapi
-
     local_db = {
         123: User(
             id=123,
