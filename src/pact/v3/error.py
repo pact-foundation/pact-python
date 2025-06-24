@@ -128,7 +128,8 @@ class Mismatch(ABC):
         Returns:
             A new Mismatch object.
         """
-        if mismatch_type := data.pop("type"):
+        if "type" in data:
+            mismatch_type = data.pop("type")
             # Pact mismatches
             if mismatch_type in ["MissingRequest", "missing-request"]:
                 return MissingRequest(**data)
@@ -196,7 +197,7 @@ class GenericMismatch(Mismatch):
         """
         Informal string representation of the GenericMismatch.
         """
-        return f"Generic mismatch: {self.type}"
+        return f"Generic mismatch ({self.type}): {self._data}"
 
 
 class MissingRequest(Mismatch):
