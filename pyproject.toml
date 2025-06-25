@@ -64,7 +64,12 @@ dependencies = [
   [project.optional-dependencies]
   # Linting and formatting tools use a more narrow specification to ensure
   # developper consistency. All other dependencies are as above.
-  devel = ["pact-python[devel-types,devel-docs,devel-test]", "ruff==0.12.0"]
+  devel = [
+    "pact-python[devel-docs]",
+    "pact-python[devel-test]",
+    "pact-python[devel-types]",
+    "ruff==0.12.0",
+  ]
   devel-docs = [
     "mkdocs-literate-nav~=0.6",
     "mkdocs-material[imaging]~=9.4",
@@ -79,6 +84,7 @@ dependencies = [
     "flask[async]~=3.0",
     "httpx~=0.0",
     "mock~=5.0",
+    "protobuf~=6.0",
     "pytest-asyncio~=1.0",
     "pytest-bdd~=8.0",
     "pytest-cov~=6.0",
@@ -86,8 +92,14 @@ dependencies = [
     "pytest-xdist~=3.0",
     "pytest~=8.0",
     "testcontainers~=4.0",
+    "uvicorn[standard]~=0.0",
   ]
-  devel-types = ["mypy==1.16.1", "types-cffi~=1.0", "types-requests~=2.0"]
+  devel-types = [
+    "mypy==1.16.1",
+    "types-cffi~=1.0",
+    "types-protobuf~=6.0",
+    "types-requests~=2.0",
+  ]
 
 [build-system]
 build-backend = "hatchling.build"
