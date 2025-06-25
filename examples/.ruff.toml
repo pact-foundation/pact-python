@@ -7,6 +7,7 @@ ignore = [
   "D104",    # Require docstring in public package
   "PLR2004", # Forbid Magic Numbers
   "S101",    # Forbid assert statements
+  "TID252",  # Require absolute imports
 ]
 
   [lint.per-file-ignores]

@@ -22,6 +22,8 @@ import pytest
 from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
 from yarl import URL
 
+from pact.v3 import ffi
+
 if TYPE_CHECKING:
     from collections.abc import Generator, Sequence
 
@@ -93,3 +95,11 @@ def pytest_xdist_setupnodes(
             "`--numprocesses=1` or using `hatch run example`.",
             stacklevel=1,
         )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _setup_pact_logging() -> None:
+    """
+    Set up logging for the pact package.
+    """
+    ffi.log_to_stderr("INFO")
