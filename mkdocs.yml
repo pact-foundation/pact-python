@@ -28,6 +28,8 @@ plugins:
         python:
           import:
             - https://docs.python.org/3/objects.inv
+            - https://googleapis.dev/python/protobuf/latest/objects.inv
+            - https://grpc.github.io/grpc/python/objects.inv
           options:
             # General
             allow_inspection: true
