@@ -22,8 +22,8 @@ import requests
 
 from pact.v3 import Pact
 
+from ..proto.person_pb2 import Person
 from . import address_book
-from .person import Person
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -49,7 +49,7 @@ def pact() -> Generator[Pact, None, None]:
     pact = (
         Pact("protobuf_consumer", "protobuf_provider")
         .with_specification("V4")
-        .using_plugin("protobuf", "0.3.15")
+        .using_plugin("protobuf")
     )
     yield pact
     pact.write_file(pact_dir)
@@ -78,7 +78,7 @@ def test_get_person_by_id(pact: Pact) -> None:
 
     (
         pact.upon_receiving("a request to get person by ID")
-        .given("person with ID 1 exists")
+        .given("person with the given ID exists", parameters={"user_id": 1})
         .with_request("GET", "/person/1")
         .will_respond_with(200)
         .with_header("Content-Type", "application/x-protobuf")
@@ -121,7 +121,7 @@ def test_get_nonexistent_person(pact: Pact) -> None:
     """
     (
         pact.upon_receiving("a request to get non-existent person")
-        .given("person with ID 999 does not exist")
+        .given("person with the given ID does not exist", parameters={"user_id": 999})
         .with_request("GET", "/person/999")
         .will_respond_with(404)
         .with_header("Content-Type", "application/json")
