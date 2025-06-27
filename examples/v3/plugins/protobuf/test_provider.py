@@ -33,8 +33,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pact.v3 import Verifier
 
+from ..proto.person_pb2 import AddressBook
 from . import address_book
-from .person import AddressBook
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -168,80 +168,71 @@ def test_provider(server: str) -> None:
         Verifier("protobuf_provider")
         .add_transport(url=server)
         .add_source(pact_file)
-        .state_handler(provider_state_handler, teardown=True)
+        .state_handler(
+            {
+                "person with the given ID exists": state_person_exists,
+                "person with the given ID does not exist": state_person_doesnt_exist,
+            },
+            teardown=True,
+        )
     )
 
     verifier.verify()
 
 
-def provider_state_handler(
-    state: str,
+def state_person_exists(
     action: Literal["setup", "teardown"],
-    parameters: dict[str, Any] | None = None,  # noqa: ARG001
+    parameters: dict[str, Any] | None = None,
 ) -> None:
     """
-    Handle provider state setup and teardown.
-
-    This function is called by Pact to set up the provider's internal state
-    before each interaction is replayed. It ensures that the provider has
-    the necessary data to respond correctly to the consumer's requests.
+    Handle provider state for when a person with the given ID exists.
 
     Args:
-        state:
-            The provider state name from the consumer test.
-
         action:
-            Either `"setup"` or `"teardown"`.
+            Either "setup" or "teardown".
 
         parameters:
-            Additional parameters (not used in this example).
+            Dictionary containing user_id key.
     """
+    global MOCK_ADDRESS_BOOK  # noqa: PLW0603
+
     if action == "setup":
-        {
-            "person with ID 1 exists": setup_person_exists,
-            "person with ID 999 does not exist": setup_person_doesnt_exist,
-        }[state]()
+        MOCK_ADDRESS_BOOK = address_book()
+        if user_id := parameters.get("user_id") if parameters else None:
+            assert any(person.id == user_id for person in MOCK_ADDRESS_BOOK.people), (
+                f"Person with ID {user_id} does not exist in address book"
+            )
+        else:
+            msg = "User ID not provided"
+            raise AssertionError(msg)
+    elif action == "teardown":
+        MOCK_ADDRESS_BOOK = None
 
-    if action == "teardown":
-        {
-            "person with ID 1 exists": teardown_person_exists,
-            "person with ID 999 does not exist": teardown_person_doesnt_exist,
-        }[state]()
 
-
-def setup_person_exists() -> None:
+def state_person_doesnt_exist(
+    action: Literal["setup", "teardown"],
+    parameters: dict[str, Any] | None = None,
+) -> None:
     """
-    Set up the provider state where person with ID 1 exists.
+    Handle provider state for when a person with the given ID doesn't exist.
 
-    This creates a mock address book containing Alice (ID 1) so that
-    the provider can return the expected protobuf data.
-    """
-    global MOCK_ADDRESS_BOOK  # noqa: PLW0603
-    MOCK_ADDRESS_BOOK = address_book()
+    Args:
+        action:
+            Either "setup" or "teardown".
 
-
-def setup_person_doesnt_exist() -> None:
-    """
-    Set up the provider state where person with ID 999 doesn't exist.
-
-    This ensures the mock address book is empty so the provider will
-    return a 404 error as expected.
+        parameters:
+            Dictionary containing user_id key.
     """
     global MOCK_ADDRESS_BOOK  # noqa: PLW0603
-    MOCK_ADDRESS_BOOK = AddressBook()  # Empty address book
 
-
-def teardown_person_exists() -> None:
-    """
-    Clean up after testing person exists scenario.
-    """
-    global MOCK_ADDRESS_BOOK  # noqa: PLW0603
-    MOCK_ADDRESS_BOOK = None
-
-
-def teardown_person_doesnt_exist() -> None:
-    """
-    Clean up after testing person doesn't exist scenario.
-    """
-    global MOCK_ADDRESS_BOOK  # noqa: PLW0603
-    MOCK_ADDRESS_BOOK = None
+    if action == "setup":
+        MOCK_ADDRESS_BOOK = AddressBook()
+        if user_id := parameters.get("user_id") if parameters else None:
+            assert not any(
+                person.id == user_id for person in MOCK_ADDRESS_BOOK.people
+            ), f"Person with ID {user_id} should not exist in address book"
+        else:
+            msg = "User ID not provided"
+            raise AssertionError(msg)
+    elif action == "teardown":
+        MOCK_ADDRESS_BOOK = None

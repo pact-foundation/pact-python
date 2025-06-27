@@ -53,7 +53,7 @@ messages. It is assumed that you have a basic understanding of Pact and Protocol
 Buffers.
 """
 
-from .person import AddressBook, Person
+from ..proto.person_pb2 import AddressBook, Person
 
 
 def address_book() -> AddressBook:

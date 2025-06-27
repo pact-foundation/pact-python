@@ -1,0 +1,72 @@
+// examples/v3/plugins/proto/person.proto
+edition = "2023";
+
+package person;
+
+// The person message definition
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+
+  enum PhoneType {
+    PHONE_TYPE_UNSPECIFIED = 0;
+    PHONE_TYPE_MOBILE = 1;
+    PHONE_TYPE_HOME = 2;
+    PHONE_TYPE_WORK = 3;
+  }
+
+  message PhoneNumber {
+    string number = 1;
+    PhoneType type = 2 [default = PHONE_TYPE_HOME];
+  }
+
+  repeated PhoneNumber phones = 4;
+}
+
+// The address book message definition
+message AddressBook {
+  repeated Person people = 1;
+}
+
+// Request message for getting a person by ID
+message GetPersonRequest {
+  int32 person_id = 1;
+}
+
+// Response message for getting a person
+message GetPersonResponse {
+  Person person = 1;
+}
+
+// Request message for listing all people
+message ListPeopleRequest {
+  // Can add pagination parameters here in the future
+}
+
+// Response message for listing people
+message ListPeopleResponse {
+  repeated Person people = 1;
+}
+
+// Request message for adding a person
+message AddPersonRequest {
+  Person person = 1;
+}
+
+// Response message for adding a person
+message AddPersonResponse {
+  Person person = 1;
+}
+
+// The AddressBook service definition
+service AddressBookService {
+  // Get a person by ID
+  rpc GetPerson(GetPersonRequest) returns (GetPersonResponse);
+
+  // List all people in the address book
+  rpc ListPeople(ListPeopleRequest) returns (ListPeopleResponse);
+
+  // Add a new person to the address book
+  rpc AddPerson(AddPersonRequest) returns (AddPersonResponse);
+}

@@ -82,6 +82,7 @@ dependencies = [
     "aiohttp[speedups]~=3.0",
     "coverage[toml]~=7.0",
     "flask[async]~=3.0",
+    "grpcio~=1.0",
     "httpx~=0.0",
     "mock~=5.0",
     "protobuf~=6.0",
@@ -97,6 +98,7 @@ dependencies = [
   devel-types = [
     "mypy==1.16.1",
     "types-cffi~=1.0",
+    "types-grpcio~=1.0",
     "types-protobuf~=6.0",
     "types-requests~=2.0",
   ]
