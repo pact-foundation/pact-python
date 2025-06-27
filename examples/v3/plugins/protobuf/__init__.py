@@ -4,25 +4,11 @@ Protocol Buffers Plugin Example for Pact Python v3.
 This module provides an example of how to use Pact plugins to handle different
 content types in contract testing. Specifically, this example demonstrates the
 use of the protobuf plugin to test interactions involving Protocol Buffers
-(protobuf) message serialization, building on the [protobuf.dev Python
-tutorial](https://protobuf.dev/getting-started/pythontutorial/).
+(protobuf) message serialization.
 
-## What are Protocol Buffers?
-
-Protocol Buffers (protobuf) is a language-neutral, platform-neutral extensible
-mechanism for serializing structured data developed by Google. It can be thought
-of as similar to XML or JSON, but with pre-defined schemas and a binary format
-that is more efficient for both storage and transmission.
-
-The data structure is defined in a `.proto` file, which specifies the messages,
-fields, and types. This is then compiled into source code in various programming
-languages, allowing you to work with structured data in a type-safe manner. This
-examples defines a simple address book and person schema within `person.proto`
-and the `person.py` and `person.pyi` files have been generated from it using
-
-```console
-protoc --python_out=. --pyi_out=. person.proto
-```
+For detailed information about Protocol Buffers, the generated files, and the
+domain model used in this example, see the [`proto`][examples.v3.plugins.proto]
+module documentation.
 
 ## Pact and the Plugin Ecosystem
 
@@ -41,16 +27,11 @@ Pact to:
 -   Provide specialized matching rules for different data formats
 -   Enable extensibility without modifying the core Pact library
 
-## The Protobuf Plugin Example
+## This Example
 
-This example builds an address book application using the same domain model as
-the [protobuf.dev
-tutorial](https://protobuf.dev/getting-started/pythontutorial/).
-
-It defines a simple address book schema using Protocol Buffers and demonstrates
-how to use the Pact protobuf plugin to test interactions involving protobuf
-messages. It is assumed that you have a basic understanding of Pact and Protocol
-Buffers.
+This example demonstrates how to use the Pact protobuf plugin to test
+interactions involving protobuf messages sent over HTTP.  It is assumed that you
+have a basic understanding of Pact and Protocol Buffers.
 """
 
 from ..proto.person_pb2 import AddressBook, Person
