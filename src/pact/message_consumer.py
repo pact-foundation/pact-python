@@ -63,6 +63,12 @@ class MessageConsumer(object):
             PendingDeprecationWarning,
             stacklevel=2,
         )
+        if len(name.split()) > 1:
+            warnings.warn(
+                "Consumer name should not contain spaces.",
+                UserWarning,
+                stacklevel=2
+            )
         self.name = name
         self.service_cls = service_cls
         self.tags = tags
