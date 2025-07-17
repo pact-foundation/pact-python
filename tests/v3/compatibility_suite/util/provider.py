@@ -18,9 +18,7 @@ import copy
 import inspect
 import json
 import logging
-import os
 import re
-import shutil
 import subprocess
 import warnings
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -36,7 +34,7 @@ from pytest_bdd import given, parsers, then, when
 from typing_extensions import Self
 from yarl import URL
 
-import pact.constants  # type: ignore[import-untyped]
+import pact_cli
 from pact import __version__
 from pact.v3._server import MessageProducer
 from pact.v3._util import find_free_port
@@ -343,29 +341,11 @@ class PactBroker:
         self.provider = provider
         self.consumer = consumer
 
-        self.broker_bin: str = (
-            shutil.which("pact-broker") or pact.constants.BROKER_CLIENT_PATH
-        )
-        if not self.broker_bin:
-            if "CI" in os.environ:
-                self._install()
-                bin_path = shutil.which("pact-broker")
-                assert bin_path, "pact-broker not found"
-                self.broker_bin = bin_path
-            else:
-                msg = "pact-broker not found"
-                raise RuntimeError(msg)
-
-    def _install(self) -> None:
-        """
-        Install the Pact Broker CLI tool.
-
-        This function is intended to be run in CI environments, where the pact-broker
-        CLI tool may not be installed already. This will download and extract
-        the tool
-        """
-        msg = "pact-broker not found"
-        raise NotImplementedError(msg)
+        if bin_path := pact_cli.BROKER_CLIENT_PATH:
+            self.broker_bin = bin_path
+        else:
+            msg = "pact-broker not found"
+            raise RuntimeError(msg)
 
     def reset(self) -> None:
         """
