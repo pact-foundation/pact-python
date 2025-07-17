@@ -1,0 +1,10 @@
+#:schema https://json.schemastore.org/pyproject.json
+[project]
+description = "Pact CLI bundle for Python"
+name        = "pact-python-cli"
+
+license = "MIT"
+version = "0.0.0"
+
+authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
+maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
