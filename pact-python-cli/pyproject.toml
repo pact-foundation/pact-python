@@ -4,7 +4,207 @@ description = "Pact CLI bundle for Python"
 name        = "pact-python-cli"
 
 license = "MIT"
-version = "0.0.0"
+
+# The first three segments of the version correspond to the Pact CLI version.
+# The last segment is incremented if there is a need to update the Python
+# package without changing the Pact CLI version.
+#
+# For the latest version, see:
+# https://github.com/pact-foundation/pact-ruby-standalone/releases
+version = "2.4.26.0"
 
 authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
+  "Topic :: Software Development :: Testing",
+]
+
+requires-python = ">=3.9"
+
+  [project.urls]
+  "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
+  "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/pact-python-cli/CHANGELOG.md"
+  "Documentation" = "https://docs.pact.io"
+  "Homepage"      = "https://pact.io"
+  "Repository"    = "https://github.com/pact-foundation/pact-python"
+
+  [project.scripts]
+  pact                   = "pact_cli:_exec"
+  pact-broker            = "pact_cli:_exec"
+  pact-message           = "pact_cli:_exec"
+  pact-mock-service      = "pact_cli:_exec"
+  pact-plugin-cli        = "pact_cli:_exec"
+  pact-provider-verifier = "pact_cli:_exec"
+  pact-stub-service      = "pact_cli:_exec"
+  pactflow               = "pact_cli:_exec"
+
+  [project.optional-dependencies]
+  # Linting and formatting tools use a more narrow specification to ensure
+  # developper consistency. All other dependencies are as above.
+  devel = [
+    "pact-python-cli[devel-test]",
+    "pact-python-cli[devel-types]",
+    "ruff==0.12.4",
+  ]
+  devel-test = ["pytest-cov~=6.0", "pytest-mock~=3.0", "pytest~=8.0"]
+  devel-types = ["mypy==1.17.0"]
+
+################################################################################
+## Build System
+################################################################################
+[build-system]
+build-backend = "hatchling.build"
+requires = [
+  "hatchling",
+  "packaging",
+  "requests",
+  "setuptools ; python_version >= '3.12'",
+]
+
+[tool.hatch]
+
+  [tool.hatch.build]
+
+    [tool.hatch.build.targets.sdist]
+    include = [
+      # Source
+      "/src/pact_cli/**/*.py",
+      "/src/pact_cli/**/*.pyi",
+      "/src/pact_cli/**/py.typed",
+
+      # Metadata
+      "*.md",
+      "LICENSE",
+    ]
+
+    [tool.hatch.build.targets.wheel]
+    artifacts = ["/src/pact_cli/bin/*", "/src/pact_cli/lib/*"]
+    include = [
+      # Source
+      "/src/pact_cli/**/*.py",
+      "/src/pact_cli/**/*.pyi",
+      "/src/pact_cli/**/py.typed",
+    ]
+    packages = ["/src/pact_cli"]
+
+      [tool.hatch.build.targets.wheel.hooks.custom]
+
+  ########################################
+  ## Hatch Environment Configuration
+  ########################################
+  [tool.hatch.envs]
+
+    # Install dev dependencies in the default environment to simplify the developer
+    # workflow.
+    [tool.hatch.envs.default]
+    extra-dependencies = [
+      "hatchling",
+      "packaging",
+      "requests",
+      "setuptools ; python_version >= '3.12'",
+    ]
+    features = ["devel"]
+    installer = "uv"
+
+      [tool.hatch.envs.default.scripts]
+      all             = ["format", "lint", "test", "typecheck"]
+      format          = "ruff format {args}"
+      lint            = "ruff check --show-fixes {args}"
+      test            = "pytest tests/ {args}"
+      typecheck       = ["typecheck-src", "typecheck-tests"]
+      typecheck-src   = "mypy src/ {args}"
+      typecheck-tests = "mypy tests/ {args}"
+
+    # Test environment for running unit tests. This automatically tests against all
+    # supported Python versions.
+    [tool.hatch.envs.test]
+    features  = ["devel-test"]
+    installer = "uv"
+
+      [[tool.hatch.envs.test.matrix]]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+
+################################################################################
+## PyTest Configuration
+################################################################################
+[tool.pytest]
+
+  [tool.pytest.ini_options]
+  addopts = [
+    "--import-mode=importlib",
+    # Coverage options
+    "--cov-config=pyproject.toml",
+    "--cov-report=xml",
+    "--cov=pact_cli",
+  ]
+
+  log_date_format = "%H:%M:%S"
+  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level       = "NOTSET"
+
+################################################################################
+## Coverage
+################################################################################
+[tool.coverage]
+
+  [tool.coverage.paths]
+  pact-cli = ["/src/pact_cli"]
+  tests    = ["/tests"]
+
+  [tool.coverage.report]
+  exclude_lines = [
+    "@(abc\\.)?abstractmethod",   # Ignore abstract methods
+    "if TYPE_CHECKING:",          # Ignore typing
+    "if __name__ == .__main__.:", # Ignore non-runnable code
+    "raise NotImplementedError",  # Ignore defensive assertions
+  ]
+
+################################################################################
+## Ruff Configuration
+################################################################################
+[tool.ruff]
+extend = "../pyproject.toml"
+
+exclude = []
+
+################################################################################
+## Mypy Configuration
+################################################################################
+[tool.mypy]
+# Overwrite the exclusions from the root pyproject.toml.
+exclude = ''
+
+################################################################################
+## CI Build Wheel
+################################################################################
+[tool.cibuildwheel]
+before-build = "rm -rvf src/pact_cli/{bin,data,lib}"
+skip         = "pp*"
+test-command = "pytest"
+
+  [tool.cibuildwheel.macos]
+  # The repair tool unfortunately did not like the bundled Ruby distributable.
+  # TODO: Check whether delocate-wheel can be configured.
+  repair-wheel-command = ""
+
+  [tool.cibuildwheel.windows]
+  before-build = [
+    'IF EXIST src\pact_cli\bin\ RMDIR /S /Q src\pact_cli\bin',
+    'IF EXIST src\pact_cli\data\ RMDIR /S /Q src\pact_cli\data',
+    'IF EXIST src\pact_cli\lib\ RMDIR /S /Q src\pact_cli\lib',
+  ]
