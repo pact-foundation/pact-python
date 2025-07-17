@@ -174,14 +174,17 @@ requires = [
     installer = "uv"
 
       [tool.hatch.envs.default.scripts]
-      all        = ["example", "format", "lint", "test", "typecheck"]
-      docs       = "mkdocs serve {args}"
-      docs-build = "mkdocs build {args}"
-      example    = "pytest --numprocesses=1 examples/ {args}"
-      format     = "ruff format {args}"
-      lint       = "ruff check --output-format=full --show-fixes {args}"
-      test       = "pytest tests/ {args}"
-      typecheck  = "mypy {args:.}"
+      all                = ["example", "format", "lint", "test", "typecheck"]
+      docs               = "mkdocs serve {args}"
+      docs-build         = "mkdocs build {args}"
+      example            = "pytest --numprocesses=1 examples/ {args}"
+      format             = "ruff format {args}"
+      lint               = "ruff check --output-format=full --show-fixes {args}"
+      test               = "pytest tests/ {args}"
+      typecheck          = ["typecheck-examples", "typecheck-src", "typecheck-tests"]
+      typecheck-examples = "mypy examples/ {args}"
+      typecheck-src      = "mypy src/ {args}"
+      typecheck-tests    = "mypy tests/ {args}"
 
     # Test environment for running unit tests. This automatically tests against all
     # supported Python versions.
