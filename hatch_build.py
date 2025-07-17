@@ -15,10 +15,8 @@ from __future__ import annotations
 import gzip
 import os
 import shutil
-import tarfile
 import tempfile
 import warnings
-import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -28,11 +26,6 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
 
 PACT_ROOT_DIR = Path(__file__).parent.resolve() / "src" / "pact"
-
-# Latest version available at:
-# https://github.com/pact-foundation/pact-ruby-standalone/releases
-PACT_BIN_VERSION = os.getenv("PACT_BIN_VERSION", "2.4.1")
-PACT_BIN_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 
 # Latest version available at:
 # https://github.com/pact-foundation/pact-reference/releases
@@ -91,13 +84,6 @@ class PactBuildHook(BuildHookInterface[Any]):
 
         binaries_included = False
         try:
-            self.pact_bin_install(PACT_BIN_VERSION)
-            binaries_included = True
-        except UnsupportedPlatformError as err:
-            msg = f"Pact binaries on not available for {err.platform}."
-            warnings.warn(msg, RuntimeWarning, stacklevel=2)
-
-        try:
             self.pact_lib_install(PACT_LIB_VERSION)
             binaries_included = True
         except UnsupportedPlatformError as err:
@@ -107,114 +93,6 @@ class PactBuildHook(BuildHookInterface[Any]):
         if not binaries_included:
             msg = "Wheel does not include any binaries. Aborting."
             raise UnsupportedPlatformError(msg)
-
-    def pact_bin_install(self, version: str) -> None:
-        """
-        Install the Pact standalone binaries.
-
-        The binaries are installed in `src/pact/bin`, and the relevant version for
-        the current operating system is determined automatically.
-
-        Args:
-            version: The Pact version to install.
-        """
-        url = self._pact_bin_url(version)
-        if url:
-            artifact = self._download(url)
-            self._pact_bin_extract(artifact)
-
-    def _pact_bin_url(self, version: str) -> str | None:
-        """
-        Generate the download URL for the Pact binaries.
-
-        Generate the download URL for the Pact binaries based on the current
-        platform and specified version. This function mainly contains a lot of
-        matching logic to determine the correct URL to use, due to the
-        inconsistencies in naming conventions between ecosystems.
-
-        Args:
-            version: The upstream Pact version.
-
-        Returns:
-            The URL to download the Pact binaries from, or None if the current
-            platform is not supported.
-        """
-        platform = next(sys_tags()).platform
-
-        if platform.startswith("macosx"):
-            os = "osx"
-            if platform.endswith("arm64"):
-                machine = "arm64"
-            elif platform.endswith("x86_64"):
-                machine = "x86_64"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_BIN_URL.format(
-                version=version,
-                os=os,
-                machine=machine,
-                ext="tar.gz",
-            )
-
-        if platform.startswith("win"):
-            os = "windows"
-
-            if platform.endswith("amd64"):
-                machine = "x86_64"
-            elif platform.endswith(("x86", "win32")):
-                machine = "x86"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_BIN_URL.format(
-                version=version,
-                os=os,
-                machine=machine,
-                ext="zip",
-            )
-
-        if "manylinux" in platform:
-            os = "linux"
-            if platform.endswith("x86_64"):
-                machine = "x86_64"
-            elif platform.endswith("aarch64"):
-                machine = "arm64"
-            else:
-                raise UnsupportedPlatformError(platform)
-            return PACT_BIN_URL.format(
-                version=version,
-                os=os,
-                machine=machine,
-                ext="tar.gz",
-            )
-
-        raise UnsupportedPlatformError(platform)
-
-    def _pact_bin_extract(self, artifact: Path) -> None:
-        """
-        Extract the Pact binaries.
-
-        The binaries in the `bin` directory require the underlying Ruby runtime
-        to be present, which is included in the `lib` directory.
-
-        Args:
-            artifact: The path to the downloaded artifact.
-        """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            if str(artifact).endswith(".zip"):
-                with zipfile.ZipFile(artifact) as f:
-                    f.extractall(tmpdir)  # noqa: S202
-
-            if str(artifact).endswith(".tar.gz"):
-                with tarfile.open(artifact) as f:
-                    f.extractall(tmpdir)  # noqa: S202
-
-            for d in ["bin", "lib"]:
-                if (PACT_ROOT_DIR / d).is_dir():
-                    shutil.rmtree(PACT_ROOT_DIR / d)
-                shutil.copytree(
-                    Path(tmpdir) / "pact" / d,
-                    PACT_ROOT_DIR / d,
-                )
 
     def pact_lib_install(self, version: str) -> None:
         """
