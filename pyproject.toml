@@ -40,15 +40,18 @@ requires-python = ">=3.9"
 # - A specific feature is required in a new minor release
 # - A minor version address vulnerability which directly impacts Pact Python
 dependencies = [
-  "cffi              ~=1.0",
-  "click             ~=8.0",
-  "fastapi           ~=0.0",
-  "psutil            ~=7.0",
-  "requests          ~=2.0",
-  "six               ~=1.0",
-  "typing-extensions ~=4.0 ; python_version < '3.10'",
-  "uvicorn           ~=0.0",
-  "yarl              ~=1.0",
+  # Pact dependencies
+  "pact-python-cli~=2.0",
+  # All other dependencies
+  "cffi~=1.0",
+  "click~=8.0",
+  "fastapi~=0.0",
+  "psutil~=7.0",
+  "requests~=2.0",
+  "six~=1.0",
+  "typing-extensions~=4.0 ; python_version < '3.10'",
+  "uvicorn~=0.0",
+  "yarl~=1.0",
 ]
 
   [project.urls]
@@ -196,6 +199,16 @@ requires = [
       python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
 
 ################################################################################
+## UV Workspace
+################################################################################
+[tool.uv]
+  [tool.uv.sources]
+  pact-python-cli = { workspace = true }
+
+  [tool.uv.workspace]
+  members = ["pact-python-cli"]
+
+################################################################################
 ## PyTest Configuration
 ################################################################################
 [tool.pytest]
@@ -272,7 +285,6 @@ extend-exclude = [
   "src/pact/__version__.py",
   "src/pact/broker.py",
   "src/pact/cli/*.py",
-  "src/pact/constants.py",
   "src/pact/consumer.py",
   "src/pact/http_proxy.py",
   "src/pact/matchers.py",
@@ -321,7 +333,7 @@ extend-exclude = [
     convention = "google"
 
     [tool.ruff.lint.isort]
-    known-first-party = ["pact"]
+    known-first-party = ["pact", "pact_cli"]
 
     [tool.ruff.lint.flake8-tidy-imports]
     ban-relative-imports = "all"

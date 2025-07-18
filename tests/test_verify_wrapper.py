@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from mock import patch, Mock, call
 
-from pact.constants import VERIFIER_PATH
+from pact_cli import VERIFIER_PATH
 from pact.verify_wrapper import VerifyWrapper, PactException, path_exists, sanitize_logs, expand_directories, rerun_command
 from pact import verify_wrapper
 

@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from pact.message_consumer import MessageConsumer, Provider
 from pact.message_pact import MessagePact
-from pact.constants import MESSAGE_PATH
+from pact_cli import MESSAGE_PATH
 from pact import message_pact as message_pact
 from pact import Term
 

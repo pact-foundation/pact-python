@@ -1,10 +1,10 @@
 ---
-name: build
+name: build cli
 
 on:
   push:
     tags:
-      - pact-python/*
+      - pact-python-cli/*
     branches:
       - main
   pull_request:
@@ -26,7 +26,7 @@ env:
 
 jobs:
   complete:
-    name: Build completion check
+    name: Build CLI completion check
     if: always()
 
     permissions:
@@ -35,8 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-sdist
-      - build-x86_64
-      - build-arm64
+      - build-wheels
 
     steps:
       - name: Failed
@@ -66,31 +65,31 @@ jobs:
         run: uv tool install hatch
 
       - name: Create source distribution
-        run: |
-          hatch build --target sdist
+        working-directory: pact-python-cli
+        run: hatch build --target sdist
 
       - name: Upload sdist
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: wheels-sdist
-          path: ./dist/*.tar.*
+          path: pact-python-cli/dist/*.tar*
           if-no-files-found: error
           compression-level: 0
 
-  build-x86_64:
-    name: Build wheels on ${{ matrix.os }} (x86, 64-bit)
+  build-wheels:
+    name: Build wheels on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          - os: macos-13
+          - os: macos-latest
+          - os: ubuntu-24.04-arm
           - os: ubuntu-latest
-            archs: x86_64
-          - os: macos-13  # macOS 13 is the latest on x86_64
-            archs: x86_64
+          - os: windows-11-arm
           - os: windows-latest
-            archs: AMD64
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
@@ -98,21 +97,11 @@ jobs:
           # Fetch all tags
           fetch-depth: 0
 
-      - name: Cache pip packages
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684  # v4.2.3
-        with:
-          path: ~/.cache/pip
-          key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ github.workflow }}-pip-${{ runner.os }}
-            ${{ github.workflow }}-pip
-            ${{ github.workflow }}
-
       - name: Filter targets
         id: cibw-filter
         shell: bash
-        # Building all wheels on PRs is too slow, so we filter them to target
-        # the latest stable version of Python.
+        # On PRs, only build the latest stable version of Python to speed up the
+        # workflow.
         run: |
           if [[ "${{ github.event_name}}" == "pull_request" ]] ; then
             echo "build=cp${STABLE_PYTHON_VERSION/./}-*" >> "$GITHUB_OUTPUT"
@@ -123,82 +112,18 @@ jobs:
       - name: Set macOS deployment target
         if: startsWith(matrix.os, 'macos-')
         run: |
-          echo "MACOSX_DEPLOYMENT_TARGET=10.12" >> "$GITHUB_ENV"
+          echo "MACOSX_DEPLOYMENT_TARGET=10.13" >> "$GITHUB_ENV"
 
       - name: Create wheels
         uses: pypa/cibuildwheel@faf86a6ed7efa889faf6996aa23820831055001a  # v2.23.3
         env:
-          CIBW_ARCHS: ${{ matrix.archs }}
           CIBW_BUILD: ${{ steps.cibw-filter.outputs.build }}
 
       - name: Upload wheels
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
-          name: wheels-${{ matrix.os }}-${{ matrix.archs }}
-          path: ./wheelhouse/*.whl
-          if-no-files-found: error
-          compression-level: 0
-
-  build-arm64:
-    name: Build wheels on ${{ matrix.os }} (arm64)
-
-    # As this requires emulation, it's not worth running on PRs or main
-    if: >-
-      github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags/pact-python/')
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            archs: aarch64
-            build: manylinux
-          - os: ubuntu-latest
-            archs: aarch64
-            build: musllinux
-          - os: macos-latest
-            archs: arm64
-            build: ''
-          # TODO: Re-enable once the issues with Windows ARM64 are resolved.exclude:
-          #       See: pypa/cibuildwheel#1942
-          # - os: windows-latest
-          #   archs: ARM64
-          #   build: ""
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with:
-          # Fetch all tags
-          fetch-depth: 0
-
-      - name: Cache pip packages
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684  # v4.2.3
-        with:
-          path: ~/.cache/pip
-          key: ${{ github.workflow }}-pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ github.workflow }}-pip-${{ runner.os }}
-            ${{ github.workflow }}-pip
-            ${{ github.workflow }}
-
-      - name: Set up QEMU
-        if: startsWith(matrix.os, 'ubuntu-')
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v3.6.0
-        with:
-          platforms: arm64
-
-      - name: Create wheels
-        uses: pypa/cibuildwheel@faf86a6ed7efa889faf6996aa23820831055001a  # v2.23.3
-        env:
-          CIBW_ARCHS: ${{ matrix.archs }}
-          CIBW_BUILD: ${{ matrix.build == '' && '*' || format('*{0}*', matrix.build) }}
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
-        with:
-          name: wheels-${{ matrix.os }}-${{ matrix.archs }}-${{  matrix.build }}
-          path: ./wheelhouse/*.whl
+          name: wheels-${{ matrix.os }}
+          path: pact-python-cli/wheelhouse/*.whl
           if-no-files-found: error
           compression-level: 0
 
@@ -207,16 +132,15 @@ jobs:
 
     if: >-
       github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags/pact-python/')
+      startsWith(github.event.ref, 'refs/tags/pact-python-cli/')
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/pact-python
+      url: https://pypi.org/p/pact-python-cli
 
     needs:
       - build-sdist
-      - build-x86_64
-      - build-arm64
+      - build-wheels
 
     permissions:
       contents: read
@@ -235,19 +159,15 @@ jobs:
         with:
           tool: git-cliff,typos
 
-      - name: Download wheels and sdist
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
-        with:
-          path: wheels
-          merge-multiple: true
-
       - name: Update changelog
         run: git cliff --verbose
+        working-directory: pact-python-cli
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Generate release changelog
         id: release-changelog
+        working-directory: pact-python-cli
         run: |
           git cliff \
             --current \
@@ -258,11 +178,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: Download wheels and sdist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
+        with:
+          path: pact-python-cli/wheelhouse
+          merge-multiple: true
+
       - name: Generate release
         id: release
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8  # v2.3.2
         with:
-          files: wheels/*
+          files: pact-python-cli/wheelhouse/*
           body_path: ${{ runner.temp }}/release-changelog.md
           draft: false
           prerelease: false
@@ -272,7 +198,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc  # v1.12.4
         with:
           skip-existing: true
-          packages-dir: wheels
+          packages-dir: pact-python-cli/wheelhouse
 
       - name: Create PR for changelog update
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e  # v7.0.8

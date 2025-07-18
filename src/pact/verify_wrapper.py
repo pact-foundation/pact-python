@@ -1,7 +1,7 @@
 """Wrapper to verify previously created pacts."""
 
 import warnings
-from pact.constants import VERIFIER_PATH
+from pact_cli import VERIFIER_PATH
 import sys
 import os
 import platform

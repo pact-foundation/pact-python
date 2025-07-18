@@ -36,7 +36,7 @@ from pytest_bdd import given, parsers, then, when
 from typing_extensions import Self
 from yarl import URL
 
-import pact.constants  # type: ignore[import-untyped]
+import pact_cli
 from pact import __version__
 from pact.v3._server import MessageProducer
 from pact.v3._util import find_free_port
@@ -343,8 +343,8 @@ class PactBroker:
         self.provider = provider
         self.consumer = consumer
 
-        self.broker_bin: str = (
-            shutil.which("pact-broker") or pact.constants.BROKER_CLIENT_PATH
+        self.broker_bin: str = pact_cli.BROKER_CLIENT_PATH or shutil.which(
+            "pact-broker"
         )
         if not self.broker_bin:
             if "CI" in os.environ:

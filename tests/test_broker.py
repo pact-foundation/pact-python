@@ -5,7 +5,7 @@ from mock import patch
 
 from pact.broker import Broker
 from pact.consumer import Consumer, Provider
-from pact.constants import BROKER_CLIENT_PATH
+from pact_cli import BROKER_CLIENT_PATH
 from pact import broker as broker
 
 
