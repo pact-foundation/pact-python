@@ -38,8 +38,6 @@ repos:
     rev: v2.1.1
     hooks:
       - id: biome-check
-        additional_dependencies:
-          - '@biomejs/biome@2.0.4'
 
   - repo: https://github.com/ComPWA/taplo-pre-commit
     rev: v0.9.3
@@ -50,7 +48,7 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.4
     hooks:
-      - id: ruff
+      - id: ruff-check
         # Exclude python files in pact/** and tests/**, except for the
         # files in src/pact/v3/** and tests/v3/**.
         exclude: ^(src/pact|tests)/(?!v3/).*\.py$
