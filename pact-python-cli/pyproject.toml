@@ -194,13 +194,10 @@ exclude = ''
 ################################################################################
 [tool.cibuildwheel]
 before-build = "rm -rvf src/pact_cli/{bin,data,lib}"
-skip         = "pp*"
-test-command = "pytest"
 
-  [tool.cibuildwheel.macos]
-  # The repair tool unfortunately did not like the bundled Ruby distributable.
-  # TODO: Check whether delocate-wheel can be configured.
-  repair-wheel-command = ""
+# The repair tool unfortunately did not like the bundled Ruby distributable,
+# with false-positives missing libraries despite being bundled.
+repair-wheel-command = ""
 
   [tool.cibuildwheel.windows]
   before-build = [
