@@ -88,6 +88,10 @@ repos:
         language: system
         types:
           - python
-        exclude: ^(src/pact|tests|examples|examples/tests)/(?!v3/).*\.py$
+        exclude: |
+          (?x)^(
+            .*/hatch_build.py |
+            (src|tests|examples)/(?!v3/).*\.py
+          )$
         stages:
           - pre-push
