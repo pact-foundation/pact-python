@@ -11,9 +11,12 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   STABLE_PYTHON_VERSION: '3.13'
@@ -142,10 +145,9 @@ jobs:
       - build-wheels
 
     permissions:
+      contents: read
       # Required for trusted publishing
       id-token: write
-      # Required for release creation
-      contents: write
 
     steps:
       - name: Checkout code
