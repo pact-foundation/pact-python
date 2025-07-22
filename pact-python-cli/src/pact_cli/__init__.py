@@ -24,10 +24,21 @@ https://github.com/pact-foundation/pact-python.
 
 from __future__ import annotations
 
+__author__ = "Pact Foundation"
+__license__ = "MIT"
+__url__ = "https://github.com/pact-foundation/pact-python"
+
 import os
 import shutil
 import warnings
 from pathlib import Path
+
+from pact_cli.__version__ import (
+    __version__ as __version__,
+)
+from pact_cli.__version__ import (
+    __version_tuple__ as __version_tuple__,
+)
 
 _USE_SYSTEM_BINS = os.getenv("PACT_USE_SYSTEM_BINS", "").upper() in ("TRUE", "YES")
 _BIN_DIR = Path(__file__).parent.resolve() / "bin"
