@@ -3,15 +3,8 @@
 description = "Pact CLI bundle for Python"
 name        = "pact-python-cli"
 
+dynamic = ["version"]
 license = "MIT"
-
-# The first three segments of the version correspond to the Pact CLI version.
-# The last segment is incremented if there is a need to update the Python
-# package without changing the Pact CLI version.
-#
-# For the latest version, see:
-# https://github.com/pact-foundation/pact-ruby-standalone/releases
-version = "2.4.26.0"
 
 authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
@@ -70,6 +63,7 @@ requires-python = ">=3.9"
 [build-system]
 build-backend = "hatchling.build"
 requires = [
+  "hatch-vcs",
   "hatchling",
   "packaging",
   "requests",
@@ -78,7 +72,28 @@ requires = [
 
 [tool.hatch]
 
+  [tool.hatch.version]
+  source      = "vcs"
+  tag-pattern = "^pact-python-cli/(?P<version>[vV]?\\d+(?:\\.\\d+)*)$"
+
+    [tool.hatch.version.raw-options]
+    git_describe_command = [
+      "git",
+      "describe",
+      "--tags",
+      "--dirty",
+      "--always",
+      "--long",
+      "--match",
+      "pact-python-cli/*",
+    ]
+    root = ".."
+    version_scheme = "no-guess-dev"
+
   [tool.hatch.build]
+
+    [tool.hatch.build.hooks.vcs]
+    version-file = "src/pact_cli/__version__.py"
 
     [tool.hatch.build.targets.sdist]
     include = [

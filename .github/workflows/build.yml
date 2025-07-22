@@ -49,9 +49,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
-          # Fetch all tags
           fetch-depth: 0
 
       - name: Set up uv
@@ -93,9 +93,9 @@ jobs:
             archs: AMD64
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
-          # Fetch all tags
           fetch-depth: 0
 
       - name: Cache pip packages
@@ -167,9 +167,9 @@ jobs:
           #   build: ""
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
-          # Fetch all tags
           fetch-depth: 0
 
       - name: Cache pip packages
@@ -227,7 +227,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
-          # Fetch all tags
           fetch-depth: 0
 
       - name: Install git cliff and typos

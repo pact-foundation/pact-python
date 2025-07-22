@@ -1,3 +1,4 @@
+src/pact_cli/__version__.py
 src/pact_cli/bin
-src/pact_cli/lib
 src/pact_cli/data
+src/pact_cli/lib

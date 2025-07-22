@@ -124,7 +124,22 @@ requires = [
 [tool.hatch]
 
   [tool.hatch.version]
-  source = "vcs"
+  source      = "vcs"
+  tag-pattern = "^pact-python/(?P<version>[vV]?\\d+(?:\\.\\d+)*)$"
+
+    [tool.hatch.version.raw-options]
+    git_describe_command = [
+      "git",
+      "describe",
+      "--tags",
+      " --dirty",
+      "--always",
+      "--long",
+      "--match",
+      "pact-python-cli/*",
+    ]
+    root = "."
+    version_scheme = "no-guess-dev"
 
   [tool.hatch.build]
 
@@ -176,6 +191,9 @@ requires = [
     ]
     features = ["devel"]
     installer = "uv"
+    # This is require to get around an incompatibility between hatch and uv
+    # See: https://github.com/pypa/hatch/issues/1639
+    pre-install-commands = ["uv pip install -e .[devel]"]
 
       [tool.hatch.envs.default.scripts]
       all                = ["example", "format", "lint", "test", "typecheck"]
