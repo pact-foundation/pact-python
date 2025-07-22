@@ -145,7 +145,8 @@ jobs:
       - build-wheels
 
     permissions:
-      contents: read
+      # Required for creating the release
+      contents: write
       # Required for trusted publishing
       id-token: write
 
