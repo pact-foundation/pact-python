@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  STABLE_PYTHON_VERSION: '3.13'
+  STABLE_PYTHON_VERSION: '313'
   HATCH_VERBOSE: '1'
   FORCE_COLOR: '1'
   CIBW_BUILD_FRONTEND: build
@@ -97,24 +97,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Filter targets
-        id: cibw-filter
-        shell: bash
-        # On PRs, only build the latest stable version of Python to speed up the
-        # workflow.
-        run: |
-          if [[ "${{ github.event_name}}" == "pull_request" ]] ; then
-            echo "build=cp${STABLE_PYTHON_VERSION/./}-*" >> "$GITHUB_OUTPUT"
-          else
-            echo "build=*" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Create wheels
         uses: pypa/cibuildwheel@95d2f3a92fbf80abe066b09418bbf128a8923df2  # v3.0.1
         with:
           package-dir: pact-python-cli
         env:
-          CIBW_BUILD: ${{ steps.cibw-filter.outputs.build }}
+          CIBW_BUILD: cp${{ env.STABLE_PYTHON_VERSION }}-*
 
       - name: Upload wheels
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2

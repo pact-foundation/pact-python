@@ -66,8 +66,7 @@ requires = [
   "hatch-vcs",
   "hatchling",
   "packaging",
-  "requests",
-  "setuptools ; python_version >= '3.12'",
+  # "setuptools ; python_version >= '3.12'",
 ]
 
 [tool.hatch]
@@ -95,29 +94,12 @@ requires = [
     [tool.hatch.build.hooks.vcs]
     version-file = "src/pact_cli/__version__.py"
 
-    [tool.hatch.build.targets.sdist]
-    include = [
-      # Source
-      "/src/pact_cli/**/*.py",
-      "/src/pact_cli/**/*.pyi",
-      "/src/pact_cli/**/py.typed",
-
-      # Metadata
-      "*.md",
-      "LICENSE",
-    ]
-
     [tool.hatch.build.targets.wheel]
-    artifacts = ["/src/pact_cli/bin/*", "/src/pact_cli/lib/*"]
-    include = [
-      # Source
-      "/src/pact_cli/**/*.py",
-      "/src/pact_cli/**/*.pyi",
-      "/src/pact_cli/**/py.typed",
-    ]
-    packages = ["/src/pact_cli"]
+    artifacts = ["src/pact_cli/bin", "src/pact_cli/lib"]
+    packages  = ["src/pact_cli"]
 
       [tool.hatch.build.targets.wheel.hooks.custom]
+      patch = "hatch_build.py"
 
   ########################################
   ## Hatch Environment Configuration
@@ -208,15 +190,14 @@ exclude = ''
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
-before-build = "rm -rvf src/pact_cli/{bin,data,lib}"
-
 # The repair tool unfortunately did not like the bundled Ruby distributable,
 # with false-positives missing libraries despite being bundled.
 repair-wheel-command = ""
 
-  [tool.cibuildwheel.windows]
-  before-build = [
-    'IF EXIST src\pact_cli\bin\ RMDIR /S /Q src\pact_cli\bin',
-    'IF EXIST src\pact_cli\data\ RMDIR /S /Q src\pact_cli\data',
-    'IF EXIST src\pact_cli\lib\ RMDIR /S /Q src\pact_cli\lib',
-  ]
+  [[tool.cibuildwheel.overrides]]
+  environment.MACOSX_DEPLOYMENT_TARGET = "10.13"
+  select                               = "*-macosx_x86_64"
+
+  [[tool.cibuildwheel.overrides]]
+  environment.MACOSX_DEPLOYMENT_TARGET = "11.0"
+  select                               = "*-macosx_arm64"
