@@ -92,7 +92,7 @@ jobs:
           submodules: true
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
 
@@ -170,7 +170,7 @@ jobs:
           submodules: true
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
 
@@ -212,7 +212,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
 
@@ -262,7 +262,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
 
@@ -291,7 +291,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
 
@@ -320,7 +320,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
 
@@ -373,7 +373,7 @@ jobs:
           key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@2c7142f755d7b37bdaea8d226073714c732889fe  # v6.4.2
+        uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
         with:
           enable-cache: true
           cache-suffix: pre-commit
