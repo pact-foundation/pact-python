@@ -13,23 +13,24 @@ not set, a pinned version will be used instead.
 from __future__ import annotations
 
 import logging
+import os
 import shutil
+import sys
 import tarfile
 import tempfile
+import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Any
 
-import requests
+from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
 
 logger = logging.getLogger(__name__)
 
+EXE = ".exe" if os.name == "nt" else ""
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_cli"
-
-# Latest version available at:
-# https://github.com/pact-foundation/pact-ruby-standalone/releases
 PACT_BIN_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 
 
@@ -47,15 +48,12 @@ class UnsupportedPlatformError(RuntimeError):
         super().__init__(f"Unsupported platform {platform}")
 
 
-class PactBuildHook(BuildHookInterface[Any]):
+class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
     """Custom hook to download Pact binaries."""
 
-    PLUGIN_NAME = "custom"
-    """
-    This is a hard-coded name required by Hatch
-    """
+    PLUGIN_NAME = "pact-cli"
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(self, *args: object, **kwargs: object) -> None:
         """
         Initialize the build hook.
 
@@ -64,7 +62,6 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         super().__init__(*args, **kwargs)
         self.tmpdir = Path(tempfile.TemporaryDirectory().name)
-        self.tmpdir.mkdir(parents=True, exist_ok=True)
 
     def clean(self, versions: list[str]) -> None:  # noqa: ARG002
         """Clean up any files created by the build hook."""
@@ -77,51 +74,54 @@ class PactBuildHook(BuildHookInterface[Any]):
         build_data: dict[str, Any],
     ) -> None:
         """Hook into Hatchling's build process."""
-        build_data["infer_tag"] = True
-        build_data["pure_python"] = False
-
         cli_version = ".".join(self.metadata.version.split(".")[:3])
         if not cli_version:
             self.app.display_error("Failed to determine Pact CLI version.")
 
         try:
-            self.pact_bin_install(cli_version)
+            self._pact_bin_install(cli_version)
         except UnsupportedPlatformError as err:
             msg = f"Pact CLI is not available for {err.platform}."
             logger.exception(msg, RuntimeWarning, stacklevel=2)
 
-    def pact_bin_install(self, version: str) -> None:
+        build_data["tag"] = self._infer_tag()
+
+    def _sys_tag_platform(self) -> str:
+        """
+        Get the platform tag from the current system tags.
+
+        This is used to determine the target platform for the Pact binaries.
+        """
+        return next(t.platform for t in sys_tags())
+
+    def _pact_bin_install(self, version: str) -> None:
         """
         Install the Pact standalone binaries.
 
-        The binaries are installed in `src/pact/bin`, and the relevant version for
-        the current operating system is determined automatically.
+        The binaries are installed in `src/pact_cli/bin`, and the relevant
+        version for the current operating system is determined automatically.
 
         Args:
-            version: The Pact version to install.
+            version:
+                The Pact CLI version to install.
         """
         url = self._pact_bin_url(version)
-        if url:
-            artifact = self._download(url)
-            self._pact_bin_extract(artifact)
+        artifact = self._download(url)
+        self._pact_bin_extract(artifact)
 
-    def _pact_bin_url(self, version: str) -> str | None:
+    def _pact_bin_url(self, version: str) -> str:
         """
         Generate the download URL for the Pact binaries.
 
-        Generate the download URL for the Pact binaries based on the current
-        platform and specified version. This function mainly contains a lot of
-        matching logic to determine the correct URL to use, due to the
-        inconsistencies in naming conventions between ecosystems.
-
         Args:
-            version: The upstream Pact version.
+            version:
+                The Pact CLI version to download.
 
         Returns:
-            The URL to download the Pact binaries from, or None if the current
-            platform is not supported.
+            The URL to download the Pact binaries from. If the platform is not
+            supported, the resulting URL may be invalid.
         """
-        platform = next(sys_tags()).platform
+        platform = self._sys_tag_platform()
 
         if platform.startswith("macosx"):
             os = "osx"
@@ -161,22 +161,21 @@ class PactBuildHook(BuildHookInterface[Any]):
         Args:
             artifact: The path to the downloaded artifact.
         """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            if str(artifact).endswith(".zip"):
-                with zipfile.ZipFile(artifact) as f:
-                    f.extractall(tmpdir)  # noqa: S202
+        if str(artifact).endswith(".zip"):
+            with zipfile.ZipFile(artifact) as f:
+                f.extractall(self.tmpdir)  # noqa: S202
 
-            if str(artifact).endswith(".tar.gz"):
-                with tarfile.open(artifact) as f:
-                    f.extractall(tmpdir)  # noqa: S202
+        if str(artifact).endswith(".tar.gz"):
+            with tarfile.open(artifact) as f:
+                f.extractall(self.tmpdir)  # noqa: S202
 
-            for d in ["bin", "lib"]:
-                if (PKG_DIR / d).is_dir():
-                    shutil.rmtree(PKG_DIR / d)
-                shutil.copytree(
-                    Path(tmpdir) / "pact" / d,
-                    PKG_DIR / d,
-                )
+        for d in ["bin", "lib"]:
+            if (PKG_DIR / d).is_dir():
+                shutil.rmtree(PKG_DIR / d)
+            shutil.copytree(
+                Path(self.tmpdir) / "pact" / d,
+                PKG_DIR / d,
+            )
 
     def _download(self, url: str) -> Path:
         """
@@ -196,13 +195,31 @@ class PactBuildHook(BuildHookInterface[Any]):
         artifact.parent.mkdir(parents=True, exist_ok=True)
 
         if not artifact.exists():
-            response = requests.get(url, timeout=30)
-            try:
-                response.raise_for_status()
-            except requests.HTTPError as e:
-                msg = f"Failed to download from {url}."
-                raise RuntimeError(msg) from e
-            with artifact.open("wb") as f:
-                f.write(response.content)
+            urllib.request.urlretrieve(url, artifact)  # noqa: S310
 
         return artifact
+
+    def _infer_tag(self) -> str:
+        """
+        Infer the tag for the current build.
+
+        Since we have a pure Python wrapper around a binary CLI, we are not
+        tied to any specific Python version or ABI. As a result, we generate
+        `py3-none-{platform}` tags for the wheels.
+        """
+        platform = self._sys_tag_platform()
+
+        # On macOS, the version needs to be set based on the deployment target
+        # (i.e., the version of the system libraries).
+        if sys.platform == "darwin" and (
+            deployment_target := os.environ.get("MACOSX_DEPLOYMENT_TARGET")
+        ):
+            target = deployment_target.replace(".", "_")
+            if platform.endswith("_arm64"):
+                platform = f"macosx_{target}_arm64"
+            elif platform.endswith("_x86_64"):
+                platform = f"macosx_{target}_x86_64"
+            else:
+                raise UnsupportedPlatformError(platform)
+
+        return f"py3-none-{platform}"
