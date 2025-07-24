@@ -3,8 +3,10 @@
 description = "Pact CLI bundle for Python"
 name        = "pact-python-cli"
 
-dynamic = ["version"]
-license = "MIT"
+dynamic  = ["version"]
+keywords = ["pact", "cli", "pact-python", "contract-testing"]
+license  = "MIT"
+readme   = "README.md"
 
 authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]

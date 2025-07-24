@@ -11,6 +11,8 @@ This sub-package is part of the [Pact Python](https://github.com/pact-foundation
 
 It is used by version 2 of Pact Python, and can be used to install the Pact CLI in Python environments.
 
+The versionining of `pact-python-cli` is aligned with the Pact CLI versioning. For example, version `2.4.26.2` corresponds to Pact CLI version `2.4.26`, with the `.2` indicating that this is the third release of that Pact CLI version in the Python package (with the first release being `.0`).
+
 ## Installation
 
 You can install this package via pip:
@@ -21,7 +23,9 @@ pip install pact-python-cli
 
 ## Contributing
 
-Contributions to this package are generally not required as it contains minimal Python functionality and generally only requires updating the version number. To contribute to the Pact CLI itself, please refer to the [Pact Ruby Standalone repository](https://github.com/pact-foundation/pact-ruby-standalone).
+Contributions to this package are generally not required as it contains minimal Python functionality and generally only requires updating the version number. This is done by pushing a tag of the form `pact-python-cli/<version>` which will automatically trigger a release build in the CI pipeline.
+
+To contribute to the Pact CLI itself, please refer to the [Pact Ruby Standalone repository](https://github.com/pact-foundation/pact-ruby-standalone).
 
 For contributing to Pact Python, see the [main contributing guide](https://github.com/pact-foundation/pact-python/blob/main/CONTRIBUTING.md).
 
