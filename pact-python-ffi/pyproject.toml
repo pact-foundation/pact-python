@@ -3,8 +3,224 @@
 description = "Python bindings for the Pact FFI library"
 name        = "pact-python-ffi"
 
-license = "MIT"
-version = "0.0.0"
+# dynamic  = ["version"]
+keywords = ["pact", "ffi", "pact-python", "contract-testing"]
+license  = "MIT"
+readme   = "README.md"
+version  = "0.4.22.0"
 
 authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
+  "Topic :: Software Development :: Testing",
+]
+
+requires-python = ">=3.9"
+
+dependencies = ["cffi~=1.0"]
+
+  [project.urls]
+  "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
+  "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/pact-python-ffi/CHANGELOG.md"
+  "Documentation" = "https://docs.pact.io"
+  "Homepage"      = "https://pact.io"
+  "Repository"    = "https://github.com/pact-foundation/pact-python"
+
+  [project.optional-dependencies]
+  # Linting and formatting tools use a more narrow specification to ensure
+  # developper consistency. All other dependencies are as above.
+  devel = [
+    "pact-python-ffi[devel-test]",
+    "pact-python-ffi[devel-types]",
+    "ruff==0.12.4",
+  ]
+  devel-test = ["pytest-cov~=6.0", "pytest-mock~=3.0", "pytest~=8.0"]
+  devel-types = ["mypy==1.17.0"]
+
+################################################################################
+## Build System
+################################################################################
+[build-system]
+build-backend = "hatchling.build"
+requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
+
+[tool.hatch]
+
+  [tool.hatch.version]
+  source      = "vcs"
+  tag-pattern = "^pact-python-ffi/(?P<version>[vV]?\\d+(?:\\.\\d+)*)$"
+
+    [tool.hatch.version.raw-options]
+    git_describe_command = [
+      "git",
+      "describe",
+      "--tags",
+      "--dirty",
+      "--always",
+      "--long",
+      "--match",
+      "pact-python-ffi/*",
+    ]
+    root = ".."
+    version_scheme = "no-guess-dev"
+
+  [tool.hatch.build]
+
+    [tool.hatch.build.hooks.vcs]
+    version-file = "src/pact_ffi/__version__.py"
+
+    [tool.hatch.build.targets.wheel]
+    packages = ["src/pact_ffi"]
+
+      [tool.hatch.build.targets.wheel.hooks.custom]
+      patch = "hatch_build.py"
+
+  ########################################
+  ## Hatch Environment Configuration
+  ########################################
+  [tool.hatch.envs]
+
+    # Install dev dependencies in the default environment to simplify the developer
+    # workflow.
+    [tool.hatch.envs.default]
+    extra-dependencies = ["hatch-vcs", "hatchling", "packaging", "cffi"]
+    features           = ["devel"]
+    installer          = "uv"
+
+    # Update paths to ensure the shared library can be found
+    # TODO: See if this can be overridden on a per-platform basis
+    # https://github.com/pypa/hatch/discussions/2024
+    # [tool.hatch.envs.default.overrides]
+    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
+
+      [tool.hatch.envs.default.scripts]
+      all             = ["format", "lint", "test", "typecheck"]
+      format          = "ruff format {args}"
+      lint            = "ruff check --show-fixes {args}"
+      test            = "pytest tests/ {args}"
+      typecheck       = ["typecheck-src", "typecheck-tests"]
+      typecheck-src   = "mypy src/ {args}"
+      typecheck-tests = "mypy tests/ {args}"
+
+    # Test environment for running unit tests. This automatically tests against all
+    # supported Python versions.
+    [tool.hatch.envs.test]
+    features  = ["devel-test"]
+    installer = "uv"
+
+    # Update paths to ensure the shared library can be found
+    # TODO: See if this can be overridden on a per-platform basis
+    # https://github.com/pypa/hatch/discussions/2024
+    # [tool.hatch.envs.default.overrides]
+    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
+
+      [[tool.hatch.envs.test.matrix]]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+
+################################################################################
+## PyTest Configuration
+################################################################################
+[tool.pytest]
+
+  [tool.pytest.ini_options]
+  addopts = [
+    "--import-mode=importlib",
+    # Coverage options
+    "--cov-config=pyproject.toml",
+    "--cov-report=xml",
+    "--cov=pact_ffi",
+  ]
+
+  log_date_format = "%H:%M:%S"
+  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level       = "NOTSET"
+
+################################################################################
+## Coverage
+################################################################################
+[tool.coverage]
+
+  [tool.coverage.paths]
+  pact-ffi = ["/src/pact_ffi"]
+  tests    = ["/tests"]
+
+  [tool.coverage.report]
+  exclude_lines = [
+    "@(abc\\.)?abstractmethod",   # Ignore abstract methods
+    "if TYPE_CHECKING:",          # Ignore typing
+    "if __name__ == .__main__.:", # Ignore non-runnable code
+    "raise NotImplementedError",  # Ignore defensive assertions
+  ]
+
+################################################################################
+## Ruff Configuration
+################################################################################
+[tool.ruff]
+extend = "../pyproject.toml"
+
+exclude = []
+
+################################################################################
+## Mypy Configuration
+################################################################################
+[tool.mypy]
+# Overwrite the exclusions from the root pyproject.toml.
+exclude = ''
+
+################################################################################
+## CI Build Wheel
+################################################################################
+[tool.cibuildwheel]
+environment.HATCH_VERBOSE = "1"
+
+  [tool.cibuildwheel.linux]
+  before-build = ["uv pip install --system abi3audit"]
+  environment.PACT_LIB_DIR = "/tmp/pact_ffi"
+  repair-wheel-command = [
+    "export LD_LIBRARY_PATH=\"$PACT_LIB_DIR:$LD_LIBRARY_PATH\"",
+    "auditwheel repair -w {dest_dir} {wheel}",
+    "abi3audit --strict --report {wheel}",
+  ]
+
+  [tool.cibuildwheel.macos]
+  before-build = ["pip install abi3audit"]
+  environment.PACT_LIB_DIR = "/tmp/pact_ffi"
+  repair-wheel-command = [
+    "export DYLD_LIBRARY_PATH=\"$PACT_LIB_DIR:$DYLD_LIBRARY_PATH\"",
+    "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}",
+    "abi3audit --strict --report {wheel}",
+  ]
+
+  [tool.cibuildwheel.windows]
+  archs = ["auto64"]
+  before-build = ["pip install abi3audit delvewheel"]
+  environment.PACT_LIB_DIR = "C:/tmp/pact_ffi"
+  repair-wheel-command = [
+    "delvewheel repair -vv --add-path \"%PACT_LIB_DIR%\" -w {dest_dir} {wheel}",
+    "abi3audit --strict --report {wheel}",
+  ]
+
+  [[tool.cibuildwheel.overrides]]
+  environment.MACOSX_DEPLOYMENT_TARGET = "12.0"
+  inherit.environment                  = "append"
+  select                               = "*-macosx_x86_64"
+
+  [[tool.cibuildwheel.overrides]]
+  environment.MACOSX_DEPLOYMENT_TARGET = "12.0"
+  inherit.environment                  = "append"
+  select                               = "*-macosx_arm64"
