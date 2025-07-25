@@ -72,7 +72,7 @@ dependencies = [
     "pact-python[devel-docs]",
     "pact-python[devel-test]",
     "pact-python[devel-types]",
-    "ruff==0.12.4",
+    "ruff==0.12.5",
   ]
   devel-docs = [
     "mkdocs-literate-nav~=0.6",
