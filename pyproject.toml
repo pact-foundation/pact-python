@@ -195,6 +195,12 @@ requires = [
     # See: https://github.com/pypa/hatch/issues/1639
     pre-install-commands = ["uv pip install -e .[devel]"]
 
+    # Update paths to ensure the shared library can be found
+    # TODO: See if this can be overridden on a per-platform basis
+    # https://github.com/pypa/hatch/discussions/2024
+    # [tool.hatch.envs.default.overrides]
+    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
+
       [tool.hatch.envs.default.scripts]
       all                = ["example", "format", "lint", "test", "typecheck"]
       docs               = "mkdocs serve {args}"
@@ -213,6 +219,12 @@ requires = [
     [tool.hatch.envs.test]
     features  = ["devel-test"]
     installer = "uv"
+
+    # Update paths to ensure the shared library can be found
+    # TODO: See if this can be overridden on a per-platform basis
+    # https://github.com/pypa/hatch/discussions/2024
+    # [tool.hatch.envs.default.overrides]
+    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
 
       [[tool.hatch.envs.test.matrix]]
       python = ["3.10", "3.11", "3.12", "3.13", "3.9"]

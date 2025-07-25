@@ -1,0 +1,10 @@
+#:schema https://json.schemastore.org/ruff.json
+extend = "../pyproject.toml"
+
+[lint]
+ignore = [
+  "D103",    # Require docstrings on public functions
+  "INP001",  # Forbid implicit namespaces
+  "PLR2004", # Forbid magic numbers
+  "S101",    # Disable assert
+]
