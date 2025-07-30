@@ -130,7 +130,7 @@ def test_exec_wrapper_mock_service() -> None:
         stderr=subprocess.PIPE,
         text=True,
     )
-    time.sleep(1)
+    time.sleep(2)
     process.terminate()
     process.wait()
 
