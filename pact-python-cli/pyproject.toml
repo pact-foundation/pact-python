@@ -54,7 +54,7 @@ requires-python = ">=3.9"
   devel = [
     "pact-python-cli[devel-test]",
     "pact-python-cli[devel-types]",
-    "ruff==0.12.4",
+    "ruff==0.12.7",
   ]
   devel-test = ["pytest-cov~=6.0", "pytest-mock~=3.0", "pytest~=8.0"]
   devel-types = ["mypy==1.17.0"]
