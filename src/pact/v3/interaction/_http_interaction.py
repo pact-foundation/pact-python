@@ -8,7 +8,7 @@ import json
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Literal
 
-import pact.v3.ffi
+import pact_ffi
 from pact.v3.interaction._base import Interaction
 from pact.v3.match import Matcher
 from pact.v3.match.matcher import IntegrationJSONEncoder
@@ -61,7 +61,7 @@ class HttpInteraction(Interaction):
     ```
     """
 
-    def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
+    def __init__(self, pact_handle: pact_ffi.PactHandle, description: str) -> None:
         """
         Initialise a new HTTP Interaction.
 
@@ -71,16 +71,16 @@ class HttpInteraction(Interaction):
         [`Pact`][pact.v3.Pact] instance.
         """
         super().__init__(description)
-        self.__handle = pact.v3.ffi.new_interaction(pact_handle, description)
-        self.__interaction_part = pact.v3.ffi.InteractionPart.REQUEST
+        self.__handle = pact_ffi.new_interaction(pact_handle, description)
+        self.__interaction_part = pact_ffi.InteractionPart.REQUEST
         self._request_indices: dict[
-            tuple[pact.v3.ffi.InteractionPart, str],
+            tuple[pact_ffi.InteractionPart, str],
             int,
         ] = defaultdict(int)
         self._parameter_indices: dict[str, int] = defaultdict(int)
 
     @property
-    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+    def _handle(self) -> pact_ffi.InteractionHandle:
         """
         Handle for the Interaction.
 
@@ -90,7 +90,7 @@ class HttpInteraction(Interaction):
         return self.__handle
 
     @property
-    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+    def _interaction_part(self) -> pact_ffi.InteractionPart:
         """
         Interaction part.
 
@@ -115,7 +115,7 @@ class HttpInteraction(Interaction):
             path_str = json.dumps(path, cls=IntegrationJSONEncoder)
         else:
             path_str = path
-        pact.v3.ffi.with_request(self._handle, method, path_str)
+        pact_ffi.with_request(self._handle, method, path_str)
         return self
 
     def with_header(
@@ -221,7 +221,7 @@ class HttpInteraction(Interaction):
             value_str: str = json.dumps(value, cls=IntegrationJSONEncoder)
         else:
             value_str = value
-        pact.v3.ffi.with_header_v2(
+        pact_ffi.with_header_v2(
             self._handle,
             interaction_part,
             name,
@@ -313,7 +313,7 @@ class HttpInteraction(Interaction):
                 [`will_respond_with(...)`][pact.v3.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
-        pact.v3.ffi.set_header(
+        pact_ffi.set_header(
             self._handle,
             self._parse_interaction_part(part),
             name,
@@ -423,7 +423,7 @@ class HttpInteraction(Interaction):
             value_str: str = json.dumps(value, cls=IntegrationJSONEncoder)
         else:
             value_str = value
-        pact.v3.ffi.with_query_parameter_v2(
+        pact_ffi.with_query_parameter_v2(
             self._handle,
             name,
             index,
@@ -468,6 +468,6 @@ class HttpInteraction(Interaction):
             status:
                 Status for the response.
         """
-        pact.v3.ffi.response_status(self._handle, status)
-        self.__interaction_part = pact.v3.ffi.InteractionPart.RESPONSE
+        pact_ffi.response_status(self._handle, status)
+        self.__interaction_part = pact_ffi.InteractionPart.RESPONSE
         return self

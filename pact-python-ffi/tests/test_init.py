@@ -13,8 +13,9 @@ Instead, these tests fall under two broad categories:
 
 import re
 
-import pact_ffi
 import pytest
+
+import pact_ffi
 from pact_ffi.ffi import lib
 
 

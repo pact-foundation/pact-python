@@ -42,6 +42,7 @@ requires-python = ">=3.9"
 dependencies = [
   # Pact dependencies
   "pact-python-cli~=2.0",
+  "pact-python-ffi~=0.4.0",
   # All other dependencies
   "cffi~=1.0",
   "click~=8.0",
@@ -69,6 +70,7 @@ dependencies = [
   # developper consistency. All other dependencies are as above.
   devel = [
     "pact-python-cli[devel]",
+    "pact-python-ffi[devel]",
     "pact-python[devel-docs]",
     "pact-python[devel-test]",
     "pact-python[devel-types]",
@@ -109,14 +111,7 @@ dependencies = [
 
 [build-system]
 build-backend = "hatchling.build"
-requires = [
-  "cffi",
-  "hatch-vcs",
-  "hatchling",
-  "packaging",
-  "requests",
-  "setuptools ; python_version >= '3.12'",
-]
+requires      = ["hatch-vcs", "hatchling"]
 
 ################################################################################
 ## Hatch Configuration
@@ -136,7 +131,7 @@ requires = [
       "--always",
       "--long",
       "--match",
-      "pact-python-cli/*",
+      "pact-python/*",
     ]
     root = "."
     version_scheme = "no-guess-dev"
@@ -146,33 +141,8 @@ requires = [
     [tool.hatch.build.hooks.vcs]
     version-file = "src/pact/__version__.py"
 
-    [tool.hatch.build.targets.sdist]
-    include = [
-      # Source
-      "/src/pact/**/*.py",
-      "/src/pact/**/*.pyi",
-      "/src/pact/**/py.typed",
-
-      # Metadata
-      "*.md",
-      "LICENSE",
-    ]
-
     [tool.hatch.build.targets.wheel]
-    artifacts = [
-      "/src/pact/bin/*",     # Ruby executables
-      "/src/pact/lib/*",     # Ruby library
-      "/src/pact/v3/_ffi.*", # Rust library
-    ]
-    include = [
-      # Source
-      "/src/pact/**/*.py",
-      "/src/pact/**/*.pyi",
-      "/src/pact/**/py.typed",
-    ]
     packages = ["/src/pact"]
-
-      [tool.hatch.build.targets.wheel.hooks.custom]
 
   ########################################
   ## Hatch Environment Configuration
@@ -182,15 +152,9 @@ requires = [
     # Install dev dependencies in the default environment to simplify the developer
     # workflow.
     [tool.hatch.envs.default]
-    extra-dependencies = [
-      "cffi",
-      "hatchling",
-      "packaging",
-      "requests",
-      "setuptools ; python_version >= '3.12'",
-    ]
-    features = ["devel"]
-    installer = "uv"
+    extra-dependencies = ["hatchling", "hatch-vcs"]
+    features           = ["devel"]
+    installer          = "uv"
     # This is require to get around an incompatibility between hatch and uv
     # See: https://github.com/pypa/hatch/issues/1639
     pre-install-commands = ["uv pip install -e .[devel]"]
@@ -235,9 +199,10 @@ requires = [
 [tool.uv]
   [tool.uv.sources]
   pact-python-cli = { workspace = true }
+  pact-python-ffi = { workspace = true }
 
   [tool.uv.workspace]
-  members = ["pact-python-cli"]
+  members = ["pact-python-cli", "pact-python-ffi"]
 
 ################################################################################
 ## PyTest Configuration
@@ -364,7 +329,7 @@ extend-exclude = [
     convention = "google"
 
     [tool.ruff.lint.isort]
-    known-first-party = ["pact", "pact_cli"]
+    known-first-party = ["pact", "pact_cli", "pact_ffi"]
 
     [tool.ruff.lint.flake8-tidy-imports]
     ban-relative-imports = "all"
@@ -383,36 +348,6 @@ exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
 ## CI Build Wheel
 ################################################################################
 [tool.cibuildwheel]
-before-build = """
-rm -rvf src/pact/v3/bin
-rm -rvf src/pact/v3/data
-rm -rvf src/pact/v3/lib
-mv -v src/pact/v3/_ffi.pyi _ffi.pyi
-rm -rvf src/pact/v3/_ffi.*
-mv -v _ffi.pyi src/pact/v3/_ffi.pyi
-"""
-skip = "pp*"
-test-command = """
-python -c \
-"from pact import EachLike; \
-assert \
-  EachLike(1).generate() \
-  == {'json_class': 'Pact::ArrayLike', 'contents': 1, 'min': 1}; \
-import pact.v3.ffi; \
-assert isinstance(pact.v3.ffi.version(), str);\""""
-
-  [tool.cibuildwheel.macos]
-  # The repair tool unfortunately did not like the bundled Ruby distributable.
-  # TODO: Check whether delocate-wheel can be configured.
-  repair-wheel-command = ""
-
-  [tool.cibuildwheel.windows]
-  before-build = [
-    'FOR /R src\pact\v3 %G IN (_ffi.*) DO IF NOT %~nxG == _ffi.pyi DEL /F /Q "%G"',
-    'IF EXIST src\pact\v3\bin\ RMDIR /S /Q src\pact\v3\bin',
-    'IF EXIST src\pact\v3\data\ RMDIR /S /Q src\pact\v3\data',
-    'IF EXIST src\pact\v3\lib\ RMDIR /S /Q src\pact\v3\lib',
-  ]
 
 ################################################################################
 ## Typos

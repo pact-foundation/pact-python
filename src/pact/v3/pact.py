@@ -74,7 +74,7 @@ from typing import (
 
 from yarl import URL
 
-import pact.v3.ffi
+import pact_ffi
 from pact.v3._util import find_free_port
 from pact.v3.error import (
     InteractionVerificationError,
@@ -144,7 +144,7 @@ class Pact:
         self._consumer = consumer
         self._provider = provider
         self._interactions: set[Interaction] = set()
-        self._handle: pact.v3.ffi.PactHandle = pact.v3.ffi.new_pact(
+        self._handle: pact_ffi.PactHandle = pact_ffi.new_pact(
             consumer,
             provider,
         )
@@ -184,15 +184,15 @@ class Pact:
         return self._provider
 
     @property
-    def specification(self) -> pact.v3.ffi.PactSpecification:
+    def specification(self) -> pact_ffi.PactSpecification:
         """
         Pact specification version.
         """
-        return pact.v3.ffi.handle_get_pact_spec_version(self._handle)
+        return pact_ffi.handle_get_pact_spec_version(self._handle)
 
     def with_specification(
         self,
-        version: str | pact.v3.ffi.PactSpecification,
+        version: str | pact_ffi.PactSpecification,
     ) -> Self:
         """
         Set the Pact specification version.
@@ -203,14 +203,14 @@ class Pact:
         Args:
             version:
                 Pact specification version. The can be either a string or a
-                [`PactSpecification`][pact.v3.ffi.PactSpecification] instance.
+                [`PactSpecification`][pact_ffi.PactSpecification] instance.
 
                 The version string is case insensitive and has an optional `v`
                 prefix.
         """
         if isinstance(version, str):
-            version = pact.v3.ffi.PactSpecification.from_str(version)
-        pact.v3.ffi.with_specification(self._handle, version)
+            version = pact_ffi.PactSpecification.from_str(version)
+        pact_ffi.with_specification(self._handle, version)
         return self
 
     def using_plugin(self, name: str, version: str | None = None) -> Self:
@@ -226,7 +226,7 @@ class Pact:
             version:
                 Version of the plugin. This is optional and can be `None`.
         """
-        pact.v3.ffi.using_plugin(self._handle, name, version)
+        pact_ffi.using_plugin(self._handle, name, version)
         return self
 
     def with_metadata(
@@ -249,7 +249,7 @@ class Pact:
                 Key-value pairs of metadata to add to the Pact.
         """
         for k, v in metadata.items():
-            pact.v3.ffi.with_pact_metadata(self._handle, namespace, k, v)
+            pact_ffi.with_pact_metadata(self._handle, namespace, k, v)
         return self
 
     @overload
@@ -363,27 +363,27 @@ class Pact:
     def interactions(
         self,
         kind: Literal["HTTP"],
-    ) -> Generator[pact.v3.ffi.SynchronousHttp, None, None]: ...
+    ) -> Generator[pact_ffi.SynchronousHttp, None, None]: ...
 
     @overload
     def interactions(
         self,
         kind: Literal["Sync"],
-    ) -> Generator[pact.v3.ffi.SynchronousMessage, None, None]: ...
+    ) -> Generator[pact_ffi.SynchronousMessage, None, None]: ...
 
     @overload
     def interactions(
         self,
         kind: Literal["Async"],
-    ) -> Generator[pact.v3.ffi.AsynchronousMessage, None, None]: ...
+    ) -> Generator[pact_ffi.AsynchronousMessage, None, None]: ...
 
     def interactions(
         self,
         kind: Literal["HTTP", "Sync", "Async"] = "HTTP",
     ) -> (
-        Generator[pact.v3.ffi.SynchronousHttp, None, None]
-        | Generator[pact.v3.ffi.SynchronousMessage, None, None]
-        | Generator[pact.v3.ffi.AsynchronousMessage, None, None]
+        Generator[pact_ffi.SynchronousHttp, None, None]
+        | Generator[pact_ffi.SynchronousMessage, None, None]
+        | Generator[pact_ffi.AsynchronousMessage, None, None]
     ):
         """
         Return an iterator over the Pact's interactions.
@@ -394,11 +394,11 @@ class Pact:
         # TODO: Add an iterator for `All` interactions.
         # https://github.com/pact-foundation/pact-python/issues/451
         if kind == "HTTP":
-            yield from pact.v3.ffi.pact_handle_get_sync_http_iter(self._handle)
+            yield from pact_ffi.pact_handle_get_sync_http_iter(self._handle)
         elif kind == "Sync":
-            yield from pact.v3.ffi.pact_handle_get_sync_message_iter(self._handle)
+            yield from pact_ffi.pact_handle_get_sync_message_iter(self._handle)
         elif kind == "Async":
-            yield from pact.v3.ffi.pact_handle_get_async_message_iter(self._handle)
+            yield from pact_ffi.pact_handle_get_async_message_iter(self._handle)
         else:
             msg = f"Unknown interaction type: {kind}"
             raise ValueError(msg)
@@ -463,10 +463,10 @@ class Pact:
         """
         errors: list[InteractionVerificationError] = []
         for message in self.interactions(kind):
-            request: pact.v3.ffi.MessageContents | None = None
-            if isinstance(message, pact.v3.ffi.SynchronousMessage):
+            request: pact_ffi.MessageContents | None = None
+            if isinstance(message, pact_ffi.SynchronousMessage):
                 request = message.request_contents
-            elif isinstance(message, pact.v3.ffi.AsynchronousMessage):
+            elif isinstance(message, pact_ffi.AsynchronousMessage):
                 request = message.contents
             else:
                 msg = f"Unknown message type: {type(message).__name__}"
@@ -519,7 +519,7 @@ class Pact:
         """
         if directory is None:
             directory = Path.cwd()
-        pact.v3.ffi.pact_handle_write_file(
+        pact_ffi.pact_handle_write_file(
             self._handle,
             directory,
             overwrite=overwrite,
@@ -564,7 +564,7 @@ class PactServer:
 
     def __init__(  # noqa: PLR0913
         self,
-        pact_handle: pact.v3.ffi.PactHandle,
+        pact_handle: pact_ffi.PactHandle,
         host: str = "localhost",
         port: int | None = None,
         transport: str = "HTTP",
@@ -607,7 +607,7 @@ class PactServer:
         self._transport = transport
         self._transport_config = transport_config
         self._pact_handle = pact_handle
-        self._handle: None | pact.v3.ffi.PactServerHandle = None
+        self._handle: None | pact_ffi.PactServerHandle = None
         self._raises = raises
         self._verbose = verbose
 
@@ -658,7 +658,7 @@ class PactServer:
         if not self._handle:
             msg = "The server is not running."
             raise RuntimeError(msg)
-        return pact.v3.ffi.mock_server_matched(self._handle)
+        return pact_ffi.mock_server_matched(self._handle)
 
     @property
     def mismatches(self) -> list[Mismatch]:
@@ -678,7 +678,7 @@ class PactServer:
         return list(
             map(
                 Mismatch.from_dict,
-                pact.v3.ffi.mock_server_mismatches(self._handle),
+                pact_ffi.mock_server_mismatches(self._handle),
             )
         )
 
@@ -700,7 +700,7 @@ class PactServer:
             raise RuntimeError(msg)
 
         try:
-            return pact.v3.ffi.mock_server_logs(self._handle)
+            return pact_ffi.mock_server_logs(self._handle)
         except RuntimeError:
             return None
 
@@ -733,7 +733,7 @@ class PactServer:
         Once the server is running, it is generally no possible to make
         modifications to the underlying Pact.
         """
-        self._handle = pact.v3.ffi.create_mock_server_for_transport(
+        self._handle = pact_ffi.create_mock_server_for_transport(
             self._pact_handle,
             self._host,
             self._port,
@@ -812,7 +812,7 @@ class PactServer:
             msg = f"{directory} is not a directory"
             raise ValueError(msg)
 
-        pact.v3.ffi.write_pact_file(
+        pact_ffi.write_pact_file(
             self._handle,
             str(directory),
             overwrite=overwrite,
