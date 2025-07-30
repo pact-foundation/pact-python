@@ -279,7 +279,7 @@ class ProviderRequestHandler(SimpleHTTPRequestHandler):
         self.server.requests.append(request)
         self.rfile = BytesIO(body)
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         """
         Handle a POST request.
         """
@@ -298,7 +298,7 @@ class ProviderRequestHandler(SimpleHTTPRequestHandler):
         )
         self.send_error(404, "Not Found")
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         """
         Handle a GET request.
         """

@@ -46,7 +46,7 @@ repos:
       - id: taplo-lint
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.4
+    rev: v0.12.7
     hooks:
       - id: ruff-check
         # Exclude python files in pact/** and tests/**, except for the

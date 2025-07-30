@@ -241,7 +241,7 @@ class MessageProducerHandler(SimpleHTTPRequestHandler, Generic[_CM]):
         """
         return f"Pact Python Message Relay/{__version__}"
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         """
         Handle a POST request.
 
@@ -288,7 +288,7 @@ class MessageProducerHandler(SimpleHTTPRequestHandler, Generic[_CM]):
         self.end_headers()
         self.wfile.write(contents)
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         """
         Handle a GET request.
 
@@ -429,7 +429,7 @@ class StateCallbackHandler(SimpleHTTPRequestHandler, Generic[_CN]):
         """
         return f"Pact Python State Callback/{__version__}"
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         """
         Handle a POST request.
 
@@ -464,7 +464,7 @@ class StateCallbackHandler(SimpleHTTPRequestHandler, Generic[_CN]):
         self.send_response(200, "OK")
         self.end_headers()
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         """
         Handle a GET request.
 
