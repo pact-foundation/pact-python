@@ -49,14 +49,18 @@ repos:
     rev: v0.12.7
     hooks:
       - id: ruff-check
-        # Exclude python files in pact/** and tests/**, except for the
-        # files in src/pact/v3/** and tests/v3/**.
-        exclude: ^(src/pact|tests)/(?!v3/).*\.py$
+        exclude: |
+          (?x)^(
+            (src/pact|tests|examples)/v2/.*\\.pyi?
+          )$
         args:
           - --fix
           - --exit-non-zero-on-fix
       - id: ruff-format
-        exclude: ^(pact|tests)/(?!v3/).*\.py$
+        exclude: |
+          (?x)^(
+            (src/pact|tests|examples)/v2/.*\\.pyi?
+          )$
 
   - repo: https://github.com/crate-ci/committed
     rev: v1.1.7
@@ -69,8 +73,8 @@ repos:
       - id: markdownlint
         exclude: |
           (?x)^(
-            .github/PULL_REQUEST_TEMPLATE\.md
-          | CHANGELOG.md
+            .github/PULL_REQUEST_TEMPLATE\.md |
+            CHANGELOG.md
           )
 
   - repo: https://github.com/crate-ci/typos
@@ -90,8 +94,7 @@ repos:
           - python
         exclude: |
           (?x)^(
-            .*/hatch_build.py |
-            (src|tests|examples)/(?!v3/).*\.py
+            (src/pact|tests|examples)/v2/.*\\.pyi?
           )$
         stages:
           - pre-push

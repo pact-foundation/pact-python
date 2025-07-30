@@ -61,7 +61,7 @@ def broker(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
 
     with DockerCompose(
         EXAMPLE_DIR,
-        compose_file_name=["docker-compose.yml"],
+        compose_file_name=["container-compose.yml"],
         pull=True,
         wait=False,
     ) as _:
@@ -69,7 +69,7 @@ def broker(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
 
 
 @pytest.fixture(scope="session")
-def pact_dir() -> Path:
+def pacts_path() -> Path:
     """Fixture for the Pact directory."""
     return EXAMPLE_DIR / "pacts"
 
