@@ -4,7 +4,7 @@ Asynchronous message interaction.
 
 from __future__ import annotations
 
-import pact.v3.ffi
+import pact_ffi
 from pact.v3.interaction._base import Interaction
 
 
@@ -22,7 +22,7 @@ class AsyncMessageInteraction(Interaction):
         This class is not yet fully implemented and is not yet usable.
     """
 
-    def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
+    def __init__(self, pact_handle: pact_ffi.PactHandle, description: str) -> None:
         """
         Initialise a new Asynchronous Message Interaction.
 
@@ -40,10 +40,10 @@ class AsyncMessageInteraction(Interaction):
                 Pact.
         """
         super().__init__(description)
-        self.__handle = pact.v3.ffi.new_message_interaction(pact_handle, description)
+        self.__handle = pact_ffi.new_message_interaction(pact_handle, description)
 
     @property
-    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+    def _handle(self) -> pact_ffi.InteractionHandle:
         """
         Handle for the Interaction.
 
@@ -53,7 +53,7 @@ class AsyncMessageInteraction(Interaction):
         return self.__handle
 
     @property
-    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+    def _interaction_part(self) -> pact_ffi.InteractionPart:
         """
         Interaction part.
 
@@ -61,7 +61,7 @@ class AsyncMessageInteraction(Interaction):
         of which part is currently being set.
 
         As this is an asynchronous message interaction, this will always
-        return a [`REQUEST`][pact.v3.ffi.InteractionPart.REQUEST], as there the
+        return a [`REQUEST`][pact_ffi.InteractionPart.REQUEST], as there the
         consumer of the message does not send any responses.
         """
-        return pact.v3.ffi.InteractionPart.REQUEST
+        return pact_ffi.InteractionPart.REQUEST

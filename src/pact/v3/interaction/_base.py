@@ -15,7 +15,7 @@ import abc
 import json
 from typing import TYPE_CHECKING, Any, Literal, overload
 
-import pact.v3.ffi
+import pact_ffi
 from pact.v3.match.matcher import IntegrationJSONEncoder
 
 if TYPE_CHECKING:
@@ -83,7 +83,7 @@ class Interaction(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+    def _handle(self) -> pact_ffi.InteractionHandle:
         """
         Handle for the Interaction.
 
@@ -93,7 +93,7 @@ class Interaction(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+    def _interaction_part(self) -> pact_ffi.InteractionPart:
         """
         Interaction part.
 
@@ -104,14 +104,14 @@ class Interaction(abc.ABC):
     def _parse_interaction_part(
         self,
         part: Literal["Request", "Response", None],
-    ) -> pact.v3.ffi.InteractionPart:
+    ) -> pact_ffi.InteractionPart:
         """
         Convert the input into an InteractionPart.
         """
         if part == "Request":
-            return pact.v3.ffi.InteractionPart.REQUEST
+            return pact_ffi.InteractionPart.REQUEST
         if part == "Response":
-            return pact.v3.ffi.InteractionPart.RESPONSE
+            return pact_ffi.InteractionPart.RESPONSE
         if part is None:
             return self._interaction_part
         msg = f"Invalid part: {part}"
@@ -229,18 +229,18 @@ class Interaction(abc.ABC):
                 If the combination of arguments is invalid or inconsistent.
         """
         if name is not None and value is not None and parameters is None:
-            pact.v3.ffi.given_with_param(self._handle, state, name, value)
+            pact_ffi.given_with_param(self._handle, state, name, value)
         elif name is None and value is None and parameters is not None:
             if isinstance(parameters, dict):
-                pact.v3.ffi.given_with_params(
+                pact_ffi.given_with_params(
                     self._handle,
                     state,
                     json.dumps(parameters),
                 )
             else:
-                pact.v3.ffi.given_with_params(self._handle, state, parameters)
+                pact_ffi.given_with_params(self._handle, state, parameters)
         elif name is None and value is None and parameters is None:
-            pact.v3.ffi.given(self._handle, state)
+            pact_ffi.given(self._handle, state)
         else:
             msg = "Invalid combination of arguments."
             raise ValueError(msg)
@@ -274,7 +274,7 @@ class Interaction(abc.ABC):
         else:
             body_str = json.dumps(body, cls=IntegrationJSONEncoder)
 
-        pact.v3.ffi.with_body(
+        pact_ffi.with_body(
             self._handle,
             self._parse_interaction_part(part),
             content_type,
@@ -308,7 +308,7 @@ class Interaction(abc.ABC):
             body:
                 Body of the request.
         """
-        pact.v3.ffi.with_binary_body(
+        pact_ffi.with_binary_body(
             self._handle,
             self._parse_interaction_part(part),
             content_type,
@@ -368,14 +368,14 @@ class Interaction(abc.ABC):
         """
         part = self._parse_interaction_part(__part)
         for k, v in (__metadata or {}).items():
-            pact.v3.ffi.with_metadata(
+            pact_ffi.with_metadata(
                 self._handle,
                 k,
                 v,
                 part,
             )
         for k, v in kwargs.items():
-            pact.v3.ffi.with_metadata(
+            pact_ffi.with_metadata(
                 self._handle,
                 k,
                 v,
@@ -396,7 +396,7 @@ class Interaction(abc.ABC):
 
         The content type of the body will be set to a MIME multipart message.
         """
-        pact.v3.ffi.with_multipart_file_v2(
+        pact_ffi.with_multipart_file_v2(
             self._handle,
             self._parse_interaction_part(part),
             content_type,
@@ -413,7 +413,7 @@ class Interaction(abc.ABC):
         This is used by V4 interactions to set the key of the interaction, which
         can subsequently used to reference the interaction.
         """
-        pact.v3.ffi.set_key(self._handle, key)
+        pact_ffi.set_key(self._handle, key)
         return self
 
     def set_pending(self, *, pending: bool) -> Self:
@@ -423,7 +423,7 @@ class Interaction(abc.ABC):
         This is used by V4 interactions to mark the interaction as pending, in
         which case the provider is not expected to honour the interaction.
         """
-        pact.v3.ffi.set_pending(self._handle, pending=pending)
+        pact_ffi.set_pending(self._handle, pending=pending)
         return self
 
     def set_comment(self, key: str, value: Any | None) -> Self:  # noqa: ANN401
@@ -449,9 +449,9 @@ class Interaction(abc.ABC):
         particular, the `text` key is used by `add_text_comment`.
         """
         if isinstance(value, str) or value is None:
-            pact.v3.ffi.set_comment(self._handle, key, value)
+            pact_ffi.set_comment(self._handle, key, value)
         else:
-            pact.v3.ffi.set_comment(self._handle, key, json.dumps(value))
+            pact_ffi.set_comment(self._handle, key, json.dumps(value))
         return self
 
     def add_text_comment(self, comment: str) -> Self:
@@ -472,7 +472,7 @@ class Interaction(abc.ABC):
         introduced by
         [`set_comment`][pact.v3.interaction.Interaction.set_comment].
         """
-        pact.v3.ffi.add_text_comment(self._handle, comment)
+        pact_ffi.add_text_comment(self._handle, comment)
         return self
 
     def test_name(
@@ -488,7 +488,7 @@ class Interaction(abc.ABC):
             name:
                 Name of the test.
         """
-        pact.v3.ffi.interaction_test_name(self._handle, name)
+        pact_ffi.interaction_test_name(self._handle, name)
         return self
 
     def with_plugin_contents(
@@ -519,7 +519,7 @@ class Interaction(abc.ABC):
         if isinstance(contents, dict):
             contents = json.dumps(contents)
 
-        pact.v3.ffi.interaction_contents(
+        pact_ffi.interaction_contents(
             self._handle,
             self._parse_interaction_part(part),
             content_type,
@@ -553,7 +553,7 @@ class Interaction(abc.ABC):
         if isinstance(rules, dict):
             rules = json.dumps(rules)
 
-        pact.v3.ffi.with_matching_rules(
+        pact_ffi.with_matching_rules(
             self._handle,
             self._parse_interaction_part(part),
             rules,
@@ -586,7 +586,7 @@ class Interaction(abc.ABC):
         if isinstance(generators, dict):
             generators = json.dumps(generators)
 
-        pact.v3.ffi.with_generators(
+        pact_ffi.with_generators(
             self._handle,
             self._parse_interaction_part(part),
             generators,

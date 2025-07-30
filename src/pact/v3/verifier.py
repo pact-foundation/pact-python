@@ -84,7 +84,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, TypedDict, overload
 from typing_extensions import Self
 from yarl import URL
 
-import pact.v3.ffi
+import pact_ffi
 from pact.v3._server import MessageProducer, StateCallback
 from pact.v3._util import apply_args
 from pact.v3.types import Message, MessageProducerArgs, StateHandlerArgs
@@ -165,7 +165,7 @@ class Verifier:
         """
         self._name = name
         self._host = host or "localhost"
-        self._handle = pact.v3.ffi.verifier_new_for_application()
+        self._handle = pact_ffi.verifier_new_for_application()
 
         # In order to provide a fluent interface, we remember some options which
         # are set using the same FFI method. In particular, we remember
@@ -460,7 +460,7 @@ class Verifier:
                 "no_state": no_state,
             },
         )
-        pact.v3.ffi.verifier_set_filter_info(
+        pact_ffi.verifier_set_filter_info(
             self._handle,
             description,
             state,
@@ -613,7 +613,7 @@ class Verifier:
                 "body": body,
             },
         )
-        pact.v3.ffi.verifier_set_provider_state(
+        pact_ffi.verifier_set_provider_state(
             self._handle,
             str(handler),
             teardown=teardown,
@@ -670,7 +670,7 @@ class Verifier:
             )
 
         self._state_handler = StateCallback(_handler)
-        pact.v3.ffi.verifier_set_provider_state(
+        pact_ffi.verifier_set_provider_state(
             self._handle,
             self._state_handler.url,
             teardown=teardown,
@@ -725,7 +725,7 @@ class Verifier:
             )
 
         self._state_handler = StateCallback(_handler)
-        pact.v3.ffi.verifier_set_provider_state(
+        pact_ffi.verifier_set_provider_state(
             self._handle,
             self._state_handler.url,
             teardown=teardown,
@@ -739,7 +739,7 @@ class Verifier:
         Disable SSL verification.
         """
         self._disable_ssl_verification = True
-        pact.v3.ffi.verifier_set_verification_options(
+        pact_ffi.verifier_set_verification_options(
             self._handle,
             disable_ssl_verification=self._disable_ssl_verification,
             request_timeout=self._request_timeout,
@@ -759,7 +759,7 @@ class Verifier:
             raise ValueError(msg)
 
         self._request_timeout = timeout
-        pact.v3.ffi.verifier_set_verification_options(
+        pact_ffi.verifier_set_verification_options(
             self._handle,
             disable_ssl_verification=self._disable_ssl_verification,
             request_timeout=self._request_timeout,
@@ -770,7 +770,7 @@ class Verifier:
         """
         Toggle coloured output.
         """
-        pact.v3.ffi.verifier_set_coloured_output(self._handle, enabled=enabled)
+        pact_ffi.verifier_set_coloured_output(self._handle, enabled=enabled)
         return self
 
     def set_error_on_empty_pact(self, *, enabled: bool = True) -> Self:
@@ -781,7 +781,7 @@ class Verifier:
         return an error. If disabled, a Pact file with no interactions will be
         ignored.
         """
-        pact.v3.ffi.verifier_set_no_pacts_is_error(self._handle, enabled=enabled)
+        pact_ffi.verifier_set_no_pacts_is_error(self._handle, enabled=enabled)
         return self
 
     def set_publish_options(
@@ -807,7 +807,7 @@ class Verifier:
             branch:
                 Name of the branch used for verification.
         """
-        pact.v3.ffi.verifier_set_publish_options(
+        pact_ffi.verifier_set_publish_options(
             self._handle,
             version,
             url,
@@ -824,7 +824,7 @@ class Verifier:
             filters:
                 Filters to apply to the consumers.
         """
-        pact.v3.ffi.verifier_set_consumer_filters(self._handle, filters)
+        pact_ffi.verifier_set_consumer_filters(self._handle, filters)
         return self
 
     def add_custom_header(self, name: str, value: str) -> Self:
@@ -840,7 +840,7 @@ class Verifier:
             value:
                 The value of the header.
         """
-        pact.v3.ffi.verifier_add_custom_header(self._handle, name, value)
+        pact_ffi.verifier_add_custom_header(self._handle, name, value)
         return self
 
     def add_custom_headers(
@@ -967,10 +967,10 @@ class Verifier:
         """
         source = Path(source)
         if source.is_dir():
-            pact.v3.ffi.verifier_add_directory_source(self._handle, str(source))
+            pact_ffi.verifier_add_directory_source(self._handle, str(source))
             return self
         if source.is_file():
-            pact.v3.ffi.verifier_add_file_source(self._handle, str(source))
+            pact_ffi.verifier_add_file_source(self._handle, str(source))
             return self
         msg = f"Invalid source: {source}"
         raise ValueError(msg)
@@ -1024,7 +1024,7 @@ class Verifier:
             msg = "Cannot specify both `token` and `username`/`password`"
             raise ValueError(msg)
 
-        pact.v3.ffi.verifier_url_source(
+        pact_ffi.verifier_url_source(
             self._handle,
             str(url.with_user(None).with_password(None)),
             username,
@@ -1129,7 +1129,7 @@ class Verifier:
                 token,
             )
 
-        self._broker_source_hook = lambda: pact.v3.ffi.verifier_broker_source(
+        self._broker_source_hook = lambda: pact_ffi.verifier_broker_source(
             self._handle,
             str(url.with_user(None).with_password(None)),
             username,
@@ -1152,7 +1152,7 @@ class Verifier:
 
         first, *rest = self._transports
 
-        pact.v3.ffi.verifier_set_provider_info(
+        pact_ffi.verifier_set_provider_info(
             self._handle,
             self._name,
             first["scheme"],
@@ -1162,7 +1162,7 @@ class Verifier:
         )
 
         for transport in rest:
-            pact.v3.ffi.verifier_add_provider_transport(
+            pact_ffi.verifier_add_provider_transport(
                 self._handle,
                 transport["transport"],
                 transport["port"] or 0,
@@ -1174,7 +1174,7 @@ class Verifier:
             self._broker_source_hook()
 
         with self._message_producer, self._state_handler:
-            pact.v3.ffi.verifier_execute(self._handle)
+            pact_ffi.verifier_execute(self._handle)
             logger.debug("Verifier executed")
 
         return self
@@ -1184,27 +1184,27 @@ class Verifier:
         """
         Get the logs.
         """
-        return pact.v3.ffi.verifier_logs(self._handle)
+        return pact_ffi.verifier_logs(self._handle)
 
     @classmethod
     def logs_for_provider(cls, provider: str) -> str:
         """
         Get the logs for a provider.
         """
-        return pact.v3.ffi.verifier_logs_for_provider(provider)
+        return pact_ffi.verifier_logs_for_provider(provider)
 
     def output(self, *, strip_ansi: bool = False) -> str:
         """
         Get the output.
         """
-        return pact.v3.ffi.verifier_output(self._handle, strip_ansi=strip_ansi)
+        return pact_ffi.verifier_output(self._handle, strip_ansi=strip_ansi)
 
     @property
     def results(self) -> dict[str, Any]:
         """
         Get the results.
         """
-        return json.loads(pact.v3.ffi.verifier_json(self._handle))
+        return json.loads(pact_ffi.verifier_json(self._handle))
 
 
 class BrokerSelectorBuilder:
@@ -1322,7 +1322,7 @@ class BrokerSelectorBuilder:
             The Verifier instance with the broker source added.
         """
         self._verifier._broker_source_hook = (  # noqa: SLF001
-            lambda: pact.v3.ffi.verifier_broker_source_with_selectors(
+            lambda: pact_ffi.verifier_broker_source_with_selectors(
                 self._verifier._handle,  # noqa: SLF001
                 self._url,
                 self._username,

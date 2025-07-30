@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Literal
 import pytest
 
 from pact.v3 import Pact
-from pact.v3.ffi import PactSpecification
+from pact_ffi import PactSpecification
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing_extensions import Self
 
-import pact.v3.ffi
+import pact_ffi
 from pact.v3.interaction._base import Interaction
 
 
@@ -24,7 +24,7 @@ class SyncMessageInteraction(Interaction):
         This class is not yet fully implemented and is not yet usable.
     """
 
-    def __init__(self, pact_handle: pact.v3.ffi.PactHandle, description: str) -> None:
+    def __init__(self, pact_handle: pact_ffi.PactHandle, description: str) -> None:
         """
         Initialise a new Synchronous Message Interaction.
 
@@ -42,14 +42,14 @@ class SyncMessageInteraction(Interaction):
                 Pact.
         """
         super().__init__(description)
-        self.__handle = pact.v3.ffi.new_sync_message_interaction(
+        self.__handle = pact_ffi.new_sync_message_interaction(
             pact_handle,
             description,
         )
-        self.__interaction_part = pact.v3.ffi.InteractionPart.REQUEST
+        self.__interaction_part = pact_ffi.InteractionPart.REQUEST
 
     @property
-    def _handle(self) -> pact.v3.ffi.InteractionHandle:
+    def _handle(self) -> pact_ffi.InteractionHandle:
         """
         Handle for the Interaction.
 
@@ -59,7 +59,7 @@ class SyncMessageInteraction(Interaction):
         return self.__handle
 
     @property
-    def _interaction_part(self) -> pact.v3.ffi.InteractionPart:
+    def _interaction_part(self) -> pact_ffi.InteractionPart:
         return self.__interaction_part
 
     def will_respond_with(self) -> Self:
@@ -92,5 +92,5 @@ class SyncMessageInteraction(Interaction):
             The current instance of the interaction.
 
         """
-        self.__interaction_part = pact.v3.ffi.InteractionPart.RESPONSE
+        self.__interaction_part = pact_ffi.InteractionPart.RESPONSE
         return self

@@ -22,7 +22,7 @@ import pytest
 from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
 from yarl import URL
 
-from pact.v3 import ffi
+import pact_ffi
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Sequence
@@ -102,4 +102,4 @@ def _setup_pact_logging() -> None:
     """
     Set up logging for the pact package.
     """
-    ffi.log_to_stderr("INFO")
+    pact_ffi.log_to_stderr("INFO")
