@@ -1,13 +1,8 @@
 """
-Hatchling build hook for binary downloads.
+Hatchling build hook.
 
-Pact Python is built on top of the Ruby Pact binaries and the Rust Pact library.
-This build script downloads the binaries and library for the current platform
-and installs them in the `pact` directory under `/bin` and `/lib`.
-
-The version of the binaries and library can be controlled with the
-`PACT_BIN_VERSION` and `PACT_LIB_VERSION` environment variables. If these are
-not set, a pinned version will be used instead.
+This hook is responsible for download the Pact FFI library and building the
+CFFI bindings for it.
 """
 
 from __future__ import annotations
@@ -15,6 +10,7 @@ from __future__ import annotations
 import gzip
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import urllib.request
@@ -30,25 +26,37 @@ PACT_LIB_URL = "https://github.com/pact-foundation/pact-reference/releases/downl
 
 
 class UnsupportedPlatformError(RuntimeError):
-    """Raised when the current platform is not supported."""
+    """
+    Custom error raised when the current platform is not supported.
+    """
 
     def __init__(self, platform: str) -> None:
         """
         Initialize the exception.
 
         Args:
-            platform: The unsupported platform.
+            platform:
+                The unsupported platform.
         """
         self.platform = platform
         super().__init__(f"Unsupported platform {platform}")
 
 
 class PactBuildHook(BuildHookInterface[Any]):
-    """Custom hook to download Pact binaries."""
+    """
+    Custom hook to download Pact binaries.
+
+    This build hook is invoked by Hatch during the build process. Within
+    `pyproject.toml`, is takes the special name of `custom` (despite the name
+    below).
+
+    For more references, see [Build hook
+    plugins](https://hatch.pypa.io/1.3/plugins/build-hook/reference/).
+    """
 
     PLUGIN_NAME = "pact-ffi"
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(self, *args: object, **kwargs: object) -> None:
         """
         Initialize the build hook.
 
@@ -59,21 +67,53 @@ class PactBuildHook(BuildHookInterface[Any]):
         self.tmpdir = Path(tempfile.TemporaryDirectory().name)
         self.tmpdir.mkdir(parents=True, exist_ok=True)
 
+    def __del__(self) -> None:
+        """
+        Clean up temporary files.
+        """
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
     def clean(self, versions: list[str]) -> None:  # noqa: ARG002
-        """Clean up any files created by the build hook."""
-        for ffi in (PKG_DIR / "v3").glob("__init__.*"):
+        """
+        Code called to clean.
+
+        This is called by `hatch clean` or when the `-c`/`--clean` flag is
+        passed to `hatch build`.
+        """
+        # Cleanup the Python extension
+        for ffi in PKG_DIR.glob("ffi.*"):
             if ffi.suffix in (".so", ".dylib", ".dll", ".a", ".pyd"):
                 ffi.unlink()
+        # Cleanup the Pact FFI library
+        for lib in PKG_DIR.glob("*pact_ffi.*"):
+            lib.unlink()
 
     def initialize(
         self,
         version: str,  # noqa: ARG002
-        build_data: dict[str, Any],
+        build_data: dict[str, object],
     ) -> None:
-        """Hook into Hatchling's build process."""
+        """
+        Code called immediately before each build.
+
+        Args:
+            version:
+                Not used (but required by the parent class).
+
+            build_data:
+                A dictionary to modify in-place used by Hatch when creating the
+                final wheel.
+
+        Raises:
+            UnsupportedPlatformError:
+                If the C extension cannot be built (presumably due to an
+                incompatible platform).
+        """
         ffi_version = ".".join(self.metadata.version.split(".")[:3])
         if not ffi_version:
-            self.app.display_error("Failed to determine Pact FFI version.")
+            msg = "Failed to determine Pact FFI version."
+            self.app.display_error(msg)
+            raise ValueError(msg)
 
         try:
             build_data["force_include"] = self._install(ffi_version)
@@ -81,7 +121,7 @@ class PactBuildHook(BuildHookInterface[Any]):
             msg = f"Pact FFI library is not available for {err.platform}"
             self.app.display_error(msg)
 
-        self.app.display_debug(f"Wheel artifacts: {build_data['force_include']}")
+        self.app.display_debug(f"Wheel artefacts: {build_data['force_include']}")
         build_data["tag"] = self._infer_tag()
 
     def _sys_tag_platform(self) -> str:
@@ -100,7 +140,13 @@ class PactBuildHook(BuildHookInterface[Any]):
         build the CFFI bindings for it.
 
         Args:
-            version: The Pact version to install.
+            version:
+                The Pact version to install.
+
+        Returns:
+            A mapping of `src` to `dst` to be used by Hatch when creating the
+            wheel. Each `src` is a full path in the current filesystem, and the
+            `dst` is the corresponding path within the wheel.
         """
         # Download the Pact library binary and header file
         lib_url = self._lib_url(version)
@@ -119,9 +165,10 @@ class PactBuildHook(BuildHookInterface[Any]):
         # Copy into the package directory, using the ABI3 marking for broad
         # compatibility.
         # NOTE: Windows does _not_ use the version infixation
-        extension_name, _, suffix = extension.name.split(".")
+        name = extension.name.split(".")[0]
+        suffix = extension.suffix
         infix = ".abi3" if os.name != "nt" else ""
-        extension_dest = f"{extension_name}{infix}.{suffix}"
+        extension_dest = f"{name}{infix}{suffix}"
         shutil.copy(extension, PKG_DIR / extension_dest)
 
         if pact_lib_dir := os.getenv("PACT_LIB_DIR"):
@@ -142,7 +189,8 @@ class PactBuildHook(BuildHookInterface[Any]):
         Generate the download URL for the Pact library.
 
         Args:
-            version: The upstream Pact version.
+            version:
+                The upstream Pact version.
 
         Returns:
             The URL to download the Pact library from.
@@ -215,16 +263,17 @@ class PactBuildHook(BuildHookInterface[Any]):
             ext=ext,
         )
 
-    def _extract_lib(self, artifact: Path) -> Path:
+    def _extract_lib(self, artefact: Path) -> Path:
         """
         Extract the Pact library.
 
         Args:
-            artifact: The URL to download the Pact binaries from.
+            artefact:
+                The URL to download the Pact binaries from.
         """
-        target = PKG_DIR / (artifact.name.split("-")[0] + artifact.suffixes[-2])
+        target = PKG_DIR / (artefact.name.split("-")[0] + artefact.suffixes[-2])
         with (
-            gzip.open(artifact, "rb") as f_in,
+            gzip.open(artefact, "rb") as f_in,
             target.open("wb") as f_out,
         ):
             shutil.copyfileobj(f_in, f_out)
@@ -275,10 +324,15 @@ class PactBuildHook(BuildHookInterface[Any]):
         )
 
         linker_args: list[str] = []
-        if os.name == "posix":
+        if sys.platform == "darwin":
+            # On macOS, we pad the headers so that install_name_tool can
+            # subsequently adjust them.
+            linker_args.append("-Wl,-headerpad_max_install_names")
+        elif sys.platform == "linux":
+            # On Linux, we set the RPATH
             linker_args.append(f"-Wl,-rpath,{lib.parent}")
-        elif os.name == "nt":
-            # Windows has no equivalent to rpath, instead, the end-user must
+        elif sys.platform == "win32":
+            # Windows has no equivalent to RPATH, instead, the end-user must
             # ensure that the PATH environment variable is updated to include
             # the directory containing the Pact library.
             self.app.display_warning(
@@ -294,6 +348,17 @@ class PactBuildHook(BuildHookInterface[Any]):
             extra_link_args=linker_args,
         )
         extension = Path(ffibuilder.compile(verbose=True, tmpdir=str(self.tmpdir)))
+
+        if sys.platform == "darwin":
+            self.app.display_debug(f"Updating install names for {extension}")
+            subprocess.check_call([  # noqa: S603, S607
+                "install_name_tool",
+                "-change",
+                "libpact_ffi.dylib",
+                str(lib),
+                str(extension),
+            ])
+
         self.app.display_debug(f"Compiled CFFI bindings to {extension}")
         return extension
 
@@ -301,38 +366,42 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         Download the target URL.
 
-        This will download the target URL to the `pact/data` directory. If the
-        download artifact is already present, its path will be returned.
-
-        If `extract` is True, the downloaded artifact will be extracted and the
-        path to the extract file will be returned instead.
+        This will download the target URL to the `src/pact_ffi/data` directory.
+        If the download artefact is already present, the existing artefact's
+        path will be returned without downloading it again.
 
         Args:
-            url: The URL to download
-            extract: Whether to extract the downloaded artifact.
+            url:
+                The URL to download
 
         Return:
-            The path to the downloaded artifact.
+            The path to the downloaded artefact.
         """
         filename = url.split("/")[-1]
-        artifact = PKG_DIR / "data" / filename
-        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artefact = PKG_DIR / "data" / filename
+        artefact.parent.mkdir(parents=True, exist_ok=True)
 
-        if not artifact.exists():
-            self.app.display_debug(f"Downloading {url} to {artifact}")
-            urllib.request.urlretrieve(url, artifact)  # noqa: S310
+        if not artefact.exists():
+            self.app.display_debug(f"Downloading {url} to {artefact}")
+            urllib.request.urlretrieve(url, artefact)  # noqa: S310
         else:
-            self.app.display_debug(f"Using cached artifact {artifact}")
+            self.app.display_debug(f"Using cached artefact {artefact}")
 
-        return artifact
+        return artefact
 
     def _infer_tag(self) -> str:
         """
         Infer the tag for the current build.
 
         The bindings are built to target ABI3, which is compatible with multiple
-        Python versions. As a result, we generate `py3-abi3-{platform}` tags for
-        the wheels.
+        Python versions. As a result, we generate `py{version}-abi3-{platform}`
+        tags for the wheels.
+
+        While the ABI3 interface was introduced in Python 3.2, we target the
+        earliest supported version of Python in the Python wrapper.
+
+        Return:
+            The tag for the current build.
         """
         python_version = f"{sys.version_info.major}{sys.version_info.minor}"
 
