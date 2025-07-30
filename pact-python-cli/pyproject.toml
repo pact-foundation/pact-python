@@ -92,8 +92,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging"]
     version-file = "src/pact_cli/__version__.py"
 
     [tool.hatch.build.targets.wheel]
-    artifacts = ["src/pact_cli/bin", "src/pact_cli/lib"]
-    packages  = ["src/pact_cli"]
+    packages = ["src/pact_cli"]
 
       [tool.hatch.build.targets.wheel.hooks.custom]
       patch = "hatch_build.py"

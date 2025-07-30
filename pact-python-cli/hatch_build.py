@@ -1,13 +1,7 @@
 """
-Hatchling build hook for binary downloads.
+Hatchling build hook.
 
-Pact Python is built on top of the Ruby Pact binaries and the Rust Pact library.
-This build script downloads the binaries and library for the current platform
-and installs them in the `pact` directory under `/bin` and `/lib`.
-
-The version of the binaries and library can be controlled with the
-`PACT_BIN_VERSION` and `PACT_LIB_VERSION` environment variables. If these are
-not set, a pinned version will be used instead.
+This hook is responsible for downloading and packaging the Pact CLI.
 """
 
 from __future__ import annotations
@@ -21,7 +15,6 @@ import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Any
 
 from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
@@ -29,27 +22,38 @@ from packaging.tags import sys_tags
 
 logger = logging.getLogger(__name__)
 
-EXE = ".exe" if os.name == "nt" else ""
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_cli"
-PACT_BIN_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
+PACT_CLI_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 
 
 class UnsupportedPlatformError(RuntimeError):
-    """Raised when the current platform is not supported."""
+    """
+    Custom error raised when the current platform is not supported.
+    """
 
     def __init__(self, platform: str) -> None:
         """
         Initialize the exception.
 
         Args:
-            platform: The unsupported platform.
+            platform:
+                The unsupported platform.
         """
         self.platform = platform
         super().__init__(f"Unsupported platform {platform}")
 
 
 class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
-    """Custom hook to download Pact binaries."""
+    """
+    Custom hook to download Pact CLI binaries.
+
+    This build hook is invoked by Hatch during the build process. Within
+    `pyproject.toml`, it takes the special name of `custom` (despite the name
+    below).
+
+    For more references, see [Build hook
+    plugins](https://hatch.pypa.io/1.3/plugins/build-hook/reference/).
+    """
 
     PLUGIN_NAME = "pact-cli"
 
@@ -62,27 +66,60 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         """
         super().__init__(*args, **kwargs)
         self.tmpdir = Path(tempfile.TemporaryDirectory().name)
+        self.tmpdir.mkdir(parents=True, exist_ok=True)
+
+    def __del__(self) -> None:
+        """
+        Clean up temporary files.
+        """
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     def clean(self, versions: list[str]) -> None:  # noqa: ARG002
-        """Clean up any files created by the build hook."""
+        """
+        Code called to clean.
+
+        This is called by `hatch clean` or when the `-c`/`--clean` flag is
+        passed to `hatch build`.
+        """
         for subdir in ["bin", "lib", "data"]:
             shutil.rmtree(PKG_DIR / subdir, ignore_errors=True)
 
     def initialize(
         self,
         version: str,  # noqa: ARG002
-        build_data: dict[str, Any],
+        build_data: dict[str, object],
     ) -> None:
-        """Hook into Hatchling's build process."""
+        """
+        Code called immediately before each build.
+
+        The CLI version is inferred from the package metadata. Specifically, the
+        first three segments of the version string are used.
+
+        Args:
+            version:
+                Not used (but required by the parent class).
+
+            build_data:
+                A dictionary to modify in-place used by Hatch when creating the
+                final wheel.
+
+        Raises:
+            UnsupportedPlatformError:
+                If the CLI cannot be built (presumably due to an
+                incompatible platform).
+        """
         cli_version = ".".join(self.metadata.version.split(".")[:3])
         if not cli_version:
-            self.app.display_error("Failed to determine Pact CLI version.")
+            msg = "Failed to determine Pact CLI version."
+            self.app.display_error(msg)
+            raise ValueError(msg)
 
         try:
-            self._pact_bin_install(cli_version)
+            build_data["force_include"] = self._install(cli_version)
         except UnsupportedPlatformError as err:
             msg = f"Pact CLI is not available for {err.platform}."
-            logger.exception(msg, RuntimeWarning, stacklevel=2)
+            self.app.display_error(msg)
+            raise
 
         build_data["tag"] = self._infer_tag()
 
@@ -94,7 +131,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         """
         return next(t.platform for t in sys_tags())
 
-    def _pact_bin_install(self, version: str) -> None:
+    def _install(self, version: str) -> dict[str, str]:
         """
         Install the Pact standalone binaries.
 
@@ -104,10 +141,19 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         Args:
             version:
                 The Pact CLI version to install.
+
+        Returns:
+            A mapping of `src` to `dst` to be used by Hatch when creating the
+            wheel. Each `src` is a full path in the current filesystem, and the
+            `dst` is the corresponding path within the wheel.
         """
         url = self._pact_bin_url(version)
-        artifact = self._download(url)
-        self._pact_bin_extract(artifact)
+        artefact = self._download(url)
+        self._extract(artefact)
+        return {
+            str(PKG_DIR / "bin"): "pact_cli/bin",
+            str(PKG_DIR / "lib"): "pact_cli/lib",
+        }
 
     def _pact_bin_url(self, version: str) -> str:
         """
@@ -124,13 +170,13 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         platform = self._sys_tag_platform()
 
         if platform.startswith("macosx"):
-            os = "osx"
+            os_name = "osx"
             ext = "tar.gz"
         elif "linux" in platform:
-            os = "linux"
+            os_name = "linux"
             ext = "tar.gz"
         elif platform.startswith("win"):
-            os = "windows"
+            os_name = "windows"
             ext = "zip"
         else:
             raise UnsupportedPlatformError(platform)
@@ -144,14 +190,14 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         else:
             raise UnsupportedPlatformError(platform)
 
-        return PACT_BIN_URL.format(
+        return PACT_CLI_URL.format(
             version=version,
-            os=os,
+            os=os_name,
             machine=machine,
             ext=ext,
         )
 
-    def _pact_bin_extract(self, artifact: Path) -> None:
+    def _extract(self, artefact: Path) -> None:
         """
         Extract the Pact binaries.
 
@@ -159,14 +205,15 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         to be present, which is included in the `lib` directory.
 
         Args:
-            artifact: The path to the downloaded artifact.
+            artefact:
+                The path to the downloaded artefact.
         """
-        if str(artifact).endswith(".zip"):
-            with zipfile.ZipFile(artifact) as f:
+        if str(artefact).endswith(".zip"):
+            with zipfile.ZipFile(artefact) as f:
                 f.extractall(self.tmpdir)  # noqa: S202
 
-        if str(artifact).endswith(".tar.gz"):
-            with tarfile.open(artifact) as f:
+        if str(artefact).endswith(".tar.gz"):
+            with tarfile.open(artefact) as f:
                 f.extractall(self.tmpdir)  # noqa: S202
 
         for d in ["bin", "lib"]:
@@ -181,23 +228,24 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         """
         Download the target URL.
 
-        This will download the target URL to the `pact/data` directory. If the
-        download artifact is already present, its path will be returned.
+        This will download the target URL to the `src/pact_cli/data` directory.
+        If the download artefact is already present, the existing artefact's
+        path will be returned without downloading it again.
 
         Args:
-            url: The URL to download
+            url:
+                The URL to download
 
         Return:
-            The path to the downloaded artifact.
+            The path to the downloaded artefact.
         """
         filename = url.split("/")[-1]
-        artifact = PKG_DIR / "data" / filename
-        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artefact = PKG_DIR / "data" / filename
+        artefact.parent.mkdir(parents=True, exist_ok=True)
 
-        if not artifact.exists():
-            urllib.request.urlretrieve(url, artifact)  # noqa: S310
-
-        return artifact
+        if not artefact.exists():
+            urllib.request.urlretrieve(url, artefact)  # noqa: S310
+        return artefact
 
     def _infer_tag(self) -> str:
         """
