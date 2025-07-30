@@ -2155,7 +2155,7 @@ def log_to_stderr(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     Args:
         level_filter:
             The level of logs to filter to. If a string is given, it must match
-            one of the [`LevelFilter`][pact.v3.ffi.LevelFilter] values (case
+            one of the [`LevelFilter`][pact_ffi.LevelFilter] values (case
             insensitive).
 
     Raises:
@@ -5854,7 +5854,7 @@ def with_metadata(
 
     # Note
 
-    For HTTP interactions, use [`with_header_v2`][pact.v3.ffi.with_header_v2]
+    For HTTP interactions, use [`with_header_v2`][pact_ffi.with_header_v2]
     instead. This function will not have any effect on HTTP interactions and
     returns `false`.
 
@@ -5864,7 +5864,7 @@ def with_metadata(
     set on all response messages. This also requires for responses to have been
     defined in the interaction.
 
-    The [`with_body`][pact.v3.ffi.with_body] will also contribute to the
+    The [`with_body`][pact_ffi.with_body] will also contribute to the
     metadata of the message (both sync and async) by setting the key
     `contentType` with the content type of the message.
 
@@ -6227,9 +6227,9 @@ def with_binary_file(
     !!! warning
 
         This function is deprecated. Use
-        [`with_binary_body`][pact.v3.ffi.with_binary_body] in order to set the
+        [`with_binary_body`][pact_ffi.with_binary_body] in order to set the
         binary body, and use
-        [`with_matching_rules`][pact.v3.ffi.with_matching_rules] to set the
+        [`with_matching_rules`][pact_ffi.with_matching_rules] to set the
         matching rules to ensure that only the content type is being matched.
 
     Will use a mime type matcher to match the body. Returns false if the
@@ -6754,7 +6754,7 @@ def verifier_new_for_application() -> VerifierHandle:
 
     By default, verification results will not be published. To enable
     publishing, use
-    [`pactffi_verifier_set_publish_options`][pact.v3.ffi.verifier_set_publish_options]
+    [`pactffi_verifier_set_publish_options`][pact_ffi.verifier_set_publish_options]
     to set the required values and enable it.
 
     [Rust
@@ -7490,7 +7490,7 @@ def using_plugin(
     The plugin needs to be installed correctly for this function to work.
 
     Note that plugins run as separate processes, so will need to be cleaned up
-    afterwards by calling [`cleanup_plugins`][pact.v3.ffi.cleanup_plugins]
+    afterwards by calling [`cleanup_plugins`][pact_ffi.cleanup_plugins]
     otherwise you will have plugin processes left running.
 
     [Rust
