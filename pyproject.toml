@@ -63,7 +63,7 @@ dependencies = [
   "Repository"    = "https://github.com/pact-foundation/pact-python"
 
   [project.scripts]
-  pact-verifier = "pact.cli.verify:main"
+  pact-verifier = "pact.v2.cli.verify:main"
 
   [project.optional-dependencies]
   # Linting and formatting tools use a more narrow specification to ensure
@@ -218,7 +218,7 @@ requires      = ["hatch-vcs", "hatchling"]
     "--cov=pact",
     # Xdist options
     "--dist=worksteal",
-    "--numprocesses=logical",
+    "--numprocesses=2",
     # Rerun options
     "--rerun-except=assert",
     "--reruns=3",
@@ -228,9 +228,6 @@ requires      = ["hatch-vcs", "hatchling"]
     "ignore::DeprecationWarning:examples",
     "ignore::DeprecationWarning:pact",
     "ignore::DeprecationWarning:tests",
-    "ignore::PendingDeprecationWarning:examples",
-    "ignore::PendingDeprecationWarning:pact",
-    "ignore::PendingDeprecationWarning:tests",
   ]
   pythonpath = "."
 
@@ -270,42 +267,9 @@ requires      = ["hatch-vcs", "hatchling"]
 ################################################################################
 [tool.ruff]
 
-# TODO: Remove the explicity extend-exclude once astral-sh/ruff#6262 is fixed.
+# TODO: Don't check v2 files
 # https://github.com/pact-foundation/pact-python/issues/458
-extend-exclude = [
-  # "src/pact/*.py",
-  # "src/pact/cli/*.py",
-  # "src/tests/*.py",
-  # "src/tests/cli/*.py",
-  "src/pact/__init__.py",
-  "src/pact/__version__.py",
-  "src/pact/broker.py",
-  "src/pact/cli/*.py",
-  "src/pact/consumer.py",
-  "src/pact/http_proxy.py",
-  "src/pact/matchers.py",
-  "src/pact/message_consumer.py",
-  "src/pact/message_pact.py",
-  "src/pact/message_provider.py",
-  "src/pact/pact.py",
-  "src/pact/provider.py",
-  "src/pact/verifier.py",
-  "src/pact/verify_wrapper.py",
-  "tests/__init__.py",
-  "tests/cli/*.py",
-  "tests/conftest.py",
-  "tests/test_broker.py",
-  "tests/test_constants.py",
-  "tests/test_consumer.py",
-  "tests/test_http_proxy.py",
-  "tests/test_matchers.py",
-  "tests/test_message_consumer.py",
-  "tests/test_message_pact.py",
-  "tests/test_message_provider.py",
-  "tests/test_pact.py",
-  "tests/test_verifier.py",
-  "tests/test_verify_wrapper.py",
-]
+extend-exclude = ["src/pact/v2/*", "tests/v2/*", "examples/v2/*"]
 
   [tool.ruff.lint]
   select = ["ALL"]
@@ -342,7 +306,9 @@ extend-exclude = [
 ## Mypy Configuration
 ################################################################################
 [tool.mypy]
-exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
+exclude = """(?x)^(
+  (src/pact|tests|examples)/v2/.*\\.pyi?
+)$"""
 
 ################################################################################
 ## CI Build Wheel
@@ -355,7 +321,7 @@ exclude = '^(src/pact|tests|examples|examples/tests)/(?!v3).+\.py$'
 [tool.typos]
 
   [tool.typos.default]
-  extend-ignore-re = ["(?Rm)^.*(#|//|<!--)\\s*spellchecker:\\s*ignore"]
+  extend-ignore-re = ['(?Rm)^.*(#|//|<!--)\s*spellchecker:\s*ignore']
 
 ################################################################################
 ## Yamlfix

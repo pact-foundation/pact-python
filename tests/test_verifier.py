@@ -1,267 +1,166 @@
-from collections import OrderedDict
+"""
+Unit tests for the pact.v3.verifier module.
 
-from unittest import TestCase
-import unittest
-from mock import patch
+These tests perform only very basic checks to ensure that the FFI module is
+working correctly. They are not intended to test the Verifier API much, as
+that is handled by the compatibility suite.
+"""
+
+import re
+from pathlib import Path
+
+import pytest
 
 from pact.verifier import Verifier
-from pact.verify_wrapper import VerifyWrapper
+
+ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-def assertVerifyCalled(mock_wrapper, *pacts, **options):
-    tc = unittest.TestCase()
-    tc.assertEqual(mock_wrapper.call_count, 1)
-
-    mock_wrapper.assert_called_once_with(*pacts, **options)
+@pytest.fixture
+def verifier() -> Verifier:
+    return Verifier("Tester")
 
 
-class VerifierPactsTestCase(TestCase):
-
-    def setUp(self):
-        super(VerifierPactsTestCase, self).setUp()
-        self.addCleanup(patch.stopall)
-        self.verifier = Verifier(provider='test_provider',
-                                 provider_base_url="http://localhost:8888")
-
-        self.mock_wrapper = patch.object(
-            VerifyWrapper, 'call_verify').start()
-
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_verifier_with_provider_and_files(self, mock_path_exists, mock_wrapper):
-        mock_wrapper.return_value = (True, 'some logs')
-
-        output, _ = self.verifier.verify_pacts('path/to/pact1',
-                                               'path/to/pact2',
-                                               headers=['header1', 'header2'])
-
-        assertVerifyCalled(mock_wrapper,
-                           'path/to/pact1',
-                           'path/to/pact2',
-                           provider='test_provider',
-                           custom_provider_headers=['header1', 'header2'],
-                           provider_base_url='http://localhost:8888',
-                           log_level='INFO',
-                           verbose=False,
-                           enable_pending=False,
-                           include_wip_pacts_since=None)
-
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_verifier_with_provider_and_files_passes_consumer_selctors(self, mock_path_exists, mock_wrapper):
-        mock_wrapper.return_value = (True, 'some logs')
-
-        output, _ = self.verifier.verify_pacts(
-            'path/to/pact1',
-            'path/to/pact2',
-            headers=['header1', 'header2'],
-            consumer_version_selectors=[
-                # Using OrderedDict for the sake of testing
-                OrderedDict([("tag", "main"), ("latest", True)]),
-                OrderedDict([("tag", "test"), ("latest", False)]),
-            ]
-        )
-
-        assertVerifyCalled(mock_wrapper,
-                           'path/to/pact1',
-                           'path/to/pact2',
-                           provider='test_provider',
-                           custom_provider_headers=['header1', 'header2'],
-                           provider_base_url='http://localhost:8888',
-                           log_level='INFO',
-                           verbose=False,
-                           enable_pending=False,
-                           include_wip_pacts_since=None,
-                           consumer_selectors=['{"tag": "main", "latest": true}',
-                                               '{"tag": "test", "latest": false}'])
-
-    def test_validate_on_publish_results(self):
-        self.assertRaises(Exception, self.verifier.verify_pacts, 'path/to/pact1', publish=True)
-
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_publish_on_success(self, mock_path_exists, mock_wrapper):
-        mock_wrapper.return_value = (True, 'some logs')
-
-        output, _ = self.verifier.verify_pacts('path/to/pact1', publish_version='1.0.0')
-
-        assertVerifyCalled(mock_wrapper,
-                           'path/to/pact1',
-                           provider='test_provider',
-                           provider_base_url='http://localhost:8888',
-                           log_level='INFO',
-                           verbose=False,
-                           provider_app_version='1.0.0',
-                           enable_pending=False,
-                           include_wip_pacts_since=None)
-
-    @patch('pact.verifier.path_exists', return_value=False)
-    def test_raises_error_on_missing_pact_files(self, mock_path_exists):
-        self.assertRaises(Exception,
-                          self.verifier.verify_pacts,
-                          'path/to/pact1', 'path/to/pact2')
-
-        mock_path_exists.assert_called_with('path/to/pact2')
-
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify", return_value=(0, None))
-    @patch('pact.verifier.expand_directories', return_value=['./pacts/pact1', './pacts/pact2'])
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_expand_directories_called_for_pacts(self, mock_path_exists, mock_expand_dir, mock_wrapper):
-        output, _ = self.verifier.verify_pacts('path/to/pact1',
-                                               'path/to/pact2')
-
-        mock_expand_dir.assert_called_once()
-
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
-    def test_passes_enable_pending_flag_value(self, mock_wrapper):
-        for value in (True, False):
-            with self.subTest(value=value):
-                with patch('pact.verifier.path_exists'):
-                    self.verifier.verify_pacts('any.json', enable_pending=value)
-                self.assertTrue(
-                    ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
-                    mock_wrapper.call_args.kwargs,
-                )
-
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_passes_include_wip_pacts_since_value(self, mock_path_exists, mock_wrapper):
-        self.verifier.verify_pacts('any.json', include_wip_pacts_since='2018-01-01')
-        self.assertTrue(
-            ('include_wip_pacts_since', '2018-01-01') in mock_wrapper.call_args.kwargs.items(),
-            mock_wrapper.call_args.kwargs,
-        )
+def test_str_repr(verifier: Verifier) -> None:
+    assert str(verifier) == "Verifier(Tester)"
+    assert re.match(
+        r"<Verifier: Tester, handle=VerifierHandle\(0x[0-9a-f]+\)>",
+        repr(verifier),
+    )
 
 
-class VerifierBrokerTestCase(TestCase):
+def test_set_provider_info(verifier: Verifier) -> None:
+    url = "http://localhost:8888/api"
+    verifier.add_transport(url=url)
+    verifier.verify()
 
-    def setUp(self):
-        super(VerifierBrokerTestCase, self).setUp()
-        self.addCleanup(patch.stopall)
-        self.verifier = Verifier(provider='test_provider',
-                                 provider_base_url="http://localhost:8888")
 
-        self.mock_wrapper = patch.object(
-            VerifyWrapper, 'call_verify').start()
-        self.broker_username = 'broker_username'
-        self.broker_password = 'broker_password'
-        self.broker_url = 'http://broker'
+def test_add_provider_transport(verifier: Verifier) -> None:
+    # HTTP
+    verifier.add_transport(
+        protocol="http",
+        port=1234,
+        path="/api",
+        scheme="http",
+    )
 
-        self.default_opts = {
-            'broker_username': self.broker_username,
-            'broker_password': self.broker_password,
-            'broker_url': self.broker_url,
-            'broker_token': 'token'
-        }
+    # HTTPS
+    verifier.add_transport(
+        protocol="http",
+        port=4321,
+        path="/api",
+        scheme="https",
+    )
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    def test_verifier_with_broker(self, mock_wrapper):
+    # message
+    verifier.add_transport(
+        protocol="message",
+    )
 
-        mock_wrapper.return_value = (True, 'some value')
+    # gRPC
+    verifier.add_transport(
+        protocol="grpc",
+        port=1234,
+    )
 
-        output, _ = self.verifier.verify_with_broker(**self.default_opts)
 
-        self.assertTrue(output)
-        assertVerifyCalled(mock_wrapper,
-                           provider='test_provider',
-                           provider_base_url='http://localhost:8888',
-                           broker_password=self.broker_password,
-                           broker_username=self.broker_username,
-                           broker_token='token',
-                           broker_url=self.broker_url,
-                           log_level='INFO',
-                           verbose=False,
-                           enable_pending=False,
-                           include_wip_pacts_since=None)
+def test_set_filter(verifier: Verifier) -> None:
+    verifier.filter("test_filter")
+    verifier.filter("test_filter", state="test_value")
+    verifier.filter("no_state", no_state=True)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    def test_verifier_and_publish_with_broker(self, mock_wrapper):
 
-        mock_wrapper.return_value = (True, 'some value')
+def test_set_state(verifier: Verifier) -> None:
+    verifier.state_handler("test_state", body=True)
 
-        self.default_opts['publish_version'] = '1.0.0'
-        output, _ = self.verifier.verify_with_broker(**self.default_opts)
 
-        self.assertTrue(output)
-        assertVerifyCalled(mock_wrapper,
-                           provider='test_provider',
-                           provider_base_url='http://localhost:8888',
-                           broker_password=self.broker_password,
-                           broker_username=self.broker_username,
-                           broker_token='token',
-                           broker_url=self.broker_url,
-                           log_level='INFO',
-                           verbose=False,
-                           enable_pending=False,
-                           include_wip_pacts_since=None,
-                           provider_app_version='1.0.0',
-                           )
+def test_disable_ssl_verification(verifier: Verifier) -> None:
+    verifier.disable_ssl_verification()
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    def test_verifier_with_broker_passes_consumer_selctors(self, mock_wrapper):
 
-        mock_wrapper.return_value = (True, 'some value')
+def test_set_request_timeout(verifier: Verifier) -> None:
+    verifier.set_request_timeout(1000)
 
-        output, _ = self.verifier.verify_with_broker(
-            consumer_version_selectors=[
-                # Using OrderedDict for the sake of testing
-                OrderedDict([("tag", "main"), ("latest", True)]),
-                OrderedDict([("tag", "test"), ("latest", False)]),
-            ],
-            **self.default_opts
-        )
 
-        self.assertTrue(output)
-        assertVerifyCalled(mock_wrapper,
-                           provider='test_provider',
-                           provider_base_url='http://localhost:8888',
-                           broker_password=self.broker_password,
-                           broker_username=self.broker_username,
-                           broker_token='token',
-                           broker_url=self.broker_url,
-                           log_level='INFO',
-                           verbose=False,
-                           enable_pending=False,
-                           include_wip_pacts_since=None,
-                           consumer_selectors=['{"tag": "main", "latest": true}',
-                                               '{"tag": "test", "latest": false}'])
+def test_set_coloured_output(verifier: Verifier) -> None:
+    verifier.set_coloured_output(enabled=True)
+    verifier.set_coloured_output(enabled=False)
 
-    @patch("pact.verify_wrapper.VerifyWrapper.call_verify")
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_publish_on_success(self, mock_path_exists, mock_wrapper):
-        mock_wrapper.return_value = (True, 'some logs')
 
-        self.verifier.verify_with_broker(publish_version='1.0.0', **self.default_opts)
+def test_set_error_on_empty_pact(verifier: Verifier) -> None:
+    verifier.set_error_on_empty_pact(enabled=True)
+    verifier.set_error_on_empty_pact(enabled=False)
 
-        assertVerifyCalled(mock_wrapper,
-                           provider='test_provider',
-                           provider_base_url='http://localhost:8888',
-                           broker_password=self.broker_password,
-                           broker_username=self.broker_username,
-                           broker_token='token',
-                           broker_url=self.broker_url,
-                           log_level='INFO',
-                           verbose=False,
-                           provider_app_version='1.0.0',
-                           enable_pending=False,
-                           include_wip_pacts_since=None)
 
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
-    def test_passes_enable_pending_flag_value(self, mock_wrapper):
-        for value in (True, False):
-            with self.subTest(value=value):
-                with patch('pact.verifier.path_exists'):
-                    self.verifier.verify_with_broker(enable_pending=value)
-                self.assertTrue(
-                    ('enable_pending', value) in mock_wrapper.call_args.kwargs.items(),
-                    mock_wrapper.call_args.kwargs,
-                )
+def test_set_publish_options(verifier: Verifier) -> None:
+    verifier.set_publish_options(
+        version="1.0.0",
+        url="http://localhost:8080/build/1234",
+        branch="main",
+        tags=["main", "test", "prod"],
+    )
 
-    @patch('pact.verify_wrapper.VerifyWrapper.call_verify', return_value=(0, None))
-    @patch('pact.verifier.path_exists', return_value=True)
-    def test_passes_include_wip_pacts_since_value(self, mock_path_exists, mock_wrapper):
-        self.verifier.verify_with_broker(include_wip_pacts_since='2018-01-01')
-        self.assertTrue(
-            ('include_wip_pacts_since', '2018-01-01') in mock_wrapper.call_args.kwargs.items(),
-            mock_wrapper.call_args.kwargs,
-        )
+
+def test_filter_consumers(verifier: Verifier) -> None:
+    verifier.filter_consumers("consumer1")
+    verifier.filter_consumers("consumer1", "consumer2")
+
+
+def test_add_custom_header(verifier: Verifier) -> None:
+    verifier.add_custom_header("Authorization", "Bearer: 1234")
+
+
+def test_add_custom_headers(verifier: Verifier) -> None:
+    verifier.add_custom_headers({
+        "Authorization": "Bearer: 1234",
+        "Content-Type": "application/json",
+    })
+
+
+def test_add_source(verifier: Verifier) -> None:
+    # URL
+    verifier.add_source("http://localhost:8080/pact.json")
+
+    # File
+    verifier.add_source(ASSETS_DIR / "pacts" / "basic.json")
+
+    # Directory
+    verifier.add_source(ASSETS_DIR / "pacts")
+
+
+def test_broker_source(verifier: Verifier) -> None:
+    verifier.broker_source("http://localhost:8080")
+    verifier.broker_source(
+        "http://localhost:8080",
+        username="user",
+        password="password",  # noqa: S106
+    )
+    verifier.broker_source(
+        "http://localhost:8080",
+        token="1234",  # noqa: S106
+    )
+
+
+def test_broker_source_selector(verifier: Verifier) -> None:
+    (
+        verifier.broker_source("http://localhost:8080", selector=True)
+        .consumer_tags("main", "test")
+        .provider_tags("main", "test")
+        .consumer_versions('{"latest": true}')
+        .build()
+    )
+
+
+def test_verify(verifier: Verifier) -> None:
+    verifier.add_transport(url="http://localhost:8080")
+    verifier.verify()
+
+
+def test_logs(verifier: Verifier) -> None:
+    logs = verifier.logs
+    assert logs == ""
+
+
+def test_output(verifier: Verifier) -> None:
+    output = verifier.output()
+    assert output == ""

@@ -1,0 +1,29 @@
+---
+version: '3.9'
+
+services:
+  broker:
+    image: pactfoundation/pact-broker:latest-multi
+    ports:
+      - 9292:9292
+    restart: always
+    environment:
+      # Basic auth credentials for the Broker
+      PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
+      PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
+      PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
+      # Database
+      PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite
+
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - -O
+        - '-'
+        - http://pactbroker:pactbroker@broker:9292/diagnostic/status/heartbeat
+      interval: 1s
+      timeout: 2s
+      retries: 5
+      start_period: 30s

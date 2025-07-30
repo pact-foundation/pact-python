@@ -1,468 +1,819 @@
-"""API for creating a contract and configuring the mock service."""
-from __future__ import unicode_literals
+"""
+Pact between a consumer and a provider.
 
-import os
-import platform
-from subprocess import Popen
+This module defines the classes that are used to define a Pact between a
+consumer and a provider. It defines the interactions between the two parties,
+and provides the functionality to verify that the interactions are satisfied.
+
+As Pact is a consumer-driven contract testing tool, the consumer is responsible
+for defining the interactions between the two parties. The provider is then
+responsible for ensuring that these interactions are satisfied.
+
+## Usage
+
+The main class in this module is the [`Pact`][pact.v3.Pact] class. This class
+defines the Pact between the consumer and the provider. It is responsible for
+defining the interactions between the two parties.
+
+The general usage of this module is as follows:
+
+```python
+from pact import Pact
+import aiohttp
+
+
+pact = Pact("consumer", "provider")
+
+interaction = pact.upon_receiving("a basic request")
+interaction.given("user 123 exists")
+interaction.with_request("GET", "/user/123")
+interaction.will_respond_with(200)
+interaction.with_header("Content-Type", "application/json")
+interaction.with_body({"id": 123, "name": "Alice"})
+
+with pact.serve() as srv:
+    async with aiohttp.ClientSession(srv.url) as session:
+        async with session.get("/user/123") as resp:
+            assert resp.status == 200
+            assert resp.headers["Content-Type"] == "application/json"
+            data = await resp.json()
+            assert data == {"id": 123, "name": "Alice"}
+```
+
+The repeated calls to `interaction` can be chained together to define the
+interaction in a more concise manner:
+
+```python
+pact = Pact("consumer", "provider")
+
+(
+    pact.upon_receiving("a basic request")
+    .given("user 123 exists")
+    .with_request("GET", "/user/123")
+    .will_respond_with(200)
+    .with_header("Content-Type", "application/json")
+    .with_body({"id": 123, "name": "Alice"})
+)
+```
+
+Note that the parentheses are required to ensure that the method chaining works
+correctly, as this form of method chaining is not typical in Python.
+"""
+
+from __future__ import annotations
+
+import logging
 import warnings
+from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Literal,
+    overload,
+)
 
-import psutil
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3 import Retry
+from yarl import URL
 
-from .broker import Broker
-from .constants import MOCK_SERVICE_PATH
-from .matchers import from_term
-from .verify_wrapper import PactException
+import pact_ffi
+from pact._util import find_free_port
+from pact.error import (
+    InteractionVerificationError,
+    Mismatch,
+    MismatchesError,
+    PactVerificationError,
+)
+from pact.interaction._async_message_interaction import AsyncMessageInteraction
+from pact.interaction._http_interaction import HttpInteraction
+from pact.interaction._sync_message_interaction import SyncMessageInteraction
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from types import TracebackType
+
+    from pact.interaction import Interaction
+
+    try:
+        from typing import Self
+    except ImportError:
+        from typing_extensions import Self
+
+logger = logging.getLogger(__name__)
 
 
-class Pact(Broker):
+class Pact:
     """
-    Represents a contract between a consumer and provider.
+    A Pact between a consumer and a provider.
 
-    Provides Python context handlers to configure the Pact mock service to
-    perform tests on a Python consumer. For example:
+    This class defines a Pact between a consumer and a provider. It is the
+    central class in Pact's framework, and is responsible for defining the
+    interactions between the two parties.
 
-    >>> from pact import Consumer, Provider
-    >>> pact = Consumer('consumer').has_pact_with(Provider('provider'))
-    >>> (pact.given('the echo service is available')
-    ...  .upon_receiving('a request is made to the echo service')
-    ...  .with_request('get', '/echo', query={'text': 'Hello!'})
-    ...  .will_respond_with(200, body='Hello!'))
-    >>> with pact:
-    ...   requests.get(pact.uri + '/echo?text=Hello!')
+    One `Pact` instance should be created for each provider that a consumer
+    interacts with. The methods on this class are used to define the broader
+    attributes of the Pact, such as the consumer and provider names, the Pact
+    specification, any plugins that are used, and any metadata that is attached
+    to the Pact.
 
-    The GET request is made to the mock service, which will verify that it
-    was a GET to /echo with a query string with a key named `text` and its
-    value is `Hello!`. If the request does not match an error is raised, if it
-    does match the defined interaction, it will respond with the text `Hello!`.
+    Each interaction between the consumer and the provider is defined through
+    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
+    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
     """
-
-    HEADERS = {'X-Pact-Mock-Service': 'true'}
-
-    MANDATORY_FIELDS = {'response', 'description', 'request'}
 
     def __init__(
         self,
-        consumer,
-        provider,
-        host_name='localhost',
-        port=1234,
-        log_dir=None,
-        ssl=False,
-        sslcert=None,
-        sslkey=None,
-        cors=False,
-        publish_to_broker=False,
-        broker_base_url=None,
-        broker_username=None,
-        broker_password=None,
-        broker_token=None,
-        pact_dir=None,
-        specification_version='2.0.0',
-        file_write_mode='overwrite',
+        consumer: str,
+        provider: str,
+    ) -> None:
+        """
+        Initialise a new Pact.
+
+        Args:
+            consumer:
+                Name of the consumer.
+
+            provider:
+                Name of the provider.
+        """
+        if not consumer:
+            msg = "Consumer name cannot be empty."
+            raise ValueError(msg)
+        if not provider:
+            msg = "Provider name cannot be empty."
+            raise ValueError(msg)
+
+        self._consumer = consumer
+        self._provider = provider
+        self._interactions: set[Interaction] = set()
+        self._handle: pact_ffi.PactHandle = pact_ffi.new_pact(
+            consumer,
+            provider,
+        )
+
+    def __str__(self) -> str:
+        """
+        Informal string representation of the Pact.
+        """
+        return f"{self.consumer} -> {self.provider}"
+
+    def __repr__(self) -> str:
+        """
+        Information-rich string representation of the Pact.
+        """
+        return "<Pact: {}>".format(
+            ", ".join(
+                [
+                    f"consumer={self.consumer!r}",
+                    f"provider={self.provider!r}",
+                    f"handle={self._handle!r}",
+                ],
+            ),
+        )
+
+    @property
+    def consumer(self) -> str:
+        """
+        Consumer name.
+        """
+        return self._consumer
+
+    @property
+    def provider(self) -> str:
+        """
+        Provider name.
+        """
+        return self._provider
+
+    @property
+    def specification(self) -> pact_ffi.PactSpecification:
+        """
+        Pact specification version.
+        """
+        return pact_ffi.handle_get_pact_spec_version(self._handle)
+
+    def with_specification(
+        self,
+        version: str | pact_ffi.PactSpecification,
+    ) -> Self:
+        """
+        Set the Pact specification version.
+
+        The Pact specification version indicates the features which are
+        supported by the Pact, and certain default behaviours.
+
+        Args:
+            version:
+                Pact specification version. The can be either a string or a
+                [`PactSpecification`][pact_ffi.PactSpecification] instance.
+
+                The version string is case insensitive and has an optional `v`
+                prefix.
+        """
+        if isinstance(version, str):
+            version = pact_ffi.PactSpecification.from_str(version)
+        pact_ffi.with_specification(self._handle, version)
+        return self
+
+    def using_plugin(self, name: str, version: str | None = None) -> Self:
+        """
+        Add a plugin to be used by the test.
+
+        Plugins extend the functionality of Pact.
+
+        Args:
+            name:
+                Name of the plugin.
+
+            version:
+                Version of the plugin. This is optional and can be `None`.
+        """
+        pact_ffi.using_plugin(self._handle, name, version)
+        return self
+
+    def with_metadata(
+        self,
+        namespace: str,
+        metadata: dict[str, str],
+    ) -> Self:
+        """
+        Set additional metadata for the Pact.
+
+        A common use for this function is to add information about the client
+        library (name, version, hash, etc.) to the Pact.
+
+        Args:
+            namespace:
+                Namespace for the metadata. This is used to group the metadata
+                together.
+
+            metadata:
+                Key-value pairs of metadata to add to the Pact.
+        """
+        for k, v in metadata.items():
+            pact_ffi.with_pact_metadata(self._handle, namespace, k, v)
+        return self
+
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["HTTP"] = ...,
+    ) -> HttpInteraction: ...
+
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["Async"],
+    ) -> AsyncMessageInteraction: ...
+
+    @overload
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["Sync"],
+    ) -> SyncMessageInteraction: ...
+
+    def upon_receiving(
+        self,
+        description: str,
+        interaction: Literal["HTTP", "Sync", "Async"] = "HTTP",
+    ) -> HttpInteraction | AsyncMessageInteraction | SyncMessageInteraction:
+        """
+        Create a new Interaction.
+
+        Args:
+            description:
+                Description of the interaction. This must be unique
+                within the Pact.
+
+            interaction:
+                Type of interaction. Defaults to `HTTP`. This must be one of
+                `HTTP`, `Async`, or `Sync`.
+        """
+        if interaction == "HTTP":
+            return HttpInteraction(self._handle, description)
+        if interaction == "Async":
+            return AsyncMessageInteraction(self._handle, description)
+        if interaction == "Sync":
+            return SyncMessageInteraction(self._handle, description)
+
+        msg = f"Invalid interaction type: {interaction}"
+        raise ValueError(msg)
+
+    def serve(  # noqa: PLR0913
+        self,
+        addr: str = "localhost",
+        port: int = 0,
+        transport: str = "http",
+        transport_config: str | None = None,
+        *,
+        raises: bool = True,
+        verbose: bool = True,
+    ) -> PactServer:
+        """
+        Return a mock server for the Pact.
+
+        This function configures a mock server for the Pact. The mock server
+        is then started when the Pact is entered into a `with` block:
+
+        ```python
+        pact = Pact("consumer", "provider")
+        with pact.serve() as srv:
+            ...
+        ```
+
+        Args:
+            addr:
+                Address to bind the mock server to. Defaults to `localhost`.
+
+            port:
+                Port to bind the mock server to. Defaults to `0`, which will
+                select a random port.
+
+            transport:
+                Transport to use for the mock server. Defaults to `HTTP`.
+
+            transport_config:
+                Configuration for the transport. This is specific to the
+                transport being used and should be a JSON string.
+
+            raises:
+                Whether to raise an exception if there are mismatches between
+                the Pact and the server. If set to `False`, then the mismatches
+                must be handled manually.
+
+            verbose:
+                Whether or not to print the mismatches to the logger. This works
+                independently of `raises`.
+
+        Returns:
+            A [`PactServer`][pact.v3.pact.PactServer] instance.
+        """
+        return PactServer(
+            self._handle,
+            addr,
+            port,
+            transport,
+            transport_config,
+            raises=raises,
+            verbose=verbose,
+        )
+
+    @overload
+    def interactions(
+        self,
+        kind: Literal["HTTP"],
+    ) -> Generator[pact_ffi.SynchronousHttp, None, None]: ...
+
+    @overload
+    def interactions(
+        self,
+        kind: Literal["Sync"],
+    ) -> Generator[pact_ffi.SynchronousMessage, None, None]: ...
+
+    @overload
+    def interactions(
+        self,
+        kind: Literal["Async"],
+    ) -> Generator[pact_ffi.AsynchronousMessage, None, None]: ...
+
+    def interactions(
+        self,
+        kind: Literal["HTTP", "Sync", "Async"] = "HTTP",
+    ) -> (
+        Generator[pact_ffi.SynchronousHttp, None, None]
+        | Generator[pact_ffi.SynchronousMessage, None, None]
+        | Generator[pact_ffi.AsynchronousMessage, None, None]
     ):
         """
-        Create a Pact instance.
+        Return an iterator over the Pact's interactions.
 
-        :param consumer: The consumer for this contract.
-        :type consumer: pact.Consumer
-        :param provider: The provider for this contract.
-        :type provider: pact.Provider
-        :param host_name: The host name where the mock service is running.
-        :type host_name: str
-        :param port: The port number where the mock service is running.
-        :type port: int
-        :param log_dir: The directory where logs should be written. Defaults to
-            the current directory.
-        :type log_dir: str
-        :param ssl: Flag to control the use of a self-signed SSL cert to run
-            the server over HTTPS , defaults to False.
-        :type ssl: bool
-        :param sslcert: Path to a custom self-signed SSL cert file, 'ssl'
-            option must be set to True to use this option. Defaults to None.
-        :type sslcert: str
-        :param sslkey: Path to a custom key and self-signed SSL cert key file,
-            'ssl' option must be set to True to use this option.
-            Defaults to None.
-        :type sslkey: str
-        :param cors: Allow CORS OPTION requests to be accepted,
-            defaults to False.
-        :type cors: bool
-        :param publish_to_broker: Flag to control automatic publishing of
-            pacts to a pact broker. Defaults to False.
-        :type publish_to_broker: bool
-        :param broker_base_url: URL of the pact broker that pacts will be
-            published to. Can also be supplied through the PACT_BROKER_BASE_URL
-            environment variable. Defaults to None.
-        :type broker_base_url: str
-        :param broker_username: Username to use when connecting to the pact
-            broker if authentication is required. Can also be supplied through
-            the PACT_BROKER_USERNAME environment variable. Defaults to None.
-        :type broker_username: str
-        :param broker_password: Password to use when connecting to the pact
-            broker if authentication is required. Strongly recommend supplying
-            this value through the PACT_BROKER_PASSWORD environment variable
-            instead. Defaults to None.
-        :type broker_password: str
-        :param broker_token: Authentication token to use when connecting to
-            the pact broker. Strongly recommend supplying this value through
-            the PACT_BROKER_TOKEN environment variable instead.
-            Defaults to None.
-        :type broker_token: str
-        :param pact_dir: Directory where the resulting pact files will be
-            written. Defaults to the current directory.
-        :type pact_dir: str
-        :param specification_version: The Pact Specification version to use, defaults to
-            '2.0.0'.
-        :type version: str of the consumer version.
-        :param file_write_mode: `overwrite` or `merge`. Use `merge` when
-            running multiple mock service instances in parallel for the same
-            consumer/provider pair. Ensure the pact file is deleted before
-            running tests when using this option so that interactions deleted
-            from the code are not maintained in the file. Defaults to
-            `overwrite`.
-        :type file_write_mode: str
+        The kind is used to specify the type of interactions that will be
+        iterated over.
         """
-        warnings.warn(
-            "This class will be deprecated Pact Python v3 "
-            "(see pact-foundation/pact-python#396)",
-            PendingDeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(
-            broker_base_url, broker_username, broker_password, broker_token
-        )
-
-        scheme = 'https' if ssl else 'http'
-        self.uri = '{scheme}://{host_name}:{port}'.format(
-            host_name=host_name, port=port, scheme=scheme)
-        self.consumer = consumer
-        self.cors = cors
-        self.file_write_mode = file_write_mode
-        self.host_name = host_name
-        self.log_dir = log_dir or os.getcwd()
-        self.pact_dir = pact_dir or os.getcwd()
-        self.port = port
-        self.provider = provider
-        self.publish_to_broker = publish_to_broker
-        self.ssl = ssl
-        self.sslcert = sslcert
-        self.sslkey = sslkey
-        self.specification_version = specification_version
-        self._interactions = []
-        self._process = None
-
-    def given(self, provider_state):
-        """
-        Define the provider state for this pact.
-
-        When the provider verifies this contract, they will use this field to
-        setup pre-defined data that will satisfy the response expectations.
-
-        :param provider_state: The short sentence that is unique to describe
-            the provider state for this contract.
-        :type provider_state: basestring
-        :rtype: Pact
-        """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['provider_state'] = provider_state
-        return self
-
-    def setup(self):
-        """Configure the Mock Service to ready it for a test."""
-        try:
-            # First, check that the interactions are all complete
-            for interaction in self._interactions:
-                missing_fields = [f for f in self.MANDATORY_FIELDS if f not in interaction]
-                if missing_fields:
-                    raise PactException(f"Interaction incomplete, missing field(s): {', '.join(missing_fields)}")
-
-            interactions_uri = f"{self.uri}/interactions"
-            resp = requests.delete(
-                interactions_uri, headers=self.HEADERS, verify=False
-            )
-
-            assert resp.status_code == 200, resp.text
-            resp = requests.put(
-                interactions_uri,
-                headers=self.HEADERS,
-                verify=False,
-                json={"interactions": self._interactions},
-            )
-
-            assert resp.status_code == 200, resp.text
-        except AssertionError:
-            raise
-
-    def start_service(self):
-        """
-        Start the external Mock Service.
-
-        :raises RuntimeError: if there is a problem starting the mock service.
-        """
-        command = [
-            MOCK_SERVICE_PATH,
-            "service",
-            f"--host={self.host_name}",
-            f"--port={format(self.port)}",
-            "--log", f"{self.log_dir}/pact-mock-service.log",
-            "--pact-dir", self.pact_dir,
-            "--pact-file-write-mode", self.file_write_mode,
-            f"--pact-specification-version={self.specification_version}",
-            "--consumer", self.consumer.name,
-            "--provider", self.provider.name,
-        ]
-
-        if self.ssl:
-            command.append('--ssl')
-        if self.sslcert:
-            command.extend(['--sslcert', self.sslcert])
-        if self.sslkey:
-            command.extend(['--sslkey', self.sslkey])
-        if self.cors:
-            command.extend(['--cors'])
-
-        self._process = Popen(command)
-        self._wait_for_server_start()
-
-    def stop_service(self):
-        """Stop the external Mock Service."""
-        is_windows = 'windows' in platform.platform().lower()
-        if is_windows:
-            # Send the signal to ruby.exe, not the *.bat process
-            p = psutil.Process(self._process.pid)
-            for child in p.children(recursive=True):
-                child.terminate()
-            p.wait()
-            if psutil.pid_exists(self._process.pid):
-                raise RuntimeError(
-                    'There was an error when stopping the Pact mock service.')
-
+        # TODO: Add an iterator for `All` interactions.
+        # https://github.com/pact-foundation/pact-python/issues/451
+        if kind == "HTTP":
+            yield from pact_ffi.pact_handle_get_sync_http_iter(self._handle)
+        elif kind == "Sync":
+            yield from pact_ffi.pact_handle_get_sync_message_iter(self._handle)
+        elif kind == "Async":
+            yield from pact_ffi.pact_handle_get_async_message_iter(self._handle)
         else:
-            self._process.terminate()
+            msg = f"Unknown interaction type: {kind}"
+            raise ValueError(msg)
+        return  # Ensures that the parent object outlives the generator
 
-            self._process.communicate()
-            if self._process.returncode != 0:
-                raise RuntimeError(
-                    'There was an error when stopping the Pact mock service.'
+    @overload
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: Literal[True] = True,
+    ) -> None: ...
+    @overload
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: Literal[False],
+    ) -> list[InteractionVerificationError]: ...
+
+    def verify(
+        self,
+        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        kind: Literal["Async", "Sync"],
+        *,
+        raises: bool = True,
+    ) -> list[InteractionVerificationError] | None:
+        """
+        Verify message interactions.
+
+        This function is used to ensure that the consumer is able to handle the
+        messages that are defined in the Pact. The `handler` function is called
+        for each message in the Pact.
+
+        The end-user is responsible for defining the `handler` function and
+        verifying that the messages are handled correctly. For example, if the
+        handler is meant to call an API, then the API call should be mocked out
+        and once the verification is complete, the mock should be verified. Any
+        exceptions raised by the handler will be caught and reported as
+        mismatches.
+
+        Args:
+            handler:
+                The function that will be called for each message in the Pact.
+
+                The first argument to the function is the message body, either as
+                a string or byte array.
+
+                The second argument is the metadata for the message. If there
+                is no metadata, then this will be an empty dictionary.
+
+            kind:
+                The type of message interaction. This must be one of `Async`
+                or `Sync`.
+
+            raises:
+                Whether or not to raise an exception if the handler fails to
+                process a message. If set to `False`, then the function will
+                return a list of errors.
+        """
+        errors: list[InteractionVerificationError] = []
+        for message in self.interactions(kind):
+            request: pact_ffi.MessageContents | None = None
+            if isinstance(message, pact_ffi.SynchronousMessage):
+                request = message.request_contents
+            elif isinstance(message, pact_ffi.AsynchronousMessage):
+                request = message.contents
+            else:
+                msg = f"Unknown message type: {type(message).__name__}"
+                raise TypeError(msg)
+
+            if request is None:
+                warnings.warn(
+                    f"Message '{message.description}' has no contents",
+                    stacklevel=2,
                 )
-        if self.publish_to_broker:
-            self.publish(
-                self.consumer.name,
-                self.consumer.version,
-                tag_with_git_branch=self.consumer.tag_with_git_branch,
-                consumer_tags=self.consumer.tags,
-                branch=self.consumer.branch,
-                pact_dir=self.pact_dir,
-                build_url=self.consumer.build_url,
-                auto_detect_version_properties=self.consumer.auto_detect_version_properties
-            )
+                continue
 
-    def upon_receiving(self, scenario):
+            body = request.contents
+            metadata = {pair.key: pair.value for pair in request.metadata}
+
+            try:
+                handler(body, metadata)
+            except Exception as e:  # noqa: BLE001
+                errors.append(InteractionVerificationError(message.description, e))
+
+        if raises:
+            if errors:
+                raise PactVerificationError(errors)
+            return None
+        return errors
+
+    def write_file(
+        self,
+        directory: Path | str | None = None,
+        *,
+        overwrite: bool = False,
+    ) -> None:
         """
-        Define the name of this contract.
+        Write out the pact to a file.
 
-        :param scenario: A unique name for this contract.
-        :type scenario: basestring
-        :rtype: Pact
+        This function should be called once all of the consumer tests have been
+        run. It writes the Pact to a file, which can then be used to validate
+        the provider.
+
+        Args:
+            directory:
+                The directory to write the pact to. If the directory does not
+                exist, it will be created. The filename will be
+                automatically generated from the underlying Pact.
+
+            overwrite:
+                If set to True, the file will be overwritten if it already
+                exists. Otherwise, the contents of the file will be merged with
+                the existing file.
         """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['description'] = scenario
-        return self
-
-    def verify(self):
-        """
-        Have the mock service verify all interactions occurred.
-
-        Calls the mock service to verify that all interactions occurred as
-        expected, and has it write out the contracts to disk.
-
-        :raises AssertionError: When not all interactions are found.
-        """
-        self._interactions = []
-        resp = requests.get(
-            self.uri + "/interactions/verification", headers=self.HEADERS, verify=False
+        if directory is None:
+            directory = Path.cwd()
+        pact_ffi.pact_handle_write_file(
+            self._handle,
+            directory,
+            overwrite=overwrite,
         )
-        assert resp.status_code == 200, resp.text
-        resp = requests.post(self.uri + "/pact", headers=self.HEADERS, verify=False)
-        assert resp.status_code == 200, resp.text
 
-    def with_request(self, method, path, body=None, headers=None, query=None):
+
+class PactServer:
+    """
+    Pact Server.
+
+    This class handles the lifecycle of the Pact mock server. It is responsible
+    for starting the mock server when the Pact is entered into a [`with`
+    block](https://docs.python.org/3/reference/compound_stmts.html#with), and
+    stopping the mock server when the block is exited.
+
+    Note that the server should not be started directly, but rather through the
+    [`serve(...)`][pact.v3.Pact.serve] method of a [`Pact`][pact.v3.Pact]:
+
+    ```python
+    pact = Pact("consumer", "provider")
+    # Define interactions...
+    with pact.serve() as srv:
+        ...
+    ```
+
+    The URL for the server can be accessed through its
+    [`url`][pact.v3.pact.PactServer.url] attribute, which will be required in
+    order to point the consumer client to the mock server:
+
+    ```python
+    pact = Pact("consumer", "provider")
+    with pact.serve() as srv:
+        api_client = MyApiClient(srv.url)
+        # Test the client...
+    ```
+
+    If the server is instantiated with `raises=True` (the default), then the
+    server will raise a `MismatchesError` if there are mismatches in any of the
+    interactions. If `raises=False`, then the mismatches must be handled
+    manually.
+    """
+
+    def __init__(  # noqa: PLR0913
+        self,
+        pact_handle: pact_ffi.PactHandle,
+        host: str = "localhost",
+        port: int | None = None,
+        transport: str = "HTTP",
+        transport_config: str | None = None,
+        *,
+        raises: bool = True,
+        verbose: bool = True,
+    ) -> None:
         """
-        Define the request that the client is expected to perform.
+        Initialise a new Pact Server.
 
-        :param method: The HTTP method.
-        :type method: str
-        :param path: The path portion of the URI the client will access.
-        :type path: str, Matcher
-        :param body: The request body, can be a string or an object that will
-            serialize to JSON, like list or dict, defaults to None.
-        :type body: list, dict or None
-        :param headers: The headers the client is expected to include on with
-            this request. Defaults to None.
-        :type headers: dict or None
-        :param query: The query options the client is expected to send. Can be
-            a dict of keys and values, or a URL encoded string.
-            Defaults to None.
-        :type query: dict, basestring, or None
-        :rtype: Pact
+        Args:
+            pact_handle:
+                Handle for the Pact.
+
+            host:
+                Hostname of IP for the mock server.
+
+            port:
+                Port to bind the mock server to. The value of `None` will select
+                a random available port.
+
+            transport:
+                Transport to use for the mock server.
+
+            transport_config:
+                Configuration for the transport. This is specific to the
+                transport being used and should be a JSON string.
+
+            raises:
+                Whether or not to raise an exception if the server is not
+                matched upon exit.
+
+            verbose:
+                Whether or not to print the mismatches to the logger. This works
+                independently of `raises`.
         """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['request'] = Request(
-            method, path, body=body, headers=headers, query=query
-        ).json()
-        return self
+        self._host = host
+        self._port = port or find_free_port()
+        self._transport = transport
+        self._transport_config = transport_config
+        self._pact_handle = pact_handle
+        self._handle: None | pact_ffi.PactServerHandle = None
+        self._raises = raises
+        self._verbose = verbose
 
-    def will_respond_with(self, status, headers=None, body=None):
+    @property
+    def port(self) -> int | None:
         """
-        Define the response the server is expected to create.
+        Port on which the server is running.
 
-        :param status: The HTTP status code.
-        :type status: int
-        :param headers: All required headers. Defaults to None.
-        :type headers: dict or None
-        :param body: The response body, or a collection of Matcher objects to
-            allow for pattern matching. Defaults to None.
-        :type body: Matcher, dict, list, basestring, or None
-        :rtype: Pact
+        If the server is not running, then this will be `None`.
         """
-        self._insert_interaction_if_complete()
-        self._interactions[0]['response'] = Response(
-            status, headers=headers, body=body
-        ).json()
-        return self
+        # Unlike the other properties, this value might be different to what was
+        # passed in to the constructor as the server can be started on a random
+        # port.
+        return self._handle.port if self._handle else None
 
-    def _insert_interaction_if_complete(self):
+    @property
+    def host(self) -> str:
         """
-        Insert a new interaction if current interaction is complete.
-
-        An interaction is complete if it has all the mandatory fields.
-        If there are no interactions, a new interaction will be added.
-
-        :rtype: None
+        Address to which the server is bound.
         """
-        if not self._interactions:
-            self._interactions.append({})
-        elif all(field in self._interactions[0] for field in self.MANDATORY_FIELDS):
-            self._interactions.insert(0, {})
+        return self._host
 
-    def _wait_for_server_start(self):
+    @property
+    def transport(self) -> str:
         """
-        Wait for the mock service to be ready for requests.
-
-        :rtype: None
-        :raises RuntimeError: If there is a problem starting the mock service.
+        Transport method.
         """
-        s = requests.Session()
-        retries = Retry(total=9, backoff_factor=0.1)
-        http_mount = 'https://' if self.ssl else 'http://'
-        s.mount(http_mount, HTTPAdapter(max_retries=retries))
+        return self._transport
 
-        resp = s.get(self.uri, headers=self.HEADERS, verify=False)
-        if resp.status_code != 200:
-            self._process.terminate()
-            self._process.communicate()
-            raise RuntimeError(
-                'There was a problem starting the mock service: %s', resp.text
+    @property
+    def url(self) -> URL:
+        """
+        Base URL for the server.
+        """
+        return URL(str(self))
+
+    @property
+    def matched(self) -> bool:
+        """
+        Whether or not the server has been matched.
+
+        This is `True` if the server has been matched, and `False` otherwise.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
+        """
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
+        return pact_ffi.mock_server_matched(self._handle)
+
+    @property
+    def mismatches(self) -> list[Mismatch]:
+        """
+        Mismatches between the Pact and the server.
+
+        This is a string containing the mismatches between the Pact and the
+        server. If there are no mismatches, then this is an empty string.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
+        """
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
+        return list(
+            map(
+                Mismatch.from_dict,
+                pact_ffi.mock_server_mismatches(self._handle),
             )
+        )
 
-    def __enter__(self):
+    @property
+    def logs(self) -> str | None:
         """
-        Enter a Python context.
+        Logs from the server.
 
-        Sets up the mock service to expect the client requests.
+        This is a string containing the logs from the server. If there are no
+        logs, then this is `None`. For this to be populated, the logging must
+        be configured to make use of the internal buffer.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
         """
-        self.setup()
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            return pact_ffi.mock_server_logs(self._handle)
+        except RuntimeError:
+            return None
+
+    def __str__(self) -> str:
         """
-        Exit a Python context.
-
-        Calls the mock service to verify that all interactions occurred as
-        expected, and has it write out the contracts to disk.
+        URL for the server.
         """
-        self._interactions = []
-        if (exc_type, exc_val, exc_tb) != (None, None, None):
-            return
+        return f"{self.transport}://{self.host}:{self.port}"
 
-        self.verify()
-
-
-class FromTerms(object):
-    """Base class for objects built from a collection of Matchers."""
-
-    def json(self):
-        """Convert the object to a JSON version of the mock service."""
-        raise NotImplementedError
-
-
-class Request(FromTerms):
-    """Represents an HTTP request and supports Matchers on its properties."""
-
-    def __init__(self, method, path, body=None, headers=None, query=''):
+    def __repr__(self) -> str:
         """
-        Create a new instance of Request.
-
-        :param method: The HTTP method that is expected.
-        :type method: str
-        :param path: The URI path that is expected on this request.
-        :type path: str, Matcher
-        :param body: The contents of the body of the expected request.
-        :type body: str, dict, list
-        :param headers: The headers of the expected request.
-        :type headers: dict
-        :param query: The URI query of the expected request.
-        :type query: str or dict
+        Information-rich string representation of the Pact Server.
         """
-        self.method = method
-        self.path = from_term(path)
-        self.body = from_term(body)
-        self.headers = from_term(headers)
-        self.query = from_term(query)
+        return "<PactServer: {}>".format(
+            ", ".join(
+                [
+                    f"transport={self.transport!r}",
+                    f"host={self.host!r}",
+                    f"port={self.port!r}",
+                    f"handle={self._handle!r}",
+                    f"pact={self._pact_handle!r}",
+                ],
+            ),
+        )
 
-    def json(self):
-        """Convert the Request to a JSON version for the mock service."""
-        request = {'method': self.method, 'path': self.path}
-
-        if self.headers:
-            request['headers'] = self.headers
-
-        if self.body is not None:
-            request['body'] = self.body
-
-        if self.query:
-            request['query'] = self.query
-
-        return request
-
-
-class Response(FromTerms):
-    """Represents an HTTP response and supports Matchers on its properties."""
-
-    def __init__(self, status, headers=None, body=None):
+    def __enter__(self) -> Self:
         """
-        Create a new Response.
+        Launch the server.
 
-        :param status: The expected HTTP status of the response.
-        :type status: int
-        :param headers: The expected headers of the response.
-        :type headers: dict
-        :param body: The expected body of the response.
-        :type body: str, dict, or list
+        Once the server is running, it is generally no possible to make
+        modifications to the underlying Pact.
         """
-        self.status = status
-        self.body = from_term(body)
-        self.headers = from_term(headers)
+        self._handle = pact_ffi.create_mock_server_for_transport(
+            self._pact_handle,
+            self._host,
+            self._port,
+            self._transport,
+            self._transport_config,
+        )
 
-    def json(self):
-        """Convert the Response to a JSON version for the mock service."""
-        response = {'status': self.status}
-        if self.body is not None:
-            response['body'] = self.body
+        return self
 
-        if self.headers:
-            response['headers'] = self.headers
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """
+        Stop the server.
 
-        return response
+        Raises:
+            MismatchesError:
+                If the server has not been fully matched and the server is
+                configured to raise an exception.
+        """
+        if self._handle and not self.matched:
+            if self._verbose:
+                msg = "\n".join([
+                    "Mismatches:",
+                    *(f"  ({i + 1}) {m}" for i, m in enumerate(self.mismatches)),
+                ])
+                logger.error(msg)
+            if self._raises:
+                raise MismatchesError(*self.mismatches)
+            self._handle = None
+
+    def __truediv__(self, other: str | object) -> URL:
+        """
+        URL for the server.
+        """
+        if isinstance(other, str):
+            return self.url / other
+        return NotImplemented
+
+    def write_file(
+        self,
+        directory: str | Path | None = None,
+        *,
+        overwrite: bool = False,
+    ) -> None:
+        """
+        Write out the pact to a file.
+
+        Args:
+            directory:
+                The directory to write the pact to. If the directory does not
+                exist, it will be created. The filename will be
+                automatically generated from the underlying Pact.
+
+            overwrite:
+                Whether or not to overwrite the file if it already exists.
+
+        Raises:
+            RuntimeError:
+                If the server is not running.
+
+            ValueError:
+                If the path specified is not a directory.
+        """
+        if not self._handle:
+            msg = "The server is not running."
+            raise RuntimeError(msg)
+
+        directory = Path(directory) if directory else Path.cwd()
+        if not directory.exists():
+            directory.mkdir(parents=True)
+        elif not directory.is_dir():
+            msg = f"{directory} is not a directory"
+            raise ValueError(msg)
+
+        pact_ffi.write_pact_file(
+            self._handle,
+            str(directory),
+            overwrite=overwrite,
+        )
