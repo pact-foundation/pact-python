@@ -41,18 +41,11 @@ requires-python = ">=3.9"
 # - A minor version address vulnerability which directly impacts Pact Python
 dependencies = [
   # Pact dependencies
-  "pact-python-cli~=2.0",
   "pact-python-ffi~=0.4.0",
-  # All other dependencies
+  # External dependencies
   "cffi~=1.0",
-  "click~=8.0",
-  "fastapi~=0.0",
-  "psutil~=7.0",
-  "requests~=2.0",
-  "six~=1.0",
-  "typing-extensions~=4.0 ; python_version < '3.10'",
-  "uvicorn~=0.0",
   "yarl~=1.0",
+  "typing-extensions~=4.0 ; python_version < '3.10'",
 ]
 
   [project.urls]
@@ -66,12 +59,24 @@ dependencies = [
   pact-verifier = "pact.v2.cli.verify:main"
 
   [project.optional-dependencies]
+  # Dependencies required for v2 only
+  v2 = [
+    # Pact dependencies
+    "pact-python-cli~=2.0",
+    # External dependencies
+    "click~=8.0",
+    "psutil~=7.0",
+    "requests~=2.0",
+    "six~=1.0",
+  ]
+
   # Linting and formatting tools use a more narrow specification to ensure
   # developper consistency. All other dependencies are as above.
   devel = [
     "pact-python-cli[devel]",
     "pact-python-ffi[devel]",
     "pact-python[devel-docs]",
+    "pact-python[devel-example]",
     "pact-python[devel-test]",
     "pact-python[devel-types]",
     "ruff==0.12.7",
@@ -83,17 +88,15 @@ dependencies = [
     "mkdocs_gen_files~=0.5",
     "mkdocstrings[python]~=0.23",
     "mkdocs~=1.5",
+    "pathspec~=0.0",
   ]
-  devel-test = [
-    "aiohttp[speedups]~=3.0",
-    "coverage[toml]~=7.0",
+  devel-example = [
+    "fastapi~=0.0",
     "flask[async]~=3.0",
     "grpcio~=1.0",
-    "httpx~=0.0",
-    "mock~=5.0",
+    "pact-python[devel-test]",
     "protobuf~=6.0",
-    "pytest-asyncio~=1.0",
-    "pytest-bdd~=8.0",
+    "pydantic~=2.0",
     "pytest-cov~=6.0",
     "pytest-rerunfailures~=15.0",
     "pytest-xdist~=3.0",
@@ -101,12 +104,48 @@ dependencies = [
     "testcontainers~=4.0",
     "uvicorn[standard]~=0.0",
   ]
+  devel-test = [
+    "aiohttp~=3.0",
+    "coverage[toml]~=7.0",
+    "flask~=3.0",
+    "pact-python-cli",
+    "pytest-asyncio~=1.0",
+    "pytest-bdd~=8.0",
+    "pytest-cov~=6.0",
+    "pytest-rerunfailures~=15.0",
+    "pytest-xdist~=3.0",
+    "pytest~=8.0",
+    "requests~=2.0",
+    "testcontainers~=4.0",
+  ]
   devel-types = [
     "mypy==1.17.0",
     "types-cffi~=1.0",
     "types-grpcio~=1.0",
     "types-protobuf~=6.0",
     "types-requests~=2.0",
+  ]
+
+  # Dependencies for v2 example and test environments
+  devel-example-v2 = [
+    "fastapi~=0.0",
+    "flask[async]~=3.0",
+    "pytest-cov~=6.0",
+    "pytest-rerunfailures~=15.0",
+    "pytest-xdist~=3.0",
+    "pytest~=8.0",
+    "testcontainers~=4.0",
+    "uvicorn[standard]~=0.0",
+  ]
+  devel-test-v2 = [
+    "fastapi~=0.0",
+    "httpx~=0.0",
+    "mock~=5.0",
+    "pytest-cov~=6.0",
+    "pytest-rerunfailures~=15.0",
+    "pytest-xdist~=3.0",
+    "pytest~=8.0",
+    "uvicorn[standard]~=0.0",
   ]
 
 [build-system]
@@ -169,28 +208,59 @@ requires      = ["hatch-vcs", "hatchling"]
       all                = ["example", "format", "lint", "test", "typecheck"]
       docs               = "mkdocs serve {args}"
       docs-build         = "mkdocs build {args}"
-      example            = "pytest --numprocesses=1 examples/ {args}"
+      example            = "pytest --numprocesses=1 --ignore=examples/v2 examples/ {args}"
       format             = "ruff format {args}"
       lint               = "ruff check --output-format=full --show-fixes {args}"
-      test               = "pytest tests/ {args}"
+      test               = "pytest --ignore=tests/v2 tests/ {args}"
       typecheck          = ["typecheck-examples", "typecheck-src", "typecheck-tests"]
       typecheck-examples = "mypy examples/ {args}"
       typecheck-src      = "mypy src/ {args}"
       typecheck-tests    = "mypy tests/ {args}"
 
-    # Test environment for running unit tests. This automatically tests against all
-    # supported Python versions.
+    # Test environment for running unit tests.
     [tool.hatch.envs.test]
-    features  = ["devel-test"]
-    installer = "uv"
-
-    # Update paths to ensure the shared library can be found
-    # TODO: See if this can be overridden on a per-platform basis
-    # https://github.com/pypa/hatch/discussions/2024
-    # [tool.hatch.envs.default.overrides]
-    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
+    features             = ["devel-test"]
+    installer            = "uv"
+    pre-install-commands = ["uv pip install -e ."]
 
       [[tool.hatch.envs.test.matrix]]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+
+    # Test environment for running unit tests. This automatically tests against all
+    # supported Python versions.
+    [tool.hatch.envs.example]
+    features             = ["devel-example"]
+    installer            = "uv"
+    pre-install-commands = ["uv pip install -e ."]
+
+      [tool.hatch.envs.example.scripts]
+      all = ["example"]
+
+      [[tool.hatch.envs.example.matrix]]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+
+    [tool.hatch.envs.v2-test]
+    features             = ["v2", "devel-test-v2"]
+    installer            = "uv"
+    pre-install-commands = ["uv pip install -e ."]
+
+      [tool.hatch.envs.v2-test.scripts]
+      all  = ["test"]
+      test = "pytest --numprocesses=1 tests/v2 {args}"
+
+      [[tool.hatch.envs.v2-test.matrix]]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+
+    [tool.hatch.envs.v2-example]
+    features             = ["v2", "devel-example-v2"]
+    installer            = "uv"
+    pre-install-commands = ["uv pip install -e ."]
+
+      [tool.hatch.envs.v2-example.scripts]
+      all     = ["example"]
+      example = "pytest --numprocesses=1 examples/v2 {args}"
+
+      [[tool.hatch.envs.v2-example.matrix]]
       python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
 
 ################################################################################
@@ -331,3 +401,9 @@ line_length        = 100
 section_whitelines = 1
 sequence_style     = "block_style"
 whitelines         = 1
+
+################################################################################
+## Deptry
+################################################################################
+[tool.deptry]
+known_first_party = ["pact", "pact_cli", "pact_ffi"]
