@@ -9,9 +9,3 @@ ignore = [
   "S101",    # Forbid assert statements
   "TID252",  # Require absolute imports
 ]
-
-  [lint.per-file-ignores]
-  "tests/**.py" = [
-    "INP001",  # Forbid implicit namespaces
-    "PLR2004", # Forbid magic values
-  ]

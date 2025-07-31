@@ -94,7 +94,17 @@ class Broker():
         if auto_detect_version_properties is True:
             command.append('--auto-detect-version-properties')
 
-        log.debug(f"PactBroker publish command: {command}")
+        if log.isEnabledFor(logging.DEBUG):
+            log_command: list[str] = []
+            for arg in command:
+                if arg.startswith('--broker-password='):
+                    log_command.append('--broker-password=<hidden>')
+                elif arg.startswith('--broker-token='):
+                    log_command.append('--broker-token=<hidden>')
+                else:
+                    log_command.append(arg)
+
+            log.debug(f"PactBroker publish command: {log_command}")
 
         publish_process = Popen(command)
         publish_process.wait()
