@@ -50,7 +50,7 @@ dependencies = ["cffi~=1.0"]
     "ruff==0.12.7",
   ]
   devel-test = ["pytest-cov~=6.0", "pytest-mock~=3.0", "pytest~=8.0"]
-  devel-types = ["mypy==1.17.0"]
+  devel-types = ["mypy==1.17.1"]
 
 ################################################################################
 ## Build System
