@@ -72,7 +72,7 @@ def __import__(  # noqa: N807
     warn users when they import functions directly from this module. This is
     done to avoid shadowing built-in types and functions.
     """
-    if name == "pact.v3.generate" and len(set(fromlist) - {"Matcher"}) > 0:
+    if name == "pact.generate" and len(set(fromlist) - {"Matcher"}) > 0:
         warnings.warn(
             "Avoid `from pact.generate import <func>`. "
             "Prefer importing `generate` and use `generate.<func>`",
@@ -95,6 +95,7 @@ def int(
     Args:
         min:
             The minimum value for the integer.
+
         max:
             The maximum value for the integer.
     """
@@ -112,7 +113,7 @@ def integer(
     max: builtins.int | None = None,
 ) -> Generator:
     """
-    Alias for [`generate.int`][pact.v3.generate.int].
+    Alias for [`generate.int`][pact.generate.int].
     """
     return int(min=min, max=max)
 
@@ -137,7 +138,7 @@ def float(precision: builtins.int | None = None) -> Generator:
 
 def decimal(precision: builtins.int | None = None) -> Generator:
     """
-    Alias for [`generate.float`][pact.v3.generate.float].
+    Alias for [`generate.float`][pact.generate.float].
     """
     return float(precision=precision)
 
@@ -158,7 +159,7 @@ def hex(digits: builtins.int | None = None) -> Generator:
 
 def hexadecimal(digits: builtins.int | None = None) -> Generator:
     """
-    Alias for [`generate.hex`][pact.v3.generate.hex].
+    Alias for [`generate.hex`][pact.generate.hex].
     """
     return hex(digits=digits)
 
@@ -179,7 +180,7 @@ def str(size: builtins.int | None = None) -> Generator:
 
 def string(size: builtins.int | None = None) -> Generator:
     """
-    Alias for [`generate.str`][pact.v3.generate.str].
+    Alias for [`generate.str`][pact.generate.str].
     """
     return str(size=size)
 
@@ -227,18 +228,21 @@ def date(
     """
     Create a date generator.
 
+    !!! info
+
+        Pact internally uses the Java's
+        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        To ensure compatibility with the rest of the Python ecosystem, this
+        function accepts Python's [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+        format and performs the conversion to Java's format internally.
+
+
     Args:
         format:
-            Expected format of the date. This uses Python's [`strftime`
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
-
-            Pact internally uses the [Java
-            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            and the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format is done in
-            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+            Expected format of the date.
 
             If not provided, an ISO 8601 date format is used: `%Y-%m-%d`.
+
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -258,23 +262,26 @@ def time(
     """
     Create a time generator.
 
+    !!! info
+
+        Pact internally uses the Java's
+        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        To ensure compatibility with the rest of the Python ecosystem, this
+        function accepts Python's
+        [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+        format and performs the conversion to Java's format internally.
+
     Args:
         format:
-            Expected format of the time. This uses Python's [`strftime`
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
-
-            Pact internally uses the [Java
-            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            and the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format is done in
-            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+            Expected format of the time.
 
             If not provided, an ISO 8601 time format will be used: `%H:%M:%S`.
+
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
-            in Java's `SimpleDateFormat` format. As a result, the value must
-            be a string as Python cannot format the time in the target format.
+            in Java's `SimpleDateFormat` format. As a result, the value must be
+            a string as Python cannot format the time in the target format.
     """
     if not disable_conversion:
         format = strftime_to_simple_date_format(format or "%H:%M:%S")
@@ -287,21 +294,24 @@ def datetime(
     disable_conversion: builtins.bool = False,
 ) -> Generator:
     """
-    Create a date-time generator.
+    Create a datetime generator.
+
+    !!! info
+
+        Pact internally uses the Java's
+        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        To ensure compatibility with the rest of the Python ecosystem, this
+        function accepts Python's
+        [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+        format and performs the conversion to Java's format internally.
 
     Args:
         format:
-            Expected format of the timestamp. This uses Python's [`strftime`
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
-
-            Pact internally uses the [Java
-            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            and the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format is done in
-            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+            Expected format of the timestamp.
 
             If not provided, an ISO 8601 timestamp format will be used:
             `%Y-%m-%dT%H:%M:%S%z`.
+
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -318,7 +328,7 @@ def timestamp(
     disable_conversion: builtins.bool = False,
 ) -> Generator:
     """
-    Alias for [`generate.datetime`][pact.v3.generate.datetime].
+    Alias for [`generate.datetime`][pact.generate.datetime].
     """
     return datetime(format=format, disable_conversion=disable_conversion)
 
@@ -332,7 +342,7 @@ def bool() -> Generator:
 
 def boolean() -> Generator:
     """
-    Alias for [`generate.bool`][pact.v3.generate.bool].
+    Alias for [`generate.bool`][pact.generate.bool].
     """
     return bool()
 

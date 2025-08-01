@@ -11,7 +11,7 @@ responsible for ensuring that these interactions are satisfied.
 
 ## Usage
 
-The main class in this module is the [`Pact`][pact.v3.Pact] class. This class
+The main class in this module is the [`Pact`][pact.Pact] class. This class
 defines the Pact between the consumer and the provider. It is responsible for
 defining the interactions between the two parties.
 
@@ -115,8 +115,8 @@ class Pact:
     to the Pact.
 
     Each interaction between the consumer and the provider is defined through
-    the [`upon_receiving`][pact.v3.pact.Pact.upon_receiving] method, which
-    returns a sub-class of [`Interaction`][pact.v3.interaction.Interaction].
+    the [`upon_receiving`][pact.pact.Pact.upon_receiving] method, which
+    returns a sub-class of [`Interaction`][pact.interaction.Interaction].
     """
 
     def __init__(
@@ -347,7 +347,7 @@ class Pact:
                 independently of `raises`.
 
         Returns:
-            A [`PactServer`][pact.v3.pact.PactServer] instance.
+            A [`PactServer`][pact.pact.PactServer] instance.
         """
         return PactServer(
             self._handle,
@@ -536,7 +536,7 @@ class PactServer:
     stopping the mock server when the block is exited.
 
     Note that the server should not be started directly, but rather through the
-    [`serve(...)`][pact.v3.Pact.serve] method of a [`Pact`][pact.v3.Pact]:
+    [`serve(...)`][pact.Pact.serve] method of a [`Pact`][pact.Pact]:
 
     ```python
     pact = Pact("consumer", "provider")
@@ -546,7 +546,7 @@ class PactServer:
     ```
 
     The URL for the server can be accessed through its
-    [`url`][pact.v3.pact.PactServer.url] attribute, which will be required in
+    [`url`][pact.pact.PactServer.url] attribute, which will be required in
     order to point the consumer client to the mock server:
 
     ```python

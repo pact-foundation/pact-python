@@ -1,5 +1,5 @@
 """
-Unit tests for the pact.v3.verifier module.
+Unit tests for the pact.verifier module.
 
 These tests perform only very basic checks to ensure that the FFI module is
 working correctly. They are not intended to test the Verifier API much, as

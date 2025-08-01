@@ -6,7 +6,7 @@ consumer and a provider. It defines the interactions between the two parties,
 and provides the functionality to verify that the interactions are satisfied.
 
 For the roles of consumer and provider, see the documentation for the
-`pact.v3.service` module.
+`pact.service` module.
 """
 
 from __future__ import annotations
@@ -37,9 +37,9 @@ class Interaction(abc.ABC):
     provider. The concrete subclasses define the type of interaction, and
     include:
 
-    -  [`HttpInteraction`][pact.v3.interaction.HttpInteraction]
-    -  [`AsyncMessageInteraction`][pact.v3.interaction.AsyncMessageInteraction]
-    -  [`SyncMessageInteraction`][pact.v3.interaction.SyncMessageInteraction]
+    -  [`HttpInteraction`][pact.interaction.HttpInteraction]
+    -  [`AsyncMessageInteraction`][pact.interaction.AsyncMessageInteraction]
+    -  [`SyncMessageInteraction`][pact.interaction.SyncMessageInteraction]
 
     # Interaction Part
 
@@ -293,7 +293,7 @@ class Interaction(abc.ABC):
 
         Note that for HTTP interactions, this function will overwrite the body
         if it has been set using
-        [`with_body(...)`][pact.v3.interaction.Interaction.with_body].
+        [`with_body(...)`][pact.interaction.Interaction.with_body].
 
         Args:
             part:
@@ -470,7 +470,7 @@ class Interaction(abc.ABC):
         Internally, the comments are appended to an array under the `text`
         comment key. Care should be taken to ensure that conflicts are not
         introduced by
-        [`set_comment`][pact.v3.interaction.Interaction.set_comment].
+        [`set_comment`][pact.interaction.Interaction.set_comment].
         """
         pact_ffi.add_text_comment(self._handle, comment)
         return self

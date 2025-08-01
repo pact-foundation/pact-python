@@ -120,7 +120,7 @@ class StateHandlerArgs(TypedDict, total=False):
 
     This argument is only used if the state handler is expected to perform both
     setup and teardown actions (i.e., if `teardown=True` is used when calling
-    [`Verifier.state_handler][pact.v3.verifier.Verifier.state_handler]`).
+    [`Verifier.state_handler][pact.verifier.Verifier.state_handler]`).
     """
 
     parameters: dict[str, Any] | None

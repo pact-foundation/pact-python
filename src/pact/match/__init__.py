@@ -126,11 +126,11 @@ def __import__(  # noqa: N807
     """
     Override to warn when importing functions directly from this module.
 
-    This function is used to override the built-in `__import__` function to
-    warn users when they import functions directly from this module. This is
-    done to avoid shadowing built-in types and functions.
+    This function is used to override the built-in `__import__` function to warn
+    users when they import functions directly from this module. This is done to
+    avoid shadowing built-in types and functions.
     """
-    if name == "pact.v3.match" and len(set(fromlist) - {"Matcher"}) > 0:
+    if name == "pact.match" and len(set(fromlist) - {"Matcher"}) > 0:
         warnings.warn(
             "Avoid `from pact.match import <func>`. "
             "Prefer importing `match` and use `match.<func>`",
@@ -155,8 +155,10 @@ def int(
     Args:
         value:
             Default value to use when generating a consumer test.
+
         min:
             If provided, the minimum value of the integer to generate.
+
         max:
             If provided, the maximum value of the integer to generate.
     """
@@ -179,7 +181,7 @@ def integer(
     max: builtins.int | None = None,
 ) -> Matcher[builtins.int]:
     """
-    Alias for [`match.int`][pact.v3.match.int].
+    Alias for [`match.int`][pact.match.int].
     """
     return int(value, min=min, max=max)
 
@@ -199,6 +201,7 @@ def float(
     Args:
         value:
             Default value to use when generating a consumer test.
+
         precision:
             The number of decimal precision to generate.
     """
@@ -220,7 +223,7 @@ def decimal(
     precision: builtins.int | None = None,
 ) -> Matcher[_NumberT]:
     """
-    Alias for [`match.float`][pact.v3.match.float].
+    Alias for [`match.float`][pact.match.float].
     """
     return float(value, precision=precision)
 
@@ -263,19 +266,22 @@ def number(
     """
     Match a general number.
 
-    This matcher is a generalization of the [`integer`][pact.v3.match.integer]
-    and [`decimal`][pact.v3.match.decimal] matchers. It can be used to match any
+    This matcher is a generalization of the [`integer`][pact.match.integer]
+    and [`decimal`][pact.match.decimal] matchers. It can be used to match any
     number, whether it is an integer or a float.
 
     Args:
         value:
             Default value to use when generating a consumer test.
+
         min:
             The minimum value of the number to generate. Only used when value is
             an integer. Defaults to None.
+
         max:
             The maximum value of the number to generate. Only used when value is
             an integer. Defaults to None.
+
         precision:
             The number of decimal digits to generate. Only used when value is a
             float. Defaults to None.
@@ -343,8 +349,10 @@ def str(
     Args:
         value:
             Default value to use when generating a consumer test.
+
         size:
             The size of the string to generate during a consumer test.
+
         generator:
             Alternative generator to use when generating a consumer test. If
             set, the `size` argument is ignored.
@@ -380,7 +388,7 @@ def string(
     generator: Generator | None = None,
 ) -> Matcher[builtins.str]:
     """
-    Alias for [`match.str`][pact.v3.match.str].
+    Alias for [`match.str`][pact.match.str].
     """
     return str(value, size=size, generator=generator)
 
@@ -397,6 +405,7 @@ def regex(
     Args:
         value:
             Default value to use when generating a consumer test.
+
         regex:
             The regular expression to match against.
     """
@@ -434,7 +443,7 @@ def uuid(
     """
     Match a UUID value.
 
-    This matcher internally combines the [`regex`][pact.v3.match.regex] matcher
+    This matcher internally combines the [`regex`][pact.match.regex] matcher
     with a UUID regex pattern. See [RFC
     4122](https://datatracker.ietf.org/doc/html/rfc4122) for details about the
     UUID format.
@@ -446,6 +455,7 @@ def uuid(
     Args:
         value:
             Default value to use when generating a consumer test.
+
         format:
             Enforce a specific UUID format. The following formats are supported:
 
@@ -491,7 +501,7 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
 
 def boolean(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
     """
-    Alias for [`match.bool`][pact.v3.match.bool].
+    Alias for [`match.bool`][pact.match.bool].
     """
     return bool(value)
 
@@ -509,20 +519,24 @@ def date(
     A date value is a string that represents a date in a specific format. It
     does _not_ have any time information.
 
+    !!! info
+
+        Pact internally uses the Java's
+        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        To ensure compatibility with the rest of the Python ecosystem, this
+        function accepts Python's
+        [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+        format and performs the conversion to Java's format internally.
+
     Args:
         value:
             Default value to use when generating a consumer test.
-        format:
-            Expected format of the date. This uses Python's [`strftime`
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
 
-            Pact internally uses the [Java
-            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            and the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format is done in
-            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+        format:
+            Expected format of the date.
 
             If not provided, an ISO 8601 date format will be used: `%Y-%m-%d`.
+
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -577,20 +591,23 @@ def time(
     A time value is a string that represents a time in a specific format. It
     does _not_ have any date information.
 
+    !!! info
+
+        Pact internally uses the Java's
+        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        To ensure compatibility with the rest of the Python ecosystem, this
+        function accepts Python's [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+        format and performs the conversion to Java's format internally.
+
     Args:
         value:
             Default value to use when generating a consumer test.
-        format:
-            Expected format of the time. This uses Python's [`strftime`
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
 
-            Pact internally uses the [Java
-            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            and the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format is done in
-            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+        format:
+            Expected format of the time.
 
             If not provided, an ISO 8601 time format will be used: `%H:%M:%S`.
+
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -643,21 +660,26 @@ def datetime(
     A timestamp value is a string that represents a date and time in a specific
     format.
 
+    !!! info
+
+        Pact internally uses the Java's
+        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+        To ensure compatibility with the rest of the Python ecosystem, this
+        function accepts Python's
+        [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+        format and performs the conversion to Java's format internally.
+
     Args:
         value:
             Default value to use when generating a consumer test.
-        format:
-            Expected format of the timestamp. This uses Python's [`strftime`
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
 
-            Pact internally uses the [Java
-            SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
-            and the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format is done in
-            [`strftime_to_simple_date_format`][pact.v3.util.strftime_to_simple_date_format].
+        format:
+            Expected format of the timestamp.
+            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
 
             If not provided, an ISO 8601 timestamp format will be used:
             `%Y-%m-%dT%H:%M:%S%z`.
+
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
@@ -705,7 +727,7 @@ def timestamp(
     disable_conversion: builtins.bool = False,
 ) -> Matcher[builtins.str]:
     """
-    Alias for [`match.datetime`][pact.v3.match.datetime].
+    Alias for [`match.datetime`][pact.match.datetime].
     """
     return datetime(value, format, disable_conversion=disable_conversion)
 
@@ -719,7 +741,7 @@ def none() -> Matcher[None]:
 
 def null() -> Matcher[None]:
     """
-    Alias for [`match.none`][pact.v3.match.none].
+    Alias for [`match.none`][pact.match.none].
     """
     return none()
 
@@ -739,10 +761,13 @@ def type(
         value:
             A value to match against. This can be a primitive value, or a more
             complex object or array.
+
         min:
             The minimum number of items that must match the value.
+
         max:
             The maximum number of items that must match the value.
+
         generator:
             The generator to use when generating the value.
     """
@@ -763,7 +788,7 @@ def like(
     generator: Generator | None = None,
 ) -> Matcher[_T]:
     """
-    Alias for [`match.type`][pact.v3.match.type].
+    Alias for [`match.type`][pact.match.type].
     """
     return type(value, min=min, max=max, generator=generator)
 
@@ -783,9 +808,11 @@ def each_like(
     Args:
         value:
             The value to match against.
+
         min:
             The minimum number of items that must match the value. The minimum
             value is always 1, even if min is set to 0.
+
         max:
             The maximum number of items that must match the value.
     """
@@ -809,6 +836,7 @@ def includes(
     Args:
         value:
             The value to match against.
+
         generator:
             The generator to use when generating the value.
     """
@@ -845,6 +873,7 @@ def each_key_matches(
     Args:
         value:
             The value to match against.
+
         rules:
             The matching rules to match against each key.
     """
@@ -865,6 +894,7 @@ def each_value_matches(
     Args:
         value:
             The value to match against.
+
         rules:
             The matching rules to match against each value.
     """
