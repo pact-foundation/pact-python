@@ -1,5 +1,5 @@
 """
-Tests for `pact.v3._server` module.
+Tests for `pact._server` module.
 """
 
 import json

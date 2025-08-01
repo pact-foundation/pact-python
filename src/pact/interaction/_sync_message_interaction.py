@@ -15,7 +15,7 @@ class SyncMessageInteraction(Interaction):
     A synchronous message interaction.
 
     This class defines a synchronous message interaction between a consumer and
-    a provider. As with [`HttpInteraction`][pact.v3.pact.HttpInteraction], it
+    a provider. As with [`HttpInteraction`][pact.pact.HttpInteraction], it
     defines a specific request that the consumer makes to the provider, and the
     response that the provider should return.
 
@@ -30,8 +30,8 @@ class SyncMessageInteraction(Interaction):
 
         This function should not be called directly. Instead, an
         AsyncMessageInteraction should be created using the
-        [`upon_receiving(...)`][pact.v3.Pact.upon_receiving] method of a
-        [`Pact`][pact.v3.Pact] instance using the `"Sync"` interaction type.
+        [`upon_receiving(...)`][pact.Pact.upon_receiving] method of a
+        [`Pact`][pact.Pact] instance using the `"Sync"` interaction type.
 
         Args:
             pact_handle:
@@ -68,8 +68,8 @@ class SyncMessageInteraction(Interaction):
 
         This method is a convenience method to separate the request and response
         parts of the interaction. This function is analogous to the
-        [`will_respond_with()`][pact.v3.pact.HttpInteraction.will_respond_with]
-        method of the [`HttpInteraction`][pact.v3.pact.HttpInteraction] class,
+        [`will_respond_with()`][pact.pact.HttpInteraction.will_respond_with]
+        method of the [`HttpInteraction`][pact.pact.HttpInteraction] class,
         albeit more generic for synchronous message interactions.
 
         For example, the following two snippets are

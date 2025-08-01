@@ -335,12 +335,12 @@ class Verifier:
         1.  A fully fledged function that will be called for all messages. This
             is the most powerful option as it allows for full control over the
             message generation. The function's signature must be compatible with
-            the [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] type.
+            the [`MessageProducerArgs`][pact.types.MessageProducerArgs] type.
 
         2.  A dictionary mapping message names to either (a) producer functions,
-            (b) [`Message`][pact.v3.types.Message] dictionaries, or (c) raw
+            (b) [`Message`][pact.types.Message] dictionaries, or (c) raw
             bytes. If using a producer function, it must be compatible with the
-            [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] type.
+            [`MessageProducerArgs`][pact.types.MessageProducerArgs] type.
 
         ## Implementation
 
@@ -529,7 +529,7 @@ class Verifier:
         in Python.
 
         The function signature must be compatible with the
-        [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs]. If the function
+        [`StateHandlerArgs`][pact.types.StateHandlerArgs]. If the function
         has additional arguments, these must either have default values, or be
         filled by using the [`partial`][functools.partial] function.
 
@@ -1344,7 +1344,7 @@ class BrokerSelectorBuilder:
         Destructor for the Broker Selector.
 
         This destructor will raise a warning if the instance is dropped without
-        having the [`build()`][pact.v3.verifier.BrokerSelectorBuilder.build]
+        having the [`build()`][pact.verifier.BrokerSelectorBuilder.build]
         method called.
         """
         if not self._built:

@@ -1,5 +1,5 @@
 """
-Tests of pact.v3.util functions.
+Tests of pact._util functions.
 """
 
 from __future__ import annotations

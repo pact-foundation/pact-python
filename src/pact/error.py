@@ -63,7 +63,7 @@ class PactVerificationError(PactError):
     Exception raised due to errors in the verification of a Pact.
 
     This is raised when performing manual verification of the Pact through the
-    [`verify`][pact.v3.Pact.verify] method:
+    [`verify`][pact.Pact.verify] method:
 
     ```python
     pact = Pact("consumer", "provider")
@@ -77,7 +77,7 @@ class PactVerificationError(PactError):
     All of the errors that occurred during the verification of all of the
     interactions are stored in the `errors` attribute.
 
-    This is different from the [`MismatchesError`][pact.v3.MismatchesError]
+    This is different from the [`MismatchesError`][pact.error.MismatchesError]
     which is raised when there are mismatches detected by the mock server.
     """
 
