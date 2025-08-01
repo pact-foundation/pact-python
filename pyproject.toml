@@ -82,6 +82,7 @@ dependencies = [
     "ruff==0.12.7",
   ]
   devel-docs = [
+    "mkdocs-github-admonitions-plugin~=0.0",
     "mkdocs-literate-nav~=0.6",
     "mkdocs-material[imaging]~=9.4",
     "mkdocs-section-index~=0.3",

@@ -140,6 +140,9 @@ class GenericMatcher(Matcher[_T]):
     def has_value(self) -> bool:
         """
         Check if the matcher has a value.
+
+        Returns:
+            True if the matcher has a value, otherwise False.
         """
         return not isinstance(self.value, Unset)
 
@@ -155,8 +158,7 @@ class GenericMatcher(Matcher[_T]):
         > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
 
         Returns:
-            dict[str, Any]:
-                The matcher as an integration JSON object.
+            The matcher as an integration JSON object.
         """
         return {
             "pact:matcher:type": self.type,
@@ -185,8 +187,7 @@ class GenericMatcher(Matcher[_T]):
         > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
 
         Returns:
-            dict[str, Any]:
-                The matcher as a matching rule.
+            The matcher as a matching rule.
         """
         return {
             "match": self.type,
@@ -302,6 +303,13 @@ class MatchingRuleJSONEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:  # noqa: ANN401
         """
         Encode the object to JSON.
+
+        Args:
+            o:
+                The object to encode.
+
+        Returns:
+            The encoded object.
         """
         if isinstance(o, Matcher):
             return o.to_matching_rule()
@@ -318,6 +326,13 @@ class IntegrationJSONEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:  # noqa: ANN401
         """
         Encode the object to JSON.
+
+        Args:
+            o:
+                The object to encode.
+
+        Returns:
+            The encoded object.
         """
         if isinstance(o, Matcher):
             return o.to_integration_json()

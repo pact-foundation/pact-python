@@ -98,6 +98,9 @@ def int(
 
         max:
             The maximum value for the integer.
+
+    Returns:
+        A generator that produces random integers.
     """
     params: dict[builtins.str, builtins.int] = {}
     if min is not None:
@@ -114,6 +117,16 @@ def integer(
 ) -> Generator:
     """
     Alias for [`generate.int`][pact.generate.int].
+
+    Args:
+        min:
+            The minimum value for the integer.
+
+        max:
+            The maximum value for the integer.
+
+    Returns:
+        A generator that produces random integers.
     """
     return int(min=min, max=max)
 
@@ -129,6 +142,9 @@ def float(precision: builtins.int | None = None) -> Generator:
     Args:
         precision:
             The number of digits to generate.
+
+    Returns:
+        A generator that produces random decimal values.
     """
     params: dict[builtins.str, builtins.int] = {}
     if precision is not None:
@@ -139,6 +155,13 @@ def float(precision: builtins.int | None = None) -> Generator:
 def decimal(precision: builtins.int | None = None) -> Generator:
     """
     Alias for [`generate.float`][pact.generate.float].
+
+    Args:
+        precision:
+            The number of digits to generate.
+
+    Returns:
+        A generator that produces random decimal values.
     """
     return float(precision=precision)
 
@@ -150,6 +173,9 @@ def hex(digits: builtins.int | None = None) -> Generator:
     Args:
         digits:
             The number of digits to generate.
+
+    Returns:
+        A generator that produces random hexadecimal values.
     """
     params: dict[builtins.str, builtins.int] = {}
     if digits is not None:
@@ -160,6 +186,13 @@ def hex(digits: builtins.int | None = None) -> Generator:
 def hexadecimal(digits: builtins.int | None = None) -> Generator:
     """
     Alias for [`generate.hex`][pact.generate.hex].
+
+    Args:
+        digits:
+            The number of digits to generate.
+
+    Returns:
+        A generator that produces random hexadecimal values.
     """
     return hex(digits=digits)
 
@@ -171,6 +204,9 @@ def str(size: builtins.int | None = None) -> Generator:
     Args:
         size:
             The size of the string to generate.
+
+    Returns:
+        A generator that produces random strings.
     """
     params: dict[builtins.str, builtins.int] = {}
     if size is not None:
@@ -181,6 +217,13 @@ def str(size: builtins.int | None = None) -> Generator:
 def string(size: builtins.int | None = None) -> Generator:
     """
     Alias for [`generate.str`][pact.generate.str].
+
+    Args:
+        size:
+            The size of the string to generate.
+
+    Returns:
+        A generator that produces random strings.
     """
     return str(size=size)
 
@@ -194,6 +237,9 @@ def regex(regex: builtins.str) -> Generator:
     Args:
         regex:
             The regex pattern to match.
+
+    Returns:
+        A generator that produces strings matching the given regex pattern.
     """
     return GenericGenerator("Regex", {"regex": regex})
 
@@ -216,6 +262,9 @@ def uuid(
         format:
             The format of the UUID to generate. This parameter is only supported
             under the V4 specification.
+
+    Returns:
+        A generator that produces UUIDs in the specified format.
     """
     return GenericGenerator("Uuid", {"format": format})
 
@@ -236,7 +285,6 @@ def date(
         function accepts Python's [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
         format and performs the conversion to Java's format internally.
 
-
     Args:
         format:
             Expected format of the date.
@@ -245,9 +293,12 @@ def date(
 
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format will be disabled, and the format must be
-            in Java's `SimpleDateFormat` format. As a result, the value must
+            `SimpleDateFormat` format will be disabled, and the format must
+            be in Java's `SimpleDateFormat` format. As a result, the value must
             be a string as Python cannot format the date in the target format.
+
+    Returns:
+        A generator that produces dates in the specified format.
     """
     if not disable_conversion:
         format = strftime_to_simple_date_format(format or "%Y-%m-%d")
@@ -282,6 +333,9 @@ def time(
             `SimpleDateFormat` format will be disabled, and the format must be
             in Java's `SimpleDateFormat` format. As a result, the value must be
             a string as Python cannot format the time in the target format.
+
+    Returns:
+        A generator that produces times in the specified format.
     """
     if not disable_conversion:
         format = strftime_to_simple_date_format(format or "%H:%M:%S")
@@ -316,6 +370,9 @@ def datetime(
             If True, the conversion from Python's `strftime` format to Java's
             `SimpleDateFormat` format will be disabled, and the format must be
             in Java's `SimpleDateFormat` format. As a result, the value must be
+
+    Returns:
+        A generator that produces datetimes in the specified format.
     """
     if not disable_conversion:
         format = strftime_to_simple_date_format(format or "%Y-%m-%dT%H:%M:%S%z")
@@ -329,6 +386,9 @@ def timestamp(
 ) -> Generator:
     """
     Alias for [`generate.datetime`][pact.generate.datetime].
+
+    Returns:
+        A generator that produces datetimes in the specified format.
     """
     return datetime(format=format, disable_conversion=disable_conversion)
 
@@ -336,6 +396,9 @@ def timestamp(
 def bool() -> Generator:
     """
     Create a random boolean generator.
+
+    Returns:
+        A generator that produces random boolean values.
     """
     return GenericGenerator("RandomBoolean")
 
@@ -343,6 +406,9 @@ def bool() -> Generator:
 def boolean() -> Generator:
     """
     Alias for [`generate.bool`][pact.generate.bool].
+
+    Returns:
+        A generator that produces random boolean values.
     """
     return bool()
 
@@ -357,6 +423,9 @@ def provider_state(expression: builtins.str | None = None) -> Generator:
     Args:
         expression:
             The expression to use to look up the provider state.
+
+    Returns:
+        A generator that produces values from the provider state context.
     """
     params: dict[builtins.str, builtins.str] = {}
     if expression is not None:
@@ -379,6 +448,9 @@ def mock_server_url(
 
         example:
             An example URL to use.
+
+    Returns:
+        A generator that produces mock server URLs.
     """
     params: dict[builtins.str, builtins.str] = {}
     if regex is not None:

@@ -125,11 +125,15 @@ def format_code_to_java_format(code: str) -> str:
     Args:
         code:
             The Python format code to convert, without the leading `%`. This
-            will typically be a single character, but may be two characters
-            for some codes.
+            will typically be a single character, but may be two characters for
+            some codes.
 
     Returns:
         The equivalent Java SimpleDateFormat format string.
+
+    Raises:
+        ValueError:
+            If the code is locale-dependent or unsupported.
     """
     if code in ["U", "V", "W"]:
         warnings.warn(
