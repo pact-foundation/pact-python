@@ -9,9 +9,9 @@ date:
 
 We are thrilled to announce the release of [Pact Python `v2.2`](https://github.com/pact-foundation/pact-python/releases/tag/v2.2.0), a significant milestone that not only improves upon the existing features but also offers an exclusive preview into the future of contract testing with Python.
 
-## A Glimpse Ahead with [`pact.v3`][pact.v3]
+## A Glimpse Ahead with `pact.v3`
 
-The work is taking shape in a branch-new module – [`pact.v3`][pact.v3] – that serves as an early preview of what will become Pact Python `v3`. This will provide full support for Pact Specifications `v3` and `v4`.
+The work is taking shape in a branch-new module – `pact.v3` – that serves as an early preview of what will become Pact Python `v3`. This will provide full support for Pact Specifications `v3` and `v4`.
 
 This new version harnesses the power of Rust's foreign function interface (FFI) library, promising enhanced performance and reliability. It will also make it easier to incorporate upstream changes in the future. Although it's just a sneak peek, it's an open invitation for you to explore what's coming and contribute to shaping its final form.
 
@@ -66,3 +66,10 @@ Stay tuned for more updates as we progress through each stage of this exciting j
 Lastly, a big thank you to all our contributors!
 
 Happy testing!
+
+----
+
+<!-- markdownlint-disable code-block-style -->
+1 August 2025
+:   With the release of Pact Python `v3`, some hyperlinks have been removed from this blog post as they are no longer relevant.
+<!-- markdownlint-enable code-block-style -->

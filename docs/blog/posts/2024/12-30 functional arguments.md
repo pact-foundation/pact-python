@@ -85,7 +85,7 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
 ???+ example
 
     ```python
-    from pact.v3 import Verifier
+    from pact import Verifier
 
     def provider_state_callback(
         name: str,  # (1)
@@ -123,7 +123,7 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
     3.  The `parameters` parameter is a dictionary of additional parameters that the provider state requires. For example, instead of `"a user with ID 123 exists"`, the provider state might be `"a user with the given ID exists"` and the specific ID would be passed in the `parameters` dictionary. Note that `parameters` is always present, but may be `None` if no parameters are specified by the consumer.
 <!-- markdownlint-enable code-block-style -->
 
-The function arguments must include the relevant keys from the [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
+The function arguments must include the relevant keys from the [`StateHandlerArgs`][pact.types.StateHandlerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
 
 This snippet showcases a way to set up the provider state with a function that is fully parameterized. The `state_handler` method also handles the following scenarios:
 
@@ -133,7 +133,7 @@ This snippet showcases a way to set up the provider state with a function that i
     ??? example
 
         ```python
-        from pact.v3 import Verifier
+        from pact import Verifier
 
         def provider_state_callback(
             name: str,
@@ -153,7 +153,7 @@ This snippet showcases a way to set up the provider state with a function that i
     ??? example
 
         ```python
-        from pact.v3 import Verifier
+        from pact import Verifier
 
         def user_state_callback(
             action: Literal["setup", "teardown"],
@@ -184,7 +184,7 @@ This snippet showcases a way to set up the provider state with a function that i
     ??? example
 
         ```python
-        from pact.v3 import Verifier
+        from pact import Verifier
 
         def user_state_callback(
             parameters: dict[str, Any] | None,
@@ -217,8 +217,8 @@ With the update to 2.3.0, the `Verifier` class has a new `message_handler` metho
 ???+ example
 
     ```python
-    from pact.v3 import Verifier
-    from pact.v3.types import Message
+    from pact import Verifier
+    from pact.types import Message
 
     def message_producer_callback(
         name: str,  # (1)
@@ -247,7 +247,7 @@ With the update to 2.3.0, the `Verifier` class has a new `message_handler` metho
     1.  The `name` parameter is the name of the message. For example, `"request to delete a user"`. If you instead use a mapping of message names to functions, this parameter is not passed to the function.
     2.  The `params` parameter is a dictionary of additional parameters that the message requires. For example, one could specify the user ID to delete in the parameters instead of the message. Note that `params` is always present, but may be `None` if no parameters are specified by the consumer.
 <!-- markdownlint-enable code-block-style -->
-The function arguments must include the relevant keys from the [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
+The function arguments must include the relevant keys from the [`MessageProducerArgs`][pact.types.MessageProducerArgs] typed dictionary. Pact Python will then intelligently determine how to pass the arguments in to your function, whether it be through positional or keyword arguments, or through variadic arguments.
 
 The output of the callback function should be an instance of the `Message` type. This is a simple [TypedDict][typing.TypedDict] that represents the message that the consumer expects and can be specified as a simple dictionary, or with typing hints through the `Message` constructor:
 
@@ -255,7 +255,7 @@ The output of the callback function should be an instance of the `Message` type.
 === "With typing hints"
 
     ```python
-    from pact.v3.types import Message
+    from pact.types import Message
 
     def message_producer_callback(
         name: str,
@@ -296,8 +296,8 @@ In much the same way as the `state_handler` method, the `message_handler` method
 ???+ example
 
     ```python
-    from pact.v3 import Verifier
-    from pact.v3.types import Message
+    from pact import Verifier
+    from pact.types import Message
 
     def delete_user_message(metadata: dict[str, Any] | None) -> Message:
         ...
@@ -323,5 +323,10 @@ In much the same way as the `state_handler` method, the `message_handler` method
 28 March 2025
 :   This blog post was updated on 28 March 2025 to reflect changes to the way functional arguments are handled. Instead of requiring positional arguments, Pact Python now inspects the function signature in order to determine whether to pass the arguments as positional or keyword arguments. It will fallback to passing the arguments through variadic arguments (`*args` and `**kwargs`) if present. This was done specific to allow for functions with optional arguments.
 
-    For this added flexibility, the function signatures must have parameters that align with the [`StateHandlerArgs`][pact.v3.types.StateHandlerArgs] and [`MessageProducerArgs`][pact.v3.types.MessageProducerArgs] typed dictionaries. This allows Pact Python to match a `parameters=...` argument with the `parameters` key in the dictionary. Using an alternative name (e.g., `params`) will not work.
+    For this added flexibility, the function signatures must have parameters that align with the [`StateHandlerArgs`][pact.types.StateHandlerArgs] and [`MessageProducerArgs`][pact.types.MessageProducerArgs] typed dictionaries. This allows Pact Python to match a `parameters=...` argument with the `parameters` key in the dictionary. Using an alternative name (e.g., `params`) will not work.
+
+1 August 2025
+:   With the release of Pact Python `v3` and the splitting of the CLI and FFI into standalone packages, some hyperlinks and code snippets have been updated to point to the new locations. The _text_ has been kept unchanged to preserve the original context and intent of the post.
+<!-- markdownlint-enable code-block-style -->
+
 <!-- markdownlint-enable code-block-style -->
