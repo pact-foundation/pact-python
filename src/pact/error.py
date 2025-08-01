@@ -36,8 +36,8 @@ class InteractionVerificationError(PactError):
             description:
                 Description of the interaction that failed verification.
 
-            error: Error that occurred during the verification of the
-                interaction.
+            error:
+                Error that occurred during the verification of the interaction.
         """
         super().__init__(f"Error verifying interaction '{description}': {error}")
         self._description = description

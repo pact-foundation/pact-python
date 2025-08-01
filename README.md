@@ -27,7 +27,7 @@
                 alt="Build Status"></a>
             <a
                 href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml"><img
-                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?branch=main=docs"
+                src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?branch=main&label=docs"
                 alt="Build Status"></a>
         </td>
     </tr>
@@ -49,7 +49,7 @@
                 src="https://img.shields.io/badge/types-Mypy-blue.svg"
                 alt="types - Mypy"></a>
             <a
-                href="https://pypi.python.org/pypi/ruff"><img
+                href="https://pypi.python.org/pypi/pact-python"><img
                 src="https://img.shields.io/pypi/l/pact-python.svg"
                 alt="License"></a>
         </td>
@@ -58,16 +58,29 @@
         <td>Community</td>
         <td>
             <a
+                href="https://github.com/pact-foundation/pact-python/issues"><img
+                src="https://img.shields.io/github/issues/pact-foundation/pact-python.svg"
+                alt="Issues"></a>
+            <a
+                href="https://github.com/pact-foundation/pact-python/discussions"><img
+                src="https://img.shields.io/github/discussions/pact-foundation/pact-python.svg"
+                alt="Discussions"></a>
+            <a
+                href="https://github.com/pact-foundation/pact-python"><img
+                src="https://img.shields.io/github/stars/pact-foundation/pact-python.svg?style=flat"
+                alt="GitHub Stars"></a>
+            <br/>
+            <a
                 href="http://slack.pact.io"><img
-                src="https://slack.pact.io/badge.svg"
+                src="https://img.shields.io/badge/slack-pact--foundation-4A154B.svg"
                 alt="Slack"></a>
             <a
                 href="https://stackoverflow.com/questions/tagged/pact"><img
-                src="https://img.shields.io/badge/stackoverflow-pact-orange.svg"
+                src="https://img.shields.io/badge/stackoverflow-pact-F48024.svg"
                 alt="Stack Overflow"></a>
             <a
                 href="https://twitter.com/pact_up"><img
-                src="https://img.shields.io/twitter/follow/pact_up?style=social"
+                src="https://img.shields.io/badge/X-@pact__up-black.svg"
                 alt="Twitter"></a>
         </td>
     </tr>
@@ -115,7 +128,7 @@ This readme provides a high-level overview of the Pact Python library. For detai
 -   [Provider testing](docs/provider.md)
 -   [Examples](examples/README.md)
 
-Documentation for the API is generated from the docstrings in the code which you can view at [`pact-foundation.github.io/pact-python/pact`](https://pact-foundation.github.io/pact-python/pact). Please be aware that only the [`pact.v3` module][pact.v3] is thoroughly documented at this time.
+Documentation for the API is generated from the docstrings in the code which you can view at [`pact-foundation.github.io/pact-python/pact`](https://pact-foundation.github.io/pact-python/API).
 
 ### Need Help
 
@@ -129,20 +142,11 @@ Documentation for the API is generated from the docstrings in the code which you
 [GitHub Discussions]: https://github.com/pact-foundation/pact-python/discussions
 [GitHub Issues]: https://github.com/pact-foundation/pact-python/issues
 
-## V3 Preview
-
-Pact Python is currently undergoing a major rewrite which will be released with the `3.0.0` version. This rewrite will replace the existing Ruby backend with a Rust backend which will provide a significant performance improvement and will allow us to support more features in the future. You can find more information about this rewrite in [this tracking issue on GitHub](https://github.com/pact-foundation/pact-python/issues/396).
-
-You can preview the new version by using the [`pact.v3` module][pact.v3]. The new version is not yet feature complete, and may be subject to changes. Having said that, we would love to get your feedback on the new version:
-
--   For any issues you find, please [raise an issue][GitHub Issues] on GitHub.
--   For any feedback you have, please join the discussion either on [GitHub Discussions] or in the [`#pact-python`](https://pact-foundation.slack.com/archives/C9VECUP6E) channel on the [Pact Foundation Slack].
-
 ## Installation
 
 The latest version of Pact Python can be installed from PyPi:
 
-```sh
+```console
 pip install pact-python
 # 🚀 now write some tests!
 ```
@@ -153,9 +157,9 @@ Pact Python tries to support all versions of Python that are still supported by 
 
 In order to support the broadest range of use cases, Pact Python tries to impose the least restrictions on the versions of libraries that it uses.
 
-### Do Not Track
+### Telemetry
 
-In order to get better statistics as to who is using Pact, we have an anonymous tracking event that triggers when Pact installs for the first time. The only things we [track](https://docs.pact.io/metrics) are your type of OS, and the version information for the package being installed. No personally identifiable information is sent as part of this request. You can disable tracking by setting the environment variable `PACT_DO_NOT_TRACK=1`:
+In order to get better statistics as to who is using Pact, we collect some anonymous telemetry. The only things we [record](https://docs.pact.io/metrics) are your type of OS, and the version information for the package. No personally identifiable information is sent as part of this request. You can disable telemetry by setting the environment variable `PACT_DO_NOT_TRACK=1`:
 
 ## Contributing
 

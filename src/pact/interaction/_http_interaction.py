@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 import pact_ffi
 from pact.interaction._base import Interaction
@@ -35,7 +35,7 @@ class HttpInteraction(Interaction):
     response, this class provides a common interface for both. The functions
     intelligently determine whether the element should be added to the request
     or the response based on whether
-    [`will_respond_with(...)`][pact.interaction.HttpInteraction.will_respond_with]
+    [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
     has been called.
 
     For example, the following two interactions are equivalent:
@@ -67,7 +67,7 @@ class HttpInteraction(Interaction):
 
         This class should not be instantiated directly. Instead, an
         `HttpInteraction` should be created using the
-        [`upon_receiving(...)`][pact.Pact.upon_receiving] method of a
+        [`upon_receiving`][pact.Pact.upon_receiving] method of a
         [`Pact`][pact.Pact] instance.
         """
         super().__init__(description)
@@ -99,7 +99,7 @@ class HttpInteraction(Interaction):
         """
         return self.__interaction_part
 
-    def with_request(self, method: str, path: str | Matcher[Any]) -> Self:
+    def with_request(self, method: str, path: str | Matcher[object]) -> Self:
         """
         Set the request.
 
@@ -108,6 +108,7 @@ class HttpInteraction(Interaction):
         Args:
             method:
                 HTTP method for the request.
+
             path:
                 Path for the request.
         """
@@ -121,15 +122,13 @@ class HttpInteraction(Interaction):
     def with_header(
         self,
         name: str,
-        value: str | dict[str, str] | Matcher[Any],
+        value: str | dict[str, str] | Matcher[object],
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         r"""
         Add a header to the request.
 
-        # Repeated Headers
-
-        If the same header has multiple values ([see RFC9110
+        If the same header has multiple values (see [RFC9110
         §5.2](https://www.rfc-editor.org/rfc/rfc9110.html#section-5.2)), then
         the same header must be specified multiple times with _order being
         preserved_. For example
@@ -155,49 +154,6 @@ class HttpInteraction(Interaction):
         [RFC 9110
         §5.1](https://www.rfc-editor.org/rfc/rfc9110.html#section-5.1).
 
-        # JSON Matching
-
-        Pact's matching rules are defined in the [upstream
-        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md)
-        and support a wide range of matching rules. These can be specified
-        using a JSON object as a strong using `json.dumps(...)`. For example,
-        the above rule whereby the `X-Foo` header has multiple values can be
-        specified as:
-
-        ```python
-        (
-            pact.upon_receiving("a request")
-            .with_header(
-                "X-Foo",
-                json.dumps({
-                    "value": ["bar", "baz"],
-                }),
-            )
-        )
-        ```
-
-        It is also possible to have a more complicated Regex pattern for the
-        header. For example, a pattern for an `Accept-Version` header might be
-        specified as:
-
-        ```python
-        (
-            pact.upon_receiving("a request").with_header(
-                "Accept-Version",
-                json.dumps({
-                    "value": "1.2.3",
-                    "pact:matcher:type": "regex",
-                    "regex": r"\d+\.\d+\.\d+",
-                }),
-            )
-        )
-        ```
-
-        If the value of the header is expected to be a JSON object and clashes
-        with the above syntax, then it is recommended to make use of the
-        [`set_header(...)`][pact.interaction.HttpInteraction.set_header]
-        method instead.
-
         Args:
             name:
                 Name of the header.
@@ -207,10 +163,12 @@ class HttpInteraction(Interaction):
 
             part:
                 Whether the header should be added to the request or the
-                response. If `None`, then the function intelligently determines
-                whether the header should be added to the request or the
-                response, based on whether the
-                [`will_respond_with(...)`][pact.interaction.HttpInteraction.will_respond_with]
+                response.
+
+                If `None`, then the function intelligently determines whether
+                the header should be added to the request or the response, based
+                on whether the
+                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         interaction_part = self._parse_interaction_part(part)
@@ -238,32 +196,20 @@ class HttpInteraction(Interaction):
         """
         Add multiple headers to the request.
 
-        Note that due to the requirement of Python dictionaries to have unique
-        keys, it is _not_ possible to specify a header multiple times to create
-        a multi-valued header. Instead, you may:
+        While it is often convenient to use a dictionary to specify headers,
+        this does not support repeated headers. If you need to specify repeated
+        headers, consider one of the following:
 
-        -   Use an alternative data structure. Any iterable of key-value pairs
-            is accepted, including a list of tuples, a list of lists, or a
-            dictionary view.
+        -   An alternative dictionary implementation which supports repeated
+            keys such as [multidict](https://pypi.org/project/multidict/).
 
-        -   Make multiple calls to
-            [`with_header(...)`][pact.interaction.HttpInteraction.with_header]
-            or
-            [`with_headers(...)`][pact.interaction.HttpInteraction.with_headers].
+        -   Passing in an iterable of key-value tuples.
 
-        -   Specify the multiple values in a JSON object of the form:
-
-            ```python (
-                pact.upon_receiving("a request") .with_headers({
-                    "X-Foo": json.dumps({
-                        "value": ["bar", "baz"],
-                    }),
-                )
-            )
-            ```
+        -   Make multiple calls to this function or
+            [`with_header`][pact.interaction.HttpInteraction.with_header].
 
         See
-        [`with_header(...)`][pact.interaction.HttpInteraction.with_header]
+        [`with_header`][pact.interaction.HttpInteraction.with_header]
         for more information.
 
         Args:
@@ -272,10 +218,12 @@ class HttpInteraction(Interaction):
 
             part:
                 Whether the header should be added to the request or the
-                response. If `None`, then the function intelligently determines
-                whether the header should be added to the request or the
-                response, based on whether the
-                [`will_respond_with(...)`][pact.interaction.HttpInteraction.will_respond_with]
+                response.
+
+                If `None`, then the function intelligently determines whether
+                the header should be added to the request or the response, based
+                on whether the
+                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         if isinstance(headers, dict):
@@ -294,8 +242,8 @@ class HttpInteraction(Interaction):
         Add a header to the request.
 
         Unlike
-        [`with_header(...)`][pact.interaction.HttpInteraction.with_header],
-        this function does no additional processing of the header value. This is
+        [`with_header`][pact.interaction.HttpInteraction.with_header], this
+        function does no additional processing of the header value. This is
         useful for headers that contain a JSON object.
 
         Args:
@@ -307,10 +255,12 @@ class HttpInteraction(Interaction):
 
             part:
                 Whether the header should be added to the request or the
-                response. If `None`, then the function intelligently determines
-                whether the header should be added to the request or the
-                response, based on whether the
-                [`will_respond_with(...)`][pact.interaction.HttpInteraction.will_respond_with]
+                response.
+
+                If `None`, then the function intelligently determines whether
+                the header should be added to the request or the response, based
+                on whether the
+                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         pact_ffi.set_header(
@@ -329,12 +279,19 @@ class HttpInteraction(Interaction):
         """
         Add multiple headers to the request.
 
-        This function intelligently determines whether the header should be
-        added to the request or the response, based on whether the
-        [`will_respond_with(...)`][pact.interaction.HttpInteraction.will_respond_with]
-        method has been called.
+        While it is often convenient to use a dictionary to specify headers,
+        this does not support repeated headers. If you need to specify repeated
+        headers, consider one of the following:
 
-        See [`set_header(...)`][pact.interaction.HttpInteraction.set_header] for
+        -   An alternative dictionary implementation which supports repeated
+            keys such as [multidict](https://pypi.org/project/multidict/).
+
+        -   Passing in an iterable of key-value tuples.
+
+        -   Make multiple calls to this function or
+            [`with_header`][pact.interaction.HttpInteraction.with_header].
+
+        See [`set_header`][pact.interaction.HttpInteraction.set_header] for
         more information.
 
         Args:
@@ -343,10 +300,12 @@ class HttpInteraction(Interaction):
 
             part:
                 Whether the headers should be added to the request or the
-                response. If `None`, then the function intelligently determines
-                whether the header should be added to the request or the
-                response, based on whether the
-                [`will_respond_with(...)`][pact.interaction.HttpInteraction.will_respond_with]
+                response.
+
+                If `None`, then the function intelligently determines whether
+                the headers should be added to the request or the response,
+                based on whether the
+                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
                 method has been called.
         """
         if isinstance(headers, dict):
@@ -358,13 +317,12 @@ class HttpInteraction(Interaction):
     def with_query_parameter(
         self,
         name: str,
-        value: str | dict[str, str] | Matcher[Any],
+        value: object | Matcher[object],
     ) -> Self:
         r"""
         Add a query to the request.
 
-        This is the query parameter(s) that the consumer will send to the
-        provider.
+        This is the query parameter that the consumer will send to the provider.
 
         If the same parameter can support multiple values, then the same
         parameter can be specified multiple times:
@@ -376,39 +334,6 @@ class HttpInteraction(Interaction):
             .with_query_parameter("name", "Mary")
         )
         ```
-
-        The above can equivalently be specified as:
-
-        ```python
-        (
-            pact.upon_receiving("a request").with_query_parameter(
-                "name",
-                json.dumps({
-                    "value": ["John", "Mary"],
-                }),
-            )
-        )
-        ```
-
-        It is also possible to have a more complicated Regex pattern for the
-        parameter. For example, a pattern for an `version` parameter might be
-        specified as:
-
-        ```python
-        (
-            pact.upon_receiving("a request").with_query_parameter(
-                "version",
-                json.dumps({
-                    "value": "1.2.3",
-                    "pact:matcher:type": "regex",
-                    "regex": r"\d+\.\d+\.\d+",
-                }),
-            )
-        )
-        ```
-
-        For more information on the format of the JSON object, see the [upstream
-        documentation](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md).
 
         Args:
             name:
@@ -433,13 +358,26 @@ class HttpInteraction(Interaction):
 
     def with_query_parameters(
         self,
-        parameters: dict[str, Any] | Iterable[tuple[str, Any]],
+        parameters: dict[str, object | Matcher[object]]
+        | Iterable[tuple[str, object | Matcher[object]]],
     ) -> Self:
         """
         Add multiple query parameters to the request.
 
+        While it is often convenient to use a dictionary to specify query
+        parameters, this does not support repeated keys. If you need to specify
+        repeated keys, consider one of the following:
+
+        -   An alternative dictionary implementation which supports repeated
+            keys such as [multidict](https://pypi.org/project/multidict/).
+
+        -   Passing in an iterable of key-value tuples.
+
+        -   Make multiple calls to this function or
+            [`with_query_parameter`][pact.interaction.HttpInteraction.with_query_parameter].
+
         See
-        [`with_query_parameter(...)`][pact.interaction.HttpInteraction.with_query_parameter]
+        [`with_query_parameter`][pact.interaction.HttpInteraction.with_query_parameter]
         for more information.
 
         Args:
@@ -458,7 +396,7 @@ class HttpInteraction(Interaction):
 
         Ideally, this function is called once all of the request information has
         been set. This allows functions such as
-        [`with_header(...)`][pact.interaction.HttpInteraction.with_header]
+        [`with_header`][pact.interaction.HttpInteraction.with_header]
         to intelligently determine whether this is a request or response header.
 
         Alternatively, the `part` argument can be used to explicitly specify

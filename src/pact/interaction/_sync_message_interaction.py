@@ -30,7 +30,7 @@ class SyncMessageInteraction(Interaction):
 
         This function should not be called directly. Instead, an
         AsyncMessageInteraction should be created using the
-        [`upon_receiving(...)`][pact.Pact.upon_receiving] method of a
+        [`upon_receiving`][pact.Pact.upon_receiving] method of a
         [`Pact`][pact.Pact] instance using the `"Sync"` interaction type.
 
         Args:
@@ -72,8 +72,7 @@ class SyncMessageInteraction(Interaction):
         method of the [`HttpInteraction`][pact.pact.HttpInteraction] class,
         albeit more generic for synchronous message interactions.
 
-        For example, the following two snippets are
-        equivalent:
+        For example, the following two snippets are equivalent:
 
         ```python
         Pact(...).upon_receiving("A sync request", interaction="Sync")
@@ -90,7 +89,6 @@ class SyncMessageInteraction(Interaction):
 
         Returns:
             The current instance of the interaction.
-
         """
         self.__interaction_part = pact_ffi.InteractionPart.RESPONSE
         return self

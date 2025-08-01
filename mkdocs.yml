@@ -15,6 +15,7 @@ plugins:
   - literate-nav:
       nav_file: SUMMARY.md
   - section-index
+  - gh-admonitions
   # Library documentation
   - gen-files:
       scripts:

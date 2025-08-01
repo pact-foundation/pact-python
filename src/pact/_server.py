@@ -113,8 +113,9 @@ class MessageProducer(Generic[_CM]):
 
         Args:
             handler:
-                The handler function to call when a request is received. It must
-                accept two positional arguments:
+                The handler function to call when a request is received.
+
+                The handler must accept two positional arguments:
 
                 -   The body of the request if present as a byte string, or
                     `None`.
@@ -173,6 +174,10 @@ class MessageProducer(Generic[_CM]):
 
         This method starts the Pact server in a separate thread to handle the
         communication between the server and the underlying Pact Core library.
+
+        Returns:
+            Self:
+                The started message producer server instance.
         """
         self._server = HandlerHttpServer(
             (self.host, self.port),
@@ -194,6 +199,16 @@ class MessageProducer(Generic[_CM]):
     ) -> None:
         """
         Exit the Pact message server context.
+
+        Args:
+            exc_type:
+                The exception type, if an exception was raised.
+
+            exc_value:
+                The exception value, if an exception was raised.
+
+            traceback:
+                The traceback, if an exception was raised.
         """
         if not self._thread or not self._server:
             warnings.warn(
@@ -239,7 +254,7 @@ class MessageProducerHandler(SimpleHTTPRequestHandler, Generic[_CM]):
 
         This method is overridden to return a custom server version string.
         """
-        return f"Pact Python Message Relay/{__version__}"
+        return f"pact-python/{__version__} message-relay"
 
     def do_POST(self) -> None:
         """
@@ -328,10 +343,13 @@ class StateCallback(Generic[_CN]):
 
         Args:
             handler:
-                The handler function to call when a state callback is
-                received.
+                The handler function to call when a state callback is received.
 
-                The
+                The handler must accept three positional arguments:
+
+                - The state name as a string.
+                - The action as a string.
+                - The params as a dictionary.
 
             host:
                 The host to run the server on.
@@ -375,6 +393,9 @@ class StateCallback(Generic[_CN]):
 
         This method starts the Pact server in a separate thread to handle the
         communication between the server and the underlying Pact Core library.
+
+        Returns:
+            The started state callback server instance.
         """
         self._server = HandlerHttpServer(
             (self.host, self.port),
@@ -396,6 +417,16 @@ class StateCallback(Generic[_CN]):
     ) -> None:
         """
         Exit the state handler context.
+
+        Args:
+            exc_type:
+                The exception type, if an exception was raised.
+
+            exc_value:
+                The exception value, if an exception was raised.
+
+            traceback:
+                The traceback, if an exception was raised.
         """
         if not self._thread or not self._server:
             warnings.warn(
@@ -427,7 +458,7 @@ class StateCallbackHandler(SimpleHTTPRequestHandler, Generic[_CN]):
 
         This method is overridden to return a custom server version string.
         """
-        return f"Pact Python State Callback/{__version__}"
+        return f"pact-python/{__version__} state-callback"
 
     def do_POST(self) -> None:
         """

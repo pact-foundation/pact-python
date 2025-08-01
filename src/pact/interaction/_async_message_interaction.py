@@ -28,7 +28,7 @@ class AsyncMessageInteraction(Interaction):
 
         This function should not be called directly. Instead, an
         AsyncMessageInteraction should be created using the
-        [`upon_receiving(...)`][pact.Pact.upon_receiving] method of a
+        [`upon_receiving`][pact.Pact.upon_receiving] method of a
         [`Pact`][pact.Pact] instance using the `"Async"` interaction type.
 
         Args:

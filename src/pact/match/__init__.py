@@ -161,6 +161,9 @@ def int(
 
         max:
             If provided, the maximum value of the integer to generate.
+
+    Returns:
+        Matcher for integer values.
     """
     if value is UNSET:
         return GenericMatcher(
@@ -204,6 +207,9 @@ def float(
 
         precision:
             The number of decimal precision to generate.
+
+    Returns:
+        Matcher for floating point numbers.
     """
     if value is UNSET:
         return GenericMatcher(
@@ -276,15 +282,18 @@ def number(
 
         min:
             The minimum value of the number to generate. Only used when value is
-            an integer. Defaults to None.
+            an integer.
 
         max:
             The maximum value of the number to generate. Only used when value is
-            an integer. Defaults to None.
+            an integer.
 
         precision:
             The number of decimal digits to generate. Only used when value is a
-            float. Defaults to None.
+            float.
+
+    Returns:
+        Matcher for numbers (integer, float, or Decimal).
     """
     if value is UNSET:
         if min is not None or max is not None:
@@ -354,8 +363,11 @@ def str(
             The size of the string to generate during a consumer test.
 
         generator:
-            Alternative generator to use when generating a consumer test. If
-            set, the `size` argument is ignored.
+            Alternative generator to use when generating a consumer test.
+            If set, the `size` argument is ignored.
+
+    Returns:
+        Matcher for string values.
     """
     if value is UNSET:
         if size and generator:
@@ -408,6 +420,9 @@ def regex(
 
         regex:
             The regular expression to match against.
+
+    Returns:
+        Matcher for strings matching the given regular expression.
     """
     if regex is None:
         msg = "A regex pattern must be provided."
@@ -444,9 +459,8 @@ def uuid(
     Match a UUID value.
 
     This matcher internally combines the [`regex`][pact.match.regex] matcher
-    with a UUID regex pattern. See [RFC
-    4122](https://datatracker.ietf.org/doc/html/rfc4122) for details about the
-    UUID format.
+    with a UUID regex pattern. See [RFC 4122](https://datatracker.ietf.org/doc/html/rfc4122)
+    for details about the UUID format.
 
     While RFC 4122 requires UUIDs to be output as lowercase, UUIDs are case
     insensitive on input. Some common alternative formats can be enforced using
@@ -467,6 +481,9 @@ def uuid(
                 `urn:uuid:`
 
             If not provided, the matcher will accept any lowercase or uppercase.
+
+    Returns:
+        Matcher for UUID strings.
     """
     pattern = (
         rf"^{_UUID_FORMATS[format]}$"
@@ -493,6 +510,9 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
     Args:
         value:
             Default value to use when generating a consumer test.
+
+    Returns:
+        Matcher for boolean values.
     """
     if value is UNSET:
         return GenericMatcher("boolean", generator=generate.bool())
@@ -542,6 +562,9 @@ def date(
             `SimpleDateFormat` format will be disabled, and the format must be
             in Java's `SimpleDateFormat` format. As a result, the value must
             be a string as Python cannot format the date in the target format.
+
+    Returns:
+        Matcher for date strings.
     """
     if disable_conversion:
         if not isinstance(value, builtins.str):
@@ -613,6 +636,9 @@ def time(
             `SimpleDateFormat` format will be disabled, and the format must be
             in Java's `SimpleDateFormat` format. As a result, the value must
             be a string as Python cannot format the time in the target format.
+
+    Returns:
+        Matcher for time strings.
     """
     if disable_conversion:
         if not isinstance(value, builtins.str):
@@ -675,7 +701,6 @@ def datetime(
 
         format:
             Expected format of the timestamp.
-            format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
 
             If not provided, an ISO 8601 timestamp format will be used:
             `%Y-%m-%dT%H:%M:%S%z`.
@@ -685,6 +710,9 @@ def datetime(
             `SimpleDateFormat` format will be disabled, and the format must be
             in Java's `SimpleDateFormat` format. As a result, the value must be
             a string as Python cannot format the timestamp in the target format.
+
+    Returns:
+        Matcher for datetime strings.
     """
     if disable_conversion:
         if not isinstance(value, builtins.str):
@@ -770,6 +798,9 @@ def type(
 
         generator:
             The generator to use when generating the value.
+
+    Returns:
+        Matcher for the given value type.
     """
     if value is UNSET:
         if not generator:
@@ -815,6 +846,9 @@ def each_like(
 
         max:
             The maximum number of items that must match the value.
+
+    Returns:
+        Matcher for arrays where each item matches the given value.
     """
     if min is not None and min < 1:
         warnings.warn(
@@ -839,6 +873,9 @@ def includes(
 
         generator:
             The generator to use when generating the value.
+
+    Returns:
+        Matcher for strings that include the given value.
     """
     return GenericMatcher(
         "include",
@@ -857,6 +894,9 @@ def array_containing(variants: Sequence[_T | Matcher[_T]], /) -> Matcher[Sequenc
     Args:
         variants:
             A list of variants to match against.
+
+    Returns:
+        Matcher for arrays containing the given variants.
     """
     return ArrayContainsMatcher(variants=variants)
 
@@ -876,6 +916,9 @@ def each_key_matches(
 
         rules:
             The matching rules to match against each key.
+
+    Returns:
+        Matcher for dictionaries where each key matches the given rules.
     """
     if isinstance(rules, Matcher):
         rules = [rules]
@@ -897,6 +940,9 @@ def each_value_matches(
 
         rules:
             The matching rules to match against each value.
+
+    Returns:
+        Matcher for dictionaries where each value matches the given rules.
     """
     if isinstance(rules, Matcher):
         rules = [rules]

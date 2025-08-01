@@ -207,22 +207,9 @@ class Interaction(abc.ABC):
 
             parameters:
                 Key-value pairs of parameters to use for the provider state.
-                These must be encodable using [`json.dumps(...)`][json.dumps].
-                Alternatively, a string contained the JSON object can be passed
+                These must be encodable using [`json.dumps`][json.dumps].
+                Alternatively, a string containing the JSON object can be passed
                 directly.
-
-                If the string does not contain a valid JSON object, then the
-                string is passed directly as follows:
-
-                ```python
-                (
-                    pact.upon_receiving("a request").given(
-                        "a user exists",
-                        name="value",
-                        value=parameters,
-                    )
-                )
-                ```
 
         Raises:
             ValueError:
@@ -293,20 +280,20 @@ class Interaction(abc.ABC):
 
         Note that for HTTP interactions, this function will overwrite the body
         if it has been set using
-        [`with_body(...)`][pact.interaction.Interaction.with_body].
+        [`with_body`][pact.interaction.Interaction.with_body].
 
         Args:
-            part:
-                Whether the body should be added to the request or the response.
-                If `None`, then the function intelligently determines whether
-                the body should be added to the request or the response.
+            body:
+                Body of the request.
 
             content_type:
                 Content type of the body. This is ignored if the `Content-Type`
                 header has already been set.
 
-            body:
-                Body of the request.
+            part:
+                Whether the body should be added to the request or the response.
+                If `None`, then the function intelligently determines whether
+                the body should be added to the request or the response.
         """
         pact_ffi.with_binary_body(
             self._handle,
@@ -328,7 +315,7 @@ class Interaction(abc.ABC):
 
         This function may either be called with a single dictionary of metadata,
         or with keyword arguments that are the key-value pairs of the metadata
-        (or a combination therefore):
+        (or a combination thereof):
 
         ```python
         interaction.with_metadata({"key": "value", "key two": "value two"})
@@ -352,7 +339,7 @@ class Interaction(abc.ABC):
             ```
 
         Args:
-            ___metadata:
+            __metadata:
                 Dictionary of metadata keys and associated values.
 
             __part:
@@ -394,7 +381,24 @@ class Interaction(abc.ABC):
         """
         Adds a binary file as the body of a multipart request or response.
 
-        The content type of the body will be set to a MIME multipart message.
+        Args:
+            part_name:
+                Name of the multipart part.
+
+            path:
+                Path to the file to add.
+
+            content_type:
+                Content type of the part.
+
+            part:
+                Whether the part should be added to the request or the
+                response.
+                If `None`, then the function intelligently determines whether
+                the part should be added to the request or the response.
+
+            boundary:
+                Boundary string for the multipart message.
         """
         pact_ffi.with_multipart_file_v2(
             self._handle,
@@ -440,7 +444,7 @@ class Interaction(abc.ABC):
 
             value:
                 Value for the comment. This must be encodable using
-                [`json.dumps(...)`][json.dumps], or an existing JSON string. The
+                [`json.dumps`][json.dumps], or an existing JSON string. The
                 value of `None` will remove the comment with the given key.
 
         # Warning
@@ -469,8 +473,7 @@ class Interaction(abc.ABC):
 
         Internally, the comments are appended to an array under the `text`
         comment key. Care should be taken to ensure that conflicts are not
-        introduced by
-        [`set_comment`][pact.interaction.Interaction.set_comment].
+        introduced by [`set_comment`][pact.interaction.Interaction.set_comment].
         """
         pact_ffi.add_text_comment(self._handle, comment)
         return self
@@ -541,8 +544,8 @@ class Interaction(abc.ABC):
 
         Args:
             rules:
-                Matching rules to add to the interaction. This must be
-                encodable using [`json.dumps(...)`][json.dumps], or a string.
+                Matching rules to add to the interaction. This must be encodable
+                using [`json.dumps`][json.dumps], or a string.
 
             part:
                 Whether the matching rules should be added to the request or the
@@ -574,8 +577,8 @@ class Interaction(abc.ABC):
 
         Args:
             generators:
-                Generators to add to the interaction. This must be encodable using
-                [`json.dumps(...)`][json.dumps], or a string.
+                Generators to add to the interaction. This must be encodable
+                using [`json.dumps`][json.dumps], or a string.
 
             part:
                 Whether the generators should be added to the request or the

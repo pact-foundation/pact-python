@@ -133,6 +133,10 @@ class Pact:
 
             provider:
                 Name of the provider.
+
+        Raises:
+            ValueError:
+                If the consumer or provider name is empty.
         """
         if not consumer:
             msg = "Consumer name cannot be empty."
@@ -202,7 +206,7 @@ class Pact:
 
         Args:
             version:
-                Pact specification version. The can be either a string or a
+                Pact specification version. This can be either a string or a
                 [`PactSpecification`][pact_ffi.PactSpecification] instance.
 
                 The version string is case insensitive and has an optional `v`
@@ -289,6 +293,10 @@ class Pact:
             interaction:
                 Type of interaction. Defaults to `HTTP`. This must be one of
                 `HTTP`, `Async`, or `Sync`.
+
+        Raises:
+            ValueError:
+                If the interaction type is invalid.
         """
         if interaction == "HTTP":
             return HttpInteraction(self._handle, description)
@@ -347,7 +355,7 @@ class Pact:
                 independently of `raises`.
 
         Returns:
-            A [`PactServer`][pact.pact.PactServer] instance.
+            PactServer instance.
         """
         return PactServer(
             self._handle,
@@ -390,6 +398,10 @@ class Pact:
 
         The kind is used to specify the type of interactions that will be
         iterated over.
+
+        Raises:
+            ValueError:
+                If the kind is unknown.
         """
         # TODO: Add an iterator for `All` interactions.
         # https://github.com/pact-foundation/pact-python/issues/451
@@ -460,6 +472,17 @@ class Pact:
                 Whether or not to raise an exception if the handler fails to
                 process a message. If set to `False`, then the function will
                 return a list of errors.
+
+        Returns:
+            `None` if raises is True and no errors occurred, otherwise a list of
+            [`InteractionVerificationError`][pact.error.InteractionVerificationError].
+
+        Raises:
+            TypeError:
+                If the message type is unknown.
+
+            PactVerificationError:
+                If raises is True and there are errors.
         """
         errors: list[InteractionVerificationError] = []
         for message in self.interactions(kind):
@@ -536,7 +559,7 @@ class PactServer:
     stopping the mock server when the block is exited.
 
     Note that the server should not be started directly, but rather through the
-    [`serve(...)`][pact.Pact.serve] method of a [`Pact`][pact.Pact]:
+    [`serve`][pact.Pact.serve] method of a [`Pact`][pact.Pact]:
 
     ```python
     pact = Pact("consumer", "provider")
@@ -581,7 +604,7 @@ class PactServer:
                 Handle for the Pact.
 
             host:
-                Hostname of IP for the mock server.
+                Hostname or IP for the mock server.
 
             port:
                 Port to bind the mock server to. The value of `None` will select

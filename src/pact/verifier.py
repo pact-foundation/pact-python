@@ -266,6 +266,11 @@ class Verifier:
 
                 This is typically only used for the `http` protocol, where this
                 value can either be `http` (the default) or `https`.
+
+        Raises:
+            ValueError:
+                If mutually exclusive parameters are provided, or required
+                parameters are missing, or host/protocol mismatches.
         """
         if url and any(x is not None for x in (protocol, port, path, scheme)):
             msg = "The `url` parameter is mutually exclusive with other parameters"
@@ -357,8 +362,14 @@ class Verifier:
 
         Args:
             handler:
-                The message handler. This should be a callable that takes no
-                arguments: the
+                The message handler.
+
+                This should be a callable or a dictionary mapping message names
+                to callables, Message dicts, or bytes.
+
+        Raises:
+            TypeError:
+                If the handler or its values are invalid.
         """
         logger.debug(
             "Setting message handler for verifier",
@@ -441,13 +452,16 @@ class Verifier:
 
         Args:
             description:
-                The interaction description. This should be a regular
-                expression. If unspecified, no filtering will be done based on
-                the description.
+                The interaction description.
+
+                This should be a regular expression. If unspecified, no
+                filtering will be done based on the description.
 
             state:
-                The interaction state. This should be a regular expression. If
-                unspecified, no filtering will be done based on the state.
+                The interaction state.
+
+                This should be a regular expression. If unspecified, no
+                filtering will be done based on the state.
 
             no_state:
                 Whether to include interactions with no state.
@@ -553,6 +567,13 @@ class Verifier:
                 or in the query string (`False`). This must be left as `None` if
                 providing one or more handler functions; and it must be set to a
                 boolean if providing a URL.
+
+        Raises:
+            ValueError:
+                If the handler/body combination is invalid.
+
+            TypeError:
+                If the handler type is invalid.
         """
         # A tuple is required instead of `StateHandlerUrl` for support for
         # Python 3.9. This should be changed to `StateHandlerUrl` in the future.
@@ -604,6 +625,10 @@ class Verifier:
 
         Returns:
             The verifier instance.
+
+        Raises:
+            ValueError:
+                If the body parameter is not a boolean when providing a URL.
         """
         logger.debug(
             "Setting URL state handler for verifier",
@@ -646,6 +671,10 @@ class Verifier:
 
         Returns:
             The verifier instance.
+
+        Raises:
+            TypeError:
+                If any value in the dictionary is not callable.
         """
         if any(not callable(f) for f in handler.values()):
             msg = "All values in the dictionary must be callable"
@@ -705,6 +734,10 @@ class Verifier:
 
         Returns:
             The verifier instance.
+
+        Raises:
+            TypeError:
+                If the handler is not callable.
         """
         logger.debug(
             "Setting function state handler for verifier",
@@ -753,6 +786,10 @@ class Verifier:
         Args:
             timeout:
                 The request timeout in milliseconds.
+
+        Raises:
+            ValueError:
+                If the timeout is negative.
         """
         if timeout < 0:
             msg = "Request timeout must be a positive integer"
@@ -854,9 +891,11 @@ class Verifier:
 
         Args:
             headers:
-                The headers to add. This can be a dictionary or an iterable of
-                key-value pairs. The iterable is preferred as it ensures that
-                repeated headers are not lost.
+                The headers to add.
+
+                The value can be:
+                    - a dictionary of header key-value pairs
+                    - an iterable of (key, value) tuples
         """
         if isinstance(headers, dict):
             headers = headers.items()
@@ -895,12 +934,11 @@ class Verifier:
 
         Args:
             source:
-                The source of the interactions. This may be either of the
-                following:
+                The source of the interactions. This may be either of the following:
 
-                - A local file path to a Pact file.
-                - A local file path to a directory containing Pact files.
-                - A URL to a Pact file.
+                -   A local file path to a Pact file.
+                -   A local file path to a directory containing Pact files.
+                -   A URL to a Pact file.
 
                 If using a URL, the `username` and `password` parameters can be
                 used to provide basic HTTP authentication, or the `token`
@@ -920,6 +958,10 @@ class Verifier:
                 The token to use for bearer token authentication. This is only
                 used when the source is a URL. Note that this is mutually
                 exclusive with `username` and `password`.
+
+        Raises:
+            ValueError:
+                If the source scheme is invalid.
         """
         if isinstance(source, Path):
             return self._add_source_local(source)
@@ -964,6 +1006,10 @@ class Verifier:
 
                 - A local file path to a Pact file.
                 - A local file path to a directory containing Pact files.
+
+        Raises:
+            ValueError:
+                If the source is not a file or directory.
         """
         source = Path(source)
         if source.is_dir():
@@ -1007,6 +1053,10 @@ class Verifier:
                 The token to use for bearer token authentication. This is
                 mutually exclusive with `username` and `password` (whether they
                 be specified through arguments, or embedded in the URL).
+
+        Raises:
+            ValueError:
+                If mutually exclusive authentication parameters are provided.
         """
         url = URL(url)
 
@@ -1085,7 +1135,7 @@ class Verifier:
 
         Args:
             url:
-                The broker URL. TThe URL may contain a username and password for
+                The broker URL. The URL may contain a username and password for
                 basic HTTP authentication.
 
             username:
@@ -1103,6 +1153,10 @@ class Verifier:
 
             selector:
                 Whether to return a BrokerSelectorBuilder instance.
+
+        Raises:
+            ValueError:
+                If mutually exclusive authentication parameters are provided.
         """
         url = URL(url)
 
@@ -1145,6 +1199,10 @@ class Verifier:
 
         Returns:
             Whether the interactions were verified successfully.
+
+        Raises:
+            RuntimeError:
+                If no transports have been set.
         """
         if not self._transports:
             msg = "No transports have been set"

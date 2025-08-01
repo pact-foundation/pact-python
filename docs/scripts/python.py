@@ -195,10 +195,6 @@ def process_python(
             "a" if destination.exists() else "w",
             encoding="utf-8",
         ) as fd:
-            print(
-                "# " + python_identifier.split(".")[-1].replace("_", " ").title(),
-                file=fd,
-            )
             print("::: " + python_identifier, file=fd)
 
         mkdocs_gen_files.set_edit_path(
@@ -211,8 +207,26 @@ if __name__ == "<run_path>":
     process_python(
         "src/pact",
         destination_mapping=[
-            ("src/pact", "pact"),
+            ("src/pact", "api"),
         ],
         python_mapping=[("src.pact", "pact")],
+        ignore=["src/pact/v2"],
     )
-    process_python("examples")
+    process_python(
+        "pact-python-cli/src/pact_cli",
+        python_mapping=[("pact-python-cli.src.pact_cli", "pact_cli")],
+        destination_mapping=[
+            ("pact-python-cli/src/pact_cli", "pact-python-cli/api"),
+        ],
+    )
+    process_python(
+        "pact-python-ffi/src/pact_ffi",
+        python_mapping=[("pact-python-ffi.src.pact_ffi", "pact_ffi")],
+        destination_mapping=[
+            ("pact-python-ffi/src/pact_ffi", "pact-python-ffi/api"),
+        ],
+    )
+    process_python(
+        "examples",
+        ignore=["examples/v2"],
+    )
