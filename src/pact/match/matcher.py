@@ -18,10 +18,11 @@ from typing import Any, Generic, TypeVar
 from pact.generate.generator import Generator
 from pact.types import UNSET, Matchable, MatcherType, Unset
 
+_T_co = TypeVar("_T_co", covariant=True)
 _T = TypeVar("_T")
 
 
-class Matcher(ABC, Generic[_T]):
+class Matcher(ABC, Generic[_T_co]):
     """
     Abstract matcher.
 
@@ -75,7 +76,7 @@ class Matcher(ABC, Generic[_T]):
         """
 
 
-class GenericMatcher(Matcher[_T]):
+class GenericMatcher(Matcher[_T_co]):
     """
     Generic matcher.
 
@@ -87,7 +88,7 @@ class GenericMatcher(Matcher[_T]):
         self,
         type: MatcherType,  # noqa: A002
         /,
-        value: _T | Unset = UNSET,
+        value: _T_co | Unset = UNSET,
         generator: Generator | None = None,
         extra_fields: Mapping[str, Any] | None = None,
         **kwargs: Matchable,
@@ -123,7 +124,7 @@ class GenericMatcher(Matcher[_T]):
         The type of the matcher.
         """
 
-        self.value: _T | Unset = value
+        self.value: _T_co | Unset = value
         """
         Default value used by Pact when executing tests.
         """
@@ -196,14 +197,14 @@ class GenericMatcher(Matcher[_T]):
         }
 
 
-class ArrayContainsMatcher(Matcher[Sequence[_T]]):
+class ArrayContainsMatcher(Matcher[Sequence[_T_co]]):
     """
     Array contains matcher.
 
     A matcher that checks if an array contains a value.
     """
 
-    def __init__(self, variants: Sequence[_T | Matcher[_T]]) -> None:
+    def __init__(self, variants: Sequence[_T_co | Matcher[_T_co]]) -> None:
         """
         Initialize the matcher.
 
@@ -211,7 +212,7 @@ class ArrayContainsMatcher(Matcher[Sequence[_T]]):
             variants:
                 List of possible values to match against.
         """
-        self._matcher: Matcher[Sequence[_T]] = GenericMatcher(
+        self._matcher: Matcher[Sequence[_T_co]] = GenericMatcher(
             "arrayContains",
             extra_fields={"variants": variants},
         )
@@ -258,7 +259,7 @@ class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
         return self._matcher.to_matching_rule()
 
 
-class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
+class EachValueMatcher(Matcher[Mapping[Matchable, _T_co]]):
     """
     Each value matcher.
 
@@ -267,8 +268,8 @@ class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
 
     def __init__(
         self,
-        value: Mapping[Matchable, _T],
-        rules: list[Matcher[_T]] | None = None,
+        value: Mapping[Matchable, _T_co],
+        rules: list[Matcher[_T_co]] | None = None,
     ) -> None:
         """
         Initialize the matcher.
@@ -280,7 +281,7 @@ class EachValueMatcher(Matcher[Mapping[Matchable, _T]]):
             rules:
                 List of matchers to apply to each value in the mapping.
         """
-        self._matcher: Matcher[Mapping[Matchable, _T]] = GenericMatcher(
+        self._matcher: Matcher[Mapping[Matchable, _T_co]] = GenericMatcher(
             "eachValue",
             value=value,
             extra_fields={"rules": rules},

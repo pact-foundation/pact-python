@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Literal
 
 import pact_ffi
@@ -358,7 +359,7 @@ class HttpInteraction(Interaction):
 
     def with_query_parameters(
         self,
-        parameters: dict[str, object | Matcher[object]]
+        parameters: Mapping[str, object | Matcher[object]]
         | Iterable[tuple[str, object | Matcher[object]]],
     ) -> Self:
         """
@@ -384,7 +385,7 @@ class HttpInteraction(Interaction):
             parameters:
                 Query parameters to add to the request.
         """
-        if isinstance(parameters, dict):
+        if isinstance(parameters, Mapping):
             parameters = parameters.items()
         for name, value in parameters:
             self.with_query_parameter(name, value)
