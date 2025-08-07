@@ -162,7 +162,7 @@ def a_provider_state_for_the_message_is_specified_with_the_following_data(
     table = parse_horizontal_table(datatable)
     logger.debug("Specifying provider state '%s' with data: %s", state, table)
     parameters = {k: ast.literal_eval(v) for k, v in table[0].items()}
-    pact_interaction.interaction.given(state, parameters=parameters)
+    pact_interaction.interaction.given(state, parameters)
 
 
 @given("a message is defined")

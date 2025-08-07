@@ -446,14 +446,14 @@ async def test_given(pact: Pact) -> None:
     )
     (
         pact.upon_receiving("a basic request given a user exists (1)")
-        .given("a user exists", name="id", value="123")
-        .given("a user exists", name="name", value="John")
+        .given("a user exists", id=123)
+        .given("a user exists", name="John")
         .with_request("GET", "/user1")
         .will_respond_with(201)
     )
     (
         pact.upon_receiving("a basic request given a user exists (2)")
-        .given("a user exists", parameters={"id": "123", "name": "John"})
+        .given("a user exists", {"id": "123", "name": "John"})
         .with_request("GET", "/user2")
         .will_respond_with(202)
     )
@@ -590,7 +590,7 @@ async def test_pact_server_verbose(
         .will_respond_with(200)
     )
     with (
-        caplog.at_level(logging.WARNING, logger="pact.v3.pact"),
+        caplog.at_level(logging.WARNING, logger="pact.pact"),
         pact.serve(raises=False, verbose=True) as srv,
     ):
         async with aiohttp.ClientSession(srv.url) as session:

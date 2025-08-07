@@ -517,8 +517,8 @@ class InteractionDefinition:
 
         for state in self.states or []:
             if state.parameters:
-                logger.info("given(%r, parameters=%r)", state.name, state.parameters)
-                interaction.given(state.name, parameters=state.parameters)
+                logger.info("given(%r, %r)", state.name, state.parameters)
+                interaction.given(state.name, state.parameters)
             else:
                 logger.info("given(%r)", state.name)
                 interaction.given(state.name)

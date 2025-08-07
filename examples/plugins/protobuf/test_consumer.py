@@ -77,7 +77,7 @@ def test_get_person_by_id(pact: Pact) -> None:
 
     (
         pact.upon_receiving("a request to get person by ID")
-        .given("person with the given ID exists", parameters={"user_id": 1})
+        .given("person with the given ID exists", user_id=1)
         .with_request("GET", "/person/1")
         .will_respond_with(200)
         .with_header("Content-Type", "application/x-protobuf")
@@ -120,7 +120,7 @@ def test_get_nonexistent_person(pact: Pact) -> None:
     """
     (
         pact.upon_receiving("a request to get non-existent person")
-        .given("person with the given ID does not exist", parameters={"user_id": 999})
+        .given("person with the given ID does not exist", user_id=999)
         .with_request("GET", "/person/999")
         .will_respond_with(404)
         .with_header("Content-Type", "application/json")

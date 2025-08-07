@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import abc
 import json
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal
 
 import pact_ffi
 from pact.match.matcher import IntegrationJSONEncoder
@@ -117,22 +117,12 @@ class Interaction(abc.ABC):
         msg = f"Invalid part: {part}"
         raise ValueError(msg)
 
-    @overload
-    def given(self, state: str) -> Self: ...
-
-    @overload
-    def given(self, state: str, *, name: str, value: str) -> Self: ...
-
-    @overload
-    def given(self, state: str, *, parameters: dict[str, Any] | str) -> Self: ...
-
     def given(
         self,
         state: str,
-        *,
-        name: str | None = None,
-        value: str | None = None,
-        parameters: dict[str, Any] | str | None = None,
+        parameters: dict[str, object] | None = None,
+        /,
+        **kwargs: object,
     ) -> Self:
         """
         Set the provider state.
@@ -149,88 +139,52 @@ class Interaction(abc.ABC):
         pact.upon_receiving("a request").given("a user exists")
         ```
 
-        It is also possible to specify a parameter that will be used to match
-        the provider state. For example, to match a provider state of `a user
-        exists` with a parameter `id` that has the value `123`, you would use:
+        In many circumstances, it is useful to parameterize the state with
+        additional data. In the example above, this could be with:
 
         ```python
-        (
-            pact.upon_receiving("a request").given(
-                "a user exists",
-                name="id",
-                value="123",
-            )
-        )
-        ```
-
-        Lastly, it is possible to specify multiple parameters that will be used
-        to match the provider state. For example, to match a provider state of
-        `a user exists` with a parameter `id` that has the value `123` and a
-        parameter `name` that has the value `John`, you would use:
-
-        ```python
-        (
-            pact.upon_receiving("a request").given(
-                "a user exists",
-                parameters={
-                    "id": "123",
-                    "name": "John",
-                },
-            )
+        pact.upon_receiving("a request").given(
+            "a user exists",
+            id=123,
+            name="Alice",
         )
         ```
 
         This function can be called repeatedly to specify multiple provider
-        states for the same Interaction. If the same `state` is specified with
-        different parameters, then the parameters are merged together. The above
-        example with multiple parameters can equivalently be specified as:
-
-        ```python
-        (
-            pact.upon_receiving("a request")
-            .given("a user exists", name="id", value="123")
-            .given("a user exists", name="name", value="John")
-        )
-        ```
+        states for the same Interaction. If the same state is specified with
+        different parameters, then the parameters are merged together.
 
         Args:
             state:
                 Provider state for the Interaction.
 
-            name:
-                Name of the parameter. This must be specified in conjunction
-                with `value`.
-
-            value:
-                Value of the parameter. This must be specified in conjunction
-                with `name`.
-
             parameters:
-                Key-value pairs of parameters to use for the provider state.
-                These must be encodable using [`json.dumps`][json.dumps].
-                Alternatively, a string containing the JSON object can be passed
-                directly.
+                Should some of the parameters not be valid Python key
+                identifiers, a dictionary can be passed in as the second
+                positional argument.
 
-        Raises:
-            ValueError:
-                If the combination of arguments is invalid or inconsistent.
-        """
-        if name is not None and value is not None and parameters is None:
-            pact_ffi.given_with_param(self._handle, state, name, value)
-        elif name is None and value is None and parameters is not None:
-            if isinstance(parameters, dict):
-                pact_ffi.given_with_params(
-                    self._handle,
-                    state,
-                    json.dumps(parameters),
+                ```python
+                pact.upon_receiving("A user request").given(
+                    "The given user exists",
+                    {"user-id": 123},
                 )
-            else:
-                pact_ffi.given_with_params(self._handle, state, parameters)
-        elif name is None and value is None and parameters is None:
+                ```
+
+            kwargs:
+                The additional parameters for the provider state, specified as
+                additional arguments to the function. The values must be
+                serializable using Python's [`json.dumps`][json.dumps]
+                function.
+        """
+        if not parameters and not kwargs:
             pact_ffi.given(self._handle, state)
         else:
-            msg = "Invalid combination of arguments."
-            raise ValueError(msg)
+            pact_ffi.given_with_params(
+                self._handle,
+                state,
+                json.dumps({**(parameters or {}), **kwargs}),
+            )
+
         return self
 
     def with_body(
