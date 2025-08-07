@@ -79,7 +79,7 @@ dependencies = [
     "pact-python[devel-example]",
     "pact-python[devel-test]",
     "pact-python[devel-types]",
-    "ruff==0.12.7",
+    "ruff==0.12.8",
   ]
   devel-docs = [
     "mkdocs-github-admonitions-plugin~=0.0",
