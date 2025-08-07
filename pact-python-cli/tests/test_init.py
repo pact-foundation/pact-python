@@ -8,16 +8,11 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 
 import pact_cli
-
-if TYPE_CHECKING:
-    from unittest.mock import MagicMock
-
-    import pytest_mock
 
 
 def bin_to_sitepackages(exec_path: str | Path) -> Path:
@@ -151,24 +146,29 @@ def test_exec_wrapper_mock_service() -> None:
         pytest.param("pactflow", id="pactflow"),
     ],
 )
-def test_exec_directly(executable: str, mocker: pytest_mock.MockerFixture) -> None:
+def test_exec_directly(executable: str) -> None:
     """
     Test pact_cli._exec with --help, mocking sys.argv and capturing output.
     """
     cmd: str
     args: list[str]
 
-    mocker.patch.object(sys, "argv", new=[executable, "--help"])
-    mock_execv: MagicMock = mocker.patch("os.execv")
-    pact_cli._exec()  # noqa: SLF001
+    with (
+        patch.object(sys, "argv", new=[executable, "--help"]),
+        patch("os.execv") as mock_execv,
+    ):
+        pact_cli._exec()  # noqa: SLF001
     mock_execv.assert_called_once()
     cmd, args = mock_execv.call_args[0]
     assert (os.sep + executable) in cmd
     assert args == [cmd, "--help"]
 
-    mocker.patch.object(sys, "argv", new=[executable])
-    mock_execv.reset_mock()
-    pact_cli._exec()  # noqa: SLF001
+    patch.object(sys, "argv", new=[executable])
+    with (
+        patch.object(sys, "argv", new=[executable]),
+        patch("os.execv") as mock_execv,
+    ):
+        pact_cli._exec()  # noqa: SLF001
     mock_execv.assert_called_once()
     cmd, args = mock_execv.call_args[0]
     assert (os.sep + executable) in cmd
