@@ -259,20 +259,20 @@ class Interaction(abc.ABC):
 
     def with_metadata(
         self,
-        __metadata: dict[str, str] | None = None,
-        __part: Literal["Request", "Response"] | None = None,
+        metadata: dict[str, object | Matcher[object]] | None = None,
+        part: Literal["Request", "Response"] | None = None,
         /,
-        **kwargs: str,
+        **kwargs: object | Matcher[object],
     ) -> Self:
         """
-        Set metadata for the interaction.
+        Add metadata for the interaction.
 
         This function may either be called with a single dictionary of metadata,
         or with keyword arguments that are the key-value pairs of the metadata
         (or a combination thereof):
 
         ```python
-        interaction.with_metadata({"key": "value", "key two": "value two"})
+        interaction.with_metadata({"foo": "bar", "baz": "qux"})
         interaction.with_metadata(foo="bar", baz="qux")
         ```
 
@@ -281,22 +281,17 @@ class Interaction(abc.ABC):
         JSON `null` value, which will set the metadata key to an empty string or
         the JSON `null` value, respectively.
 
-        !!! note
-
-            There are two special keys which cannot be used as keyword
-            arguments: `__metadata` and `__part`. Should there ever be a need
-            to set metadata with one of these keys, they must be passed through
-            as a dictionary:
-
-            ```python
-            interaction.with_metadata({"__metadata": "value", "__part": 1})
-            ```
+        The values must be serializable to JSON using [`json.dumps`][json.dumps]
+        and may contain matchers and generators. If you wish to use a valid
+        JSON-encoded string as a metadata value, prefer the
+        [`set_metadata`][pact.interaction.Interaction.set_metadata] method as
+        this does not perform any additional parsing of the string.
 
         Args:
-            __metadata:
+            metadata:
                 Dictionary of metadata keys and associated values.
 
-            __part:
+            part:
                 Whether the metadata should be added to the request or the
                 response. If `None`, then the function intelligently determines
                 whether the body should be added to the request or the response.
@@ -307,21 +302,63 @@ class Interaction(abc.ABC):
         Returns:
             The current instance of the interaction.
         """
-        part = self._parse_interaction_part(__part)
-        for k, v in (__metadata or {}).items():
+        interaction_part = self._parse_interaction_part(part)
+        for k, v in (metadata or {}).items():
             pact_ffi.with_metadata(
                 self._handle,
                 k,
-                v,
-                part,
+                json.dumps(v, cls=IntegrationJSONEncoder),
+                interaction_part,
             )
         for k, v in kwargs.items():
             pact_ffi.with_metadata(
                 self._handle,
                 k,
-                v,
-                part,
+                json.dumps(v, cls=IntegrationJSONEncoder),
+                interaction_part,
             )
+        return self
+
+    def set_metadata(
+        self,
+        metadata: dict[str, str] | None = None,
+        part: Literal["Request", "Response"] | None = None,
+        /,
+        **kwargs: str,
+    ) -> Self:
+        """
+        Add metadata for the interaction.
+
+        This function behaves exactly like
+        [`with_metadata`][pact.interaction.Interaction.with_metadata] but does
+        not perform any parsing of the value strings. The strings must be valid
+        JSON-encoded strings.
+
+        The value of `None` will remove the metadata key from the interaction.
+        This is distinct from using an empty string or a string containing the
+        JSON `null` value, which will set the metadata key to an empty string
+        or the JSON `null` value, respectively.
+
+        Args:
+            metadata:
+                Dictionary of metadata keys and associated values.
+
+            part:
+                Whether the metadata should be added to the request or the
+                response. If `None`, then the function intelligently determines
+                whether the body should be added to the request or the response.
+
+            **kwargs:
+                Additional metadata key-value pairs.
+
+        Returns:
+            The current instance of the interaction.
+        """
+        interaction_part = self._parse_interaction_part(part)
+        for k, v in (metadata or {}).items():
+            pact_ffi.with_metadata(self._handle, k, v, interaction_part)
+        for k, v in kwargs.items():
+            pact_ffi.with_metadata(self._handle, k, v, interaction_part)
         return self
 
     def with_multipart_file(
