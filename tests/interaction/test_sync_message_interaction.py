@@ -1,5 +1,5 @@
 """
-Pact Async Message Interaction unit tests.
+Pact Sync Message Interaction unit tests.
 """
 
 from __future__ import annotations
@@ -21,15 +21,15 @@ def pact() -> Pact:
 
 
 def test_str(pact: Pact) -> None:
-    interaction = pact.upon_receiving("a basic request", "Async")
-    assert str(interaction) == "AsyncMessageInteraction(a basic request)"
+    interaction = pact.upon_receiving("a basic request", "Sync")
+    assert str(interaction) == "SyncMessageInteraction(a basic request)"
 
 
 def test_repr(pact: Pact) -> None:
-    interaction = pact.upon_receiving("a basic request", "Async")
+    interaction = pact.upon_receiving("a basic request", "Sync")
     assert (
         re.match(
-            r"^AsyncMessageInteraction\(InteractionHandle\(\d+\)\)$",
+            r"^SyncMessageInteraction\(InteractionHandle\(\d+\)\)$",
             repr(interaction),
         )
         is not None
