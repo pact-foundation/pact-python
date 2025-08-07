@@ -185,7 +185,10 @@ def the_message_contains_the_following_metadata(
     logger.debug("Adding metadata to message: %s", metadatas)
     for metadata in metadatas:
         if metadata.get("value", "").startswith("JSON: "):
-            metadata["value"] = metadata["value"].replace("JSON:", "")
+            pact_interaction.interaction.with_metadata({
+                metadata["key"]: json.loads(metadata["value"].replace("JSON: ", ""))
+            })
+            continue
         pact_interaction.interaction.with_metadata({metadata["key"]: metadata["value"]})
 
 
@@ -265,7 +268,7 @@ def the_message_is_successfully_processed(
 
     def handler(
         body: str | bytes | None,
-        context: dict[str, str],
+        context: dict[str, object],
     ) -> None:
         messages.append(ReceivedMessage(body, context))
 
@@ -300,7 +303,7 @@ def the_message_is_not_successfully_processed_with_an_exception(
     """The message is NOT successfully processed with a "Test failed" exception."""
     messages: list[ReceivedMessage] = []
 
-    def handler(body: str | bytes | None, context: dict[str, str]) -> None:
+    def handler(body: str | bytes | None, context: dict[str, object]) -> None:
         messages.append(ReceivedMessage(body, context))
         raise AssertionError(failure)
 
@@ -615,7 +618,7 @@ def the_received_message_metadata_will_contain(
     for k, v in message.context.items():
         if k == key:
             if json_matching:
-                assert json.loads(v) == value
+                assert v == value
             else:
                 assert v == value
             break

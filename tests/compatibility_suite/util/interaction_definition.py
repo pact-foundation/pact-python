@@ -587,11 +587,7 @@ class InteractionDefinition:
             interaction.with_matching_rules(self.response_matching_rules)
 
         if self.metadata:
-            for key, value in self.metadata.items():
-                if isinstance(value, str):
-                    interaction.with_metadata({key: value})
-                else:
-                    interaction.with_metadata({key: json.dumps(value)})
+            interaction.with_metadata(self.metadata)
 
     def matches_request(self, request: SimpleHTTPRequestHandler) -> bool:
         """

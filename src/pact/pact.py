@@ -62,6 +62,7 @@ correctly, as this form of method chaining is not typical in Python.
 
 from __future__ import annotations
 
+import json
 import logging
 import warnings
 from pathlib import Path
@@ -419,7 +420,7 @@ class Pact:
     @overload
     def verify(
         self,
-        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        handler: Callable[[str | bytes | None, dict[str, object]], None],
         kind: Literal["Async", "Sync"],
         *,
         raises: Literal[True] = True,
@@ -427,7 +428,7 @@ class Pact:
     @overload
     def verify(
         self,
-        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        handler: Callable[[str | bytes | None, dict[str, object]], None],
         kind: Literal["Async", "Sync"],
         *,
         raises: Literal[False],
@@ -435,7 +436,7 @@ class Pact:
 
     def verify(
         self,
-        handler: Callable[[str | bytes | None, dict[str, str]], None],
+        handler: Callable[[str | bytes | None, dict[str, object]], None],
         kind: Literal["Async", "Sync"],
         *,
         raises: bool = True,
@@ -503,7 +504,13 @@ class Pact:
                 continue
 
             body = request.contents
-            metadata = {pair.key: pair.value for pair in request.metadata}
+            metadata: dict[str, object] = {}
+            for pair in request.metadata:
+                try:
+                    v = json.loads(pair.value)
+                except json.JSONDecodeError:
+                    v = pair.value
+                metadata[pair.key] = v
 
             try:
                 handler(body, metadata)
