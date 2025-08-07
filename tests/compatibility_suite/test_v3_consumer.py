@@ -99,7 +99,7 @@ def a_provider_state_is_specified_with_the_following_data(
             elif value.replace(".", "", 1).isdigit():
                 row[key] = float(value)
 
-    pact_interaction.interaction.given(state, parameters=data[0])
+    pact_interaction.interaction.given(state, data[0])
 
 
 ################################################################################

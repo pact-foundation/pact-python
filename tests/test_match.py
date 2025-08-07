@@ -153,7 +153,7 @@ def test_matchers() -> None:
     pact = Pact("consumer", "provider").with_specification("V4")
     (
         pact.upon_receiving("a request")
-        .given("a state", parameters={"providerStateArgument": "providerStateValue"})
+        .given("a state", {"providerStateArgument": "providerStateValue"})
         .with_request("GET", match.regex("/path/to/100", regex=r"/path/to/\d{1,4}"))
         .with_query_parameter(
             "asOf",
