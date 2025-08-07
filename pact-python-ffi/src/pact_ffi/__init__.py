@@ -5820,7 +5820,7 @@ def with_pact_metadata(
 def with_metadata(
     interaction: InteractionHandle,
     key: str,
-    value: str,
+    value: str | None,
     part: InteractionPart,
 ) -> None:
     r"""
@@ -5841,8 +5841,11 @@ def with_metadata(
     To include matching rules for the value, include the matching rule JSON
     format with the value as a single JSON document. I.e.
 
-    ```python with_metadata(
-        handle, "TagData", json.dumps({
+    ```python
+    with_metadata(
+        handle,
+        "TagData",
+        json.dumps({
             "value": {"ID": "sjhdjkshsdjh", "weight": 100.5},
             "pact:matcher:type": "type",
         }),
@@ -5881,7 +5884,7 @@ def with_metadata(
     success: bool = lib.pactffi_with_metadata(
         interaction._ref,
         key.encode("utf-8"),
-        value.encode("utf-8"),
+        value.encode("utf-8") if value is not None else ffi.NULL,
         part.value,
     )
     if not success:
