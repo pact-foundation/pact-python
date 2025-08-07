@@ -47,7 +47,7 @@ dependencies = ["cffi~=1.0"]
   devel = [
     "pact-python-ffi[devel-test]",
     "pact-python-ffi[devel-types]",
-    "ruff==0.12.7",
+    "ruff==0.12.8",
   ]
   devel-test = ["pytest-cov~=6.0", "pytest~=8.0"]
   devel-types = ["mypy==1.17.1", "typing-extensions~=4.0"]
