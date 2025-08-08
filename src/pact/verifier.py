@@ -166,7 +166,7 @@ class Verifier:
         self._name = name
         self._host = host or "localhost"
         self._handle = pact_ffi.verifier_new_for_application()
-
+        self._branch: str | None = None
         # In order to provide a fluent interface, we remember some options which
         # are set using the same FFI method. In particular, we remember
         # transport methods defined, and then before verification call the
@@ -197,6 +197,12 @@ class Verifier:
         Information-rish string representation of the Verifier.
         """
         return f"<Verifier: {self._name}, handle={self._handle}>"
+
+    def branch(self, branch: str | None) -> None:
+        """
+        Set branch string to be used with provider.
+        """
+        self._branch = branch
 
     def add_transport(
         self,
@@ -814,6 +820,7 @@ class Verifier:
             tags or [],
             branch,
         )
+        self.branch(branch)
         return self
 
     def filter_consumers(self, *filters: str) -> Self:
@@ -1298,6 +1305,7 @@ class BrokerSelectorBuilder:
         Set the provider branch.
         """
         self._provider_branch = branch
+        self._verifier.branch(branch)
         return self
 
     def consumer_versions(self, *versions: str) -> Self:
@@ -1331,7 +1339,7 @@ class BrokerSelectorBuilder:
                 self._include_pending,
                 self._include_wip_since,
                 self._provider_tags or [],
-                self._provider_branch,
+                self._provider_branch or self._verifier._branch,  # noqa: SLF001
                 self._consumer_versions or [],
                 self._consumer_tags or [],
             )
