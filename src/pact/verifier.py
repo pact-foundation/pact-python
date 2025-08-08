@@ -593,7 +593,7 @@ class Verifier:
             if body is not None:
                 msg = "The `body` parameter must be `None` when providing a function"
                 raise ValueError(msg)
-            return self._set_function_state_handler(handler, teardown=teardown)
+            return self._state_handler_function(handler, teardown=teardown)
 
         msg = "Invalid handler type"
         raise TypeError(msg)
@@ -683,7 +683,7 @@ class Verifier:
         logger.debug(
             "Setting dictionary state handler for verifier",
             extra={
-                "handler": handler,
+                "states": list(handler.keys()),
                 "teardown": teardown,
             },
         )
@@ -693,6 +693,15 @@ class Verifier:
             action: Literal["setup", "teardown"],
             parameters: dict[str, Any] | None,
         ) -> None:
+            logger.debug(
+                "Calling state handler function for state %r",
+                state,
+                extra={
+                    "action": action,
+                    "parameters": parameters,
+                },
+            )
+
             apply_args(
                 handler[state],
                 StateHandlerArgs(state=state, action=action, parameters=parameters),
@@ -708,7 +717,7 @@ class Verifier:
 
         return self
 
-    def _set_function_state_handler(
+    def _state_handler_function(
         self,
         handler: Callable[..., None],
         *,
