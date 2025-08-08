@@ -266,10 +266,15 @@ def apply_args(f: Callable[..., _T], args: Mapping[str, object]) -> _T:
             args.clear()
         else:
             logger.debug(
-                "Function %s does not accept any additional arguments. "
-                "remaining arguments: %s",
+                "Function %s was called with remaining arguments: %s. "
+                "This is not necessarily a bug; whether extra arguments are "
+                "acceptable depends on the function's signature and intended usage.",
                 f_name,
                 list(args.keys()),
+                extra={
+                    "function_name": f_name,
+                    "remaining_args": list(args.keys()),
+                },
             )
 
     return f()
