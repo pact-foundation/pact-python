@@ -730,7 +730,7 @@ def datetime(
             value=value,
             format=format,
         )
-    format = format or "%Y-%m-%dT%H:%M:%S.%f%z"
+    format = format or "%Y-%m-%dT%H:%M:%S%z"
     if isinstance(value, dt.datetime):
         value = value.strftime(format)
     format = strftime_to_simple_date_format(format)
