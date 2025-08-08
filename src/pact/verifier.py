@@ -198,12 +198,6 @@ class Verifier:
         """
         return f"<Verifier: {self._name}, handle={self._handle}>"
 
-    def branch(self, branch: str | None) -> None:
-        """
-        Set branch string to be used with provider.
-        """
-        self._branch = branch
-
     def add_transport(
         self,
         *,
@@ -812,7 +806,12 @@ class Verifier:
 
             branch:
                 Name of the branch used for verification.
+                If the branch is unspecified, the value will be populated from the
+                [`provider_branch`][...] argument from BrokerSelectorBuilder.
+                The branch will only be set if it has not been set before.
+
         """
+        branch = branch or self._branch
         pact_ffi.verifier_set_publish_options(
             self._handle,
             version,
@@ -820,7 +819,8 @@ class Verifier:
             tags or [],
             branch,
         )
-        self.branch(branch)
+        if not self._branch and branch:
+            self._branch = branch
         return self
 
     def filter_consumers(self, *filters: str) -> Self:
@@ -1303,9 +1303,14 @@ class BrokerSelectorBuilder:
     def provider_branch(self, branch: str) -> Self:
         """
         Set the provider branch.
+
+        if the provider branch is not set, then this field can also be set using
+        the Verifier's set_publish_options function. if the verifier's branch is
+        already set, then the branch argument will not be used to set Verifier's branch.
         """
         self._provider_branch = branch
-        self._verifier.branch(branch)
+        if not self._verifier._branch:  # type: ignore  # noqa: PGH003, SLF001
+            self._verifier._branch = branch  # type: ignore  # noqa: PGH003, SLF001
         return self
 
     def consumer_versions(self, *versions: str) -> Self:
