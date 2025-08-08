@@ -166,6 +166,7 @@ class Verifier:
         self._name = name
         self._host = host or "localhost"
         self._handle = pact_ffi.verifier_new_for_application()
+        self._branch: str | None = None
 
         # In order to provide a fluent interface, we remember some options which
         # are set using the same FFI method. In particular, we remember
@@ -864,13 +865,19 @@ class Verifier:
 
             branch:
                 Name of the branch used for verification.
+
+                The first time a branch is set here or through
+                [`provider_branch`][pact.verifier.BrokerSelectorBuilder.provider_branch],
+                the value will be saved and use as a default for both.
         """
+        if not self._branch and branch:
+            self._branch = branch
         pact_ffi.verifier_set_publish_options(
             self._handle,
             version,
             url,
             tags or [],
-            branch,
+            branch or self._branch,
         )
         return self
 
@@ -1375,8 +1382,14 @@ class BrokerSelectorBuilder:
     def provider_branch(self, branch: str) -> Self:
         """
         Set the provider branch.
+
+        The first time a branch is set here or through
+        [`set_publish_options`][pact.verifier.Verifier.set_publish_options], the
+        value will be saved and use as a default for both.
         """
         self._provider_branch = branch
+        if not self._verifier._branch:  # type: ignore  # noqa: PGH003, SLF001
+            self._verifier._branch = branch  # type: ignore  # noqa: PGH003, SLF001
         return self
 
     def consumer_versions(self, *versions: str) -> Self:
@@ -1410,7 +1423,7 @@ class BrokerSelectorBuilder:
                 self._include_pending,
                 self._include_wip_since,
                 self._provider_tags or [],
-                self._provider_branch,
+                self._provider_branch or self._verifier._branch,  # noqa: SLF001
                 self._consumer_versions or [],
                 self._consumer_tags or [],
             )
