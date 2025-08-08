@@ -175,7 +175,7 @@ def find_free_port() -> int:
         return s.getsockname()[1]
 
 
-def apply_args(f: Callable[..., _T], args: Mapping[str, object]) -> _T:
+def apply_args(f: Callable[..., _T], args: Mapping[str, object]) -> _T:  # noqa: C901
     """
     Apply arguments to a function.
 
@@ -272,4 +272,8 @@ def apply_args(f: Callable[..., _T], args: Mapping[str, object]) -> _T:
                 list(args.keys()),
             )
 
-    return f()
+    try:
+        return f()
+    except Exception:
+        logger.exception("Error occurred while calling function %s", f_name)
+        raise
