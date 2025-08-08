@@ -547,6 +547,11 @@ class Verifier:
         has additional arguments, these must either have default values, or be
         filled by using the [`partial`][functools.partial] function.
 
+        Pact also uses a special state denoted with the empty string `""`. This
+        is used as a generic test setup/teardown handler. This key is optional
+        in dictionaries, but other implementation should ensure they can handle
+        (or safely ignore) this state name.
+
         Args:
             handler:
                 The handler for the state changes. This can be one of the
@@ -665,6 +670,10 @@ class Verifier:
                 the parameters. If `teardown` is `False`, the functions must take
                 one argument: the parameters.
 
+                Note that the empty string `""` is used as a special key for a
+                generic test setup/teardown handler. If this key is absent,
+                these callbacks will be safely ignored.
+
             teardown:
                 Whether to teardown the provider state after an interaction is
                 validated.
@@ -693,6 +702,9 @@ class Verifier:
             action: Literal["setup", "teardown"],
             parameters: dict[str, Any] | None,
         ) -> None:
+            if state == "" and state not in handler:
+                return
+
             logger.debug(
                 "Calling state handler function for state %r",
                 state,
