@@ -166,7 +166,7 @@ class Verifier:
         self._name = name
         self._host = host or "localhost"
         self._handle = pact_ffi.verifier_new_for_application()
-
+        self._branch: str | None = None
         # In order to provide a fluent interface, we remember some options which
         # are set using the same FFI method. In particular, we remember
         # transport methods defined, and then before verification call the
@@ -864,7 +864,12 @@ class Verifier:
 
             branch:
                 Name of the branch used for verification.
+                If the branch is unspecified, the value will be populated from the
+                [`provider_branch`][...] argument from BrokerSelectorBuilder.
+                The branch will only be set if it has not been set before.
+
         """
+        branch = branch or self._branch
         pact_ffi.verifier_set_publish_options(
             self._handle,
             version,
@@ -872,6 +877,8 @@ class Verifier:
             tags or [],
             branch,
         )
+        if not self._branch and branch:
+            self._branch = branch
         return self
 
     def filter_consumers(self, *filters: str) -> Self:
@@ -1375,8 +1382,14 @@ class BrokerSelectorBuilder:
     def provider_branch(self, branch: str) -> Self:
         """
         Set the provider branch.
+
+        if the provider branch is not set, then this field can also be set using
+        the Verifier's set_publish_options function. if the verifier's branch is
+        already set, then the branch argument will not be used to set Verifier's branch.
         """
         self._provider_branch = branch
+        if not self._verifier._branch:  # type: ignore  # noqa: PGH003, SLF001
+            self._verifier._branch = branch  # type: ignore  # noqa: PGH003, SLF001
         return self
 
     def consumer_versions(self, *versions: str) -> Self:
@@ -1410,7 +1423,7 @@ class BrokerSelectorBuilder:
                 self._include_pending,
                 self._include_wip_since,
                 self._provider_tags or [],
-                self._provider_branch,
+                self._provider_branch or self._verifier._branch,  # noqa: SLF001
                 self._consumer_versions or [],
                 self._consumer_tags or [],
             )
