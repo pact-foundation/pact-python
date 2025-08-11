@@ -7,7 +7,7 @@ use of the protobuf plugin to test interactions involving Protocol Buffers
 (protobuf) message serialization.
 
 For detailed information about Protocol Buffers, the generated files, and the
-domain model used in this example, see the [`proto`][examples.v3.plugins.proto]
+domain model used in this example, see the [`proto`][examples.plugins.proto]
 module documentation.
 
 ## Pact and the Plugin Ecosystem
@@ -34,7 +34,7 @@ interactions involving protobuf messages sent over HTTP.  It is assumed that you
 have a basic understanding of Pact and Protocol Buffers.
 """
 
-from ..proto.person_pb2 import AddressBook, Person
+from examples.plugins.proto.person_pb2 import AddressBook, Person
 
 
 def address_book() -> AddressBook:

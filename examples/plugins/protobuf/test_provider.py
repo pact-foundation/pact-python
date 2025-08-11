@@ -30,10 +30,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from yarl import URL
 
+from examples.plugins.proto.person_pb2 import AddressBook
+from examples.plugins.protobuf import address_book
 from pact import Verifier
-
-from ..proto.person_pb2 import AddressBook
-from . import address_book
 
 if TYPE_CHECKING:
     from collections.abc import Generator
