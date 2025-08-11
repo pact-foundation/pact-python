@@ -9,12 +9,7 @@ requires-python = ">=3.9"
 version         = "1.0.0"
 
 [dependency-groups]
-test = [
-  "coverage[toml]~=7.0",
-  "pact-python",
-  "pytest-asyncio~=1.0",
-  "pytest~=8.0",
-]
+test = ["pact-python", "pytest-asyncio~=1.0", "pytest~=8.0"]
 
 [tool.uv.sources]
 pact-python = { path = "../../../" }
