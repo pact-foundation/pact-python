@@ -19,10 +19,9 @@ from typing import TYPE_CHECKING
 import pytest
 import requests
 
+from examples.plugins.proto.person_pb2 import Person
+from examples.plugins.protobuf import address_book
 from pact import Pact
-
-from ..proto.person_pb2 import Person
-from . import address_book
 
 if TYPE_CHECKING:
     from collections.abc import Generator
