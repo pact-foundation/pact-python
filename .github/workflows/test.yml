@@ -121,39 +121,27 @@ jobs:
       on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-
-    services:
-      broker:
-        image: pactfoundation/pact-broker:latest@sha256:05b05a192c771b33ba67ffdf2d6829bb32600145ca8f154165187d318c8ee70f
-        ports:
-          - 9292:9292
-        env:
-          # Basic auth credentials for the Broker
-          PACT_BROKER_ALLOW_PUBLIC_READ: 'true'
-          PACT_BROKER_BASIC_AUTH_USERNAME: pactbroker
-          PACT_BROKER_BASIC_AUTH_PASSWORD: pactbroker
-          # Database
-          PACT_BROKER_DATABASE_URL: sqlite:////tmp/pact_broker.sqlite
 
     strategy:
       fail-fast: false
       matrix:
         os:
+          - macos-latest
           - ubuntu-latest
+          - windows-latest
         python-version:
           - '3.9'
           - '3.10'
           - '3.11'
           - '3.12'
           - '3.13'
-        experimental:
-          - false
+        # Python 3.9 aren't supported on macos-latest (ARM)
+        exclude:
+          - os: macos-latest
+            python-version: '3.9'
         include:
-            # Run tests against the next Python version, but no need for the full list of OSes.
-          - os: ubuntu-latest
-            python-version: '3.14'
-            experimental: true
+          - os: macos-13
+            python-version: '3.9'
 
     steps:
       - name: Checkout code
@@ -169,26 +157,17 @@ jobs:
       - name: Install Python
         run: uv python install ${{ matrix.python-version }}
 
-      - name: Install Hatch
-        run: uv tool install hatch
-
-      - name: Ensure broker is live
+      - name: Run examples
+        shell: bash
         run: |
-          i=0
-          until curl -sSf http://localhost:9292/diagnostic/status/heartbeat; do
-            i=$((i+1))
-            if [ $i -gt 120 ]; then
-              echo "Broker failed to start"
-              exit 1
-            fi
-            sleep 1
-          done
+          set -o errexit
+          set -o pipefail
 
-      - name: Run tests
-        run: hatch run example:example --broker-url=http://pactbroker:pactbroker@localhost:9292 --container
-
-      - name: Examples (v2)
-        run: hatch run v2-example:example --broker-url=http://pactbroker:pactbroker@localhost:9292
+          find examples -name pyproject.toml -print0 |
+            while IFS= read -r -d $'\0' file; do
+              cd "$(dirname "$file")"
+              uv run --python ${{ matrix.python-version }} --group test pytest
+            done
 
       - name: Upload coverage
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
