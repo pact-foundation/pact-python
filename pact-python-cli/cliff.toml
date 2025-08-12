@@ -70,7 +70,7 @@ postprocessors = []
 output = "CHANGELOG.md"
 
 [git]
-tag_pattern = "pact-python-cli/.*"
+tag_pattern = "^pact-python-cli/.*$"
 # parse the commits based on https://www.conventionalcommits.org
 conventional_commits = true
 # filter out the commits that are not conventional

@@ -67,6 +67,7 @@ postprocessors = []
 output = "CHANGELOG.md"
 
 [git]
+tag_pattern = "^(v.*|pact-python/.*)$"
 # parse the commits based on https://www.conventionalcommits.org
 conventional_commits = true
 # filter out the commits that are not conventional
@@ -103,6 +104,8 @@ filter_commits = false
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
+# Ignore any changes from the CLI and FFI sub-projects
+exclude_paths = ["pact-python-cli/", "pact-python-ffi/"]
 
 [remote.github]
 owner = "pact-foundation"
