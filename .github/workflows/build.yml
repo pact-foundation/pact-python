@@ -86,8 +86,7 @@ jobs:
     name: Publish wheels and sdist
 
     if: >-
-      github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags/pact-python/')
+      github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/pact-python/')
     runs-on: ubuntu-latest
     environment:
       name: pypi

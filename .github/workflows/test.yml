@@ -48,8 +48,8 @@ jobs:
 
   test:
     name: >-
-      Test Python ${{ matrix.python-version }}
-      on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+      Test Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os,
+      'windows-') && 'Windows' || 'Linux' }}
 
     runs-on: ${{ matrix.os }}
 
@@ -117,8 +117,8 @@ jobs:
 
   example:
     name: >-
-      Test Python Example ${{ matrix.python-version }}
-      on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+      Test Python Example ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS'
+      || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
 
     runs-on: ${{ matrix.os }}
 
