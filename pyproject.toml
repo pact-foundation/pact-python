@@ -381,9 +381,3 @@ exclude = """(?x)^(
 
   [tool.typos.default]
   extend-ignore-re = ['(?Rm)^.*(#|//|<!--)\s*spellchecker:\s*ignore']
-
-################################################################################
-## Deptry
-################################################################################
-[tool.deptry]
-known_first_party = ["pact", "pact_cli", "pact_ffi"]
