@@ -41,16 +41,10 @@ dependencies = ["cffi~=1.0"]
   "Homepage"      = "https://pact.io"
   "Repository"    = "https://github.com/pact-foundation/pact-python"
 
-  [project.optional-dependencies]
-  # Linting and formatting tools use a more narrow specification to ensure
-  # developper consistency. All other dependencies are as above.
-  devel = [
-    "pact-python-ffi[devel-test]",
-    "pact-python-ffi[devel-types]",
-    "ruff==0.12.8",
-  ]
-  devel-test = ["pytest-cov~=6.0", "pytest~=8.0"]
-  devel-types = ["mypy==1.17.1", "typing-extensions~=4.0"]
+[dependency-groups]
+dev   = ["ruff==0.12.8", { include-group = "test" }, { include-group = "types" }]
+test  = ["pytest-cov~=6.0", "pytest~=8.0"]
+types = ["mypy==1.17.1", "typing-extensions~=4.0"]
 
 ################################################################################
 ## Build System
@@ -98,9 +92,9 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
     # Install dev dependencies in the default environment to simplify the developer
     # workflow.
     [tool.hatch.envs.default]
-    extra-dependencies = ["hatch-vcs", "hatchling", "packaging", "cffi"]
-    features           = ["devel"]
-    installer          = "uv"
+    extra-dependencies   = ["hatch-vcs", "hatchling", "packaging", "cffi"]
+    installer            = "uv"
+    pre-install-commands = ["uv pip install --group dev -e ."]
 
     # Update paths to ensure the shared library can be found
     # TODO: See if this can be overridden on a per-platform basis
@@ -120,8 +114,8 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
     # Test environment for running unit tests. This automatically tests against all
     # supported Python versions.
     [tool.hatch.envs.test]
-    features  = ["devel-test"]
-    installer = "uv"
+    installer            = "uv"
+    pre-install-commands = ["uv pip install --group test -e ."]
 
     # Update paths to ensure the shared library can be found
     # TODO: See if this can be overridden on a per-platform basis

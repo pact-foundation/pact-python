@@ -48,16 +48,12 @@ requires-python = ">=3.9"
   pact-stub-service      = "pact_cli:_exec"
   pactflow               = "pact_cli:_exec"
 
-  [project.optional-dependencies]
-  # Linting and formatting tools use a more narrow specification to ensure
-  # developper consistency. All other dependencies are as above.
-  devel = [
-    "pact-python-cli[devel-test]",
-    "pact-python-cli[devel-types]",
-    "ruff==0.12.8",
-  ]
-  devel-test = ["pytest-cov~=6.0", "pytest~=8.0"]
-  devel-types = ["mypy==1.17.1"]
+[dependency-groups]
+# Linting and formatting tools use a more narrow specification to ensure
+# developper consistency. All other dependencies are as above.
+dev   = ["ruff==0.12.8", { include-group = "test" }, { include-group = "types" }]
+test  = ["pytest-cov~=6.0", "pytest~=8.0"]
+types = ["mypy==1.17.1"]
 
 ################################################################################
 ## Build System
@@ -111,8 +107,8 @@ requires      = ["hatch-vcs", "hatchling", "packaging"]
       "requests",
       "setuptools ; python_version >= '3.12'",
     ]
-    features = ["devel"]
     installer = "uv"
+    pre-install-commands = ["uv pip install --group dev -e ."]
 
       [tool.hatch.envs.default.scripts]
       all             = ["format", "lint", "test", "typecheck"]
@@ -126,8 +122,8 @@ requires      = ["hatch-vcs", "hatchling", "packaging"]
     # Test environment for running unit tests. This automatically tests against all
     # supported Python versions.
     [tool.hatch.envs.test]
-    features  = ["devel-test"]
-    installer = "uv"
+    installer            = "uv"
+    pre-install-commands = ["uv pip install --group test -e ."]
 
       [[tool.hatch.envs.test.matrix]]
       python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
