@@ -159,7 +159,7 @@ requires      = ["hatch-vcs", "hatchling"]
       "git",
       "describe",
       "--tags",
-      " --dirty",
+      "--dirty",
       "--always",
       "--long",
       "--match",
