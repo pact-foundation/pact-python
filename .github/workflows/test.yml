@@ -288,7 +288,7 @@ jobs:
           fetch-depth: 0
 
       - name: Spell Check Repo   https://github.com/crate-ci/typos/commit/
-        uses: crate-ci/typos@52bd719c2c91f9d676e2aa359fc8e0db8925e6d8  # v1.35.3
+        uses: crate-ci/typos@a67079b4ae32e18c3f53d75368c52ce53b5fb56b  # v1.35.4
 
   pre-commit:
     name: Pre-commit
