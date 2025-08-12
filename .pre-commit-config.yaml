@@ -22,10 +22,10 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
 
-  - repo: https://github.com/lyz-code/yamlfix/
-    rev: 1.17.0
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.17.2
     hooks:
-      - id: yamlfix
+      - id: yamlfmt
 
   - repo: https://gitlab.com/bmares/check-json5
     rev: v1.0.0

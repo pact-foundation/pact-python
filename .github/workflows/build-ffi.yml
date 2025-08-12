@@ -117,8 +117,7 @@ jobs:
     name: Publish FFI wheels and sdist
 
     if: >-
-      github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags/pact-python-ffi/')
+      github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/pact-python-ffi/')
     runs-on: ubuntu-latest
     environment:
       name: pypi

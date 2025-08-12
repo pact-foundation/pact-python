@@ -116,8 +116,7 @@ jobs:
     name: Publish CLI wheels and sdist
 
     if: >-
-      github.event_name == 'push' &&
-      startsWith(github.event.ref, 'refs/tags/pact-python-cli/')
+      github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/pact-python-cli/')
     runs-on: ubuntu-latest
     environment:
       name: pypi
