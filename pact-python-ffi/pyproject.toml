@@ -57,7 +57,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
 
   [tool.hatch.version]
   source      = "vcs"
-  tag-pattern = "^pact-python-ffi/(?P<version>[vV]?\\d+(?:\\.\\d+)*)$"
+  tag-pattern = '^pact-python-ffi/(?P<version>\d+(?:\.\d+)*(?:(?:a|b|rc|\.post)\d+)?)$'
 
     [tool.hatch.version.raw-options]
     git_describe_command = [
