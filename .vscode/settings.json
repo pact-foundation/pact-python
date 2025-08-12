@@ -1,0 +1,13 @@
+{
+  "python.testing.pytestArgs": [
+    "--no-cov",
+    "--ignore=examples/v2",
+    "--ignore=tests/v2",
+    "examples/",
+    "pact-python-cli/tests/",
+    "pact-python-ffi/tests/",
+    "tests/"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}
