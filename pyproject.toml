@@ -152,7 +152,7 @@ requires      = ["hatch-vcs", "hatchling"]
 
   [tool.hatch.version]
   source      = "vcs"
-  tag-pattern = "^pact-python/(?P<version>[vV]?\\d+(?:\\.\\d+)*)$"
+  tag-pattern = '^pact-python/(?P<version>\d+(?:\.\d+)*(?:(?:a|b|rc|\.post)\d+)?)$'
 
     [tool.hatch.version.raw-options]
     git_describe_command = [
