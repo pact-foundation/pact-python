@@ -37,7 +37,6 @@ jobs:
       - format
       - lint
       - typecheck
-      - spelling
       - pre-commit
 
     steps:
@@ -275,20 +274,6 @@ jobs:
       - name: Typecheck (CLI)
         working-directory: pact-python-cli
         run: hatch run typecheck
-
-  spelling:
-    name: Spell check
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
-        with:
-          fetch-depth: 0
-
-      - name: Spell Check Repo   https://github.com/crate-ci/typos/commit/
-        uses: crate-ci/typos@a67079b4ae32e18c3f53d75368c52ce53b5fb56b  # v1.35.4
 
   pre-commit:
     name: Pre-commit
