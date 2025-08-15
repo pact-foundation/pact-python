@@ -35,7 +35,7 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: v2.1.4
+    rev: v2.2.0
     hooks:
       - id: biome-check
 
