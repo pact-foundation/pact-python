@@ -129,7 +129,7 @@ async def test_create_user(pact: Pact) -> None:
         pact.upon_receiving("A request to create a new user")
         .with_request("POST", "/users")
         .with_body(payload, content_type="application/json")
-        .will_respond_with(200)
+        .will_respond_with(201)
         .with_body(response, content_type="application/json")
     )
 
