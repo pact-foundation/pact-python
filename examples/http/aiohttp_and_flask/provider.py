@@ -3,8 +3,8 @@ Flask provider example.
 
 This modules defines a simple
 [provider](https://docs.pact.io/getting_started/terminology#service-provider)
-which will be tested with Pact in the [provider
-test][examples.http.aiohttp_and_flask.test_provider]. As Pact is a
+implemented with [`flask`][flask] which will be tested with Pact in the
+[provider test][examples.http.aiohttp_and_flask.test_provider]. As Pact is a
 consumer-driven framework, the consumer defines the contract which the provider
 must then satisfy.
 
@@ -231,9 +231,6 @@ def get_user_by_id(uid: int) -> Response:
     """
     Retrieve a user by their ID.
 
-    This endpoint demonstrates how a provider might expose user data to a
-    consumer. If the user is not found, a 404 error is returned.
-
     Args:
         uid:
             The ID of the user to fetch.
@@ -253,14 +250,11 @@ def get_user_by_id(uid: int) -> Response:
 
 
 @app.route("/users/", methods=["POST"])
-def create_user() -> Response:
+def create_user() -> tuple[Response, int]:
     """
     Create a new user in the system.
 
-    This endpoint accepts user data as JSON in the request body and adds a new
-    user to the fake database. The user ID is automatically assigned. This
-    example illustrates how a provider might handle resource creation and
-    validation.
+    The user ID is automatically assigned.
 
     Returns:
         A JSON response containing the created user data with HTTP 201 status
@@ -286,7 +280,7 @@ def create_user() -> Response:
         admin=user.get("admin", False),
     )
     UserDb.create(new_user)
-    return jsonify(new_user.to_dict())
+    return jsonify(new_user.to_dict()), 201
 
 
 @app.route("/users/<int:uid>", methods=["DELETE"])
@@ -294,9 +288,7 @@ def delete_user(uid: int) -> tuple[str | Response, int]:
     """
     Delete a user by their ID.
 
-    This endpoint removes a user from the fake database. If the user does not
-    exist, a 404 error is returned. This demonstrates how a provider might
-    implement resource deletion and error handling.
+    If the user does not exist, a 404 error is returned.
 
     Args:
         uid:

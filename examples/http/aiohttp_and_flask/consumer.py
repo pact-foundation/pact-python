@@ -1,12 +1,12 @@
 """
-Simple Consumer Implementation.
+Aiohttp consumer example.
 
 This modules defines a simple
 [consumer](https://docs.pact.io/getting_started/terminology#service-consumer)
-which will be tested with Pact in the [consumer
-test][examples.http.aiohttp_and_flask.test_consumer]. As Pact is a
-consumer-driven framework, the consumer defines the interactions which the
-provider must then satisfy.
+using the asynchronous [`aiohttp`][aiohttp] library which will be tested with
+Pact in the [consumer test][examples.http.aiohttp_and_flask.test_consumer]. As
+Pact is a consumer-driven framework, the consumer defines the interactions which
+the provider must then satisfy.
 
 The consumer is the application which makes requests to another service (the
 provider) and receives a response to process. In this example, we have a simple
@@ -72,16 +72,13 @@ class User:
             msg = "User must have a name"
             raise ValueError(msg)
 
-        if self.id < 0:
+        if self.id <= 0:
             msg = "User ID must be a positive integer"
             raise ValueError(msg)
 
     def __repr__(self) -> str:
         """
         Return a string representation of the user.
-
-        Returns:
-            The user's ID and name as a string.
         """
         return f"User(id={self.id!r}, name={self.name!r})"
 
@@ -101,14 +98,15 @@ class UserClient:
 
         Args:
             hostname:
-                The base URL of the provider (must include scheme, e.g., 'http://').
+                The base URL of the provider (must include scheme, e.g.,
+                `http://`).
 
             base_path:
-                The base path for the provider's API endpoints. Defaults to '/'.
+                The base path for the provider's API endpoints. Defaults to `/`.
 
         Raises:
             ValueError:
-                If the hostname does not start with 'http://' or 'https://'.
+                If the hostname does not start with `http://` or 'https://'.
         """
         if not hostname.startswith(("http://", "https://")):
             msg = "Invalid base URI"
@@ -118,7 +116,7 @@ class UserClient:
         if not self._base_path.endswith("/"):
             self._base_path += "/"
 
-        self._client = aiohttp.ClientSession(
+        self._session = aiohttp.ClientSession(
             base_url=self._hostname,
             timeout=aiohttp.ClientTimeout(total=5),
         )
@@ -153,9 +151,9 @@ class UserClient:
 
     async def __aenter__(self) -> Self:
         """
-        The client instance itself.
+        Begin an asynchronous context for the client.
         """
-        await self._client.__aenter__()
+        await self._session.__aenter__()
         return self
 
     async def __aexit__(
@@ -177,14 +175,14 @@ class UserClient:
             exc_tb:
                 The traceback, if any.
         """
-        await self._client.__aexit__(exc_type, exc_val, exc_tb)
+        await self._session.__aexit__(exc_type, exc_val, exc_tb)
 
     async def get_user(self, user_id: int) -> User:
         """
         Fetch a user by ID from the provider.
 
-        This method demonstrates how a consumer fetches only the data it needs from
-        a provider, regardless of what else the provider may return.
+        This method demonstrates how a consumer fetches only the data it needs
+        from a provider, regardless of what else the provider may return.
 
         Args:
             user_id:
@@ -198,7 +196,7 @@ class UserClient:
                 If the server returns a non-2xx response or the request fails.
         """
         logger.debug("Fetching user %s", user_id)
-        async with self._client.get(f"{self.base_path}users/{user_id}") as response:
+        async with self._session.get(f"{self.base_path}users/{user_id}") as response:
             response.raise_for_status()
             data: dict[str, Any] = await response.json()
 
@@ -234,7 +232,7 @@ class UserClient:
         """
         logger.debug("Creating user %s", name)
         async with (
-            self._client.post(
+            self._session.post(
                 f"{self.base_path}users", json={"name": name}
             ) as response,
         ):
@@ -268,5 +266,5 @@ class UserClient:
             uid = uid.id
         logger.debug("Deleting user %s", uid)
 
-        async with self._client.delete(f"{self.base_path}users/{uid}") as response:
+        async with self._session.delete(f"{self.base_path}users/{uid}") as response:
             response.raise_for_status()

@@ -37,10 +37,9 @@ if TYPE_CHECKING:
     ACTION_TYPE: TypeAlias = Literal["setup", "teardown"]
 
 logger = logging.getLogger(__name__)
-_mock_user_db = None
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def app_server() -> str:
     """
     Run the Flask server for provider verification.
