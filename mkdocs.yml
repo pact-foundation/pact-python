@@ -27,12 +27,14 @@ plugins:
       enable_inventory: true
       handlers:
         python:
-          import:
+          inventories:
             - https://docs.aiohttp.org/en/stable/objects.inv
             - https://docs.python.org/3/objects.inv
+            - https://fastapi.tiangolo.com/objects.inv
             - https://flask.palletsprojects.com/en/stable/objects.inv
             - https://googleapis.dev/python/protobuf/latest/objects.inv
             - https://grpc.github.io/grpc/python/objects.inv
+            - https://requests.readthedocs.io/en/latest/objects.inv
           options:
             # General
             allow_inspection: true

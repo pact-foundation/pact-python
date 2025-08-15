@@ -1,0 +1,28 @@
+#:schema https://json.schemastore.org/pyproject.json
+[project]
+name = "example-requests-and-fastapi"
+
+description = "Example of using a requests client and FastAPI server with Pact Python"
+
+dependencies    = ["requests~=2.0", "fastapi~=0.0", "typing-extensions~=4.0"]
+requires-python = ">=3.9"
+version         = "1.0.0"
+
+[dependency-groups]
+
+test = ["pact-python", "pytest~=8.0", "uvicorn~=0.29"]
+[tool.uv.sources]
+pact-python = { path = "../../../" }
+
+[tool.ruff]
+extend = "../../.ruff.toml"
+
+[tool.pytest]
+
+  [tool.pytest.ini_options]
+  addopts                            = ["--import-mode=importlib"]
+  asyncio_default_fixture_loop_scope = "session"
+
+  log_date_format = "%H:%M:%S"
+  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level       = "NOTSET"

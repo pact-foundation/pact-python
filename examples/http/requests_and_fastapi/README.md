@@ -1,13 +1,13 @@
-# aiohttp and Flask Example
+# Example: requests Client and FastAPI Provider with Pact Contract Testing
 
-This example demonstrates contract testing between an asynchronous [`aiohttp`](https://docs.aiohttp.org/en/stable/)-based client (consumer) and a [Flask](https://flask.palletsprojects.com/en/stable/) web server (provider). It showcases modern Python patterns including async/await, type hints, and standalone dependency management.
+This example demonstrates contract testing between a synchronous [`requests`](https://docs.python-requests.org/en/latest/)-based client (consumer) and a [FastAPI](https://fastapi.tiangolo.com/) web server (provider). It is designed to be pedagogical, showing modern Python patterns, type hints, and best practices for contract-driven development.
 
 ## Overview
 
--   [**Consumer**][examples.http.aiohttp_and_flask.consumer]: An async HTTP client using aiohttp
--   [**Provider**][examples.http.aiohttp_and_flask.provider]: A Flask web server
--   [**Consumer Tests**][examples.http.aiohttp_and_flask.test_consumer]: Contract definition and consumer testing
--   [**Provider Tests**][examples.http.aiohttp_and_flask.test_provider]: Provider verification against contracts
+-   [**Consumer**][examples.http.requests_and_fastapi.consumer]: Synchronous HTTP client using requests
+-   [**Provider**][examples.http.requests_and_fastapi.provider]: FastAPI web server
+-   [**Consumer Tests**][examples.http.requests_and_fastapi.test_consumer]: Contract definition and consumer testing with Pact
+-   [**Provider Tests**][examples.http.requests_and_fastapi.test_provider]: Provider verification against contracts
 
 Use the above links to view additional documentation within.
 
@@ -15,14 +15,14 @@ Use the above links to view additional documentation within.
 
 ### Consumer Side
 
--   Async HTTP client implementation with aiohttp
+-   Synchronous HTTP client implementation with requests
 -   Consumer contract testing with Pact mock servers
 -   Handling different HTTP response scenarios (success, not found, etc.)
--   Modern Python async patterns
+-   Modern Python patterns and type hints
 
 ### Provider Side
 
--   Flask web server with RESTful endpoints
+-   FastAPI web server with RESTful endpoints
 -   Provider verification against consumer contracts
 -   Provider state setup for different test scenarios
 -   Mock data management for testing
@@ -33,6 +33,15 @@ Use the above links to view additional documentation within.
 -   Contract-driven development workflow
 -   Error handling and edge case testing
 -   Type safety with Python type hints
+
+## Pedagogical Context
+
+This example is intended for software engineers and engineering managers who want to understand:
+
+-   How contract testing works in practice
+-   Why consumer-driven contracts are valuable
+-   How to structure Python code for clarity and testability
+-   The benefits of using requests and FastAPI for simple, modern HTTP services
 
 ## Prerequisites
 
@@ -53,7 +62,7 @@ uv run --group test pytest
 
 If using the [`venv`][venv] module, the steps require are:
 
-1.  Create the virtual environment and then activate it:
+1.  Create and activate a virtual environment:
 
     ```console
     python -m venv .venv
@@ -61,14 +70,14 @@ If using the [`venv`][venv] module, the steps require are:
     .venv\Scripts\activate     # On Windows
     ```
 
-2.  Install the required dependencies in the virtual environment:
+2.  Install dependencies:
 
     ```console
     pip install -U pip  # Pip 25.1 is required
     pip install --group test -e .
     ```
 
-3.  Run pytest:
+3.  Run tests:
 
     ```console
     pytest
@@ -77,6 +86,6 @@ If using the [`venv`][venv] module, the steps require are:
 ## Related Documentation
 
 -   [Pact Documentation](https://docs.pact.io/)
--   [aiohttp Documentation](https://docs.aiohttp.org/)
--   [Flask Documentation](https://flask.palletsprojects.com/)
+-   [requests Documentation](https://docs.python-requests.org/)
+-   [FastAPI Documentation](https://fastapi.tiangolo.com/)
 -   [pytest Documentation](https://docs.pytest.org/)

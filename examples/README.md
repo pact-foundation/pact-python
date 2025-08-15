@@ -10,13 +10,13 @@ The code within the examples is intended to be well-documented and you are encou
 
 ### HTTP Examples
 
-#### aiohttp and Flask
+#### [aiohttp and Flask](./http/aiohttp_and_flask/README.md)
 
 -   **Location**: `examples/http/aiohttp_and_flask/`
 -   **Consumer**: aiohttp-based HTTP client
 -   **Provider**: Flask-based HTTP server
 
-#### requests and FastAPI
+#### [requests and FastAPI](./http/requests_and_fastapi/README.md)
 
 -   **Location**: `examples/http/requests_and_fastapi/`
 -   **Consumer**: requests-based HTTP client
