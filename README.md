@@ -2,7 +2,10 @@
 
 <!-- markdownlint-disable no-inline-html -->
 <div align="center">
-    <img src="https://raw.githubusercontent.com/pact-foundation/pact-python/main/mascot.svg" alt="Pact Python Mascot" height="250" align="left" hspace="20">
+    <img src="https://raw.githubusercontent.com/pact-foundation/pact-python/main/mascot.svg"
+        alt="Pact Python Mascot"
+        height="250" width="225"
+        align="left" hspace="20">
     <span>
         <b>Fast, easy and reliable testing for your APIs and microservices.</b>
     </span>
