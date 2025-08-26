@@ -191,7 +191,9 @@ class GenericMismatch(Mismatch):
         """
         Information-rich string representation of the GenericMismatch.
         """
-        return f"<GenericMismatch: {self.type!r}>"
+        return "GenericMismatch({})".format(
+            ", ".join(f"{key}={value!r}" for key, value in self._data.items())
+        )
 
     def __str__(self) -> str:
         """
@@ -255,7 +257,7 @@ class MissingRequest(Mismatch):
         """
         Information-rich string representation of the MissingRequest.
         """
-        return "<MissingRequest: {}>".format(
+        return "MissingRequest({})".format(
             ", ".join([
                 f"method={self.method!r}",
                 f"path={self.path!r}",
@@ -328,7 +330,7 @@ class RequestNotFound(Mismatch):
         """
         Information-rich string representation of the RequestNotFound.
         """
-        return "<RequestNotFound: {}>".format(
+        return "RequestNotFound({})".format(
             ", ".join([
                 f"method={self.method!r}",
                 f"path={self.path!r}",
@@ -403,7 +405,7 @@ class RequestMismatch(Mismatch):
         """
         Information-rich string representation of the RequestMismatch.
         """
-        return "<RequestMismatch: {}>".format(
+        return "RequestMismatch({})".format(
             ", ".join([
                 f"method={self.method!r}",
                 f"path={self.path!r}",
@@ -465,7 +467,12 @@ class MethodMismatch(Mismatch):
         """
         Information-rich string representation of the MethodMismatch.
         """
-        return f"<MethodMismatch: expected={self.expected!r}, actual={self.actual!r}>"
+        return "MethodMismatch({})".format(
+            ", ".join([
+                f"expected={self.expected!r}",
+                f"actual={self.actual!r}",
+            ])
+        )
 
     def __str__(self) -> str:
         """
@@ -529,7 +536,7 @@ class PathMismatch(Mismatch):
         """
         Information-rich string representation of the PathMismatch.
         """
-        return "<PathMismatch: {}>".format(
+        return "PathMismatch({})".format(
             ", ".join([
                 f"expected={self.expected!r}",
                 f"actual={self.actual!r}",
@@ -603,7 +610,7 @@ class StatusMismatch(Mismatch):
         """
         Information-rich string representation of the StatusMismatch.
         """
-        return "<StatusMismatch: {}>".format(
+        return "StatusMismatch({})".format(
             ", ".join([
                 f"expected={self.expected!r}",
                 f"actual={self.actual!r}",
@@ -694,7 +701,7 @@ class QueryMismatch(Mismatch):
         """
         Information-rich string representation of the QueryMismatch.
         """
-        return "<QueryMismatch: {}>".format(
+        return "QueryMismatch({})".format(
             ", ".join([
                 f"parameter={self.parameter!r}",
                 f"expected={self.expected!r}",
@@ -776,7 +783,7 @@ class HeaderMismatch(Mismatch):
         """
         Information-rich string representation of the HeaderMismatch.
         """
-        return "<HeaderMismatch: {}>".format(
+        return "HeaderMismatch({})".format(
             ", ".join([
                 f"key={self.key!r}",
                 f"expected={self.expected!r}",
@@ -884,7 +891,7 @@ class BodyTypeMismatch(Mismatch):
         """
         Information-rich string representation of the BodyTypeMismatch.
         """
-        return "<BodyTypeMismatch: {}>".format(
+        return "BodyTypeMismatch({})".format(
             ", ".join([
                 f"expected={self.expected!r}",
                 f"actual={self.actual!r}",
@@ -973,7 +980,7 @@ class BodyMismatch(Mismatch):
         """
         Information-rich string representation of the BodyMismatch.
         """
-        return "<BodyMismatch: {}>".format(
+        return "BodyMismatch({})".format(
             ", ".join([
                 f"path={self.path!r}",
                 f"expected={self.expected!r}",
@@ -1055,7 +1062,7 @@ class MetadataMismatch(Mismatch):
         """
         Information-rich string representation of the MetadataMismatch.
         """
-        return "<MetadataMismatch: {}>".format(
+        return "MetadataMismatch({})".format(
             ", ".join([
                 f"key={self.key!r}",
                 f"expected={self.expected!r}",
@@ -1104,8 +1111,8 @@ class MismatchesError(PactError):
         """
         Information-rich string representation of the MismatchesError.
         """
-        return "<MismatchesError: {}>".format(
-            [f"{m!r}" for m in self._mismatches],
+        return "MismatchesError({})".format(
+            ", ".join(f"{m!r}" for m in self._mismatches)
         )
 
     def __str__(self) -> str:
