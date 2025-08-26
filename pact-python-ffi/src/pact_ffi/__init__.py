@@ -86,7 +86,6 @@ docstring.
 
 from __future__ import annotations
 
-import gc
 import inspect
 import json
 import logging
@@ -6199,13 +6198,6 @@ def with_binary_body(
         RuntimeError:
             If the body could not be modified.
     """
-    if len(gc.get_referrers(body)) == 0:
-        warnings.warn(
-            "Make sure to assign the body to a variable to avoid having the byte array"
-            " modified.",
-            UserWarning,
-            stacklevel=3,
-        )
     success: bool = lib.pactffi_with_binary_body(
         interaction._ref,
         part.value,
@@ -6266,13 +6258,6 @@ def with_binary_file(
         RuntimeError:
             If the body could not be set.
     """
-    if len(gc.get_referrers(body)) == 0:
-        warnings.warn(
-            "Make sure to assign the body to a variable to avoid having the byte array"
-            " modified.",
-            UserWarning,
-            stacklevel=3,
-        )
     success: bool = lib.pactffi_with_binary_file(
         interaction._ref,
         part.value,
