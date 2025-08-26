@@ -108,6 +108,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging"]
       "setuptools ; python_version >= '3.12'",
     ]
     installer = "uv"
+    path = ".venv"
     pre-install-commands = ["uv pip install --group dev -e ."]
 
       [tool.hatch.envs.default.scripts]
@@ -123,6 +124,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging"]
     # supported Python versions.
     [tool.hatch.envs.test]
     installer            = "uv"
+    path                 = ".venv/test"
     pre-install-commands = ["uv pip install --group test -e ."]
 
       [[tool.hatch.envs.test.matrix]]

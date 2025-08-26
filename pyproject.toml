@@ -186,6 +186,7 @@ requires      = ["hatch-vcs", "hatchling"]
     [tool.hatch.envs.default]
     extra-dependencies = ["hatchling", "hatch-vcs"]
     installer          = "uv"
+    path               = ".venv"
     # This is require to get around an incompatibility between hatch and uv
     # See: https://github.com/pypa/hatch/issues/1639
     # See: https://github.com/pypa/hatch/issues/1852
@@ -217,6 +218,7 @@ requires      = ["hatch-vcs", "hatchling"]
     # Test environment for running unit tests.
     [tool.hatch.envs.test]
     installer            = "uv"
+    path                 = ".venv/test"
     pre-install-commands = ["uv pip install --group test -e ."]
 
       [[tool.hatch.envs.test.matrix]]
@@ -226,6 +228,7 @@ requires      = ["hatch-vcs", "hatchling"]
     # supported Python versions.
     [tool.hatch.envs.example]
     installer            = "uv"
+    path                 = ".venv/example"
     pre-install-commands = ["uv pip install --group example -e ."]
 
       [tool.hatch.envs.example.scripts]
@@ -237,6 +240,7 @@ requires      = ["hatch-vcs", "hatchling"]
     [tool.hatch.envs.v2-test]
     features             = ["v2"]
     installer            = "uv"
+    path                 = ".venv/v2-test"
     pre-install-commands = ["uv pip install --group test-v2 -e ."]
 
       [tool.hatch.envs.v2-test.scripts]
@@ -249,6 +253,7 @@ requires      = ["hatch-vcs", "hatchling"]
     [tool.hatch.envs.v2-example]
     features             = ["v2"]
     installer            = "uv"
+    path                 = ".venv/v2-example"
     pre-install-commands = ["uv pip install --group example-v2 -e ."]
 
       [tool.hatch.envs.v2-example.scripts]

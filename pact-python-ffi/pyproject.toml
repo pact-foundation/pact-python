@@ -94,6 +94,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
     [tool.hatch.envs.default]
     extra-dependencies   = ["hatch-vcs", "hatchling", "packaging", "cffi"]
     installer            = "uv"
+    path                 = ".venv"
     pre-install-commands = ["uv pip install --group dev -e ."]
 
     # Update paths to ensure the shared library can be found
@@ -115,6 +116,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
     # supported Python versions.
     [tool.hatch.envs.test]
     installer            = "uv"
+    path                 = ".venv/test"
     pre-install-commands = ["uv pip install --group test -e ."]
 
     # Update paths to ensure the shared library can be found
