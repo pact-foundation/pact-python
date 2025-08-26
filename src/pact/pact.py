@@ -640,6 +640,7 @@ class PactServer:
         self._handle: None | pact_ffi.PactServerHandle = None
         self._raises = raises
         self._verbose = verbose
+        self._mismatches: list[Mismatch] | None = None
 
     @property
     def port(self) -> int | None:
@@ -702,6 +703,9 @@ class PactServer:
             RuntimeError:
                 If the server is not running.
         """
+        if self._mismatches is not None:
+            return self._mismatches
+
         if not self._handle:
             msg = "The server is not running."
             raise RuntimeError(msg)
@@ -796,6 +800,7 @@ class PactServer:
                 logger.error(msg)
             if self._raises:
                 raise MismatchesError(*self.mismatches)
+            self._mismatches = self.mismatches
             self._handle = None
 
     def __truediv__(self, other: str | object) -> URL:
