@@ -418,7 +418,7 @@ class InteractionHandle:
     Handle to a HTTP Interaction.
 
     [Rust
-    `InteractionHandle`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/mock_server/handles/struct.InteractionHandle.html)
+    `InteractionHandle`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/mock_server/handles/struct.InteractionHandle.html)
     """
 
     def __init__(self, ref: int) -> None:
@@ -877,7 +877,7 @@ class PactHandle:
     Handle to a Pact.
 
     [Rust
-    `PactHandle`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/mock_server/handles/struct.PactHandle.html)
+    `PactHandle`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/mock_server/handles/struct.PactHandle.html)
     """
 
     def __init__(self, ref: int) -> None:
@@ -1512,7 +1512,7 @@ class VerifierHandle:
     """
     Handle to a Verifier.
 
-    [Rust `VerifierHandle`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/verifier/handle/struct.VerifierHandle.html)
+    [Rust `VerifierHandle`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/verifier/handle/struct.VerifierHandle.html)
     """
 
     def __init__(self, ref: cffi.FFI.CData) -> None:
@@ -1548,7 +1548,7 @@ class ExpressionValueType(Enum):
     """
     Expression Value Type.
 
-    [Rust `ExpressionValueType`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/models/expressions/enum.ExpressionValueType.html)
+    [Rust `ExpressionValueType`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/models/expressions/enum.ExpressionValueType.html)
     """
 
     UNKNOWN = lib.ExpressionValueType_Unknown
@@ -1575,7 +1575,7 @@ class GeneratorCategory(Enum):
     """
     Generator Category.
 
-    [Rust `GeneratorCategory`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/models/generators/enum.GeneratorCategory.html)
+    [Rust `GeneratorCategory`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/models/generators/enum.GeneratorCategory.html)
     """
 
     METHOD = lib.GeneratorCategory_METHOD
@@ -1603,7 +1603,7 @@ class InteractionPart(Enum):
     """
     Interaction Part.
 
-    [Rust `InteractionPart`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/mock_server/handles/enum.InteractionPart.html)
+    [Rust `InteractionPart`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/mock_server/handles/enum.InteractionPart.html)
     """
 
     REQUEST = lib.InteractionPart_Request
@@ -1649,7 +1649,7 @@ class MatchingRuleCategory(Enum):
     """
     Matching Rule Category.
 
-    [Rust `MatchingRuleCategory`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/models/matching_rules/enum.MatchingRuleCategory.html)
+    [Rust `MatchingRuleCategory`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/models/matching_rules/enum.MatchingRuleCategory.html)
     """
 
     METHOD = lib.MatchingRuleCategory_METHOD
@@ -1678,7 +1678,7 @@ class PactSpecification(Enum):
     """
     Pact Specification.
 
-    [Rust `PactSpecification`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/models/pact_specification/enum.PactSpecification.html)
+    [Rust `PactSpecification`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/models/pact_specification/enum.PactSpecification.html)
     """
 
     UNKNOWN = lib.PactSpecification_Unknown
@@ -1731,7 +1731,7 @@ class StringResult:
         """
         Internal enum from Pact FFI.
 
-        [Rust `StringResult`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/mock_server/enum.StringResult.html)
+        [Rust `StringResult`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/mock_server/enum.StringResult.html)
         """
 
         FAILED = lib.StringResult_Failed
@@ -1896,7 +1896,7 @@ def version() -> str:
     """
     Return the version of the pact_ffi library.
 
-    [Rust `pactffi_version`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_version)
+    [Rust `pactffi_version`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_version)
 
     Returns:
         The version of the pact_ffi library as a string, in the form of `x.y.z`.
@@ -1916,7 +1916,7 @@ def init(log_env_var: str) -> None:
     tracing subscriber.
 
     [Rust
-    `pactffi_init`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_init)
+    `pactffi_init`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_init)
 
     # Safety
 
@@ -1933,7 +1933,7 @@ def init_with_log_level(level: str = "INFO") -> None:
     tracing subscriber.
 
     [Rust
-    `pactffi_init_with_log_level`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_init_with_log_level)
+    `pactffi_init_with_log_level`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_init_with_log_level)
 
     Args:
         level:
@@ -1953,7 +1953,7 @@ def enable_ansi_support() -> None:
     On non-Windows platforms, this function is a no-op.
 
     [Rust
-    `pactffi_enable_ansi_support`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_enable_ansi_support)
+    `pactffi_enable_ansi_support`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_enable_ansi_support)
 
     # Safety
 
@@ -1971,7 +1971,7 @@ def log_message(
     Log using the shared core logging facility.
 
     [Rust
-    `pactffi_log_message`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_log_message)
+    `pactffi_log_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_log_message)
 
     This is useful for callers to have a single set of logs.
 
@@ -2001,7 +2001,7 @@ def mismatches_get_iter(mismatches: Mismatches) -> MismatchesIterator:
     Get an iterator over mismatches.
 
     [Rust
-    `pactffi_mismatches_get_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatches_get_iter)
+    `pactffi_mismatches_get_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatches_get_iter)
     """
     raise NotImplementedError
 
@@ -2010,7 +2010,7 @@ def mismatches_delete(mismatches: Mismatches) -> None:
     """
     Delete mismatches.
 
-    [Rust `pactffi_mismatches_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatches_delete)
+    [Rust `pactffi_mismatches_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatches_delete)
     """
     raise NotImplementedError
 
@@ -2019,7 +2019,7 @@ def mismatches_iter_next(iter: MismatchesIterator) -> Mismatch:
     """
     Get the next mismatch from a mismatches iterator.
 
-    [Rust `pactffi_mismatches_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatches_iter_next)
+    [Rust `pactffi_mismatches_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatches_iter_next)
 
     Returns a null pointer if no mismatches remain.
     """
@@ -2030,7 +2030,7 @@ def mismatches_iter_delete(iter: MismatchesIterator) -> None:
     """
     Delete a mismatches iterator when you're done with it.
 
-    [Rust `pactffi_mismatches_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatches_iter_delete)
+    [Rust `pactffi_mismatches_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatches_iter_delete)
     """
     raise NotImplementedError
 
@@ -2039,7 +2039,7 @@ def mismatch_to_json(mismatch: Mismatch) -> str:
     """
     Get a JSON representation of the mismatch.
 
-    [Rust `pactffi_mismatch_to_json`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatch_to_json)
+    [Rust `pactffi_mismatch_to_json`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatch_to_json)
     """
     raise NotImplementedError
 
@@ -2048,7 +2048,7 @@ def mismatch_type(mismatch: Mismatch) -> str:
     """
     Get the type of a mismatch.
 
-    [Rust `pactffi_mismatch_type`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatch_type)
+    [Rust `pactffi_mismatch_type`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatch_type)
     """
     raise NotImplementedError
 
@@ -2057,7 +2057,7 @@ def mismatch_summary(mismatch: Mismatch) -> str:
     """
     Get a summary of a mismatch.
 
-    [Rust `pactffi_mismatch_summary`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatch_summary)
+    [Rust `pactffi_mismatch_summary`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatch_summary)
     """
     raise NotImplementedError
 
@@ -2066,7 +2066,7 @@ def mismatch_description(mismatch: Mismatch) -> str:
     """
     Get a description of a mismatch.
 
-    [Rust `pactffi_mismatch_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatch_description)
+    [Rust `pactffi_mismatch_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatch_description)
     """
     raise NotImplementedError
 
@@ -2075,7 +2075,7 @@ def mismatch_ansi_description(mismatch: Mismatch) -> str:
     """
     Get an ANSI-compatible description of a mismatch.
 
-    [Rust `pactffi_mismatch_ansi_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mismatch_ansi_description)
+    [Rust `pactffi_mismatch_ansi_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mismatch_ansi_description)
     """
     raise NotImplementedError
 
@@ -2085,7 +2085,7 @@ def get_error_message(length: int = 1024) -> str | None:
     Provide the error message from `LAST_ERROR` to the calling C code.
 
     [Rust
-    `pactffi_get_error_message`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_get_error_message)
+    `pactffi_get_error_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_get_error_message)
 
     This function should be called after any other function in the pact_matching
     FFI indicates a failure with its own error message, if the caller wants to
@@ -2139,7 +2139,7 @@ def log_to_stdout(level_filter: LevelFilter) -> int:
     """
     Convenience function to direct all logging to stdout.
 
-    [Rust `pactffi_log_to_stdout`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_log_to_stdout)
+    [Rust `pactffi_log_to_stdout`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_log_to_stdout)
     """
     raise NotImplementedError
 
@@ -2149,7 +2149,7 @@ def log_to_stderr(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     Convenience function to direct all logging to stderr.
 
     [Rust
-    `pactffi_log_to_stderr`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_log_to_stderr)
+    `pactffi_log_to_stderr`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_log_to_stderr)
 
     Args:
         level_filter:
@@ -2174,7 +2174,7 @@ def log_to_file(file_name: str, level_filter: LevelFilter) -> int:
     Convenience function to direct all logging to a file.
 
     [Rust
-    `pactffi_log_to_file`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_log_to_file)
+    `pactffi_log_to_file`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_log_to_file)
 
     # Safety
 
@@ -2188,7 +2188,7 @@ def log_to_buffer(level_filter: LevelFilter | str = LevelFilter.ERROR) -> None:
     """
     Convenience function to direct all logging to a task local memory buffer.
 
-    [Rust `pactffi_log_to_buffer`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_log_to_buffer)
+    [Rust `pactffi_log_to_buffer`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_log_to_buffer)
 
     Raises:
         RuntimeError:
@@ -2206,7 +2206,7 @@ def logger_init() -> None:
     """
     Initialize the FFI logger with no sinks.
 
-    [Rust `pactffi_logger_init`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_logger_init)
+    [Rust `pactffi_logger_init`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_logger_init)
 
     This initialized logger does nothing until `pactffi_logger_apply` has been called.
 
@@ -2228,7 +2228,7 @@ def logger_attach_sink(sink_specifier: str, level_filter: LevelFilter) -> int:
     Attach an additional sink to the thread-local logger.
 
     [Rust
-    `pactffi_logger_attach_sink`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_logger_attach_sink)
+    `pactffi_logger_attach_sink`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_logger_attach_sink)
 
     This logger does nothing until `pactffi_logger_apply` has been called.
 
@@ -2256,7 +2256,7 @@ def logger_attach_sink(sink_specifier: str, level_filter: LevelFilter) -> int:
       any other log function).
     - `-3`: The sink specifier was not UTF-8 encoded.
     - `-4`: The sink type specified is not a known type (known types: "stdout",
-      "stderr", or "file /some/path").
+      "stderr", "buffer", or "file /some/path").
     - `-5`: No file path was specified in a file-type sink specification.
     - `-6`: Opening a sink to the specified file path failed (check
       permissions).
@@ -2275,7 +2275,7 @@ def logger_apply() -> int:
     Apply the previously configured sinks and levels to the program.
 
     [Rust
-    `pactffi_logger_apply`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_logger_apply)
+    `pactffi_logger_apply`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_logger_apply)
 
     If no sinks have been setup, will set the log level to info and the target
     to standard out.
@@ -2291,7 +2291,7 @@ def fetch_log_buffer(log_id: str) -> str:
     Fetch the in-memory logger buffer contents.
 
     [Rust
-    `pactffi_fetch_log_buffer`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_fetch_log_buffer)
+    `pactffi_fetch_log_buffer`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_fetch_log_buffer)
 
     This will only have any contents if the `buffer` sink has been configured to
     log to. The contents will be allocated on the heap and will need to be freed
@@ -2317,7 +2317,7 @@ def parse_pact_json(json: str) -> Pact:
     Parses the provided JSON into a Pact model.
 
     [Rust
-    `pactffi_parse_pact_json`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_parse_pact_json)
+    `pactffi_parse_pact_json`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_parse_pact_json)
 
     The returned Pact model must be freed with the `pactffi_pact_model_delete`
     function when no longer needed.
@@ -2334,7 +2334,7 @@ def pact_model_delete(pact: Pact) -> None:
     """
     Frees the memory used by the Pact model.
 
-    [Rust `pactffi_pact_model_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_model_delete)
+    [Rust `pactffi_pact_model_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_model_delete)
     """
     raise NotImplementedError
 
@@ -2344,7 +2344,7 @@ def pact_model_interaction_iterator(pact: Pact) -> PactInteractionIterator:
     Returns an iterator over all the interactions in the Pact.
 
     [Rust
-    `pactffi_pact_model_interaction_iterator`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_model_interaction_iterator)
+    `pactffi_pact_model_interaction_iterator`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_model_interaction_iterator)
 
     The iterator will have to be deleted using the
     `pactffi_pact_interaction_iter_delete` function. The iterator will contain a
@@ -2363,7 +2363,7 @@ def pact_spec_version(pact: Pact) -> PactSpecification:
     """
     Returns the Pact specification enum that the Pact is for.
 
-    [Rust `pactffi_pact_spec_version`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_spec_version)
+    [Rust `pactffi_pact_spec_version`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_spec_version)
     """
     raise NotImplementedError
 
@@ -2372,7 +2372,7 @@ def pact_interaction_delete(interaction: PactInteraction) -> None:
     """
     Frees the memory used by the Pact interaction model.
 
-    [Rust `pactffi_pact_interaction_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_interaction_delete)
+    [Rust `pactffi_pact_interaction_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_delete)
     """
     raise NotImplementedError
 
@@ -2381,7 +2381,7 @@ def async_message_new() -> AsynchronousMessage:
     """
     Get a mutable pointer to a newly-created default message on the heap.
 
-    [Rust `pactffi_async_message_new`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_new)
+    [Rust `pactffi_async_message_new`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_new)
 
     # Safety
 
@@ -2398,7 +2398,7 @@ def async_message_delete(message: AsynchronousMessage) -> None:
     """
     Destroy the `AsynchronousMessage` being pointed to.
 
-    [Rust `pactffi_async_message_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_delete)
+    [Rust `pactffi_async_message_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_delete)
     """
     lib.pactffi_async_message_delete(message._ptr)
 
@@ -2408,7 +2408,7 @@ def async_message_get_contents(message: AsynchronousMessage) -> MessageContents 
     Get the message contents of an `AsynchronousMessage` as a `MessageContents` pointer.
 
     [Rust
-    `pactffi_async_message_get_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_contents)
+    `pactffi_async_message_get_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_contents)
 
     If the message contents are missing, this function will return `None`.
     """
@@ -2427,7 +2427,7 @@ def async_message_generate_contents(
     contents as would be received by the consumer.
 
     [Rust
-    `pactffi_async_message_generate_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_generate_contents)
+    `pactffi_async_message_generate_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_generate_contents)
 
     If the message contents are missing, this function will return `None`.
     """
@@ -2441,7 +2441,7 @@ def async_message_get_contents_str(message: AsynchronousMessage) -> str:
     """
     Get the message contents of an `AsynchronousMessage` in string form.
 
-    [Rust `pactffi_async_message_get_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_contents_str)
+    [Rust `pactffi_async_message_get_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_contents_str)
 
     # Safety
 
@@ -2468,7 +2468,7 @@ def async_message_set_contents_str(
     Sets the contents of the message as a string.
 
     [Rust
-    `pactffi_async_message_set_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_set_contents_str)
+    `pactffi_async_message_set_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_set_contents_str)
 
     - `message` - the message to set the contents for
     - `contents` - pointer to contents to copy from. Must be a valid
@@ -2496,7 +2496,7 @@ def async_message_get_contents_length(message: AsynchronousMessage) -> int:
     Get the length of the contents of a `AsynchronousMessage`.
 
     [Rust
-    `pactffi_async_message_get_contents_length`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_contents_length)
+    `pactffi_async_message_get_contents_length`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_contents_length)
 
     # Safety
 
@@ -2515,7 +2515,7 @@ def async_message_get_contents_bin(message: AsynchronousMessage) -> str:
     Get the contents of an `AsynchronousMessage` as bytes.
 
     [Rust
-    `pactffi_async_message_get_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_contents_bin)
+    `pactffi_async_message_get_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_contents_bin)
 
     # Safety
 
@@ -2542,7 +2542,7 @@ def async_message_set_contents_bin(
     Sets the contents of the message as an array of bytes.
 
     [Rust
-    `pactffi_async_message_set_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_set_contents_bin)
+    `pactffi_async_message_set_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_set_contents_bin)
 
     * `message` - the message to set the contents for
     * `contents` - pointer to contents to copy from
@@ -2569,7 +2569,7 @@ def async_message_get_description(message: AsynchronousMessage) -> str:
     Get a copy of the description.
 
     [Rust
-    `pactffi_async_message_get_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_description)
+    `pactffi_async_message_get_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_description)
 
     Raises:
         RuntimeError:
@@ -2589,7 +2589,7 @@ def async_message_set_description(
     """
     Write the `description` field on the `AsynchronousMessage`.
 
-    [Rust `pactffi_async_message_set_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_set_description)
+    [Rust `pactffi_async_message_set_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_set_description)
 
     # Safety
 
@@ -2614,7 +2614,7 @@ def async_message_get_provider_state(
     Get a copy of the provider state at the given index from this message.
 
     [Rust
-    `pactffi_async_message_get_provider_state`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_provider_state)
+    `pactffi_async_message_get_provider_state`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_provider_state)
 
     Raises:
         RuntimeError:
@@ -2633,7 +2633,7 @@ def async_message_get_provider_state_iter(
     """
     Get an iterator over provider states.
 
-    [Rust `pactffi_async_message_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_async_message_get_provider_state_iter)
+    [Rust `pactffi_async_message_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_async_message_get_provider_state_iter)
 
     # Safety
 
@@ -2648,7 +2648,7 @@ def consumer_get_name(consumer: Consumer) -> str:
     r"""
     Get a copy of this consumer's name.
 
-    [Rust `pactffi_consumer_get_name`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_consumer_get_name)
+    [Rust `pactffi_consumer_get_name`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_consumer_get_name)
 
     The copy must be deleted with `pactffi_string_delete`.
 
@@ -2694,7 +2694,7 @@ def pact_get_consumer(pact: Pact) -> Consumer:
     `pactffi_pact_consumer_delete` when no longer required.
 
     [Rust
-    `pactffi_pact_get_consumer`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_get_consumer)
+    `pactffi_pact_get_consumer`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_get_consumer)
 
     # Errors
 
@@ -2708,7 +2708,7 @@ def pact_consumer_delete(consumer: Consumer) -> None:
     """
     Frees the memory used by the Pact consumer.
 
-    [Rust `pactffi_pact_consumer_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_consumer_delete)
+    [Rust `pactffi_pact_consumer_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_consumer_delete)
     """
     raise NotImplementedError
 
@@ -2724,7 +2724,7 @@ def message_contents_delete(contents: MessageContents) -> None:
     Deleting a message content which is associated with an interaction
     will result in undefined behaviour.
 
-    [Rust `pactffi_message_contents_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_delete)
+    [Rust `pactffi_message_contents_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_delete)
     """
     lib.pactffi_message_contents_delete(contents._ptr)
 
@@ -2733,7 +2733,7 @@ def message_contents_get_contents_str(contents: MessageContents) -> str | None:
     """
     Get the message contents in string form.
 
-    [Rust `pactffi_message_contents_get_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_get_contents_str)
+    [Rust `pactffi_message_contents_get_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_get_contents_str)
 
     If the message has no contents or contain invalid UTF-8 characters, this
     function will return `None`.
@@ -2753,7 +2753,7 @@ def message_contents_set_contents_str(
     Sets the contents of the message as a string.
 
     [Rust
-    `pactffi_message_contents_set_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_set_contents_str)
+    `pactffi_message_contents_set_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_set_contents_str)
 
     * `contents` - the message contents to set the contents for
     * `contents_str` - pointer to contents to copy from. Must be a valid
@@ -2780,7 +2780,7 @@ def message_contents_get_contents_length(contents: MessageContents) -> int:
     """
     Get the length of the message contents.
 
-    [Rust `pactffi_message_contents_get_contents_length`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_get_contents_length)
+    [Rust `pactffi_message_contents_get_contents_length`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_get_contents_length)
 
     If the message has not contents, this function will return 0.
     """
@@ -2792,7 +2792,7 @@ def message_contents_get_contents_bin(contents: MessageContents) -> bytes | None
     Get the contents of a message as a pointer to an array of bytes.
 
     [Rust
-    `pactffi_message_contents_get_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_get_contents_bin)
+    `pactffi_message_contents_get_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_get_contents_bin)
 
     If the message has no contents, this function will return `None`.
     """
@@ -2815,7 +2815,7 @@ def message_contents_set_contents_bin(
     Sets the contents of the message as an array of bytes.
 
     [Rust
-    `pactffi_message_contents_set_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_set_contents_bin)
+    `pactffi_message_contents_set_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_set_contents_bin)
 
     * `message` - the message contents to set the contents for
     * `contents_bin` - pointer to contents to copy from
@@ -2844,7 +2844,7 @@ def message_contents_get_metadata_iter(
     Get an iterator over the metadata of a message.
 
     [Rust
-    `pactffi_message_contents_get_metadata_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_get_metadata_iter)
+    `pactffi_message_contents_get_metadata_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_get_metadata_iter)
 
     # Safety
 
@@ -2873,7 +2873,7 @@ def message_contents_get_matching_rule_iter(
     Get an iterator over the matching rules for a category of a message.
 
     [Rust
-    `pactffi_message_contents_get_matching_rule_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_get_matching_rule_iter)
+    `pactffi_message_contents_get_matching_rule_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_get_matching_rule_iter)
 
     The returned pointer must be deleted with
     `pactffi_matching_rules_iter_delete` when done with it.
@@ -2915,7 +2915,7 @@ def request_contents_get_matching_rule_iter(
     r"""
     Get an iterator over the matching rules for a category of an HTTP request.
 
-    [Rust `pactffi_request_contents_get_matching_rule_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_request_contents_get_matching_rule_iter)
+    [Rust `pactffi_request_contents_get_matching_rule_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_request_contents_get_matching_rule_iter)
 
     The returned pointer must be deleted with
     `pactffi_matching_rules_iter_delete` when done with it.
@@ -2952,7 +2952,7 @@ def response_contents_get_matching_rule_iter(
     r"""
     Get an iterator over the matching rules for a category of an HTTP response.
 
-    [Rust `pactffi_response_contents_get_matching_rule_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_response_contents_get_matching_rule_iter)
+    [Rust `pactffi_response_contents_get_matching_rule_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_response_contents_get_matching_rule_iter)
 
     The returned pointer must be deleted with
     `pactffi_matching_rules_iter_delete` when done with it.
@@ -2990,7 +2990,7 @@ def message_contents_get_generators_iter(
     Get an iterator over the generators for a category of a message.
 
     [Rust
-    `pactffi_message_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_contents_get_generators_iter)
+    `pactffi_message_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_contents_get_generators_iter)
 
     # Safety
 
@@ -3016,7 +3016,7 @@ def request_contents_get_generators_iter(
     Get an iterator over the generators for a category of an HTTP request.
 
     [Rust
-    `pactffi_request_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_request_contents_get_generators_iter)
+    `pactffi_request_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_request_contents_get_generators_iter)
 
     The returned pointer must be deleted with `pactffi_generators_iter_delete`
     when done with it.
@@ -3041,7 +3041,7 @@ def response_contents_get_generators_iter(
     Get an iterator over the generators for a category of an HTTP response.
 
     [Rust
-    `pactffi_response_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_response_contents_get_generators_iter)
+    `pactffi_response_contents_get_generators_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_response_contents_get_generators_iter)
 
     The returned pointer must be deleted with `pactffi_generators_iter_delete`
     when done with it.
@@ -3066,7 +3066,7 @@ def parse_matcher_definition(expression: str) -> MatchingRuleDefinitionResult:
     any generator.
 
     [Rust
-    `pactffi_parse_matcher_definition`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_parse_matcher_definition)
+    `pactffi_parse_matcher_definition`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_parse_matcher_definition)
 
     The following are examples of matching rule definitions:
 
@@ -3102,7 +3102,7 @@ def matcher_definition_error(definition: MatchingRuleDefinitionResult) -> str:
     using the `pactffi_string_delete` function once done with it.
 
     [Rust
-    `pactffi_matcher_definition_error`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matcher_definition_error)
+    `pactffi_matcher_definition_error`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matcher_definition_error)
     """
     raise NotImplementedError
 
@@ -3116,7 +3116,7 @@ def matcher_definition_value(definition: MatchingRuleDefinitionResult) -> str:
     the `pactffi_string_delete` function once done with it.
 
     [Rust
-    `pactffi_matcher_definition_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matcher_definition_value)
+    `pactffi_matcher_definition_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matcher_definition_value)
 
     Note that different expressions values can have types other than a string.
     Use `pactffi_matcher_definition_value_type` to get the actual type of the
@@ -3130,7 +3130,7 @@ def matcher_definition_delete(definition: MatchingRuleDefinitionResult) -> None:
     """
     Frees the memory used by the result of parsing the matching definition expression.
 
-    [Rust `pactffi_matcher_definition_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matcher_definition_delete)
+    [Rust `pactffi_matcher_definition_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matcher_definition_delete)
     """
     raise NotImplementedError
 
@@ -3143,7 +3143,7 @@ def matcher_definition_generator(definition: MatchingRuleDefinitionResult) -> Ge
     NULL pointer, otherwise returns the generator as a pointer.
 
     [Rust
-    `pactffi_matcher_definition_generator`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matcher_definition_generator)
+    `pactffi_matcher_definition_generator`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matcher_definition_generator)
 
     The generator pointer will be a valid pointer as long as
     `pactffi_matcher_definition_delete` has not been called on the definition.
@@ -3162,7 +3162,7 @@ def matcher_definition_value_type(
     If there was an error parsing the expression, it will return Unknown.
 
     [Rust
-    `pactffi_matcher_definition_value_type`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matcher_definition_value_type)
+    `pactffi_matcher_definition_value_type`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matcher_definition_value_type)
     """
     raise NotImplementedError
 
@@ -3171,7 +3171,7 @@ def matching_rule_iter_delete(iter: MatchingRuleIterator) -> None:
     """
     Free the iterator when you're done using it.
 
-    [Rust `pactffi_matching_rule_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_iter_delete)
+    [Rust `pactffi_matching_rule_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_iter_delete)
     """
     raise NotImplementedError
 
@@ -3186,7 +3186,7 @@ def matcher_definition_iter(
     `pactffi_matching_rule_iter_delete` function once done with it.
 
     [Rust
-    `pactffi_matcher_definition_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matcher_definition_iter)
+    `pactffi_matcher_definition_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matcher_definition_iter)
 
     If there was an error parsing the expression, this function will return a
     NULL pointer.
@@ -3202,7 +3202,7 @@ def matching_rule_iter_next(iter: MatchingRuleIterator) -> MatchingRuleResult:
     deleted but will be cleaned up when the iterator is deleted.
 
     [Rust
-    `pactffi_matching_rule_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_iter_next)
+    `pactffi_matching_rule_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_iter_next)
 
     Will return a NULL pointer when the iterator has advanced past the end of
     the list.
@@ -3224,7 +3224,7 @@ def matching_rule_id(rule_result: MatchingRuleResult) -> int:
     Return the ID of the matching rule.
 
     [Rust
-    `pactffi_matching_rule_id`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_id)
+    `pactffi_matching_rule_id`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_id)
 
     The ID corresponds to the following rules:
 
@@ -3270,7 +3270,7 @@ def matching_rule_value(rule_result: MatchingRuleResult) -> str:
     pointer.
 
     [Rust
-    `pactffi_matching_rule_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_value)
+    `pactffi_matching_rule_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_value)
 
     The associated values for the rules are:
 
@@ -3318,7 +3318,7 @@ def matching_rule_pointer(rule_result: MatchingRuleResult) -> MatchingRule:
     Will return a NULL pointer if the matching rule result was a reference.
 
     [Rust
-    `pactffi_matching_rule_pointer`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_pointer)
+    `pactffi_matching_rule_pointer`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_pointer)
 
     # Safety
 
@@ -3336,7 +3336,7 @@ def matching_rule_reference_name(rule_result: MatchingRuleResult) -> str:
     structure. I.e.,
 
     [Rust
-    `pactffi_matching_rule_reference_name`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_reference_name)
+    `pactffi_matching_rule_reference_name`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_reference_name)
 
     ```json
     {
@@ -3363,7 +3363,7 @@ def validate_datetime(value: str, format: str) -> None:
     Validates the date/time value against the date/time format string.
 
     [Rust
-    `pactffi_validate_datetime`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_validate_datetime)
+    `pactffi_validate_datetime`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_validate_datetime)
 
     Raises:
         ValueError:
@@ -3390,7 +3390,7 @@ def generator_to_json(generator: Generator) -> str:
     Get the JSON form of the generator.
 
     [Rust
-    `pactffi_generator_to_json`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generator_to_json)
+    `pactffi_generator_to_json`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generator_to_json)
 
     The returned string must be deleted with `pactffi_string_delete`.
 
@@ -3413,7 +3413,7 @@ def generator_generate_string(generator: Generator, context_json: str) -> str:
     function).
 
     [Rust
-    `pactffi_generator_generate_string`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generator_generate_string)
+    `pactffi_generator_generate_string`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generator_generate_string)
 
     If anything goes wrong, it will return a NULL pointer.
     """
@@ -3436,7 +3436,7 @@ def generator_generate_integer(generator: Generator, context_json: str) -> int:
     should be the values returned from the Provider State callback function).
 
     [Rust
-    `pactffi_generator_generate_integer`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generator_generate_integer)
+    `pactffi_generator_generate_integer`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generator_generate_integer)
 
     If anything goes wrong or the generator is not a type that can generate an
     integer value, it will return a zero value.
@@ -3452,7 +3452,7 @@ def generators_iter_delete(iter: GeneratorCategoryIterator) -> None:
     Free the iterator when you're done using it.
 
     [Rust
-    `pactffi_generators_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generators_iter_delete)
+    `pactffi_generators_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generators_iter_delete)
     """
     lib.pactffi_generators_iter_delete(iter._ptr)
 
@@ -3462,7 +3462,7 @@ def generators_iter_next(iter: GeneratorCategoryIterator) -> GeneratorKeyValuePa
     Get the next path and generator out of the iterator, if possible.
 
     [Rust
-    `pactffi_generators_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generators_iter_next)
+    `pactffi_generators_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generators_iter_next)
 
     The returned pointer must be deleted with
     `pactffi_generator_iter_pair_delete`.
@@ -3482,7 +3482,7 @@ def generators_iter_pair_delete(pair: GeneratorKeyValuePair) -> None:
     Free a pair of key and value returned from `pactffi_generators_iter_next`.
 
     [Rust
-    `pactffi_generators_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generators_iter_pair_delete)
+    `pactffi_generators_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generators_iter_pair_delete)
     """
     lib.pactffi_generators_iter_pair_delete(pair._ptr)
 
@@ -3491,7 +3491,7 @@ def sync_http_new() -> SynchronousHttp:
     """
     Get a mutable pointer to a newly-created default interaction on the heap.
 
-    [Rust `pactffi_sync_http_new`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_new)
+    [Rust `pactffi_sync_http_new`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_new)
 
     # Safety
 
@@ -3509,7 +3509,7 @@ def sync_http_delete(interaction: SynchronousHttp) -> None:
     Destroy the `SynchronousHttp` interaction being pointed to.
 
     [Rust
-    `pactffi_sync_http_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_delete)
+    `pactffi_sync_http_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_delete)
     """
     lib.pactffi_sync_http_delete(interaction)
 
@@ -3519,7 +3519,7 @@ def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
     Get the request of a `SynchronousHttp` interaction.
 
     [Rust
-    `pactffi_sync_http_get_request`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_request)
+    `pactffi_sync_http_get_request`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_request)
 
     # Safety
 
@@ -3539,7 +3539,7 @@ def sync_http_get_request_contents(interaction: SynchronousHttp) -> str | None:
     Get the request contents of a `SynchronousHttp` interaction in string form.
 
     [Rust
-    `pactffi_sync_http_get_request_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_request_contents)
+    `pactffi_sync_http_get_request_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_request_contents)
 
     Note that this function will return `None` if either the body is missing or
     is `null`.
@@ -3559,7 +3559,7 @@ def sync_http_set_request_contents(
     Sets the request contents of the interaction.
 
     [Rust
-    `pactffi_sync_http_set_request_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_set_request_contents)
+    `pactffi_sync_http_set_request_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_set_request_contents)
 
     - `interaction` - the interaction to set the request contents for
     - `contents` - pointer to contents to copy from. Must be a valid
@@ -3587,7 +3587,7 @@ def sync_http_get_request_contents_length(interaction: SynchronousHttp) -> int:
     Get the length of the request contents of a `SynchronousHttp` interaction.
 
     [Rust
-    `pactffi_sync_http_get_request_contents_length`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_request_contents_length)
+    `pactffi_sync_http_get_request_contents_length`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_request_contents_length)
 
     This function will return 0 if the body is missing.
     """
@@ -3599,7 +3599,7 @@ def sync_http_get_request_contents_bin(interaction: SynchronousHttp) -> bytes | 
     Get the request contents of a `SynchronousHttp` interaction as bytes.
 
     [Rust
-    `pactffi_sync_http_get_request_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_request_contents_bin)
+    `pactffi_sync_http_get_request_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_request_contents_bin)
 
     Note that this function will return `None` if either the body is missing or
     is `null`.
@@ -3623,7 +3623,7 @@ def sync_http_set_request_contents_bin(
     Sets the request contents of the interaction as an array of bytes.
 
     [Rust
-    `pactffi_sync_http_set_request_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_set_request_contents_bin)
+    `pactffi_sync_http_set_request_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_set_request_contents_bin)
 
     - `interaction` - the interaction to set the request contents for
     - `contents` - pointer to contents to copy from
@@ -3650,7 +3650,7 @@ def sync_http_get_response(interaction: SynchronousHttp) -> HttpResponse:
     Get the response of a `SynchronousHttp` interaction.
 
     [Rust
-    `pactffi_sync_http_get_response`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_response)
+    `pactffi_sync_http_get_response`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_response)
 
     # Safety
 
@@ -3670,7 +3670,7 @@ def sync_http_get_response_contents(interaction: SynchronousHttp) -> str | None:
     Get the response contents of a `SynchronousHttp` interaction in string form.
 
     [Rust
-    `pactffi_sync_http_get_response_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_response_contents)
+    `pactffi_sync_http_get_response_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_response_contents)
 
     Note that this function will return `None` if either the body is missing or
     is `null`.
@@ -3690,7 +3690,7 @@ def sync_http_set_response_contents(
     Sets the response contents of the interaction.
 
     [Rust
-    `pactffi_sync_http_set_response_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_set_response_contents)
+    `pactffi_sync_http_set_response_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_set_response_contents)
 
     - `interaction` - the interaction to set the response contents for
     - `contents` - pointer to contents to copy from. Must be a valid
@@ -3718,7 +3718,7 @@ def sync_http_get_response_contents_length(interaction: SynchronousHttp) -> int:
     Get the length of the response contents of a `SynchronousHttp` interaction.
 
     [Rust
-    `pactffi_sync_http_get_response_contents_length`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_response_contents_length)
+    `pactffi_sync_http_get_response_contents_length`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_response_contents_length)
 
     This function will return 0 if the body is missing.
     """
@@ -3730,7 +3730,7 @@ def sync_http_get_response_contents_bin(interaction: SynchronousHttp) -> bytes |
     Get the response contents of a `SynchronousHttp` interaction as bytes.
 
     [Rust
-    `pactffi_sync_http_get_response_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_response_contents_bin)
+    `pactffi_sync_http_get_response_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_response_contents_bin)
 
     Note that this function will return `None` if either the body is missing or
     is `null`.
@@ -3754,7 +3754,7 @@ def sync_http_set_response_contents_bin(
     Sets the response contents of the `SynchronousHttp` interaction as bytes.
 
     [Rust
-    `pactffi_sync_http_set_response_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_set_response_contents_bin)
+    `pactffi_sync_http_set_response_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_set_response_contents_bin)
 
     - `interaction` - the interaction to set the response contents for
     - `contents` - pointer to contents to copy from
@@ -3781,7 +3781,7 @@ def sync_http_get_description(interaction: SynchronousHttp) -> str:
     Get a copy of the description.
 
     [Rust
-    `pactffi_sync_http_get_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_description)
+    `pactffi_sync_http_get_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_description)
 
     Raises:
         RuntimeError:
@@ -3799,7 +3799,7 @@ def sync_http_set_description(interaction: SynchronousHttp, description: str) ->
     Write the `description` field on the `SynchronousHttp`.
 
     [Rust
-    `pactffi_sync_http_set_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_set_description)
+    `pactffi_sync_http_set_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_set_description)
 
     # Safety
 
@@ -3824,7 +3824,7 @@ def sync_http_get_provider_state(
     Get a copy of the provider state at the given index from this interaction.
 
     [Rust
-    `pactffi_sync_http_get_provider_state`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_provider_state)
+    `pactffi_sync_http_get_provider_state`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_provider_state)
 
     # Safety
 
@@ -3850,7 +3850,7 @@ def sync_http_get_provider_state_iter(
     Get an iterator over provider states.
 
     [Rust
-    `pactffi_sync_http_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_http_get_provider_state_iter)
+    `pactffi_sync_http_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_get_provider_state_iter)
 
     # Safety
 
@@ -3879,7 +3879,7 @@ def pact_interaction_as_synchronous_http(
     longer required.
 
     [Rust
-    `pactffi_pact_interaction_as_synchronous_http`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_http)
+    `pactffi_pact_interaction_as_synchronous_http`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_http)
 
     # Safety This function is safe as long as the interaction pointer is a valid
     pointer.
@@ -3901,7 +3901,7 @@ def pact_interaction_as_asynchronous_message(
     no longer required.
 
     [Rust
-    `pactffi_pact_interaction_as_asynchronous_message`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_interaction_as_asynchronous_message)
+    `pactffi_pact_interaction_as_asynchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_asynchronous_message)
 
     Note that if the interaction is a V3 `Message`, it will be converted to a V4
     `AsynchronousMessage` before being returned.
@@ -3926,7 +3926,7 @@ def pact_interaction_as_synchronous_message(
     no longer required.
 
     [Rust
-    `pactffi_pact_interaction_as_synchronous_message`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_message)
+    `pactffi_pact_interaction_as_synchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_message)
 
     # Safety This function is safe as long as the interaction pointer is a valid
     pointer.
@@ -3941,7 +3941,7 @@ def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> Asynchronous
     Get the next asynchronous message from the iterator.
 
     [Rust
-    `pactffi_pact_async_message_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_async_message_iter_next)
+    `pactffi_pact_async_message_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_async_message_iter_next)
 
     Raises:
         StopIteration:
@@ -3958,7 +3958,7 @@ def pact_async_message_iter_delete(iter: PactAsyncMessageIterator) -> None:
     Free the iterator when you're done using it.
 
     [Rust
-    `pactffi_pact_async_message_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_async_message_iter_delete)
+    `pactffi_pact_async_message_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_async_message_iter_delete)
     """
     lib.pactffi_pact_async_message_iter_delete(iter._ptr)
 
@@ -3968,7 +3968,7 @@ def pact_sync_message_iter_next(iter: PactSyncMessageIterator) -> SynchronousMes
     Get the next synchronous request/response message from the V4 pact.
 
     [Rust
-    `pactffi_pact_sync_message_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_sync_message_iter_next)
+    `pactffi_pact_sync_message_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_sync_message_iter_next)
 
     Raises:
         StopIteration:
@@ -3985,7 +3985,7 @@ def pact_sync_message_iter_delete(iter: PactSyncMessageIterator) -> None:
     Free the iterator when you're done using it.
 
     [Rust
-    `pactffi_pact_sync_message_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_sync_message_iter_delete)
+    `pactffi_pact_sync_message_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_sync_message_iter_delete)
     """
     lib.pactffi_pact_sync_message_iter_delete(iter._ptr)
 
@@ -3995,7 +3995,7 @@ def pact_sync_http_iter_next(iter: PactSyncHttpIterator) -> SynchronousHttp:
     Get the next synchronous HTTP request/response interaction from the V4 pact.
 
     [Rust
-    `pactffi_pact_sync_http_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_sync_http_iter_next)
+    `pactffi_pact_sync_http_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_sync_http_iter_next)
 
     Raises:
         StopIteration:
@@ -4012,7 +4012,7 @@ def pact_sync_http_iter_delete(iter: PactSyncHttpIterator) -> None:
     Free the iterator when you're done using it.
 
     [Rust
-    `pactffi_pact_sync_http_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_sync_http_iter_delete)
+    `pactffi_pact_sync_http_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_sync_http_iter_delete)
     """
     lib.pactffi_pact_sync_http_iter_delete(iter._ptr)
 
@@ -4022,7 +4022,7 @@ def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction
     Get the next interaction from the pact.
 
     [Rust
-    `pactffi_pact_interaction_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_interaction_iter_next)
+    `pactffi_pact_interaction_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_iter_next)
 
     Raises:
         StopIteration:
@@ -4040,7 +4040,7 @@ def pact_interaction_iter_delete(iter: PactInteractionIterator) -> None:
     Free the iterator when you're done using it.
 
     [Rust
-    `pactffi_pact_interaction_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_interaction_iter_delete)
+    `pactffi_pact_interaction_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_iter_delete)
     """
     lib.pactffi_pact_interaction_iter_delete(iter._ptr)
 
@@ -4050,7 +4050,7 @@ def matching_rule_to_json(rule: MatchingRule) -> str:
     Get the JSON form of the matching rule.
 
     [Rust
-    `pactffi_matching_rule_to_json`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rule_to_json)
+    `pactffi_matching_rule_to_json`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rule_to_json)
 
     The returned string must be deleted with `pactffi_string_delete`.
 
@@ -4067,7 +4067,7 @@ def matching_rules_iter_delete(iter: MatchingRuleCategoryIterator) -> None:
     Free the iterator when you're done using it.
 
     [Rust
-    `pactffi_matching_rules_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rules_iter_delete)
+    `pactffi_matching_rules_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rules_iter_delete)
     """
     lib.pactffi_matching_rules_iter_delete(iter._ptr)
 
@@ -4079,7 +4079,7 @@ def matching_rules_iter_next(
     Get the next path and matching rule out of the iterator, if possible.
 
     [Rust
-    `pactffi_matching_rules_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rules_iter_next)
+    `pactffi_matching_rules_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rules_iter_next)
 
     The returned pointer must be deleted with
     `pactffi_matching_rules_iter_pair_delete`.
@@ -4101,7 +4101,7 @@ def matching_rules_iter_pair_delete(pair: MatchingRuleKeyValuePair) -> None:
     Free a pair of key and value returned from `message_metadata_iter_next`.
 
     [Rust
-    `pactffi_matching_rules_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matching_rules_iter_pair_delete)
+    `pactffi_matching_rules_iter_pair_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matching_rules_iter_pair_delete)
     """
     lib.pactffi_matching_rules_iter_pair_delete(pair._ptr)
 
@@ -4111,7 +4111,7 @@ def provider_state_iter_next(iter: ProviderStateIterator) -> ProviderState:
     Get the next value from the iterator.
 
     [Rust
-    `pactffi_provider_state_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_iter_next)
+    `pactffi_provider_state_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_iter_next)
 
     # Safety
 
@@ -4132,7 +4132,7 @@ def provider_state_iter_delete(iter: ProviderStateIterator) -> None:
     Delete the iterator.
 
     [Rust
-    `pactffi_provider_state_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_iter_delete)
+    `pactffi_provider_state_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_iter_delete)
     """
     lib.pactffi_provider_state_iter_delete(iter._ptr)
 
@@ -4142,7 +4142,7 @@ def message_metadata_iter_next(iter: MessageMetadataIterator) -> MessageMetadata
     Get the next key and value out of the iterator, if possible.
 
     [Rust
-    `pactffi_message_metadata_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_metadata_iter_next)
+    `pactffi_message_metadata_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_metadata_iter_next)
 
     The returned pointer must be deleted with
     `pactffi_message_metadata_pair_delete`.
@@ -4168,7 +4168,7 @@ def message_metadata_iter_delete(iter: MessageMetadataIterator) -> None:
     Free the metadata iterator when you're done using it.
 
     [Rust
-    `pactffi_message_metadata_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_metadata_iter_delete)
+    `pactffi_message_metadata_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_metadata_iter_delete)
     """
     lib.pactffi_message_metadata_iter_delete(iter._ptr)
 
@@ -4178,7 +4178,7 @@ def message_metadata_pair_delete(pair: MessageMetadataPair) -> None:
     Free a pair of key and value returned from `message_metadata_iter_next`.
 
     [Rust
-    `pactffi_message_metadata_pair_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_message_metadata_pair_delete)
+    `pactffi_message_metadata_pair_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_message_metadata_pair_delete)
     """
     lib.pactffi_message_metadata_pair_delete(pair._ptr)
 
@@ -4188,7 +4188,7 @@ def provider_get_name(provider: Provider) -> str:
     Get a copy of this provider's name.
 
     [Rust
-    `pactffi_provider_get_name`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_get_name)
+    `pactffi_provider_get_name`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_get_name)
 
     The copy must be deleted with `pactffi_string_delete`.
 
@@ -4234,7 +4234,7 @@ def pact_get_provider(pact: Pact) -> Provider:
     `pactffi_pact_provider_delete` when no longer required.
 
     [Rust
-    `pactffi_pact_get_provider`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_get_provider)
+    `pactffi_pact_get_provider`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_get_provider)
 
     # Errors
 
@@ -4249,7 +4249,7 @@ def pact_provider_delete(provider: Provider) -> None:
     Frees the memory used by the Pact provider.
 
     [Rust
-    `pactffi_pact_provider_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_provider_delete)
+    `pactffi_pact_provider_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_provider_delete)
     """
     raise NotImplementedError
 
@@ -4259,7 +4259,7 @@ def provider_state_get_name(provider_state: ProviderState) -> str | None:
     Get the name of the provider state as a string.
 
     [Rust
-    `pactffi_provider_state_get_name`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_get_name)
+    `pactffi_provider_state_get_name`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_get_name)
 
     Raises:
         RuntimeError:
@@ -4279,7 +4279,7 @@ def provider_state_get_param_iter(
     Get an iterator over the params of a provider state.
 
     [Rust
-    `pactffi_provider_state_get_param_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_get_param_iter)
+    `pactffi_provider_state_get_param_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_get_param_iter)
 
     # Safety
 
@@ -4307,7 +4307,7 @@ def provider_state_param_iter_next(
     Get the next key and value out of the iterator, if possible.
 
     [Rust
-    `pactffi_provider_state_param_iter_next`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_param_iter_next)
+    `pactffi_provider_state_param_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_param_iter_next)
 
     # Safety
 
@@ -4328,7 +4328,7 @@ def provider_state_delete(provider_state: ProviderState) -> None:
     Free the provider state when you're done using it.
 
     [Rust
-    `pactffi_provider_state_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_delete)
+    `pactffi_provider_state_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_delete)
     """
     raise NotImplementedError
 
@@ -4338,7 +4338,7 @@ def provider_state_param_iter_delete(iter: ProviderStateParamIterator) -> None:
     Free the provider state param iterator when you're done using it.
 
     [Rust
-    `pactffi_provider_state_param_iter_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_param_iter_delete)
+    `pactffi_provider_state_param_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_param_iter_delete)
     """
     lib.pactffi_provider_state_param_iter_delete(iter._ptr)
 
@@ -4348,7 +4348,7 @@ def provider_state_param_pair_delete(pair: ProviderStateParamPair) -> None:
     Free a pair of key and value.
 
     [Rust
-    `pactffi_provider_state_param_pair_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_provider_state_param_pair_delete)
+    `pactffi_provider_state_param_pair_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_provider_state_param_pair_delete)
     """
     lib.pactffi_provider_state_param_pair_delete(pair._ptr)
 
@@ -4358,7 +4358,7 @@ def sync_message_new() -> SynchronousMessage:
     Get a mutable pointer to a newly-created default message on the heap.
 
     [Rust
-    `pactffi_sync_message_new`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_new)
+    `pactffi_sync_message_new`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_new)
 
     # Safety
 
@@ -4376,7 +4376,7 @@ def sync_message_delete(message: SynchronousMessage) -> None:
     Destroy the `Message` being pointed to.
 
     [Rust
-    `pactffi_sync_message_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_delete)
+    `pactffi_sync_message_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_delete)
     """
     lib.pactffi_sync_message_delete(message._ptr)
 
@@ -4386,7 +4386,7 @@ def sync_message_get_request_contents_str(message: SynchronousMessage) -> str:
     Get the request contents of a `SynchronousMessage` in string form.
 
     [Rust
-    `pactffi_sync_message_get_request_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_request_contents_str)
+    `pactffi_sync_message_get_request_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_request_contents_str)
 
     # Safety
 
@@ -4413,7 +4413,7 @@ def sync_message_set_request_contents_str(
     Sets the request contents of the message.
 
     [Rust
-    `pactffi_sync_message_set_request_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_set_request_contents_str)
+    `pactffi_sync_message_set_request_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_set_request_contents_str)
 
     - `message` - the message to set the request contents for
     - `contents` - pointer to contents to copy from. Must be a valid
@@ -4441,7 +4441,7 @@ def sync_message_get_request_contents_length(message: SynchronousMessage) -> int
     Get the length of the request contents of a `SynchronousMessage`.
 
     [Rust
-    `pactffi_sync_message_get_request_contents_length`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_request_contents_length)
+    `pactffi_sync_message_get_request_contents_length`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_request_contents_length)
 
     # Safety
 
@@ -4460,7 +4460,7 @@ def sync_message_get_request_contents_bin(message: SynchronousMessage) -> bytes:
     Get the request contents of a `SynchronousMessage` as a bytes.
 
     [Rust
-    `pactffi_sync_message_get_request_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_request_contents_bin)
+    `pactffi_sync_message_get_request_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_request_contents_bin)
 
     # Safety
 
@@ -4487,7 +4487,7 @@ def sync_message_set_request_contents_bin(
     Sets the request contents of the message as an array of bytes.
 
     [Rust
-    `pactffi_sync_message_set_request_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_set_request_contents_bin)
+    `pactffi_sync_message_set_request_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_set_request_contents_bin)
 
     * `message` - the message to set the request contents for
     * `contents` - pointer to contents to copy from
@@ -4514,7 +4514,7 @@ def sync_message_get_request_contents(message: SynchronousMessage) -> MessageCon
     Get the request contents of an `SynchronousMessage` as a `MessageContents`.
 
     [Rust
-    `pactffi_sync_message_get_request_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_request_contents)
+    `pactffi_sync_message_get_request_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_request_contents)
 
     # Safety
 
@@ -4541,7 +4541,7 @@ def sync_message_generate_request_contents(
     contents as would be received by the consumer.
 
     [Rust
-    `pactffi_sync_message_generate_request_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_generate_request_contents)
+    `pactffi_sync_message_generate_request_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_generate_request_contents)
 
     Raises:
         RuntimeError:
@@ -4559,7 +4559,7 @@ def sync_message_get_number_responses(message: SynchronousMessage) -> int:
     Get the number of response messages in the `SynchronousMessage`.
 
     [Rust
-    `pactffi_sync_message_get_number_responses`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_number_responses)
+    `pactffi_sync_message_get_number_responses`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_number_responses)
 
     If the message is null, this function will return 0.
     """
@@ -4574,7 +4574,7 @@ def sync_message_get_response_contents_str(
     Get the response contents of a `SynchronousMessage` in string form.
 
     [Rust
-    `pactffi_sync_message_get_response_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_response_contents_str)
+    `pactffi_sync_message_get_response_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_response_contents_str)
 
     # Safety
 
@@ -4607,7 +4607,7 @@ def sync_message_set_response_contents_str(
     with default values.
 
     [Rust
-    `pactffi_sync_message_set_response_contents_str`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_set_response_contents_str)
+    `pactffi_sync_message_set_response_contents_str`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_set_response_contents_str)
 
     * `message` - the message to set the response contents for
     * `index` - index of the response to set. 0 is the first response.
@@ -4639,7 +4639,7 @@ def sync_message_get_response_contents_length(
     Get the length of the response contents of a `SynchronousMessage`.
 
     [Rust
-    `pactffi_sync_message_get_response_contents_length`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_response_contents_length)
+    `pactffi_sync_message_get_response_contents_length`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_response_contents_length)
 
     # Safety
 
@@ -4661,7 +4661,7 @@ def sync_message_get_response_contents_bin(
     Get the response contents of a `SynchronousMessage` as bytes.
 
     [Rust
-    `pactffi_sync_message_get_response_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_response_contents_bin)
+    `pactffi_sync_message_get_response_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_response_contents_bin)
 
     # Safety
 
@@ -4692,7 +4692,7 @@ def sync_message_set_response_contents_bin(
     responses will be padded with default values.
 
     [Rust
-    `pactffi_sync_message_set_response_contents_bin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_set_response_contents_bin)
+    `pactffi_sync_message_set_response_contents_bin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_set_response_contents_bin)
 
     * `message` - the message to set the response contents for
     * `index` - index of the response to set. 0 is the first response
@@ -4723,7 +4723,7 @@ def sync_message_get_response_contents(
     Get the response contents of an `SynchronousMessage` as a `MessageContents`.
 
     [Rust
-    `pactffi_sync_message_get_response_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_response_contents)
+    `pactffi_sync_message_get_response_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_response_contents)
 
     # Safety
 
@@ -4752,7 +4752,7 @@ def sync_message_generate_response_contents(
     received by the consumer.
 
     [Rust
-    `pactffi_sync_message_generate_response_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_generate_response_contents)
+    `pactffi_sync_message_generate_response_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_generate_response_contents)
 
     Raises:
         RuntimeError:
@@ -4770,7 +4770,7 @@ def sync_message_get_description(message: SynchronousMessage) -> str:
     Get a copy of the description.
 
     [Rust
-    `pactffi_sync_message_get_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_description)
+    `pactffi_sync_message_get_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_description)
 
     Raises:
         RuntimeError:
@@ -4788,7 +4788,7 @@ def sync_message_set_description(message: SynchronousMessage, description: str) 
     Write the `description` field on the `SynchronousMessage`.
 
     [Rust
-    `pactffi_sync_message_set_description`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_set_description)
+    `pactffi_sync_message_set_description`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_set_description)
 
     # Safety
 
@@ -4813,7 +4813,7 @@ def sync_message_get_provider_state(
     Get a copy of the provider state at the given index from this message.
 
     [Rust
-    `pactffi_sync_message_get_provider_state`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_provider_state)
+    `pactffi_sync_message_get_provider_state`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_provider_state)
 
     # Safety
 
@@ -4839,7 +4839,7 @@ def sync_message_get_provider_state_iter(
     Get an iterator over provider states.
 
     [Rust
-    `pactffi_sync_message_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_sync_message_get_provider_state_iter)
+    `pactffi_sync_message_get_provider_state_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_message_get_provider_state_iter)
 
     # Safety
 
@@ -4861,7 +4861,7 @@ def string_delete(string: OwnedString) -> None:
     Delete a string previously returned by this FFI.
 
     [Rust
-    `pactffi_string_delete`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_string_delete)
+    `pactffi_string_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_string_delete)
     """
     lib.pactffi_string_delete(string._ptr)
 
@@ -4876,7 +4876,7 @@ def create_mock_server(pact_str: str, addr_str: str, *, tls: bool) -> int:
     the mock server is returned.
 
     [Rust
-    `pactffi_create_mock_server`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_create_mock_server)
+    `pactffi_create_mock_server`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_create_mock_server)
 
     * `pact_str` - Pact JSON
     * `addr_str` - Address to bind to in the form name:port (i.e. 127.0.0.1:80)
@@ -4912,7 +4912,7 @@ def get_tls_ca_certificate() -> OwnedString:
     Fetch the CA Certificate used to generate the self-signed certificate.
 
     [Rust
-    `pactffi_get_tls_ca_certificate`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_get_tls_ca_certificate)
+    `pactffi_get_tls_ca_certificate`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_get_tls_ca_certificate)
 
     **NOTE:** The string for the result is allocated on the heap, and will have
     to be freed by the caller using pactffi_string_delete.
@@ -4933,7 +4933,7 @@ def create_mock_server_for_pact(pact: PactHandle, addr_str: str, *, tls: bool) -
     operating system. The port of the mock server is returned.
 
     [Rust
-    `pactffi_create_mock_server_for_pact`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_create_mock_server_for_pact)
+    `pactffi_create_mock_server_for_pact`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_create_mock_server_for_pact)
 
     * `pact` - Handle to a Pact model created with created with
       `pactffi_new_pact`.
@@ -4976,7 +4976,7 @@ def create_mock_server_for_transport(
     Create a mock server for the provided Pact handle and transport.
 
     [Rust
-    `pactffi_create_mock_server_for_transport`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_create_mock_server_for_transport)
+    `pactffi_create_mock_server_for_transport`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_create_mock_server_for_transport)
 
     Args:
         pact:
@@ -5038,7 +5038,7 @@ def mock_server_matched(mock_server_handle: PactServerHandle) -> bool:
     if any request has not been successfully matched, or the method panics.
 
     [Rust
-    `pactffi_mock_server_matched`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mock_server_matched)
+    `pactffi_mock_server_matched`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mock_server_matched)
     """
     return lib.pactffi_mock_server_matched(mock_server_handle._ref)
 
@@ -5050,7 +5050,7 @@ def mock_server_mismatches(
     External interface to get all the mismatches from a mock server.
 
     [Rust
-    `pactffi_mock_server_mismatches`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mock_server_mismatches)
+    `pactffi_mock_server_mismatches`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mock_server_mismatches)
 
     # Errors
 
@@ -5077,7 +5077,7 @@ def cleanup_mock_server(mock_server_handle: PactServerHandle) -> None:
     and cleanup any memory allocated for it.
 
     [Rust
-    `pactffi_cleanup_mock_server`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_cleanup_mock_server)
+    `pactffi_cleanup_mock_server`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_cleanup_mock_server)
 
     Args:
         mock_server_handle:
@@ -5106,7 +5106,7 @@ def write_pact_file(
     directory to write the file to is passed as the second parameter.
 
     [Rust
-    `pactffi_write_pact_file`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_write_pact_file)
+    `pactffi_write_pact_file`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_write_pact_file)
 
     Args:
         mock_server_handle:
@@ -5158,7 +5158,7 @@ def mock_server_logs(mock_server_handle: PactServerHandle) -> str:
     started.
 
     [Rust
-    `pactffi_mock_server_logs`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_mock_server_logs)
+    `pactffi_mock_server_logs`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_mock_server_logs)
 
     Raises:
         RuntimeError:
@@ -5182,7 +5182,7 @@ def generate_datetime_string(format: str) -> StringResult:
     string needs to be freed with the `pactffi_string_delete` function
 
     [Rust
-    `pactffi_generate_datetime_string`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generate_datetime_string)
+    `pactffi_generate_datetime_string`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generate_datetime_string)
 
     # Safety
 
@@ -5199,7 +5199,7 @@ def check_regex(regex: str, example: str) -> bool:
     Checks that the example string matches the given regex.
 
     [Rust
-    `pactffi_check_regex`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_check_regex)
+    `pactffi_check_regex`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_check_regex)
 
     # Safety
 
@@ -5218,7 +5218,7 @@ def generate_regex_value(regex: str) -> StringResult:
     `pactffi_string_delete` function.
 
     [Rust
-    `pactffi_generate_regex_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_generate_regex_value)
+    `pactffi_generate_regex_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_generate_regex_value)
 
     # Safety
 
@@ -5233,7 +5233,7 @@ def free_string(s: str) -> None:
     [DEPRECATED] Frees the memory allocated to a string by another function.
 
     [Rust
-    `pactffi_free_string`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_free_string)
+    `pactffi_free_string`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_free_string)
 
     This function is deprecated. Use `pactffi_string_delete` instead.
 
@@ -5255,7 +5255,7 @@ def new_pact(consumer_name: str, provider_name: str) -> PactHandle:
     Creates a new Pact model and returns a handle to it.
 
     [Rust
-    `pactffi_new_pact`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_new_pact)
+    `pactffi_new_pact`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_new_pact)
 
     Args:
         consumer_name:
@@ -5296,7 +5296,7 @@ def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
     will result in that interaction being replaced with the new one.
 
     [Rust
-    `pactffi_new_interaction`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_new_interaction)
+    `pactffi_new_interaction`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_new_interaction)
 
     Args:
         pact:
@@ -5324,7 +5324,7 @@ def new_message_interaction(pact: PactHandle, description: str) -> InteractionHa
     will result in that interaction being replaced with the new one.
 
     [Rust
-    `pactffi_new_message_interaction`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_new_message_interaction)
+    `pactffi_new_message_interaction`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_new_message_interaction)
 
     Args:
         pact:
@@ -5355,7 +5355,7 @@ def new_sync_message_interaction(
     will result in that interaction being replaced with the new one.
 
     [Rust
-    `pactffi_new_sync_message_interaction`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_new_sync_message_interaction)
+    `pactffi_new_sync_message_interaction`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_new_sync_message_interaction)
 
     Args:
         pact:
@@ -5380,7 +5380,7 @@ def upon_receiving(interaction: InteractionHandle, description: str) -> None:
     Sets the description for the Interaction.
 
     [Rust
-    `pactffi_upon_receiving`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_upon_receiving)
+    `pactffi_upon_receiving`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_upon_receiving)
 
     This function
 
@@ -5421,7 +5421,7 @@ def given(interaction: InteractionHandle, description: str) -> None:
     Adds a provider state to the Interaction.
 
     [Rust
-    `pactffi_given`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_given)
+    `pactffi_given`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_given)
 
     Args:
         interaction:
@@ -5448,7 +5448,7 @@ def interaction_test_name(interaction: InteractionHandle, test_name: str) -> Non
     used with V4 interactions.
 
     [Rust
-    `pactffi_interaction_test_name`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_interaction_test_name)
+    `pactffi_interaction_test_name`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_interaction_test_name)
 
     Args:
         interaction:
@@ -5495,7 +5495,7 @@ def given_with_param(
     be parsed as JSON.
 
     [Rust
-    `pactffi_given_with_param`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_given_with_param)
+    `pactffi_given_with_param`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_given_with_param)
 
     Args:
         interaction:
@@ -5537,7 +5537,7 @@ def given_with_params(
     with a `value` key.
 
     [Rust
-    `pactffi_given_with_params`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_given_with_params)
+    `pactffi_given_with_params`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_given_with_params)
 
     Args:
         interaction:
@@ -5576,7 +5576,7 @@ def with_request(interaction: InteractionHandle, method: str, path: str) -> None
     Configures the request for the Interaction.
 
     [Rust
-    `pactffi_with_request`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_request)
+    `pactffi_with_request`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_request)
 
     Args:
         interaction:
@@ -5590,7 +5590,7 @@ def with_request(interaction: InteractionHandle, method: str, path: str) -> None
 
             This may be a simple string in which case it will be used as-is, or
             it may be a [JSON matching
-            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md)
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md)
             which allows regex patterns. For examples:
 
             ```json
@@ -5625,7 +5625,7 @@ def with_query_parameter_v2(
     Configures a query parameter for the Interaction.
 
     [Rust
-    `pactffi_with_query_parameter_v2`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_query_parameter_v2)
+    `pactffi_with_query_parameter_v2`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_query_parameter_v2)
 
     To setup a query parameter with multiple values, you can either call this
     function multiple times with a different index value:
@@ -5662,7 +5662,7 @@ def with_query_parameter_v2(
     )
     ```
 
-    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md)
+    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md)
 
     If you want the matching rules to apply to all values (and not just the one
     with the given index), make sure to set the value to be an array.
@@ -5714,7 +5714,7 @@ def with_query_parameter_v2(
 
             This may be a simple string in which case it will be used as-is, or
             it may be a [JSON matching
-            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md).
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
         RuntimeError:
@@ -5736,7 +5736,7 @@ def with_specification(pact: PactHandle, version: PactSpecification) -> None:
     Sets the specification version for a given Pact model.
 
     [Rust
-    `pactffi_with_specification`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_specification)
+    `pactffi_with_specification`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_specification)
 
     Args:
         pact:
@@ -5760,7 +5760,7 @@ def handle_get_pact_spec_version(handle: PactHandle) -> PactSpecification:
     Fetches the Pact specification version for the given Pact model.
 
     [Rust
-    `pactffi_handle_get_pact_spec_version`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_handle_get_pact_spec_version)
+    `pactffi_handle_get_pact_spec_version`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_handle_get_pact_spec_version)
 
     Args:
         handle:
@@ -5782,18 +5782,18 @@ def with_pact_metadata(
     Sets the additional metadata on the Pact file.
 
     Common uses are to add the client library details such as the name and
-    version Returns false if the interaction or Pact can't be modified (i.e. the
-    mock server for it has already started)
+    version. Returns false if the interaction or Pact can't be modified (i.e.
+    the mock server for it has already started) or the namespace is readonly.
 
     [Rust
-    `pactffi_with_pact_metadata`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_pact_metadata)
+    `pactffi_with_pact_metadata`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_pact_metadata)
 
     Args:
         pact:
             Handle to a Pact model
 
         namespace:
-            The top level metadat key to set any key values on
+            the top level metadata key to set any key values on
 
         name:
             The key to set
@@ -5852,7 +5852,7 @@ def with_metadata(
     ```
 
     See
-    [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md)
+    [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md)
 
     # Note
 
@@ -5901,7 +5901,7 @@ def with_header_v2(
     r"""
     Configures a header for the Interaction.
 
-    [Rust `pactffi_with_header_v2`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_header_v2)
+    [Rust `pactffi_with_header_v2`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_header_v2)
 
     To setup a header with multiple values, you can either call this
     function multiple times with a different index value:
@@ -5939,7 +5939,7 @@ def with_header_v2(
     )
     ```
 
-    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md)
+    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md)
 
     Args:
         interaction:
@@ -5961,7 +5961,7 @@ def with_header_v2(
 
             This may be a simple string in which case it will be used as-is, or
             it may be a [JSON matching
-            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md).
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
         RuntimeError:
@@ -5993,7 +5993,7 @@ def set_header(
     and generators can not be configured with it.
 
     [Rust
-    `pactffi_set_header`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_set_header)
+    `pactffi_set_header`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_set_header)
 
     If matching rules are required to be set, use `pactffi_with_header_v2`.
 
@@ -6031,7 +6031,7 @@ def response_status(interaction: InteractionHandle, status: int) -> None:
     Configures the response for the Interaction.
 
     [Rust
-    `pactffi_response_status`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_response_status)
+    `pactffi_response_status`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_response_status)
 
     Args:
         interaction:
@@ -6055,7 +6055,7 @@ def response_status_v2(interaction: InteractionHandle, status: str) -> None:
     Configures the response for the Interaction.
 
     [Rust
-    `pactffi_response_status_v2`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_response_status_v2)
+    `pactffi_response_status_v2`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_response_status_v2)
 
     To include matching rules for the status (only statusCode or integer really
     makes sense to use), include the matching rule JSON format with the value as
@@ -6074,7 +6074,7 @@ def response_status_v2(interaction: InteractionHandle, status: str) -> None:
     )
     ```
 
-    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md)
+    See [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md)
 
     Args:
         interaction:
@@ -6085,7 +6085,7 @@ def response_status_v2(interaction: InteractionHandle, status: str) -> None:
 
             This may be a simple string in which case it will be used as-is, or
             it may be a [JSON matching
-            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md).
+            rule](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
         RuntimeError:
@@ -6109,7 +6109,7 @@ def with_body(
     Adds the body for the interaction.
 
     [Rust
-    `pactffi_with_body`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_body)
+    `pactffi_with_body`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_body)
 
     Returns false if the interaction or Pact can't be modified (i.e. the mock
     server for it has already started)
@@ -6144,7 +6144,7 @@ def with_body(
         body:
             The body contents. For JSON payloads, matching rules can be embedded
             in the body. See
-            [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.22/rust/pact_ffi/IntegrationJson.md).
+            [IntegrationJson.md](https://github.com/pact-foundation/pact-reference/blob/libpact_ffi-v0.4.28/rust/pact_ffi/IntegrationJson.md).
 
     Raises:
         RuntimeError:
@@ -6171,7 +6171,7 @@ def with_binary_body(
     Adds the body for the interaction.
 
     [Rust
-    `pactffi_with_binary_body`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_binary_body)
+    `pactffi_with_binary_body`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_binary_body)
 
     For HTTP and async message interactions, this will overwrite the body. With
     asynchronous messages, the part parameter will be ignored. With synchronous
@@ -6232,7 +6232,7 @@ def with_binary_file(
     already started)
 
     [Rust
-    `pactffi_with_binary_file`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_binary_file)
+    `pactffi_with_binary_file`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_binary_file)
 
     For HTTP and async message interactions, this will overwrite the body. With
     asynchronous messages, the part parameter will be ignored. With synchronous
@@ -6279,7 +6279,7 @@ def with_matching_rules(
     Add matching rules to the interaction.
 
     [Rust
-    `pactffi_with_matching_rules`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_matching_rules)
+    `pactffi_with_matching_rules`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_matching_rules)
 
     This function can be called multiple times, in which case the matching
     rules will be merged.
@@ -6317,7 +6317,7 @@ def with_generators(
     Add generators to the interaction.
 
     [Rust
-    `pactffi_with_generators`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_generators)
+    `pactffi_with_generators`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_generators)
 
     This function can be called multiple times, in which case the generators
     will be combined (provide they don't clash).
@@ -6365,7 +6365,7 @@ def with_multipart_file_v2(  # noqa: PLR0913
     already started) or an error occurs.
 
     [Rust
-    `pactffi_with_multipart_file_v2`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_multipart_file_v2)
+    `pactffi_with_multipart_file_v2`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_multipart_file_v2)
 
     This function can be called multiple times. In that case, each subsequent
     call will be appended to the existing multipart body as a new part.
@@ -6419,7 +6419,7 @@ def with_multipart_file(
     already started) or an error occurs.
 
     [Rust
-    `pactffi_with_multipart_file`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_with_multipart_file)
+    `pactffi_with_multipart_file`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_with_multipart_file)
 
     * `interaction` - Interaction handle to set the body for.
     * `part` - Request or response part.
@@ -6456,7 +6456,7 @@ def set_key(interaction: InteractionHandle, key: str | None) -> None:
     Sets the key attribute for the interaction.
 
     [Rust
-    `pactffi_set_key`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_set_key)
+    `pactffi_set_key`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_set_key)
 
     Args:
         interaction:
@@ -6484,7 +6484,7 @@ def set_pending(interaction: InteractionHandle, *, pending: bool) -> None:
     Mark the interaction as pending.
 
     [Rust
-    `pactffi_set_pending`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_set_pending)
+    `pactffi_set_pending`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_set_pending)
 
     Args:
         interaction:
@@ -6508,7 +6508,7 @@ def set_comment(interaction: InteractionHandle, key: str, value: str | None) -> 
     Add a comment to the interaction.
 
     [Rust
-    `pactffi_set_comment`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_set_comment)
+    `pactffi_set_comment`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_set_comment)
 
     Args:
         interaction:
@@ -6542,7 +6542,7 @@ def add_text_comment(interaction: InteractionHandle, comment: str) -> None:
     Add a text comment to the interaction.
 
     [Rust
-    `pactffi_add_text_comment`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_add_text_comment)
+    `pactffi_add_text_comment`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_add_text_comment)
 
     Args:
         interaction:
@@ -6572,7 +6572,7 @@ def pact_handle_get_async_message_iter(pact: PactHandle) -> PactAsyncMessageIter
     `pactffi_pact_sync_message_iter_delete`.
 
     [Rust
-    `pactffi_pact_handle_get_sync_message_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_handle_get_sync_message_iter)
+    `pactffi_pact_handle_get_sync_message_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_handle_get_sync_message_iter)
 
     # Safety
 
@@ -6598,7 +6598,7 @@ def pact_handle_get_sync_message_iter(pact: PactHandle) -> PactSyncMessageIterat
     `pactffi_pact_sync_message_iter_delete`.
 
     [Rust
-    `pactffi_pact_handle_get_sync_message_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_handle_get_sync_message_iter)
+    `pactffi_pact_handle_get_sync_message_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_handle_get_sync_message_iter)
 
     # Safety
 
@@ -6624,7 +6624,7 @@ def pact_handle_get_sync_http_iter(pact: PactHandle) -> PactSyncHttpIterator:
     `pactffi_pact_sync_http_iter_delete`.
 
     [Rust
-    `pactffi_pact_handle_get_sync_http_iter`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_handle_get_sync_http_iter)
+    `pactffi_pact_handle_get_sync_http_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_handle_get_sync_http_iter)
 
     # Safety
 
@@ -6650,7 +6650,7 @@ def pact_handle_write_file(
     External interface to write out the pact file.
 
     [Rust
-    `pactffi_pact_handle_write_file`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_pact_handle_write_file)
+    `pactffi_pact_handle_write_file`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_handle_write_file)
 
     This function should be called if all the consumer tests have passed.
 
@@ -6694,7 +6694,7 @@ def free_pact_handle(pact: PactHandle) -> None:
     Delete a Pact handle and free the resources used by it.
 
     [Rust
-    `pactffi_free_pact_handle`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_free_pact_handle)
+    `pactffi_free_pact_handle`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_free_pact_handle)
 
     Raises:
         RuntimeError:
@@ -6714,7 +6714,7 @@ def verify(args: str) -> int:
     """
     External interface to verifier a provider.
 
-    [Rust `pactffi_verify`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verify)
+    [Rust `pactffi_verify`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verify)
 
     * `args` - the same as the CLI interface, except newline delimited
 
@@ -6746,7 +6746,7 @@ def verifier_new_for_application() -> VerifierHandle:
     to set the required values and enable it.
 
     [Rust
-    `pactffi_verifier_new_for_application`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_new_for_application)
+    `pactffi_verifier_new_for_application`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_new_for_application)
     """
     result: cffi.FFI.CData = lib.pactffi_verifier_new_for_application(
         b"pact-python",
@@ -6759,7 +6759,7 @@ def verifier_shutdown(handle: VerifierHandle) -> None:
     """
     Shutdown the verifier and release all resources.
 
-    [Rust `pactffi_verifier_shutdown`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_shutdown)
+    [Rust `pactffi_verifier_shutdown`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_shutdown)
     """
     lib.pactffi_verifier_shutdown(handle._ref)
 
@@ -6776,7 +6776,7 @@ def verifier_set_provider_info(  # noqa: PLR0913
     Set the provider details for the Pact verifier.
 
     [Rust
-    `pactffi_verifier_set_provider_info`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_provider_info)
+    `pactffi_verifier_set_provider_info`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_provider_info)
 
     Args:
         handle:
@@ -6822,7 +6822,7 @@ def verifier_add_provider_transport(
     Adds a new transport for the given provider.
 
     [Rust
-    `pactffi_verifier_add_provider_transport`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_add_provider_transport)
+    `pactffi_verifier_add_provider_transport`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_add_provider_transport)
 
     Args:
         handle:
@@ -6863,7 +6863,7 @@ def verifier_set_filter_info(
     Set the filters for the Pact verifier.
 
     [Rust
-    `pactffi_verifier_set_filter_info`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_filter_info)
+    `pactffi_verifier_set_filter_info`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_filter_info)
 
     Set filters to narrow down the interactions to verify.
 
@@ -6899,7 +6899,7 @@ def verifier_set_provider_state(
     Set the provider state URL for the Pact verifier.
 
     [Rust
-    `pactffi_verifier_set_provider_state`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_provider_state)
+    `pactffi_verifier_set_provider_state`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_provider_state)
 
     Args:
         handle:
@@ -6934,7 +6934,7 @@ def verifier_set_verification_options(
     Set the options used by the verifier when calling the provider.
 
     [Rust
-    `pactffi_verifier_set_verification_options`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_verification_options)
+    `pactffi_verifier_set_verification_options`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_verification_options)
 
     Args:
         handle:
@@ -6969,7 +6969,7 @@ def verifier_set_coloured_output(
     Enables or disables coloured output using ANSI escape codes.
 
     [Rust
-    `pactffi_verifier_set_coloured_output`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_coloured_output)
+    `pactffi_verifier_set_coloured_output`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_coloured_output)
 
     By default, coloured output is enabled.
 
@@ -6998,7 +6998,7 @@ def verifier_set_no_pacts_is_error(handle: VerifierHandle, *, enabled: bool) -> 
     Enables or disables if no pacts are found to verify results in an error.
 
     [Rust
-    `pactffi_verifier_set_no_pacts_is_error`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_no_pacts_is_error)
+    `pactffi_verifier_set_no_pacts_is_error`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_no_pacts_is_error)
 
     Args:
         handle:
@@ -7031,7 +7031,7 @@ def verifier_set_publish_options(
     Set the options used when publishing verification results to the Broker.
 
     [Rust
-    `pactffi_verifier_set_publish_options`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_publish_options)
+    `pactffi_verifier_set_publish_options`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_publish_options)
 
     Args:
         handle:
@@ -7074,7 +7074,7 @@ def verifier_set_consumer_filters(
     Set the consumer filters for the Pact verifier.
 
     [Rust
-    `pactffi_verifier_set_consumer_filters`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_set_consumer_filters)
+    `pactffi_verifier_set_consumer_filters`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_set_consumer_filters)
     """
     lib.pactffi_verifier_set_consumer_filters(
         handle._ref,
@@ -7092,7 +7092,7 @@ def verifier_add_custom_header(
     Adds a custom header to be added to the requests made to the provider.
 
     [Rust
-    `pactffi_verifier_add_custom_header`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_add_custom_header)
+    `pactffi_verifier_add_custom_header`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_add_custom_header)
     """
     lib.pactffi_verifier_add_custom_header(
         handle._ref,
@@ -7106,7 +7106,7 @@ def verifier_add_file_source(handle: VerifierHandle, file: str) -> None:
     Adds a Pact file as a source to verify.
 
     [Rust
-    `pactffi_verifier_add_file_source`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_add_file_source)
+    `pactffi_verifier_add_file_source`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_add_file_source)
     """
     lib.pactffi_verifier_add_file_source(handle._ref, file.encode("utf-8"))
 
@@ -7118,7 +7118,7 @@ def verifier_add_directory_source(handle: VerifierHandle, directory: str) -> Non
     All pacts from the directory that match the provider name will be verified.
 
     [Rust
-    `pactffi_verifier_add_directory_source`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_add_directory_source)
+    `pactffi_verifier_add_directory_source`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_add_directory_source)
 
     # Safety
 
@@ -7140,7 +7140,7 @@ def verifier_url_source(
     Adds a URL as a source to verify.
 
     [Rust
-    `pactffi_verifier_url_source`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_url_source)
+    `pactffi_verifier_url_source`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_url_source)
 
     Args:
         handle:
@@ -7180,7 +7180,7 @@ def verifier_broker_source(
     Adds a Pact broker as a source to verify.
 
     [Rust
-    `pactffi_verifier_broker_source`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_broker_source)
+    `pactffi_verifier_broker_source`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_broker_source)
 
     This will fetch all the pact files from the broker that match the provider
     name.
@@ -7228,7 +7228,7 @@ def verifier_broker_source_with_selectors(  # noqa: PLR0913
     Adds a Pact broker as a source to verify.
 
     [Rust
-    `pactffi_verifier_broker_source_with_selectors`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_broker_source_with_selectors)
+    `pactffi_verifier_broker_source_with_selectors`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_broker_source_with_selectors)
 
     This will fetch all the pact files from the broker that match the provider
     name and the consumer version selectors (See [Consumer Version
@@ -7307,7 +7307,7 @@ def verifier_execute(handle: VerifierHandle) -> None:
     """
     Runs the verification.
 
-    (https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_execute)
+    (https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_execute)
 
     Raises:
         RuntimeError:
@@ -7327,7 +7327,7 @@ def verifier_cli_args() -> str:
     string.
 
     [Rust
-    `pactffi_verifier_cli_args`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_cli_args)
+    `pactffi_verifier_cli_args`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_cli_args)
 
     The purpose is to then be able to use in other languages which wrap the FFI
     library, to implement the same CLI functionality automatically without
@@ -7383,7 +7383,7 @@ def verifier_logs(handle: VerifierHandle) -> OwnedString:
     Extracts the logs for the verification run.
 
     [Rust
-    `pactffi_verifier_logs`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_logs)
+    `pactffi_verifier_logs`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_logs)
 
     This needs the memory buffer log sink to be setup before the verification is
     executed. The returned string will need to be freed with the `free_string`
@@ -7405,7 +7405,7 @@ def verifier_logs_for_provider(provider_name: str) -> OwnedString:
     Extracts the logs for the verification run for the provider name.
 
     [Rust
-    `pactffi_verifier_logs_for_provider`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_logs_for_provider)
+    `pactffi_verifier_logs_for_provider`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_logs_for_provider)
 
     This needs the memory buffer log sink to be setup before the verification is
     executed. The returned string will need to be freed with the `free_string`
@@ -7427,7 +7427,7 @@ def verifier_output(handle: VerifierHandle, strip_ansi: int) -> OwnedString:
     Extracts the standard output for the verification run.
 
     [Rust
-    `pactffi_verifier_output`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_output)
+    `pactffi_verifier_output`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_output)
 
     Args:
         handle:
@@ -7454,7 +7454,7 @@ def verifier_json(handle: VerifierHandle) -> OwnedString:
     Extracts the verification result as a JSON document.
 
     [Rust
-    `pactffi_verifier_json`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_verifier_json)
+    `pactffi_verifier_json`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_verifier_json)
 
     Raises:
         RuntimeError:
@@ -7482,7 +7482,7 @@ def using_plugin(
     otherwise you will have plugin processes left running.
 
     [Rust
-    `pactffi_using_plugin`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_using_plugin)
+    `pactffi_using_plugin`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_using_plugin)
 
     Args:
         pact:
@@ -7525,7 +7525,7 @@ def cleanup_plugins(pact: PactHandle) -> None:
     zero).
 
     [Rust
-    `pactffi_cleanup_plugins`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_cleanup_plugins)
+    `pactffi_cleanup_plugins`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_cleanup_plugins)
     """
     lib.pactffi_cleanup_plugins(pact._ref)
 
@@ -7544,7 +7544,7 @@ def interaction_contents(
     format of the JSON contents.
 
     [Rust
-    `pactffi_interaction_contents`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_interaction_contents)
+    `pactffi_interaction_contents`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_interaction_contents)
 
     Args:
         interaction:
@@ -7604,7 +7604,7 @@ def matches_string_value(
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_string_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_string_value)
+    `pactffi_matches_string_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_string_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get as a NULL terminated string
@@ -7635,7 +7635,7 @@ def matches_u64_value(
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_u64_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_u64_value)
+    `pactffi_matches_u64_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_u64_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get
@@ -7665,7 +7665,7 @@ def matches_i64_value(
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_i64_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_i64_value)
+    `pactffi_matches_i64_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_i64_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get
@@ -7695,7 +7695,7 @@ def matches_f64_value(
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_f64_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_f64_value)
+    `pactffi_matches_f64_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_f64_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get
@@ -7725,7 +7725,7 @@ def matches_bool_value(
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_bool_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_bool_value)
+    `pactffi_matches_bool_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_bool_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get, 0 == false and 1 == true
@@ -7757,7 +7757,7 @@ def matches_binary_value(  # noqa: PLR0913
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_binary_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_binary_value)
+    `pactffi_matches_binary_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_binary_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get
@@ -7792,7 +7792,7 @@ def matches_json_value(
     function once it is no longer required.
 
     [Rust
-    `pactffi_matches_json_value`](https://docs.rs/pact_ffi/0.4.22/pact_ffi/?search=pactffi_matches_json_value)
+    `pactffi_matches_json_value`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_matches_json_value)
 
     * matching_rule - pointer to a matching rule
     * expected_value - value we expect to get as a NULL terminated string
