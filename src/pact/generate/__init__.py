@@ -72,6 +72,7 @@ def __import__(  # noqa: N807
     warn users when they import functions directly from this module. This is
     done to avoid shadowing built-in types and functions.
     """
+    __tracebackhide__ = True
     if name == "pact.generate" and len(set(fromlist) - {"Matcher"}) > 0:
         warnings.warn(
             "Avoid `from pact.generate import <func>`. "
