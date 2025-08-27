@@ -107,6 +107,8 @@ filter_commits = false
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
+# Only include the current directory (relative to the .git directory)
+include_paths = ["pact-python-ffi/"]
 
 [remote.github]
 owner = "pact-foundation"
