@@ -87,6 +87,8 @@ class PactBuildHook(BuildHookInterface[Any]):
         # Cleanup the Pact FFI library
         for lib in PKG_DIR.glob("*pact_ffi.*"):
             lib.unlink()
+        # Cleanup the data directory
+        shutil.rmtree(PKG_DIR / "data", ignore_errors=True)
 
     def initialize(
         self,
