@@ -95,7 +95,7 @@ def start_provider() -> Generator[URL, None, None]:  # noqa: C901
 if __name__ == "__main__":
     app = Flask(__name__)
 
-    @app.route("/path/to/<test_id>")
+    @app.route("/path/to/<int:test_id>")
     def hello_world(test_id: int) -> Response:
         random_regex_matches = "1-8 digits: 12345678, 1-8 random letters abcdefgh"
         response = make_response({
