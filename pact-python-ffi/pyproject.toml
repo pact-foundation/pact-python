@@ -3,11 +3,10 @@
 description = "Python bindings for the Pact FFI library"
 name        = "pact-python-ffi"
 
-# dynamic  = ["version"]
+dynamic  = ["version"]
 keywords = ["pact", "ffi", "pact-python", "contract-testing"]
 license  = "MIT"
 readme   = "README.md"
-version  = "0.4.22.0"
 
 authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
