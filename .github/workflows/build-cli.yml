@@ -36,6 +36,7 @@ jobs:
     needs:
       - build-sdist
       - build-wheels
+      - publish
 
     steps:
       - name: Failed
