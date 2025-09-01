@@ -280,7 +280,7 @@ def parse_headers(headers: str) -> MultiDict[str]:
     return MultiDict(kvs)
 
 
-def parse_matching_rules(matching_rules: str) -> str:
+def parse_rules(matching_rules: str) -> str:
     """
     Parse the matching rules.
 
