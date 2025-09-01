@@ -24,7 +24,7 @@ from pact.interaction import HttpInteraction, Interaction
 from tests.compatibility_suite.util import (
     FIXTURES_ROOT,
     parse_headers,
-    parse_matching_rules,
+    parse_rules,
     truncate,
 )
 
@@ -290,11 +290,13 @@ class InteractionDefinition:
         self.headers: MultiDict[str] = MultiDict()
         self.body: InteractionBody | None = None
         self.matching_rules: str | None = None
+        self.generators: str | None = None
 
         # Response properties
         self.response_headers: MultiDict[str] = MultiDict()
         self.response_body: InteractionBody | None = None
         self.response_matching_rules: str | None = None
+        self.response_generators: str | None = None
 
         self.update(metadata=metadata, **kwargs)
 
@@ -373,7 +375,7 @@ class InteractionDefinition:
 
         return kwargs
 
-    def _update_request(self, **kwargs: str) -> dict[str, str]:
+    def _update_request(self, **kwargs: str) -> dict[str, str]:  # noqa: C901
         """
         Update the request properties of the interaction.
 
@@ -389,6 +391,7 @@ class InteractionDefinition:
                 -   `body`: Request body.
                 -   `content_type`: Request content type.
                 -   `matching_rules`: Request matching rules.
+                -   `generators`: Request generators.
 
         """
         if method := kwargs.pop("method", None):
@@ -425,7 +428,10 @@ class InteractionDefinition:
         if matching_rules := (
             kwargs.pop("matching_rules", None) or kwargs.pop("matching rules", None)
         ):
-            self.matching_rules = parse_matching_rules(matching_rules)
+            self.matching_rules = parse_rules(matching_rules)
+
+        if generators := kwargs.pop("generators", None):
+            self.generators = parse_rules(generators)
 
         return kwargs
 
@@ -442,6 +448,7 @@ class InteractionDefinition:
                 -  `response_content`: Response content type.
                 -  `response_body`: Response body.
                 -  `response_matching_rules`: Response matching rules.
+                -  `response_generators`: Response generators.
 
         Returns:
             The remaining keyword arguments.
@@ -476,7 +483,13 @@ class InteractionDefinition:
             kwargs.pop("response_matching_rules", None)
             or kwargs.pop("response matching rules", None)
         ):
-            self.response_matching_rules = parse_matching_rules(matching_rules)
+            self.response_matching_rules = parse_rules(matching_rules)
+
+        if generators := (
+            kwargs.pop("response_generators", None)
+            or kwargs.pop("response generators", None)
+        ):
+            self.response_generators = parse_rules(generators)
 
         return kwargs
 
@@ -562,6 +575,10 @@ class InteractionDefinition:
             logger.info("with_matching_rules(%r)", self.matching_rules)
             interaction.with_matching_rules(self.matching_rules)
 
+        if self.generators:
+            logger.info("with_generators(%r)", self.generators)
+            interaction.with_generators(self.generators)
+
         if self.response:
             assert isinstance(interaction, HttpInteraction), (
                 "Response requires an HTTP interaction"
@@ -585,6 +602,10 @@ class InteractionDefinition:
         if self.response_matching_rules:
             logger.info("with_matching_rules(%r)", self.response_matching_rules)
             interaction.with_matching_rules(self.response_matching_rules)
+
+        if self.response_generators:
+            logger.info("with_generators(%r)", self.response_generators)
+            interaction.with_generators(self.response_generators)
 
         if self.metadata:
             interaction.with_metadata(self.metadata)
