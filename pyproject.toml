@@ -111,6 +111,7 @@ test = [
   "pytest-asyncio~=1.0",
   "pytest-bdd~=8.0",
   "pytest-cov~=6.0",
+  "pytest-rerunfailures~=16.0",
   "pytest~=8.0",
   "requests~=2.0",
   "testcontainers~=4.0",
@@ -294,6 +295,7 @@ requires      = ["hatch-vcs", "hatchling"]
     "ignore::DeprecationWarning:tests",
   ]
   pythonpath = "."
+  reruns = 3
 
   log_date_format = "%H:%M:%S"
   log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
