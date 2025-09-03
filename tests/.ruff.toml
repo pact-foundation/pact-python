@@ -7,6 +7,7 @@ ignore = [
   "D104",    # Require docstring in public package
   "INP001",  # Forbid implicit namespaces
   "PLR2004", # Forbid Magic Numbers
+  "RUF018",  # Forbid assignment in assertions
   "S101",    # Forbid assert statements
   "TID252",  # Require absolute imports
 ]
