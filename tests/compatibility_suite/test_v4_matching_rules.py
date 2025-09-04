@@ -55,6 +55,11 @@ def verifier() -> Verifier:
     return Verifier("v4-matching-rules-provider")
 
 
+################################################################################
+## Scenario
+################################################################################
+
+
 @scenario(
     "definition/features/V4/matching_rules.feature",
     "Supports a ArrayContains matcher (negative case)",
