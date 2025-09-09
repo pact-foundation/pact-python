@@ -31,7 +31,7 @@ classifiers = [
 
 requires-python = ">=3.9"
 
-dependencies = ["cffi~=1.0"]
+dependencies = ["cffi~=2.0"]
 
   [project.urls]
   "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
