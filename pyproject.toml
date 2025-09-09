@@ -43,7 +43,7 @@ dependencies = [
   # Pact dependencies
   "pact-python-ffi~=0.4.0",
   # External dependencies
-  "cffi~=1.0",
+  "cffi~=2.0",
   "yarl~=1.0",
   "typing-extensions~=4.0 ; python_version < '3.10'",
 ]
