@@ -65,7 +65,10 @@ def test_metadata(pact: Pact) -> None:
 
 
 def test_invalid_interaction(pact: Pact) -> None:
-    with pytest.raises(ValueError, match="Invalid interaction type: .*"):
+    with pytest.raises(
+        ValueError,
+        match=r"Invalid interaction type: .*",
+    ):
         pact.upon_receiving("a basic request", "Invalid")  # type: ignore[call-overload]
 
 
