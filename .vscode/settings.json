@@ -1,5 +1,6 @@
 {
   "python.testing.pytestArgs": [
+    "--reruns=0",
     "--no-cov",
     "--ignore=examples/v2",
     "--ignore=tests/v2",
