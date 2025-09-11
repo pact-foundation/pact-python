@@ -113,10 +113,10 @@ You can also try using the new [github.dev](https://github.dev/pact-foundation/p
 
 Don't worry too much about styles in general—the maintainers will help you fix them as they review your code.
 
-To help catch a lot of simple formatting or linting issues, you can run `hatch run lint` to run the linter and `hatch run format` to format your code. This process can also be automated by installing [`pre-commit`](https://pre-commit.com/) hooks:
+To help catch a lot of simple formatting or linting issues, you can run `hatch run lint` to run the linter and `hatch run format` to format your code. This process can also be automated by installing [`prek`](https://prek.j178.dev/) to manage pre-commit hooks:
 
 ```sh
-pre-commit install
+prek install
 ```
 
 ## Pull Requests
