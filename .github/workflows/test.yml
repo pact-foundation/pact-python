@@ -37,7 +37,7 @@ jobs:
       - format
       - lint
       - typecheck
-      - pre-commit
+      - prek
 
     steps:
       - name: Failed
@@ -276,36 +276,32 @@ jobs:
         working-directory: pact-python-cli
         run: hatch run typecheck
 
-  pre-commit:
-    name: Pre-commit
+  prek:
+    name: Prek (pre-commit)
 
     runs-on: ubuntu-latest
 
-    env:
-      PRE_COMMIT_HOME: ${{ github.workspace }}/.pre-commit
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
 
-      - name: Cache pre-commit
+      - name: Cache prek
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809  # v4.2.4
         with:
           path: |
-            ${{ env.PRE_COMMIT_HOME }}
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+            $HOME/.cache/prek
+          key: ${{ runner.os }}-prek-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@557e51de59eb14aaaba2ed9621916900a91d50c6  # v6.6.1
         with:
           enable-cache: true
-          cache-suffix: pre-commit
+          cache-suffix: prek
           cache-dependency-glob: ''
 
-      - name: Install pre-commit
-        run: uv tool install pre-commit
+      - name: Install prek
+        run: uv tool install prek
+      - name: Install hatch
+        run: uv tool install hatch
 
-      - name: Run pre-commit
-        run: pre-commit run --show-diff-on-failure --color=always --all-files
+      - name: Run prek
+        run: prek run --show-diff-on-failure --color=always --all-files
