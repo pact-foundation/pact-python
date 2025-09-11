@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import abc
 import json
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 import pact_ffi
 from pact.match.matcher import IntegrationJSONEncoder
@@ -103,7 +103,7 @@ class Interaction(abc.ABC):
 
     def _parse_interaction_part(
         self,
-        part: Literal["Request", "Response", None],
+        part: Optional[Literal["Request", "Response"]],
     ) -> pact_ffi.InteractionPart:
         """
         Convert the input into an InteractionPart.
