@@ -53,7 +53,7 @@ requires-python = ">=3.9"
 # developper consistency. All other dependencies are as above.
 dev   = ["ruff==0.13.0", { include-group = "test" }, { include-group = "types" }]
 test  = ["pytest-cov~=7.0", "pytest~=8.0"]
-types = ["mypy==1.17.1"]
+types = ["mypy==1.18.1"]
 
 ################################################################################
 ## Build System
