@@ -15,6 +15,7 @@ import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
+from typing import Any
 
 from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
@@ -23,7 +24,7 @@ from packaging.tags import sys_tags
 logger = logging.getLogger(__name__)
 
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_cli"
-PACT_CLI_URL = "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
+PACT_CLI_URL = "https://github.com/pact-foundation/pact-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
 
 
 class UnsupportedPlatformError(RuntimeError):
@@ -57,7 +58,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
 
     PLUGIN_NAME = "pact-cli"
 
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
         """
         Initialize the build hook.
 
