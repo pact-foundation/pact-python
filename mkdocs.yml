@@ -122,18 +122,23 @@ theme:
     repo: fontawesome/brands/github
 
   features:
+    - content.action.edit
+    - content.action.view
     - content.code.annotate
     - content.code.copy
     - content.tooltips
     - navigation.indexes
     - navigation.instant
+    - navigation.instant.progress
     - navigation.sections
-    - navigation.tracking
     - navigation.tabs
     - navigation.top
+    - navigation.tracking
+    - navigation.footer
     - search.highlight
     - search.share
     - search.suggest
+    - toc.follow
 
   palette:
     - media: (prefers-color-scheme)
