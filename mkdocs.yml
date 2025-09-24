@@ -16,12 +16,19 @@ plugins:
       nav_file: SUMMARY.md
   - section-index
   - gh-admonitions
-  # Library documentation
   - gen-files:
       scripts:
         - docs/scripts/markdown.py
         - docs/scripts/python.py
         # - docs/scripts/other.py
+  - llmstxt:
+      full_output: llms-full.txt
+      sections:
+        Usage documentation:
+          - api/*.md
+          - api/**/*.md
+        Examples:
+          - examples/*.md
   - mkdocstrings:
       default_handler: python
       enable_inventory: true
