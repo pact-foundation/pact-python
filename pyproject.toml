@@ -86,6 +86,7 @@ dev = [
 docs = [
   "mkdocs-github-admonitions-plugin~=0.0",
   "mkdocs-literate-nav~=0.6",
+  "mkdocs-llmstxt~=0.3",
   "mkdocs-material[recommended,git,imaging]~=9.0",
   "mkdocs-section-index~=0.3",
   "mkdocs_gen_files~=0.5",
