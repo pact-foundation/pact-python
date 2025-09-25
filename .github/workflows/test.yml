@@ -103,18 +103,31 @@ jobs:
         run: uv tool install hatch
 
       - name: Run tests
-        run: hatch run test.py${{ matrix.python-version }}:test
+        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
 
       - name: Run tests (v2)
-        run: hatch run v2-test.py${{ matrix.python-version }}:test
+        run: hatch run v2-test.py${{ matrix.python-version }}:test --junit-xml=v2-junit.xml
 
       - name: Run tests (CLI)
         working-directory: pact-python-cli
-        run: hatch run test.py${{ matrix.python-version }}:test
+        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
 
       - name: Run tests (FFI)
         working-directory: pact-python-ffi
-        run: hatch run test.py${{ matrix.python-version }}:test
+        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
+
+      - name: Upload coverage
+        if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7  # v5.5.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: tests
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@47f89e9acb64b76debcd5ea40642d25a4adced9f  # v1.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   example:
     name: >-
@@ -166,7 +179,7 @@ jobs:
 
           while IFS= read -r -d $'\0' file <&3; do
             cd "$(dirname "$file")"
-            uv run --python ${{ matrix.python-version }} --group test pytest
+            uv run --python ${{ matrix.python-version }} --group test pytest --junit-xml=junit.xml
           done 3< <(find "$(pwd)/examples" -name pyproject.toml -print0)
 
       - name: Upload coverage
