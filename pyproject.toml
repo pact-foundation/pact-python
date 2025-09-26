@@ -389,3 +389,6 @@ exclude = """(?x)^(
 
   [tool.typos.default]
   extend-ignore-re = ['(?Rm)^.*(#|//|<!--)\s*spellchecker:\s*ignore']
+
+  [tool.typos.files]
+  extend-exclude = ["*.svg"]
