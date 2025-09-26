@@ -442,7 +442,8 @@ def regex(
     )
 
 
-_UUID_FORMATS = {
+_UUID_FORMAT_NAMES = Literal["simple", "lowercase", "uppercase", "urn"]
+_UUID_FORMATS: dict[_UUID_FORMAT_NAMES, builtins.str] = {
     "simple": r"[0-9a-fA-F]{32}",
     "lowercase": r"[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}",
     "uppercase": r"[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}",
@@ -454,7 +455,7 @@ def uuid(
     value: builtins.str | Unset = UNSET,
     /,
     *,
-    format: Literal["uppercase", "lowercase", "urn", "simple"] | None = None,
+    format: _UUID_FORMAT_NAMES | None = None,
 ) -> Matcher[builtins.str]:
     """
     Match a UUID value.
