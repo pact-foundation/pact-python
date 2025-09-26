@@ -245,7 +245,8 @@ def regex(regex: builtins.str) -> Generator:
     return GenericGenerator("Regex", {"regex": regex})
 
 
-_UUID_FORMATS = {
+_UUID_FORMAT_NAMES = Literal["simple", "lowercase", "uppercase", "urn"]
+_UUID_FORMATS: dict[_UUID_FORMAT_NAMES, builtins.str] = {
     "simple": "simple",
     "lowercase": "lower-case-hyphenated",
     "uppercase": "upper-case-hyphenated",
@@ -254,7 +255,7 @@ _UUID_FORMATS = {
 
 
 def uuid(
-    format: Literal["simple", "lowercase", "uppercase", "urn"] = "lowercase",
+    format: _UUID_FORMAT_NAMES = "lowercase",
 ) -> Generator:
     """
     Create a UUID generator.
