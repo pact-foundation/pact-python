@@ -1,45 +1,241 @@
-"""
+r"""
 Matching functionality.
 
-This module provides the functionality to define matching rules to be used
-within a Pact contract. These rules define the expected content of the data
-being exchanged in a way that is more flexible than a simple equality check.
+This module defines flexible matching rules for use in Pact contracts. These
+rules specify the expected content of exchanged data, allowing for more robust
+contract testing than simple equality checks.
 
-As an example, a contract may define how a new record is to be created through a
-POST request. The consumer would define the new information to be sent, and the
-expected response. The response may contain additional data added by the
-provider, such as an ID and a creation timestamp. The contract would define that
-the ID is of a specific format (e.g., an integer or a UUID), and that the
-creation timestamp is ISO 8601 formatted.
+For example, a contract may specify how a new record is created via a POST
+request. The consumer defines the data to send and the expected response. The
+response may include additional fields from the provider, such as an ID or
+creation timestamp. The contract can require the ID to match a specific format
+(e.g., integer or UUID) and the timestamp to be ISO 8601.
 
 !!! warning
 
     Do not import functions directly from this module. Instead, import the
-    `match` module and use the functions from there:
+    `match` module and use its functions:
 
     ```python
-    # Good
+    # Recommended
     from pact import match
 
     match.int(...)
 
-    # Bad
+    # Not recommended
     from pact.match import int
 
     int(...)
     ```
 
-A number of functions in this module are named after the types they match (e.g.,
-`int`, `str`, `bool`). These functions will have aliases as well for better
-interoperability with the rest of the Pact ecosystem. It is important to note
-that these functions will shadow the built-in types if imported directly from
-this module. This is why we recommend importing the `match` module and using the
-functions from there.
+Many functions in this module are named after the types they match (e.g., `int`,
+`str`, `bool`). Importing directly from this module may shadow Python built-in
+types, so always use the `match` module.
 
-Matching rules are frequently combined with generators which allow for Pact to
-generate values on the fly during contract testing. As a general rule for the
-functions below, if a `value` is _not_ provided, a generator will be used; and
-conversely, if a `value` is provided, a generator will _not_ be used.
+Matching rules are often combined with generators, which allow Pact to produce
+values dynamically during contract tests. If a `value` is not provided, a
+generator is used; if a `value` is provided, a generator is not used. This is
+_not_ advised, as leads to non-deterministic tests.
+
+!!! note
+
+    You do not need to specify everything that will be returned from the
+    provider in a JSON response. Any extra data that is received will be
+    ignored and the tests will still pass, as long as the expected fields
+    match the defined patterns.
+
+For more information about the Pact matching specification, see
+[Matching](https://docs.pact.io/getting_started/matching).
+
+## Type Matching
+
+The most common matchers validate that values are of a specific type. These
+matchers can optionally accept example values:
+
+```python
+from pact import match
+
+response = {
+    "id": match.int(123),  # Any integer (example: 123)
+    "name": match.str("Alice"),  # Any string (example: "Alice")
+    "score": match.float(98.5),  # Any float (example: 98.5)
+    "active": match.bool(True),  # Any boolean (example: True)
+    "tags": match.each_like("admin"),  # Array of strings (example: ["admin"])
+}
+```
+
+When no example value is provided, Pact will generate appropriate values
+automatically, but this is _not_ advised, as it leads to non-deterministic
+tests.
+
+## Regular Expression Matching
+
+For values that must match a specific pattern, use `match.regex()` with a
+regular expression:
+
+```python
+response = {
+    "reference": match.regex("X1234-456def", regex=r"[A-Z]\d{3,6}-[0-9a-f]{6}"),
+    "phone": match.regex("+1-555-123-4567", regex=r"\+1-\d{3}-\d{3}-\d{4}"),
+}
+```
+
+Note that the regular expression should be provided as a raw string (using the
+`r"..."` syntax) to avoid issues with escape sequences. Advanced regex features
+like lookaheads and lookbehinds should be avoided, as they may not be supported
+by all Pact implementations.
+
+## Complex Objects
+
+For complex nested objects, matchers can be combined to create sophisticated
+matching rules:
+
+```python
+from pact import match
+
+user_response = {
+    "id": match.int(123),
+    "name": match.str("Alice"),
+    "email": match.regex(
+        "alice@example.com",
+        regex=r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
+    ),
+    "confirmed": match.bool(True),
+    "address": {
+        "street": match.str("123 Main St"),
+        "city": match.str("Anytown"),
+        "postal_code": match.regex("12345", regex=r"\d{5}"),
+    },
+    "roles": match.each_like(match.str("admin")),  # Array of strings
+}
+```
+
+The `match.type()` (or its alias `match.like()`) function provides generic type
+matching for any value:
+
+```python
+# These are equivalent to the specific type matchers
+response = {
+    "id": match.type(123),  # Same as match.int(123)
+    "name": match.like("Alice"),  # Same as match.str("Alice")
+}
+```
+
+## Array Matching
+
+For arrays where each element should match a specific pattern, use
+`match.each_like()`:
+
+```python
+from pact import match
+
+# Simple arrays
+response = {
+    "tags": match.each_like(match.str("admin")),  # Array of strings
+    "scores": match.each_like(match.int(95)),  # Array of integers
+    "active": match.each_like(match.bool(True)),  # Array of booleans
+}
+
+# Complex nested objects in arrays
+users_response = {
+    "users": match.each_like({
+        "id": match.int(123),
+        "username": match.regex("alice123", regex=r"[a-zA-Z]+\d*"),
+        "roles": match.each_like(match.str("user")),  # Nested array
+    })
+}
+```
+
+You can also control the minimum and maximum number of array elements:
+
+```python
+response = {"items": match.each_like(match.str("item"), min=1, max=10)}
+```
+
+For arrays that must contain specific elements regardless of order, use
+`match.array_containing()`. For example, to ensure an array includes certain
+permissions:
+
+```python
+response = {
+    "permissions": match.array_containing([
+        match.str("read"),
+        match.str("write"),
+        match.regex("admin-edit", regex=r"admin-\w+"),
+    ])
+}
+```
+
+Note that additional elements may be present in the array; the matcher only
+ensures the specified elements are included.
+
+## Date and Time Matching
+
+The `match` module provides specialized matchers for date and time values:
+
+```python
+from pact import match
+from datetime import date, time, datetime
+
+response = {
+    # Date matching (YYYY-MM-DD format by default)
+    "birth_date": match.date("2024-07-20"),
+    "birth_date_obj": match.date(date(2024, 7, 20)),
+    # Time matching (HH:MM:SS format by default)
+    "start_time": match.time("14:30:00"),
+    "start_time_obj": match.time(time(14, 30, 0)),
+    # DateTime matching (ISO 8601 format by default)
+    "created_at": match.datetime("2024-07-20T14:30:00+00:00"),
+    "updated_at": match.datetime(datetime(2024, 7, 20, 14, 30, 0)),
+    # Custom formats using Python strftime patterns
+    "custom_date": match.date("07/20/2024", format="%m/%d/%Y"),
+    "custom_time": match.time("2:30 PM", format="%I:%M %p"),
+}
+```
+
+## Specialized Matchers
+
+Other commonly used matchers include:
+
+```python
+from pact import match
+
+response = {
+    # UUID matching with different formats
+    "id": match.uuid("550e8400-e29b-41d4-a716-446655440000"),
+    "simple_id": match.uuid(format="simple"),  # No hyphens
+    "uppercase_id": match.uuid(format="uppercase"),  # Uppercase letters
+    # Number matching with constraints
+    "age": match.int(25, min=18, max=99),
+    "price": match.float(19.99, precision=2),
+    "count": match.number(42),  # Generic number matcher
+    # String matching with constraints
+    "username": match.str("alice123", size=8),
+    "description": match.str(),  # Any string
+    # Null values
+    "optional_field": match.none(),  # or match.null()
+    # String inclusion matching
+    "message": match.includes("success"),  # Must contain "success"
+}
+```
+
+## Advanced Dictionary Matching
+
+For dynamic dictionary structures, you can match keys and values separately:
+
+```python
+# Match each key against a pattern
+user_permissions = match.each_key_matches(
+    {"admin-read": True, "admin-write": False},
+    rules=match.regex("admin-read", regex=r"admin-\w+"),
+)
+
+# Match each value against a pattern
+user_scores = match.each_value_matches(
+    {"math": 95, "science": 87}, rules=match.int(85, min=0, max=100)
+)
+```
+
 """
 
 from __future__ import annotations
@@ -126,8 +322,8 @@ def __import__(  # noqa: N807
     """
     Override to warn when importing functions directly from this module.
 
-    This function is used to override the built-in `__import__` function to warn
-    users when they import functions directly from this module. This is done to
+    This function overrides the built-in `__import__` to warn
+    users when importing functions directly from this module, helping to
     avoid shadowing built-in types and functions.
     """
     __tracebackhide__ = True
@@ -155,13 +351,13 @@ def int(
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         min:
-            If provided, the minimum value of the integer to generate.
+            Minimum value to generate, if set.
 
         max:
-            If provided, the maximum value of the integer to generate.
+            Maximum value to generate, if set.
 
     Returns:
         Matcher for integer values.
@@ -200,17 +396,17 @@ def float(
     precision: builtins.int | None = None,
 ) -> AbstractMatcher[_NumberT]:
     """
-    Match a floating point number.
+    Match a floating-point number.
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         precision:
-            The number of decimal precision to generate.
+            Number of decimal places to generate.
 
     Returns:
-        Matcher for floating point numbers.
+        Matcher for floating-point numbers.
     """
     if value is UNSET:
         return GenericMatcher(
@@ -275,27 +471,20 @@ def number(
     | AbstractMatcher[Decimal]
 ):
     """
-    Match a general number.
-
-    This matcher is a generalization of the [`integer`][pact.match.integer]
-    and [`decimal`][pact.match.decimal] matchers. It can be used to match any
-    number, whether it is an integer or a float.
+    Match any number (integer, float, or Decimal).
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         min:
-            The minimum value of the number to generate. Only used when value is
-            an integer.
+            Minimum value to generate (for integers).
 
         max:
-            The maximum value of the number to generate. Only used when value is
-            an integer.
+            Maximum value to generate (for integers).
 
         precision:
-            The number of decimal digits to generate. Only used when value is a
-            float.
+            Number of decimal digits to generate (for floats).
 
     Returns:
         Matcher for numbers (integer, float, or Decimal).
@@ -355,21 +544,17 @@ def str(
     generator: Generator | None = None,
 ) -> AbstractMatcher[builtins.str]:
     """
-    Match a string value.
-
-    This function can be used to match a string value, merely verifying that the
-    value is a string, possibly with a specific length.
+    Match a string value, optionally with a specific length.
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         size:
-            The size of the string to generate during a consumer test.
+            Length of string to generate for consumer test.
 
         generator:
-            Alternative generator to use when generating a consumer test.
-            If set, the `size` argument is ignored.
+            Alternative generator for consumer test. If set, ignores `size`.
 
     Returns:
         Matcher for string values.
@@ -421,10 +606,10 @@ def regex(
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         regex:
-            The regular expression to match against.
+            Regular expression pattern to match.
 
     Returns:
         Matcher for strings matching the given regular expression.
@@ -464,29 +649,24 @@ def uuid(
     """
     Match a UUID value.
 
-    This matcher internally combines the [`regex`][pact.match.regex] matcher
-    with a UUID regex pattern. See [RFC 4122](https://datatracker.ietf.org/doc/html/rfc4122)
-    for details about the UUID format.
-
-    While RFC 4122 requires UUIDs to be output as lowercase, UUIDs are case
-    insensitive on input. Some common alternative formats can be enforced using
-    the `format` parameter.
+    See [RFC 4122](https://datatracker.ietf.org/doc/html/rfc4122) for details
+    about the UUID format. Some common, albeit non-compliant, alternative
+    formats are also supported.
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         format:
-            Enforce a specific UUID format. The following formats are supported:
+            Specify UUID format:
 
-            -   `simple`: 32 hexadecimal digits with no hyphens. This is _not_ a
-                valid UUID format, but is provided for convenience.
+            -   `simple`: 32 hexadecimal digits, no hyphens (not standard, for
+                convenience).
             -   `lowercase`: Lowercase hexadecimal digits with hyphens.
             -   `uppercase`: Uppercase hexadecimal digits with hyphens.
-            -   `urn`: Lowercase hexadecimal digits with hyphens and a
-                `urn:uuid:`
+            -   `urn`: Lowercase hexadecimal digits with hyphens and `urn:uuid:` prefix.
 
-            If not provided, the matcher will accept any lowercase or uppercase.
+            If not set, matches any case.
 
     Returns:
         Matcher for UUID strings.
@@ -515,7 +695,7 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> AbstractMatcher[builtins.bo
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
     Returns:
         Matcher for boolean values.
@@ -540,28 +720,20 @@ def date(
     disable_conversion: builtins.bool = False,
 ) -> AbstractMatcher[builtins.str]:
     """
-    Match a date value.
+    Match a date value (string, no time component).
 
-    A date value is a string that represents a date in a specific format. It
-    does _not_ have any time information.
-
-    !!! info
-
-        Pact internally uses the Java's
-        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
-        To ensure compatibility with the rest of the Python ecosystem, this
-        function accepts Python's
-        [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
-        format and performs the conversion to Java's format internally.
+    Uses Python's
+    [strftime](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+    format, converted to [Java
+    `SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+    for Pact compatibility.
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         format:
-            Expected format of the date.
-
-            If not provided, an ISO 8601 date format will be used: `%Y-%m-%d`.
+            Date format string. Defaults to ISO 8601 (`%Y-%m-%d`).
 
         disable_conversion:
             If True, the conversion from Python's `strftime` format to Java's
@@ -615,33 +787,24 @@ def time(
     disable_conversion: builtins.bool = False,
 ) -> AbstractMatcher[builtins.str]:
     """
-    Match a time value.
+    Match a time value (string, no date component).
 
-    A time value is a string that represents a time in a specific format. It
-    does _not_ have any date information.
-
-    !!! info
-
-        Pact internally uses the Java's
-        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
-        To ensure compatibility with the rest of the Python ecosystem, this
-        function accepts Python's [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
-        format and performs the conversion to Java's format internally.
+    Uses Python's
+    [strftime](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+    format, converted to [Java
+    `SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+    for Pact compatibility.
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         format:
-            Expected format of the time.
-
-            If not provided, an ISO 8601 time format will be used: `%H:%M:%S`.
+            Time format string. Defaults to ISO 8601 (`%H:%M:%S`).
 
         disable_conversion:
-            If True, the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format will be disabled, and the format must be
-            in Java's `SimpleDateFormat` format. As a result, the value must
-            be a string as Python cannot format the time in the target format.
+            If True, disables conversion and expects Java format. Value must be
+            a string.
 
     Returns:
         Matcher for time strings.
@@ -687,35 +850,24 @@ def datetime(
     disable_conversion: builtins.bool = False,
 ) -> AbstractMatcher[builtins.str]:
     """
-    Match a datetime value.
+    Match a datetime value (string, date and time).
 
-    A timestamp value is a string that represents a date and time in a specific
-    format.
-
-    !!! info
-
-        Pact internally uses the Java's
-        [`SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
-        To ensure compatibility with the rest of the Python ecosystem, this
-        function accepts Python's
-        [`strftime`](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
-        format and performs the conversion to Java's format internally.
+    Uses Python's
+    [strftime](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior)
+    format, converted to [Java
+    `SimpleDateFormat`](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+    for Pact compatibility.
 
     Args:
         value:
-            Default value to use when generating a consumer test.
+            Example value for consumer test generation.
 
         format:
-            Expected format of the timestamp.
-
-            If not provided, an ISO 8601 timestamp format will be used:
-            `%Y-%m-%dT%H:%M:%S%z`.
+            Datetime format string. Defaults to ISO 8601 (`%Y-%m-%dT%H:%M:%S%z`).
 
         disable_conversion:
-            If True, the conversion from Python's `strftime` format to Java's
-            `SimpleDateFormat` format will be disabled, and the format must be
-            in Java's `SimpleDateFormat` format. As a result, the value must be
-            a string as Python cannot format the timestamp in the target format.
+            If True, disables conversion and expects Java format. Value must be
+            a string.
 
     Returns:
         Matcher for datetime strings.
@@ -789,21 +941,20 @@ def type(
     generator: Generator | None = None,
 ) -> AbstractMatcher[_T]:
     """
-    Match a value by type.
+    Match a value by type (primitive or complex).
 
     Args:
         value:
-            A value to match against. This can be a primitive value, or a more
-            complex object or array.
+            Value to match (primitive or complex).
 
         min:
-            The minimum number of items that must match the value.
+            Minimum number of items to match.
 
         max:
-            The maximum number of items that must match the value.
+            Maximum number of items to match.
 
         generator:
-            The generator to use when generating the value.
+            Generator to use for value generation.
 
     Returns:
         Matcher for the given value type.
@@ -838,23 +989,20 @@ def each_like(
     max: builtins.int | None = None,
 ) -> AbstractMatcher[Sequence[_T]]:  # type: ignore[type-var]
     """
-    Match each item in an array against a given value.
-
-    The value itself is arbitrary, and can include other matchers.
+    Match each item in an array against a value (can be a matcher).
 
     Args:
         value:
-            The value to match against.
+            Value to match against (can be a matcher).
 
         min:
-            The minimum number of items that must match the value. The minimum
-            value is always 1, even if min is set to 0.
+            Minimum number of items to match (minimum is always 1).
 
         max:
-            The maximum number of items that must match the value.
+            Maximum number of items to match.
 
     Returns:
-        Matcher for arrays where each item matches the given value.
+        Matcher for arrays where each item matches the value.
     """
     if min is not None and min < 1:
         warnings.warn(
@@ -875,10 +1023,10 @@ def includes(
 
     Args:
         value:
-            The value to match against.
+            Value to match against.
 
         generator:
-            The generator to use when generating the value.
+            Generator to use for value generation.
 
     Returns:
         Matcher for strings that include the given value.
@@ -894,14 +1042,13 @@ def array_containing(
     variants: Sequence[_T | AbstractMatcher[_T]], /
 ) -> AbstractMatcher[Sequence[_T]]:
     """
-    Match an array that contains the given variants.
+    Match an array containing the given variants.
 
-    Matching is successful if each variant occurs once in the array. Variants
-    may be objects containing matching rules.
+    Each variant must occur at least once. Variants may be matchers or objects.
 
     Args:
         variants:
-            A list of variants to match against.
+            List of variants to match against.
 
     Returns:
         Matcher for arrays containing the given variants.
@@ -916,17 +1063,17 @@ def each_key_matches(
     rules: AbstractMatcher[_T] | list[AbstractMatcher[_T]],
 ) -> AbstractMatcher[Mapping[_T, Matchable]]:
     """
-    Match each key in a dictionary against a set of rules.
+    Match each key in a dictionary against rules.
 
     Args:
         value:
-            The value to match against.
+            Dictionary to match against.
 
         rules:
-            The matching rules to match against each key.
+            Matching rules for each key.
 
     Returns:
-        Matcher for dictionaries where each key matches the given rules.
+        Matcher for dictionaries where each key matches the rules.
     """
     if isinstance(rules, AbstractMatcher):
         rules = [rules]
@@ -940,17 +1087,17 @@ def each_value_matches(
     rules: AbstractMatcher[_T] | list[AbstractMatcher[_T]],
 ) -> AbstractMatcher[Mapping[Matchable, _T]]:
     """
-    Returns a matcher that matches each value in a dictionary against a set of rules.
+    Match each value in a dictionary against rules.
 
     Args:
         value:
-            The value to match against.
+            Dictionary to match against.
 
         rules:
-            The matching rules to match against each value.
+            Matching rules for each value.
 
     Returns:
-        Matcher for dictionaries where each value matches the given rules.
+        Matcher for dictionaries where each value matches the rules.
     """
     if isinstance(rules, AbstractMatcher):
         rules = [rules]
