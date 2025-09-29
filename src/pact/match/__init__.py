@@ -53,11 +53,11 @@ from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 from pact import generate
 from pact._util import strftime_to_simple_date_format
 from pact.match.matcher import (
+    AbstractMatcher,
     ArrayContainsMatcher,
     EachKeyMatcher,
     EachValueMatcher,
     GenericMatcher,
-    Matcher,
 )
 from pact.types import UNSET, Matchable, Unset
 
@@ -82,7 +82,7 @@ if TYPE_CHECKING:
 #
 # <https://github.com/pact-foundation/pact-reference/blob/303073c/rust/pact_models/src/matchingrules/mod.rs#L62>
 __all__ = [
-    "Matcher",
+    "AbstractMatcher",
     "array_containing",
     "bool",
     "boolean",
@@ -149,7 +149,7 @@ def int(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Matcher[builtins.int]:
+) -> AbstractMatcher[builtins.int]:
     """
     Match an integer value.
 
@@ -183,7 +183,7 @@ def integer(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Matcher[builtins.int]:
+) -> AbstractMatcher[builtins.int]:
     """
     Alias for [`match.int`][pact.match.int].
     """
@@ -198,7 +198,7 @@ def float(
     /,
     *,
     precision: builtins.int | None = None,
-) -> Matcher[_NumberT]:
+) -> AbstractMatcher[_NumberT]:
     """
     Match a floating point number.
 
@@ -228,7 +228,7 @@ def decimal(
     /,
     *,
     precision: builtins.int | None = None,
-) -> Matcher[_NumberT]:
+) -> AbstractMatcher[_NumberT]:
     """
     Alias for [`match.float`][pact.match.float].
     """
@@ -242,26 +242,26 @@ def number(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Matcher[builtins.int]: ...
+) -> AbstractMatcher[builtins.int]: ...
 @overload
 def number(
     value: builtins.float,
     /,
     *,
     precision: builtins.int | None = None,
-) -> Matcher[builtins.float]: ...
+) -> AbstractMatcher[builtins.float]: ...
 @overload
 def number(
     value: Decimal,
     /,
     *,
     precision: builtins.int | None = None,
-) -> Matcher[Decimal]: ...
+) -> AbstractMatcher[Decimal]: ...
 @overload
 def number(
     value: Unset = UNSET,
     /,
-) -> Matcher[builtins.float]: ...
+) -> AbstractMatcher[builtins.float]: ...
 def number(
     value: builtins.int | builtins.float | Decimal | Unset = UNSET,  # noqa: PYI041
     /,
@@ -269,7 +269,11 @@ def number(
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     precision: builtins.int | None = None,
-) -> Matcher[builtins.int] | Matcher[builtins.float] | Matcher[Decimal]:
+) -> (
+    AbstractMatcher[builtins.int]
+    | AbstractMatcher[builtins.float]
+    | AbstractMatcher[Decimal]
+):
     """
     Match a general number.
 
@@ -349,7 +353,7 @@ def str(
     *,
     size: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a string value.
 
@@ -399,7 +403,7 @@ def string(
     *,
     size: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Alias for [`match.str`][pact.match.str].
     """
@@ -411,7 +415,7 @@ def regex(
     /,
     *,
     regex: builtins.str | None = None,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a string against a regular expression.
 
@@ -456,7 +460,7 @@ def uuid(
     /,
     *,
     format: _UUID_FORMAT_NAMES | None = None,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a UUID value.
 
@@ -505,7 +509,7 @@ def uuid(
     )
 
 
-def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
+def bool(value: builtins.bool | Unset = UNSET, /) -> AbstractMatcher[builtins.bool]:
     """
     Match a boolean value.
 
@@ -521,7 +525,7 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
     return GenericMatcher("boolean", value)
 
 
-def boolean(value: builtins.bool | Unset = UNSET, /) -> Matcher[builtins.bool]:
+def boolean(value: builtins.bool | Unset = UNSET, /) -> AbstractMatcher[builtins.bool]:
     """
     Alias for [`match.bool`][pact.match.bool].
     """
@@ -534,7 +538,7 @@ def date(
     format: builtins.str | None = None,
     *,
     disable_conversion: builtins.bool = False,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a date value.
 
@@ -609,7 +613,7 @@ def time(
     format: builtins.str | None = None,
     *,
     disable_conversion: builtins.bool = False,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a time value.
 
@@ -681,7 +685,7 @@ def datetime(
     format: builtins.str | None = None,
     *,
     disable_conversion: builtins.bool = False,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a datetime value.
 
@@ -755,21 +759,21 @@ def timestamp(
     format: builtins.str | None = None,
     *,
     disable_conversion: builtins.bool = False,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Alias for [`match.datetime`][pact.match.datetime].
     """
     return datetime(value, format, disable_conversion=disable_conversion)
 
 
-def none() -> Matcher[None]:
+def none() -> AbstractMatcher[None]:
     """
     Match a null value.
     """
     return GenericMatcher("null")
 
 
-def null() -> Matcher[None]:
+def null() -> AbstractMatcher[None]:
     """
     Alias for [`match.none`][pact.match.none].
     """
@@ -783,7 +787,7 @@ def type(
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[_T]:
+) -> AbstractMatcher[_T]:
     """
     Match a value by type.
 
@@ -819,7 +823,7 @@ def like(
     min: builtins.int | None = None,
     max: builtins.int | None = None,
     generator: Generator | None = None,
-) -> Matcher[_T]:
+) -> AbstractMatcher[_T]:
     """
     Alias for [`match.type`][pact.match.type].
     """
@@ -832,7 +836,7 @@ def each_like(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Matcher[Sequence[_T]]:  # type: ignore[type-var]
+) -> AbstractMatcher[Sequence[_T]]:  # type: ignore[type-var]
     """
     Match each item in an array against a given value.
 
@@ -865,7 +869,7 @@ def includes(
     /,
     *,
     generator: Generator | None = None,
-) -> Matcher[builtins.str]:
+) -> AbstractMatcher[builtins.str]:
     """
     Match a string that includes a given value.
 
@@ -886,7 +890,9 @@ def includes(
     )
 
 
-def array_containing(variants: Sequence[_T | Matcher[_T]], /) -> Matcher[Sequence[_T]]:
+def array_containing(
+    variants: Sequence[_T | AbstractMatcher[_T]], /
+) -> AbstractMatcher[Sequence[_T]]:
     """
     Match an array that contains the given variants.
 
@@ -907,8 +913,8 @@ def each_key_matches(
     value: Mapping[_T, Any],
     /,
     *,
-    rules: Matcher[_T] | list[Matcher[_T]],
-) -> Matcher[Mapping[_T, Matchable]]:
+    rules: AbstractMatcher[_T] | list[AbstractMatcher[_T]],
+) -> AbstractMatcher[Mapping[_T, Matchable]]:
     """
     Match each key in a dictionary against a set of rules.
 
@@ -922,7 +928,7 @@ def each_key_matches(
     Returns:
         Matcher for dictionaries where each key matches the given rules.
     """
-    if isinstance(rules, Matcher):
+    if isinstance(rules, AbstractMatcher):
         rules = [rules]
     return EachKeyMatcher(value=value, rules=rules)
 
@@ -931,8 +937,8 @@ def each_value_matches(
     value: Mapping[Any, _T],
     /,
     *,
-    rules: Matcher[_T] | list[Matcher[_T]],
-) -> Matcher[Mapping[Matchable, _T]]:
+    rules: AbstractMatcher[_T] | list[AbstractMatcher[_T]],
+) -> AbstractMatcher[Mapping[Matchable, _T]]:
     """
     Returns a matcher that matches each value in a dictionary against a set of rules.
 
@@ -946,6 +952,6 @@ def each_value_matches(
     Returns:
         Matcher for dictionaries where each value matches the given rules.
     """
-    if isinstance(rules, Matcher):
+    if isinstance(rules, AbstractMatcher):
         rules = [rules]
     return EachValueMatcher(value=value, rules=rules)
