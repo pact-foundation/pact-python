@@ -47,9 +47,8 @@ class AbstractMatcher(ABC, Generic[_T_co]):
         This method is used internally to convert the matcher to a JSON object
         which can be embedded directly in a number of places in the Pact FFI.
 
-        For more information about this format, see the docs:
-
-        > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
+        For more information about this format, see the [integration JSON
+        docs](https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson).
 
         Returns:
             The matcher as an integration JSON object.
@@ -63,13 +62,10 @@ class AbstractMatcher(ABC, Generic[_T_co]):
         This method is used internally to convert the matcher to a matching rule
         which can be embedded directly in a Pact file.
 
-        For more information about this format, see the docs:
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-4
-
-        and
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
+        For more information about this format, refer to the [Pact
+        specification](https://github.com/pact-foundation/pact-specification/tree/version-4)
+        and the [matchers
+        section](https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers)
 
         Returns:
             The matcher as a matching rule.
@@ -151,15 +147,9 @@ class GenericMatcher(AbstractMatcher[_T_co]):
         """
         Convert the matcher to an integration JSON object.
 
-        This method is used internally to convert the matcher to a JSON object
-        which can be embedded directly in a number of places in the Pact FFI.
-
-        For more information about this format, see the docs:
-
-        > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
-
-        Returns:
-            The matcher as an integration JSON object.
+        See
+        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        for more information.
         """
         return {
             "pact:matcher:type": self.type,
@@ -176,19 +166,9 @@ class GenericMatcher(AbstractMatcher[_T_co]):
         """
         Convert the matcher to a matching rule.
 
-        This method is used internally to convert the matcher to a matching rule
-        which can be embedded directly in a Pact file.
-
-        For more information about this format, see the docs:
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-4
-
-        and
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
-
-        Returns:
-            The matcher as a matching rule.
+        See
+        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        for more information.
         """
         return {
             "match": self.type,
@@ -217,10 +197,24 @@ class ArrayContainsMatcher(AbstractMatcher[Sequence[_T_co]]):
             extra_fields={"variants": variants},
         )
 
-    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+    def to_integration_json(self) -> dict[str, Any]:
+        """
+        Convert the matcher to an integration JSON object.
+
+        See
+        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        for more information.
+        """
         return self._matcher.to_integration_json()
 
-    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+    def to_matching_rule(self) -> dict[str, Any]:
+        """
+        Convert the matcher to a matching rule.
+
+        See
+        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        for more information.
+        """
         return self._matcher.to_matching_rule()
 
 
@@ -252,10 +246,24 @@ class EachKeyMatcher(AbstractMatcher[Mapping[_T, Matchable]]):
             extra_fields={"rules": rules},
         )
 
-    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+    def to_integration_json(self) -> dict[str, Any]:
+        """
+        Convert the matcher to an integration JSON object.
+
+        See
+        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        for more information.
+        """
         return self._matcher.to_integration_json()
 
-    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+    def to_matching_rule(self) -> dict[str, Any]:
+        """
+        Convert the matcher to a matching rule.
+
+        See
+        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        for more information.
+        """
         return self._matcher.to_matching_rule()
 
 
@@ -287,10 +295,24 @@ class EachValueMatcher(AbstractMatcher[Mapping[Matchable, _T_co]]):
             extra_fields={"rules": rules},
         )
 
-    def to_integration_json(self) -> dict[str, Any]:  # noqa: D102
+    def to_integration_json(self) -> dict[str, Any]:
+        """
+        Convert the matcher to an integration JSON object.
+
+        See
+        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        for more information.
+        """
         return self._matcher.to_integration_json()
 
-    def to_matching_rule(self) -> dict[str, Any]:  # noqa: D102
+    def to_matching_rule(self) -> dict[str, Any]:
+        """
+        Convert the matcher to a matching rule.
+
+        See
+        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        for more information.
+        """
         return self._matcher.to_matching_rule()
 
 
