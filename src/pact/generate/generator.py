@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from pact.types import GeneratorType
 
 
-class Generator(ABC):
+class AbstractGenerator(ABC):
     """
     Abstract generator.
 
@@ -34,17 +34,11 @@ class Generator(ABC):
     @abstractmethod
     def to_integration_json(self) -> dict[str, Any]:
         """
-        Convert the matcher to an integration JSON object.
+        Convert the generator to an integration JSON object.
 
-        This method is used internally to convert the matcher to a JSON object
-        which can be embedded directly in a number of places in the Pact FFI.
-
-        For more information about this format, see the docs:
-
-        > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
-
-        Returns:
-            The matcher as an integration JSON object.
+        See
+        [`AbstractGenerator.to_integration_json`][pact.generate.generator.AbstractGenerator.to_integration_json]
+        for more information.
         """
 
     @abstractmethod
@@ -55,20 +49,17 @@ class Generator(ABC):
         This method is used internally to convert the generator to a JSON object
         which can be embedded directly in a number of places in the Pact FFI.
 
-        For more information about this format, see the docs:
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-4
-
-        and
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
+        For more information about this format, refer to the [Pact
+        specification](https://github.com/pact-foundation/pact-specification/tree/version-4)
+        and the [matchers
+        section](https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers)
 
         Returns:
             The generator as a generator JSON object.
         """
 
 
-class GenericGenerator(Generator):
+class GenericGenerator(AbstractGenerator):
     """
     Generic generator.
 
@@ -108,17 +99,11 @@ class GenericGenerator(Generator):
 
     def to_integration_json(self) -> dict[str, Any]:
         """
-        Convert the matcher to an integration JSON object.
+        Convert the generator to an integration JSON object.
 
-        This method is used internally to convert the matcher to a JSON object
-        which can be embedded directly in a number of places in the Pact FFI.
-
-        For more information about this format, see the docs:
-
-        > https://docs.pact.io/implementation_guides/rust/pact_ffi/integrationjson
-
-        Returns:
-            The matcher as an integration JSON object.
+        See
+        [`AbstractGenerator.to_integration_json`][pact.generate.generator.AbstractGenerator.to_integration_json]
+        for more information.
         """
         return {
             "pact:generator:type": self.type,
@@ -129,19 +114,9 @@ class GenericGenerator(Generator):
         """
         Convert the generator to a generator JSON object.
 
-        This method is used internally to convert the generator to a JSON object
-        which can be embedded directly in a number of places in the Pact FFI.
-
-        For more information about this format, see the docs:
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-4
-
-        and
-
-        > https://github.com/pact-foundation/pact-specification/tree/version-2?tab=readme-ov-file#matchers
-
-        Returns:
-            The generator as a generator JSON object.
+        See
+        [`AbstractGenerator.to_generator_json`][pact.generate.generator.AbstractGenerator.to_generator_json]
+        for more information.
         """
         return {
             "type": self.type,

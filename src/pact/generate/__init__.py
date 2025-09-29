@@ -93,7 +93,7 @@ from typing import TYPE_CHECKING, Literal
 
 from pact._util import strftime_to_simple_date_format
 from pact.generate.generator import (
-    Generator,
+    AbstractGenerator,
     GenericGenerator,
 )
 
@@ -116,7 +116,7 @@ if TYPE_CHECKING:
 #
 # <https://github.com/pact-foundation/pact-reference/blob/303073c/rust/pact_models/src/generators/mod.rs#L121>
 __all__ = [
-    "Generator",
+    "AbstractGenerator",
     "bool",
     "boolean",
     "date",
@@ -172,7 +172,7 @@ def int(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Generate a random integer.
 
@@ -198,7 +198,7 @@ def integer(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Alias for [`generate.int`][pact.generate.int].
 
@@ -215,7 +215,7 @@ def integer(
     return int(min=min, max=max)
 
 
-def float(precision: builtins.int | None = None) -> Generator:
+def float(precision: builtins.int | None = None) -> AbstractGenerator:
     """
     Generate a random decimal number.
 
@@ -235,7 +235,7 @@ def float(precision: builtins.int | None = None) -> Generator:
     return GenericGenerator("RandomDecimal", extra_fields=params)
 
 
-def decimal(precision: builtins.int | None = None) -> Generator:
+def decimal(precision: builtins.int | None = None) -> AbstractGenerator:
     """
     Alias for [`generate.float`][pact.generate.float].
 
@@ -249,7 +249,7 @@ def decimal(precision: builtins.int | None = None) -> Generator:
     return float(precision=precision)
 
 
-def hex(digits: builtins.int | None = None) -> Generator:
+def hex(digits: builtins.int | None = None) -> AbstractGenerator:
     """
     Generate a random hexadecimal value.
 
@@ -266,7 +266,7 @@ def hex(digits: builtins.int | None = None) -> Generator:
     return GenericGenerator("RandomHexadecimal", extra_fields=params)
 
 
-def hexadecimal(digits: builtins.int | None = None) -> Generator:
+def hexadecimal(digits: builtins.int | None = None) -> AbstractGenerator:
     """
     Alias for [`generate.hex`][pact.generate.hex].
 
@@ -280,7 +280,7 @@ def hexadecimal(digits: builtins.int | None = None) -> Generator:
     return hex(digits=digits)
 
 
-def str(size: builtins.int | None = None) -> Generator:
+def str(size: builtins.int | None = None) -> AbstractGenerator:
     """
     Generate a random string.
 
@@ -297,7 +297,7 @@ def str(size: builtins.int | None = None) -> Generator:
     return GenericGenerator("RandomString", extra_fields=params)
 
 
-def string(size: builtins.int | None = None) -> Generator:
+def string(size: builtins.int | None = None) -> AbstractGenerator:
     """
     Alias for [`generate.str`][pact.generate.str].
 
@@ -311,7 +311,7 @@ def string(size: builtins.int | None = None) -> Generator:
     return str(size=size)
 
 
-def regex(regex: builtins.str) -> Generator:
+def regex(regex: builtins.str) -> AbstractGenerator:
     """
     Generate a string matching a regex pattern.
 
@@ -336,7 +336,7 @@ _UUID_FORMATS: dict[_UUID_FORMAT_NAMES, builtins.str] = {
 
 def uuid(
     format: _UUID_FORMAT_NAMES = "lowercase",
-) -> Generator:
+) -> AbstractGenerator:
     """
     Generate a UUID.
 
@@ -354,7 +354,7 @@ def date(
     format: builtins.str = "%Y-%m-%d",
     *,
     disable_conversion: builtins.bool = False,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Generate a date value.
 
@@ -384,7 +384,7 @@ def time(
     format: builtins.str = "%H:%M:%S",
     *,
     disable_conversion: builtins.bool = False,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Generate a time value.
 
@@ -413,7 +413,7 @@ def datetime(
     format: builtins.str,
     *,
     disable_conversion: builtins.bool = False,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Generate a datetime value.
 
@@ -444,7 +444,7 @@ def timestamp(
     format: builtins.str,
     *,
     disable_conversion: builtins.bool = False,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Alias for [`generate.datetime`][pact.generate.datetime].
 
@@ -454,7 +454,7 @@ def timestamp(
     return datetime(format=format, disable_conversion=disable_conversion)
 
 
-def bool() -> Generator:
+def bool() -> AbstractGenerator:
     """
     Generate a random boolean value.
 
@@ -464,7 +464,7 @@ def bool() -> Generator:
     return GenericGenerator("RandomBoolean")
 
 
-def boolean() -> Generator:
+def boolean() -> AbstractGenerator:
     """
     Alias for [`generate.bool`][pact.generate.bool].
 
@@ -474,7 +474,7 @@ def boolean() -> Generator:
     return bool()
 
 
-def provider_state(expression: builtins.str | None = None) -> Generator:
+def provider_state(expression: builtins.str | None = None) -> AbstractGenerator:
     """
     Generate a value from provider state context.
 
@@ -494,7 +494,7 @@ def provider_state(expression: builtins.str | None = None) -> Generator:
 def mock_server_url(
     regex: builtins.str | None = None,
     example: builtins.str | None = None,
-) -> Generator:
+) -> AbstractGenerator:
     """
     Generate a mock server URL.
 
