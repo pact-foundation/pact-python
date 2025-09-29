@@ -13,6 +13,7 @@ There are a couple of exceptions to the [semantic versioning](https://semver.org
 -   Dropping support for a Python version is not considered a breaking change and is not necessarily accompanied by a major version bump.
 -   Private APIs are not considered part of the public API and are not subject to the same rules as the public API. They can be changed at any time without a major version bump. Private APIs are denoted by a leading underscore in the name. Please be aware that the distinction between public and private APIs will be made concrete from version 3 onwards, and best judgement is used in the meantime to determine what is public and what is private.
 -   Deprecations are not considered breaking changes and are not necessarily accompanied by a major version bump. Their removal is considered a breaking change and is accompanied by a major version bump.
+-   Changes to the type annotations will not be considered breaking changes, unless they are accompanied by a change to the runtime behaviour.
 
 Any deviation from the the standard semantic versioning rules will be clearly documented in the release notes.
 
@@ -34,7 +35,7 @@ In order to reduce the build time, the pipeline builds different sets of wheels 
 | Trigger      | Platforms         | Wheels    |
 | ------------ | ----------------- | --------- |
 | Tag          | `x86_64`, `arm64` | all       |
-| `main`     | `x86_64`          | all       |
+| `main`       | `x86_64`          | all       |
 | Pull Request | `x86_64`          | `cp312-*` |
 
 ### Publish Step
