@@ -1161,6 +1161,15 @@ class Verifier:
         """
         Adds a broker source to the verifier.
 
+        By default, or if `selector=False`, this function returns the verifier
+        instance to allow for method chaining. If `selector=True` is given, this
+        function returns a
+        [`BrokerSelectorBuilder`][pact.verifier.BrokerSelectorBuilder] instance
+        which allows for further configuration of the broker source in a fluent
+        interface. The [`build()`][pact.verifier.BrokerSelectorBuilder.build]
+        call is then used to finalise the broker source and return the verifier
+        instance for further configuration.
+
         Args:
             url:
                 The broker URL. The URL may contain a username and password for
@@ -1180,7 +1189,11 @@ class Verifier:
                 be specified through arguments, or embedded in the URL).
 
             selector:
-                Whether to return a BrokerSelectorBuilder instance.
+                Whether to return a
+                [BrokerSelectorBuilder][pact.verifier.BrokerSelectorBuilder]
+                instance. The builder instance allows for further configuration
+                of the broker source and must be finalised with a call to
+                [`build()`][pact.verifier.BrokerSelectorBuilder.build].
 
         Raises:
             ValueError:
