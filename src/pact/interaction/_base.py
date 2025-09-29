@@ -21,7 +21,7 @@ from pact.match.matcher import IntegrationJSONEncoder
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from pact.match import Matcher
+    from pact.match import AbstractMatcher
 
     try:
         from typing import Self
@@ -189,7 +189,7 @@ class Interaction(abc.ABC):
 
     def with_body(
         self,
-        body: str | dict[str, Any] | Matcher[Any] | None = None,
+        body: str | dict[str, Any] | AbstractMatcher[Any] | None = None,
         content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
@@ -259,10 +259,10 @@ class Interaction(abc.ABC):
 
     def with_metadata(
         self,
-        metadata: dict[str, object | Matcher[object]] | None = None,
+        metadata: dict[str, object | AbstractMatcher[object]] | None = None,
         part: Literal["Request", "Response"] | None = None,
         /,
-        **kwargs: object | Matcher[object],
+        **kwargs: object | AbstractMatcher[object],
     ) -> Self:
         """
         Add metadata for the interaction.

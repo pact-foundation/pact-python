@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Literal
 
 import pact_ffi
 from pact.interaction._base import Interaction
-from pact.match import Matcher
+from pact.match import AbstractMatcher
 from pact.match.matcher import IntegrationJSONEncoder
 
 if TYPE_CHECKING:
@@ -100,7 +100,7 @@ class HttpInteraction(Interaction):
         """
         return self.__interaction_part
 
-    def with_request(self, method: str, path: str | Matcher[object]) -> Self:
+    def with_request(self, method: str, path: str | AbstractMatcher[object]) -> Self:
         """
         Set the request.
 
@@ -113,7 +113,7 @@ class HttpInteraction(Interaction):
             path:
                 Path for the request.
         """
-        if isinstance(path, Matcher):
+        if isinstance(path, AbstractMatcher):
             path_str = json.dumps(path, cls=IntegrationJSONEncoder)
         else:
             path_str = path
@@ -123,7 +123,7 @@ class HttpInteraction(Interaction):
     def with_header(
         self,
         name: str,
-        value: str | dict[str, str] | Matcher[object],
+        value: str | dict[str, str] | AbstractMatcher[object],
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
         r"""
@@ -318,7 +318,7 @@ class HttpInteraction(Interaction):
     def with_query_parameter(
         self,
         name: str,
-        value: object | Matcher[object],
+        value: object | AbstractMatcher[object],
     ) -> Self:
         r"""
         Add a query to the request.
@@ -359,8 +359,8 @@ class HttpInteraction(Interaction):
 
     def with_query_parameters(
         self,
-        parameters: Mapping[str, object | Matcher[object]]
-        | Iterable[tuple[str, object | Matcher[object]]],
+        parameters: Mapping[str, object | AbstractMatcher[object]]
+        | Iterable[tuple[str, object | AbstractMatcher[object]]],
     ) -> Self:
         """
         Add multiple query parameters to the request.

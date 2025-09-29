@@ -22,7 +22,7 @@ _T_co = TypeVar("_T_co", covariant=True)
 _T = TypeVar("_T")
 
 
-class Matcher(ABC, Generic[_T_co]):
+class AbstractMatcher(ABC, Generic[_T_co]):
     """
     Abstract matcher.
 
@@ -76,7 +76,7 @@ class Matcher(ABC, Generic[_T_co]):
         """
 
 
-class GenericMatcher(Matcher[_T_co]):
+class GenericMatcher(AbstractMatcher[_T_co]):
     """
     Generic matcher.
 
@@ -197,14 +197,14 @@ class GenericMatcher(Matcher[_T_co]):
         }
 
 
-class ArrayContainsMatcher(Matcher[Sequence[_T_co]]):
+class ArrayContainsMatcher(AbstractMatcher[Sequence[_T_co]]):
     """
     Array contains matcher.
 
     A matcher that checks if an array contains a value.
     """
 
-    def __init__(self, variants: Sequence[_T_co | Matcher[_T_co]]) -> None:
+    def __init__(self, variants: Sequence[_T_co | AbstractMatcher[_T_co]]) -> None:
         """
         Initialize the matcher.
 
@@ -212,7 +212,7 @@ class ArrayContainsMatcher(Matcher[Sequence[_T_co]]):
             variants:
                 List of possible values to match against.
         """
-        self._matcher: Matcher[Sequence[_T_co]] = GenericMatcher(
+        self._matcher: AbstractMatcher[Sequence[_T_co]] = GenericMatcher(
             "arrayContains",
             extra_fields={"variants": variants},
         )
@@ -224,7 +224,7 @@ class ArrayContainsMatcher(Matcher[Sequence[_T_co]]):
         return self._matcher.to_matching_rule()
 
 
-class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
+class EachKeyMatcher(AbstractMatcher[Mapping[_T, Matchable]]):
     """
     Each key matcher.
 
@@ -234,7 +234,7 @@ class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
     def __init__(
         self,
         value: Mapping[_T, Matchable],
-        rules: list[Matcher[_T]] | None = None,
+        rules: list[AbstractMatcher[_T]] | None = None,
     ) -> None:
         """
         Initialize the matcher.
@@ -246,7 +246,7 @@ class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
             rules:
                 List of matchers to apply to each key in the mapping.
         """
-        self._matcher: Matcher[Mapping[_T, Matchable]] = GenericMatcher(
+        self._matcher: AbstractMatcher[Mapping[_T, Matchable]] = GenericMatcher(
             "eachKey",
             value=value,
             extra_fields={"rules": rules},
@@ -259,7 +259,7 @@ class EachKeyMatcher(Matcher[Mapping[_T, Matchable]]):
         return self._matcher.to_matching_rule()
 
 
-class EachValueMatcher(Matcher[Mapping[Matchable, _T_co]]):
+class EachValueMatcher(AbstractMatcher[Mapping[Matchable, _T_co]]):
     """
     Each value matcher.
 
@@ -269,7 +269,7 @@ class EachValueMatcher(Matcher[Mapping[Matchable, _T_co]]):
     def __init__(
         self,
         value: Mapping[Matchable, _T_co],
-        rules: list[Matcher[_T_co]] | None = None,
+        rules: list[AbstractMatcher[_T_co]] | None = None,
     ) -> None:
         """
         Initialize the matcher.
@@ -281,7 +281,7 @@ class EachValueMatcher(Matcher[Mapping[Matchable, _T_co]]):
             rules:
                 List of matchers to apply to each value in the mapping.
         """
-        self._matcher: Matcher[Mapping[Matchable, _T_co]] = GenericMatcher(
+        self._matcher: AbstractMatcher[Mapping[Matchable, _T_co]] = GenericMatcher(
             "eachValue",
             value=value,
             extra_fields={"rules": rules},
@@ -312,7 +312,7 @@ class MatchingRuleJSONEncoder(JSONEncoder):
         Returns:
             The encoded object.
         """
-        if isinstance(o, Matcher):
+        if isinstance(o, AbstractMatcher):
             return o.to_matching_rule()
         return super().default(o)
 
@@ -335,7 +335,7 @@ class IntegrationJSONEncoder(JSONEncoder):
         Returns:
             The encoded object.
         """
-        if isinstance(o, Matcher):
+        if isinstance(o, AbstractMatcher):
             return o.to_integration_json()
         if isinstance(o, Generator):
             return o.to_integration_json()
