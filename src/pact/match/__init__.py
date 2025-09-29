@@ -261,7 +261,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from types import ModuleType
 
-    from pact.generate import Generator
+    from pact.generate import AbstractGenerator
 
 # ruff: noqa: A001
 #       We provide a more 'Pythonic' interface by matching the names of the
@@ -541,7 +541,7 @@ def str(
     /,
     *,
     size: builtins.int | None = None,
-    generator: Generator | None = None,
+    generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[builtins.str]:
     """
     Match a string value, optionally with a specific length.
@@ -587,7 +587,7 @@ def string(
     /,
     *,
     size: builtins.int | None = None,
-    generator: Generator | None = None,
+    generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[builtins.str]:
     """
     Alias for [`match.str`][pact.match.str].
@@ -938,7 +938,7 @@ def type(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-    generator: Generator | None = None,
+    generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[_T]:
     """
     Match a value by type (primitive or complex).
@@ -973,7 +973,7 @@ def like(
     *,
     min: builtins.int | None = None,
     max: builtins.int | None = None,
-    generator: Generator | None = None,
+    generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[_T]:
     """
     Alias for [`match.type`][pact.match.type].
@@ -1016,7 +1016,7 @@ def includes(
     value: builtins.str,
     /,
     *,
-    generator: Generator | None = None,
+    generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[builtins.str]:
     """
     Match a string that includes a given value.

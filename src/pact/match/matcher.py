@@ -15,7 +15,7 @@ from itertools import chain
 from json import JSONEncoder
 from typing import Any, Generic, TypeVar
 
-from pact.generate.generator import Generator
+from pact.generate.generator import AbstractGenerator
 from pact.types import UNSET, Matchable, MatcherType, Unset
 
 _T_co = TypeVar("_T_co", covariant=True)
@@ -85,7 +85,7 @@ class GenericMatcher(AbstractMatcher[_T_co]):
         type: MatcherType,  # noqa: A002
         /,
         value: _T_co | Unset = UNSET,
-        generator: Generator | None = None,
+        generator: AbstractGenerator | None = None,
         extra_fields: Mapping[str, Any] | None = None,
         **kwargs: Matchable,
     ) -> None:
@@ -359,6 +359,6 @@ class IntegrationJSONEncoder(JSONEncoder):
         """
         if isinstance(o, AbstractMatcher):
             return o.to_integration_json()
-        if isinstance(o, Generator):
+        if isinstance(o, AbstractGenerator):
             return o.to_integration_json()
         return super().default(o)
