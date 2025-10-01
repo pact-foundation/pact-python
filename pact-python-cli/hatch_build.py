@@ -6,7 +6,6 @@ This hook is responsible for downloading and packaging the Pact CLI.
 
 from __future__ import annotations
 
-import logging
 import os
 import shutil
 import sys
@@ -20,8 +19,6 @@ from typing import Any
 from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
-
-logger = logging.getLogger(__name__)
 
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_cli"
 PACT_CLI_URL = "https://github.com/pact-foundation/pact-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
