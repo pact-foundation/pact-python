@@ -24,15 +24,15 @@
         <td>CI/CD</td>
         <td>
             <a
-                href="https://github.com/pact-foundation/pact-python/actions/workflows/test.yml"><img
+                href="https://github.com/pact-foundation/pact-python/actions/workflows/test.yml?query=branch:main"><img
                 src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/test.yml?branch=main&label=test"
                 alt="Test Status"></a>
             <a
-                href="https://github.com/pact-foundation/pact-python/actions/workflows/build.yml"><img
+                href="https://github.com/pact-foundation/pact-python/actions/workflows/build.yml?query=branch:main"><img
                 src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/build.yml?branch=main&label=build"
                 alt="Build Status"></a>
             <a
-                href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml"><img
+                href="https://github.com/pact-foundation/pact-python/actions/workflows/docs.yml?query=branch:main"><img
                 src="https://img.shields.io/github/actions/workflow/status/pact-foundation/pact-python/docs.yml?branch=main&label=docs"
                 alt="Build Status"></a>
         </td>
