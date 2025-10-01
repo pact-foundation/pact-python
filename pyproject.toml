@@ -388,7 +388,12 @@ exclude = """(?x)^(
 [tool.typos]
 
   [tool.typos.default]
-  extend-ignore-re = ['(?Rm)^.*(#|//|<!--)\s*spellchecker:\s*ignore']
+  extend-ignore-re = [
+    # Ignore spelling on a specific line
+    "(?Rm)^.*(#|//)\\s*spellchecker:disable-line$",
+    # Ignore spelling in a specific block
+    "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on",
+  ]
 
   [tool.typos.files]
   extend-exclude = ["*.svg"]
