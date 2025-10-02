@@ -218,15 +218,15 @@ jobs:
         run: uv tool install hatch
 
       - name: Format
-        run: hatch run format
+        run: hatch run format --check --output-format github
 
       - name: Format (CLI)
         working-directory: pact-python-cli
-        run: hatch run format
+        run: hatch run format --check --output-format github
 
       - name: Format (FFI)
         working-directory: pact-python-ffi
-        run: hatch run format
+        run: hatch run format --check --output-format github
   lint:
     name: Lint
 
