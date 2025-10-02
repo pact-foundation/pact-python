@@ -48,7 +48,7 @@ class VerifierPactsTestCase(TestCase):
 
     @patch("pact.v2.verify_wrapper.VerifyWrapper.call_verify")
     @patch('pact.v2.verifier.path_exists', return_value=True)
-    def test_verifier_with_provider_and_files_passes_consumer_selctors(self, mock_path_exists, mock_wrapper):
+    def test_verifier_with_provider_and_files_passes_consumer_selectors(self, mock_path_exists, mock_wrapper):
         mock_wrapper.return_value = (True, 'some logs')
 
         output, _ = self.verifier.verify_pacts(
@@ -198,7 +198,7 @@ class VerifierBrokerTestCase(TestCase):
                            )
 
     @patch("pact.v2.verify_wrapper.VerifyWrapper.call_verify")
-    def test_verifier_with_broker_passes_consumer_selctors(self, mock_wrapper):
+    def test_verifier_with_broker_passes_consumer_selectors(self, mock_wrapper):
 
         mock_wrapper.return_value = (True, 'some value')
 

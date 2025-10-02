@@ -307,7 +307,7 @@ class PactBuildHook(BuildHookInterface[Any]):
                 "pdh",
                 "powrprof",
                 "psapi",
-                "secur32",
+                "secur32",  # spellchecker:disable-line
                 "shell32",
                 "user32",
                 "userenv",
