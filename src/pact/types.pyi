@@ -9,10 +9,9 @@ from collections.abc import Set as AbstractSet
 from datetime import date, datetime, time
 from decimal import Decimal
 from fractions import Fraction
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, TypeAlias, TypedDict
 
 from pydantic import BaseModel
-from typing_extensions import TypeAlias
 from yarl import URL
 
 _BaseMatchable: TypeAlias = (

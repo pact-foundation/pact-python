@@ -68,7 +68,6 @@ import warnings
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Literal,
     overload,
 )
@@ -88,15 +87,12 @@ from pact.interaction._http_interaction import HttpInteraction
 from pact.interaction._sync_message_interaction import SyncMessageInteraction
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Callable, Generator
     from types import TracebackType
 
-    from pact.interaction import Interaction
+    from typing_extensions import Self
 
-    try:
-        from typing import Self
-    except ImportError:
-        from typing_extensions import Self
+    from pact.interaction import Interaction
 
 logger = logging.getLogger(__name__)
 

@@ -34,6 +34,8 @@ interactions involving protobuf messages sent over HTTP.  It is assumed that you
 have a basic understanding of Pact and Protocol Buffers.
 """
 
+from __future__ import annotations
+
 from examples.plugins.proto.person_pb2 import AddressBook, Person
 
 

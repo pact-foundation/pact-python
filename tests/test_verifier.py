@@ -6,6 +6,8 @@ working correctly. They are not intended to test the Verifier API much, as
 that is handled by the compatibility suite.
 """
 
+from __future__ import annotations
+
 import re
 from pathlib import Path
 

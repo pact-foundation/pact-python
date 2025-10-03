@@ -62,18 +62,11 @@ jobs:
           - ubuntu-latest
           - windows-latest
         python-version:
-          - '3.9'
           - '3.10'
           - '3.11'
           - '3.12'
           - '3.13'
-        # Python 3.9 aren't supported on macos-latest (ARM)
-        exclude:
-          - os: macos-latest
-            python-version: '3.9'
-        include:
-          - os: macos-13
-            python-version: '3.9'
+          - '3.14'
 
     steps:
       - name: Checkout code
@@ -144,18 +137,11 @@ jobs:
           - ubuntu-latest
           - windows-latest
         python-version:
-          - '3.9'
           - '3.10'
           - '3.11'
           - '3.12'
           - '3.13'
-        # Python 3.9 aren't supported on macos-latest (ARM)
-        exclude:
-          - os: macos-latest
-            python-version: '3.9'
-        include:
-          - os: macos-13
-            python-version: '3.9'
+          - '3.14'
 
     steps:
       - name: Checkout code

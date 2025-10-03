@@ -11,6 +11,8 @@ It is intended for pedagogical purposes, showing how to implement and interact w
     This file is generated and should not be modified manually, except for documentation improvements.
 """
 
+from __future__ import annotations
+
 from typing import Any
 import grpc
 

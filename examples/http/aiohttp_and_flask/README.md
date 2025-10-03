@@ -36,7 +36,7 @@ Use the above links to view additional documentation within.
 
 ## Prerequisites
 
--   Python 3.9 or higher
+-   Python 3.10 or higher
 -   A dependency manager ([uv](https://docs.astral.sh/uv/) recommended, [pip](https://pip.pypa.io/en/stable/) also works)
 
 ## Running the Example

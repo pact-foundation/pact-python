@@ -2,24 +2,28 @@
 Example test to show usage of matchers (and generators by extension).
 """
 
+from __future__ import annotations
+
 import logging
 import re
 import subprocess
 import sys
 import time
-from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from random import randint, uniform
 from threading import Thread
-from typing import NoReturn
+from typing import TYPE_CHECKING, NoReturn
 
 import requests
 from flask import Flask, Response, make_response
 from yarl import URL
 
 from pact import Pact, Verifier, generate, match
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 logger = logging.getLogger(__name__)
 
