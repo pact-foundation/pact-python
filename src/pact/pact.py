@@ -154,6 +154,10 @@ class Pact:
             provider,
         )
 
+        # Default to the latest version of the Pact specification, which
+        # can be changed later if required.
+        self.with_specification("V4")
+
     def __str__(self) -> str:
         """
         Informal string representation of the Pact.
@@ -204,6 +208,9 @@ class Pact:
 
         The Pact specification version indicates the features which are
         supported by the Pact, and certain default behaviours.
+
+        If this method is not called, then the Pact will use version 4 of the
+        specification by default.
 
         Args:
             version:
