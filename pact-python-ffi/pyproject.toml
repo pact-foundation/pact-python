@@ -24,12 +24,12 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python",
   "Topic :: Software Development :: Testing",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 dependencies = ["cffi~=2.0"]
 
@@ -125,7 +125,7 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
     # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
 
       [[tool.hatch.envs.test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
 ################################################################################
 ## PyTest Configuration

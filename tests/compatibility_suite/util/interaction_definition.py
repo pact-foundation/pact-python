@@ -17,7 +17,6 @@ from typing import Any, Literal
 from xml.etree import ElementTree as ET
 
 from multidict import MultiDict
-from typing_extensions import Self
 from yarl import URL
 
 from pact.interaction import HttpInteraction, Interaction
@@ -31,6 +30,8 @@ from tests.compatibility_suite.util import (
 if typing.TYPE_CHECKING:
     from http.server import SimpleHTTPRequestHandler
     from pathlib import Path
+
+    from typing_extensions import Self
 
     from pact.interaction import Interaction
     from pact.pact import Pact

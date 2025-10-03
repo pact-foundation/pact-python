@@ -6,6 +6,8 @@ to define global fixtures and command line options. Command line options can
 only be defined in this file.
 """
 
+from __future__ import annotations
+
 import pytest
 
 

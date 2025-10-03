@@ -70,6 +70,8 @@ since the client does not care about this information, it should not be included
 in the interaction.
 """
 
+from __future__ import annotations
+
 from pact.interaction._async_message_interaction import AsyncMessageInteraction
 from pact.interaction._base import Interaction
 from pact.interaction._http_interaction import HttpInteraction

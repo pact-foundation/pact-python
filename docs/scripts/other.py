@@ -14,6 +14,8 @@ otherwise already generated), the script will ignore the current file and
 continue silently.
 """
 
+from __future__ import annotations
+
 import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -77,7 +79,7 @@ for source_path in ALL_FILES:
     if str(dest_path) in EDITOR.files:
         continue
 
-    fi: "io.IOBase"
+    fi: io.IOBase
     with Path(source_path).open("rb") as fi:
         buf = fi.read(2048)
 

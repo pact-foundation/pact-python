@@ -31,14 +31,14 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from urllib.parse import urlparse
 
-from typing_extensions import Self
-
 from pact import __version__
 from pact._util import find_free_port
 from pact.types import Message
 
 if TYPE_CHECKING:
     from types import TracebackType
+
+    from typing_extensions import Self
 
 
 logger = logging.getLogger(__name__)

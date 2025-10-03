@@ -27,12 +27,12 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python",
   "Topic :: Software Development :: Testing",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 # Dependencies of Pact Python should be specified using the broadest range
 # compatible version unless:
@@ -45,7 +45,6 @@ dependencies = [
   # External dependencies
   "cffi~=2.0",
   "yarl~=1.0",
-  "typing-extensions~=4.0 ; python_version < '3.10'",
 ]
 
   [project.urls]
@@ -123,6 +122,8 @@ types = [
   "types-grpcio~=1.0",
   "types-protobuf~=6.0",
   "types-requests~=2.0",
+  # This is required for Python 3.10 support
+  "typing-extensions~=4.0",
 ]
 
 # Dependencies for v2 example and test environments
@@ -224,7 +225,7 @@ requires      = ["hatch-vcs", "hatchling"]
     pre-install-commands = ["uv pip install --group test -e ."]
 
       [[tool.hatch.envs.test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     # Test environment for running unit tests. This automatically tests against all
     # supported Python versions.
@@ -237,7 +238,7 @@ requires      = ["hatch-vcs", "hatchling"]
       all = ["example"]
 
       [[tool.hatch.envs.example.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     [tool.hatch.envs.v2-test]
     features             = ["v2"]
@@ -250,7 +251,7 @@ requires      = ["hatch-vcs", "hatchling"]
       test = "pytest tests/v2 {args}"
 
       [[tool.hatch.envs.v2-test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     [tool.hatch.envs.v2-example]
     features             = ["v2"]
@@ -263,7 +264,7 @@ requires      = ["hatch-vcs", "hatchling"]
       example = "pytest examples/v2 {args}"
 
       [[tool.hatch.envs.v2-example.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.9"]
+      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
 ################################################################################
 ## UV Workspace

@@ -32,8 +32,7 @@ from pact import Verifier
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     ACTION_TYPE: TypeAlias = Literal["setup", "teardown"]
 

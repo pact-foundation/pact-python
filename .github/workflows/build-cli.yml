@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  STABLE_PYTHON_VERSION: '313'
+  STABLE_PYTHON_VERSION: '310'
   HATCH_VERBOSE: '1'
   FORCE_COLOR: '1'
   CIBW_BUILD_FRONTEND: build

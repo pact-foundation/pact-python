@@ -7,12 +7,11 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeGuard
 
 import pytest
 import requests
 from pytest_bdd import given, parsers, then, when
-from typing_extensions import TypeGuard
 from yarl import URL
 
 from pact import Pact

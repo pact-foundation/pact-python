@@ -1,8 +1,10 @@
 """Test of V3 generators."""
 
+from __future__ import annotations
+
 import logging
 import re
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import pytest
 import requests
@@ -17,6 +19,9 @@ from pytest_bdd import (
 from pact import Pact
 from tests.compatibility_suite.util import parse_horizontal_table
 from tests.compatibility_suite.util.interaction_definition import InteractionDefinition
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 

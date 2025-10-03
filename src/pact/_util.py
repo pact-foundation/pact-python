@@ -7,15 +7,19 @@ used directly by consumers of the library and as such, may change without
 notice.
 """
 
+from __future__ import annotations
+
 import inspect
 import logging
 import socket
 import warnings
-from collections.abc import Callable, Mapping
 from contextlib import closing
 from functools import partial
 from inspect import Parameter, _ParameterKind
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping
 
 logger = logging.getLogger(__name__)
 

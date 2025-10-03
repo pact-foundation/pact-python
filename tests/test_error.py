@@ -2,6 +2,8 @@
 Error handling and mismatch tests.
 """
 
+from __future__ import annotations
+
 import re
 
 import aiohttp
