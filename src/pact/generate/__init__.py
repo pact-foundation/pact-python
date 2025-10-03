@@ -73,7 +73,7 @@ def __import__(  # noqa: N807
     done to avoid shadowing built-in types and functions.
     """
     __tracebackhide__ = True
-    if name == "pact.generate" and len(set(fromlist) - {"Matcher"}) > 0:
+    if name == "pact.generate" and len(set(fromlist) - {"AbstractGenerator"}) > 0:
         warnings.warn(
             "Avoid `from pact.generate import <func>`. "
             "Prefer importing `generate` and use `generate.<func>`",
