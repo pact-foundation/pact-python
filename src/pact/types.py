@@ -152,6 +152,20 @@ class Unset:
     having no value at all. This class is used to represent the latter.
     """
 
+    def __bool__(self) -> bool:
+        """
+        Always return `False`.
+
+        This allows the `Unset` instance to be used in boolean contexts. For
+        example:
+
+        ```python
+        def f(v: str | Unset = UNSET):
+            v = v or "default"
+        ```
+        """
+        return False
+
 
 UNSET = Unset()
 """
