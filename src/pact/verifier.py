@@ -75,6 +75,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections.abc import Mapping
 from contextlib import nullcontext
 from datetime import date
@@ -87,7 +88,7 @@ from yarl import URL
 import pact_ffi
 from pact._server import MessageProducer, StateCallback
 from pact._util import apply_args
-from pact.types import Message, MessageProducerArgs, StateHandlerArgs
+from pact.types import UNSET, Message, MessageProducerArgs, StateHandlerArgs, Unset
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -1114,52 +1115,66 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL,
+        url: str | URL | Unset = UNSET,
         *,
-        username: str | None = None,
-        password: str | None = None,
+        username: str | Unset = UNSET,
+        password: str | Unset = UNSET,
         selector: Literal[False] = False,
+        use_env: bool = True,
     ) -> Self: ...
 
     @overload
     def broker_source(
         self,
-        url: str | URL,
+        url: str | URL | None | Unset = UNSET,
         *,
-        token: str | None = None,
+        token: str | None | Unset = UNSET,
         selector: Literal[False] = False,
+        use_env: bool = True,
     ) -> Self: ...
 
     @overload
     def broker_source(
         self,
-        url: str | URL,
+        url: str | URL | None | Unset = UNSET,
         *,
-        username: str | None = None,
-        password: str | None = None,
+        username: str | None | Unset = UNSET,
+        password: str | None | Unset = UNSET,
         selector: Literal[True],
+        use_env: bool = True,
     ) -> BrokerSelectorBuilder: ...
 
     @overload
     def broker_source(
         self,
-        url: str | URL,
+        url: str | URL | None | Unset = UNSET,
         *,
-        token: str | None = None,
+        token: str | None | Unset = UNSET,
         selector: Literal[True],
+        use_env: bool = True,
     ) -> BrokerSelectorBuilder: ...
 
-    def broker_source(
+    def broker_source(  # noqa: PLR0913
         self,
-        url: str | URL,
+        url: str | URL | None | Unset = UNSET,
         *,
-        username: str | None = None,
-        password: str | None = None,
-        token: str | None = None,
+        username: str | None | Unset = UNSET,
+        password: str | None | Unset = UNSET,
+        token: str | None | Unset = UNSET,
         selector: bool = False,
+        use_env: bool = True,
     ) -> BrokerSelectorBuilder | Self:
         """
         Adds a broker source to the verifier.
+
+        If any of the values are `None`, the value will be read from the
+        environment variables unless the `use_env` parameter is set to `False`.
+        The known variables are:
+
+        -   `PACT_BROKER_BASE_URL` for the `url` parameter.
+        -   `PACT_BROKER_USERNAME` for the `username` parameter.
+        -   `PACT_BROKER_PASSWORD` for the `password` parameter.
+        -   `PACT_BROKER_TOKEN` for the `token` parameter.
 
         By default, or if `selector=False`, this function returns the verifier
         instance to allow for method chaining. If `selector=True` is given, this
@@ -1195,22 +1210,40 @@ class Verifier:
                 of the broker source and must be finalised with a call to
                 [`build()`][pact.verifier.BrokerSelectorBuilder.build].
 
+            use_env:
+                Whether to read missing values from the environment variables.
+                This is `True` by default which allows for easy configuration
+                from the standard Pact environment variables. In all cases, the
+                explicitly provided values take precedence over the environment
+                variables.
+
         Raises:
             ValueError:
                 If mutually exclusive authentication parameters are provided.
         """
+
+        def maybe_var(v: Any | Unset, env: str) -> str | None:  # noqa: ANN401
+            if isinstance(v, Unset):
+                return os.getenv(env) if use_env else None
+            return v
+
+        url = maybe_var(url, "PACT_BROKER_BASE_URL")
+        if not url:
+            msg = "A broker URL must be provided"
+            raise ValueError(msg)
         url = URL(url)
 
+        username = maybe_var(username, "PACT_BROKER_USERNAME")
         if url.user and username:
             msg = "Cannot specify both `username` and a username in the URL"
             raise ValueError(msg)
-        username = url.user or username
 
+        password = maybe_var(password, "PACT_BROKER_PASSWORD")
         if url.password and password:
             msg = "Cannot specify both `password` and a password in the URL"
             raise ValueError(msg)
-        password = url.password or password
 
+        token = maybe_var(token, "PACT_BROKER_TOKEN")
         if token and (username or password):
             msg = "Cannot specify both `token` and `username`/`password`"
             raise ValueError(msg)
