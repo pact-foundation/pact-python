@@ -99,6 +99,8 @@ For more detailed usage examples, see the
 [examples](https://pact-foundation.github.io/pact-python/examples).
 """
 
+from __future__ import annotations
+
 from pact.__version__ import __version__, __version_tuple__
 from pact.pact import Pact
 from pact.verifier import Verifier

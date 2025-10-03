@@ -5,6 +5,8 @@ This file is loaded automatically by PyTest when running the tests in this
 directory.
 """
 
+from __future__ import annotations
+
 import json
 import tempfile
 from pathlib import Path

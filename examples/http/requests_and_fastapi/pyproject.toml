@@ -5,7 +5,7 @@ name = "example-requests-and-fastapi"
 description = "Example of using a requests client and FastAPI server with Pact Python"
 
 dependencies    = ["requests~=2.0", "fastapi~=0.0", "typing-extensions~=4.0"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 version         = "1.0.0"
 
 [dependency-groups]

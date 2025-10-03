@@ -177,7 +177,7 @@ def parse_horizontal_table(content: list[list[str]]) -> list[dict[str, str]]:
         msg = f"Expected at least two rows in the table, got {len(content)}"
         raise ValueError(msg)
 
-    return [dict(zip(content[0], row)) for row in content[1:]]
+    return [dict(zip(content[0], row, strict=True)) for row in content[1:]]
 
 
 def parse_vertical_table(content: list[list[str]]) -> dict[str, str]:

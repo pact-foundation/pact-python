@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
@@ -53,8 +53,8 @@ class User(BaseModel):
     id: int
     name: str
     created_on: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
-    email: Optional[str] = None
-    ip_address: Optional[str] = None
+    email: str | None = None
+    ip_address: str | None = None
     hobbies: list[str] = Field(default_factory=list)
     admin: bool = False
 

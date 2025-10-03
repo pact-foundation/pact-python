@@ -12,6 +12,8 @@ This module is auto-generated from the person.proto file using the protobuf comp
     This file is generated code. Manual changes (except for documentation improvements) will be overwritten if the file is regenerated.
 """
 
+from __future__ import annotations
+
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import runtime_version as _runtime_version
