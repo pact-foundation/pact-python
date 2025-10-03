@@ -103,7 +103,9 @@ The v3 interface favours method chaining and provides more granular control over
     .with_body({'id': 123, 'name': 'Alice'}, content_type='application/json'))
 ```
 
-1.  The new provider states can be streamlined by parameterizing them directly in the `given()` method. So instead of defining multiple variations of a `"user exists"` state, you can define it once and pass different parameters as needed. These can be passed as keyword arguments to `given()`, or as a dictionary in the second positional argument.
+1.  In v2, there was limited support for parameterizing provider states, and each state variation often required a separate definition. For example, `given("user Alice exists with id 123")` and `given("user Bob exists with id 456")` would be two distinct states, which would then need to be handled separately in the provider state setup.
+
+    The new interface can now define a common descriptor that can be reused with different parameters: `.given("user exists", id=123, name='Alice')` and `.given("user exists", id=456, name='Bob')`. This approach reduces redundancy and makes it easier to manage provider states.
 
 Some methods are shared across request and response definitions, such as `with_header()` and `with_body()`. Pact Python automatically applies them to the correct part of the interaction based on whether they are called before or after `will_respond_with()`. Alternatively, these methods accept an optional `part` argument to explicitly specify whether they apply to the request or response.
 
