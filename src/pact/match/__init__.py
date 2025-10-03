@@ -131,7 +131,7 @@ def __import__(  # noqa: N807
     avoid shadowing built-in types and functions.
     """
     __tracebackhide__ = True
-    if name == "pact.match" and len(set(fromlist) - {"Matcher"}) > 0:
+    if name == "pact.match" and len(set(fromlist) - {"AbstractMatcher"}) > 0:
         warnings.warn(
             "Avoid `from pact.match import <func>`. "
             "Prefer importing `match` and use `match.<func>`",
