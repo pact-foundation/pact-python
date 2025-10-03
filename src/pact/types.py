@@ -161,7 +161,7 @@ class Unset:
 
         ```python
         def f(v: str | Unset = UNSET):
-            value = value or "default"
+            v = v or "default"
         ```
         """
         return False
