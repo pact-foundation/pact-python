@@ -11,24 +11,16 @@ hooks:
   - docs/scripts/rewrite-docs-links.py
 
 plugins:
-  - search
-  - literate-nav:
-      nav_file: SUMMARY.md
-  - section-index
-  - gh-admonitions
   - gen-files:
       scripts:
         - docs/scripts/markdown.py
         - docs/scripts/python.py
         # - docs/scripts/other.py
-  - llmstxt:
-      full_output: llms-full.txt
-      sections:
-        Usage documentation:
-          - api/*.md
-          - api/**/*.md
-        Examples:
-          - examples/*.md
+  - search
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - gh-admonitions
   - mkdocstrings:
       default_handler: python
       enable_inventory: true
@@ -72,6 +64,14 @@ plugins:
             annotations_path: brief
             show_signature: true
             show_signature_annotations: true
+  - llmstxt:
+      full_output: llms-full.txt
+      sections:
+        Usage documentation:
+          - api/*.md
+          - api/**/*.md
+        Examples:
+          - examples/*.md
   - social
   - blog:
       blog_toc: true

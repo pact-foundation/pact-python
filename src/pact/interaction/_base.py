@@ -21,7 +21,7 @@ from pact.match.matcher import IntegrationJSONEncoder
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from pact.match import Matcher
+    from pact.match import AbstractMatcher
 
     try:
         from typing import Self
@@ -151,8 +151,16 @@ class Interaction(abc.ABC):
         ```
 
         This function can be called repeatedly to specify multiple provider
-        states for the same Interaction. If the same state is specified with
-        different parameters, then the parameters are merged together.
+        states for the same Interaction. This allows for the same provider state
+        to be reused with different parameters:
+
+        ```python
+        (
+            pact.upon_receiving("a request")
+            .given("a user exists", id=123, name="Alice")
+            .given("a user exists", id=456, name="Bob")
+        )
+        ```
 
         Args:
             state:
@@ -170,11 +178,17 @@ class Interaction(abc.ABC):
                 )
                 ```
 
+                These parameters are merged with any additional keyword
+                arguments passed to the function.
+
             kwargs:
                 The additional parameters for the provider state, specified as
                 additional arguments to the function. The values must be
                 serializable using Python's [`json.dumps`][json.dumps]
                 function.
+
+                These parameters are merged with any parameters passed in the
+                `parameters` positional argument.
         """
         if not parameters and not kwargs:
             pact_ffi.given(self._handle, state)
@@ -189,7 +203,7 @@ class Interaction(abc.ABC):
 
     def with_body(
         self,
-        body: str | dict[str, Any] | Matcher[Any] | None = None,
+        body: str | dict[str, Any] | AbstractMatcher[Any] | None = None,
         content_type: str | None = None,
         part: Literal["Request", "Response"] | None = None,
     ) -> Self:
@@ -259,10 +273,10 @@ class Interaction(abc.ABC):
 
     def with_metadata(
         self,
-        metadata: dict[str, object | Matcher[object]] | None = None,
+        metadata: dict[str, object | AbstractMatcher[object]] | None = None,
         part: Literal["Request", "Response"] | None = None,
         /,
-        **kwargs: object | Matcher[object],
+        **kwargs: object | AbstractMatcher[object],
     ) -> Self:
         """
         Add metadata for the interaction.

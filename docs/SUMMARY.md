@@ -4,6 +4,7 @@
     -   [Consumer](consumer.md)
     -   [Provider](provider.md)
     -   [Releases](releases.md)
+    -   [Migration Guide](MIGRATION.md)
     -   [Changelog](CHANGELOG.md)
     -   [Contributing](CONTRIBUTING.md)
 -   [Examples](examples/)
