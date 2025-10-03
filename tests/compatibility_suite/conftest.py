@@ -5,17 +5,21 @@ As the compatibility suite makes use of a submodule, we need to make sure the
 submodule has been initialized before running the tests.
 """
 
+from __future__ import annotations
+
 import shutil
 import subprocess
-from collections.abc import Generator
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
 from yarl import URL
 
 from pact.verifier import Verifier
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @pytest.fixture(scope="session", autouse=True)

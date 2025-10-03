@@ -11,6 +11,8 @@ Instead, these tests fall under two broad categories:
    are functioning as expected.
 """
 
+from __future__ import annotations
+
 import re
 
 import pytest

@@ -76,24 +76,30 @@ from __future__ import annotations
 import json
 import logging
 import os
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Literal, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
 
-from typing_extensions import Self
 from yarl import URL
 
 import pact_ffi
 from pact._server import MessageProducer, StateCallback
 from pact._util import apply_args
-from pact.types import UNSET, Message, MessageProducerArgs, StateHandlerArgs, Unset
+from pact.types import (
+    UNSET,
+    Message,
+    MessageProducerArgs,
+    StateHandlerArgs,
+    StateHandlerUrl,
+    Unset,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from pact.types import StateHandlerUrl
+    from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
 
@@ -582,9 +588,7 @@ class Verifier:
             TypeError:
                 If the handler type is invalid.
         """
-        # A tuple is required instead of `StateHandlerUrl` for support for
-        # Python 3.9. This should be changed to `StateHandlerUrl` in the future.
-        if isinstance(handler, (str, URL)):
+        if isinstance(handler, StateHandlerUrl):
             if body is None:
                 msg = "The `body` parameter must be a boolean when providing a URL"
                 raise ValueError(msg)

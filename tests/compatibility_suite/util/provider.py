@@ -31,7 +31,6 @@ import pytest
 import requests
 from multidict import CIMultiDict
 from pytest_bdd import given, parsers, then, when
-from typing_extensions import Self
 from yarl import URL
 
 import pact_cli
@@ -52,6 +51,8 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from pathlib import Path
     from types import TracebackType
+
+    from typing_extensions import Self
 
     from pact.types import Message
     from pact.verifier import Verifier

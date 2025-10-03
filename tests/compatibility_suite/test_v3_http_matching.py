@@ -1,9 +1,10 @@
 """Matching HTTP parts (request or response) feature tests."""
 
+from __future__ import annotations
+
 import re
 import sys
-from collections.abc import Generator
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from pytest_bdd import (
@@ -15,11 +16,16 @@ from pytest_bdd import (
 )
 
 from pact import Pact
-from pact.verifier import Verifier
 from tests.compatibility_suite.util.interaction_definition import (
     InteractionDefinition,
 )
 from tests.compatibility_suite.util.provider import Provider
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+
+    from pact.verifier import Verifier
 
 ################################################################################
 ## Scenarios

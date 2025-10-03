@@ -8,9 +8,8 @@ information to static type checkers like `mypy`.
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict, Union
+from typing import Any, Literal, TypeAlias, TypedDict
 
-from typing_extensions import TypeAlias
 from yarl import URL
 
 Matchable: TypeAlias = Any
@@ -133,7 +132,7 @@ class StateHandlerArgs(TypedDict, total=False):
     """
 
 
-StateHandlerUrl: TypeAlias = Union[str, URL]
+StateHandlerUrl: TypeAlias = str | URL
 """
 State handler URL signature.
 
