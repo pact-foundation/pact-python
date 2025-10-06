@@ -43,7 +43,6 @@ dependencies = [
   # Pact dependencies
   "pact-python-ffi~=0.4.0",
   # External dependencies
-  "cffi~=2.0",
   "yarl~=1.0",
 ]
 
@@ -118,7 +117,6 @@ test = [
 ]
 types = [
   "mypy==1.18.2",
-  "types-cffi~=1.0",
   "types-grpcio~=1.0",
   "types-protobuf~=6.0",
   "types-requests~=2.0",
