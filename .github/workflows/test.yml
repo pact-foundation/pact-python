@@ -99,6 +99,8 @@ jobs:
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
 
       - name: Run tests (v2)
+        # Temporary workaround until Pydantic 3.12 is released with Python 3.14 support
+        if: matrix.python-version != '3.14'
         run: hatch run v2-test.py${{ matrix.python-version }}:test --junit-xml=v2-junit.xml
 
       - name: Run tests (CLI)
@@ -141,7 +143,9 @@ jobs:
           - '3.11'
           - '3.12'
           - '3.13'
-          - '3.14'
+          # Temporarily excluded until Pydantic 3.12 is released with Python
+          # 3.14 support
+          # - '3.14'
 
     steps:
       - name: Checkout code
