@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.0.1] _2025-10-06_
+
+### 📚 Documentation
+
+-   Update changelog for pact-python/3.0.0
+
+### ⚙️ Miscellaneous Tasks
+
+-   Drop cffi dependency
+-   _(ci)_ Fix publish step
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/3.0.0] _2025-10-06_
 
 ### 🚀 Features
