@@ -121,12 +121,27 @@ jobs:
       - name: Generate release changelog
         id: release-changelog
         run: |
-          git cliff \
+          if ! git cliff \
             --current \
             --strip header \
-            --output ${{ runner.temp }}/release-changelog.md
+            --output ${{ runner.temp }}/release-changelog.md; then
+            {
+              echo "> [!WARNING]"
+              echo ">"
+              echo "> No changelog generated. To be filled in."
+            } > ${{ runner.temp }}/release-changelog.md
+          fi
 
-          echo -e "\n\n## Pull Requests\n\n" >> ${{ runner.temp }}/release-changelog.md
+          {
+            echo ""
+            echo "<details>"
+            echo "<summary>"
+            echo ""
+            echo "## Pull Requests"
+            echo ""
+            echo "</summary>"
+            echo ""
+          } >> ${{ runner.temp }}/release-changelog.md
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
