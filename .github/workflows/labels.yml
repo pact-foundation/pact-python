@@ -13,6 +13,9 @@ on:
     paths:
       - .github/labels.yml
 
+permissions:
+  issues: write
+
 jobs:
   sync-labels:
     name: Synchronise labels
