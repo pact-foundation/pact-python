@@ -20,10 +20,10 @@ This document outlines the key changes and migration steps for users transitioni
 
 For teams with larger codebases that need time to fully migrate to the new v3 API, a backwards compatibility module is provided at `pact.v2`. This module contains the same API as Pact Python v2.x and serves as an interim measure to assist gradual migration.
 
-To use the v2 compatibility module, you must install pact-python with the `v2` feature enabled:
+To use the v2 compatibility module, you must install pact-python with the `compat-v2` feature enabled:
 
 ```bash
-pip install pact-python[v2]
+pip install pact-python[compat-v2]
 ```
 
 All existing `pact.*` imports need to be updated to use `pact.v2.*` instead. Here are some common examples:
