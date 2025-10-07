@@ -58,7 +58,7 @@ dependencies = [
 
   [project.optional-dependencies]
   # Dependencies required for v2 only
-  v2 = [
+  compat-v2 = [
     # Pact dependencies
     "pact-python-cli~=2.0",
     # External dependencies
@@ -239,7 +239,7 @@ requires      = ["hatch-vcs", "hatchling"]
       python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     [tool.hatch.envs.v2-test]
-    features             = ["v2"]
+    features             = ["compat-v2"]
     installer            = "uv"
     path                 = ".venv/v2-test"
     pre-install-commands = ["uv pip install --group test-v2 -e ."]
@@ -252,7 +252,7 @@ requires      = ["hatch-vcs", "hatchling"]
       python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     [tool.hatch.envs.v2-example]
-    features             = ["v2"]
+    features             = ["compat-v2"]
     installer            = "uv"
     path                 = ".venv/v2-example"
     pre-install-commands = ["uv pip install --group example-v2 -e ."]
