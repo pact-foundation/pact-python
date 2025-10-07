@@ -332,9 +332,6 @@ requires      = ["hatch-vcs", "hatchling"]
 ## Ruff Configuration
 ################################################################################
 [tool.ruff]
-
-# TODO: Don't check v2 files
-# https://github.com/pact-foundation/pact-python/issues/458
 extend-exclude = ["src/pact/v2/*", "tests/v2/*", "examples/v2/*"]
 
   [tool.ruff.lint]
