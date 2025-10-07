@@ -47,11 +47,11 @@ dependencies = [
 ]
 
   [project.urls]
-  "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
-  "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
-  "Documentation" = "https://docs.pact.io"
-  "Homepage"      = "https://pact.io"
-  "Repository"    = "https://github.com/pact-foundation/pact-python"
+  changelog     = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
+  documentation = "https://pact-foundation.github.io/pact-python/"
+  homepage      = "https://pact.io"
+  issues        = "https://github.com/pact-foundation/pact-python/issues"
+  source        = "https://github.com/pact-foundation/pact-python"
 
   [project.scripts]
   pact-verifier = "pact.v2.cli.verify:main"
