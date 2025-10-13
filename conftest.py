@@ -12,7 +12,13 @@ import pytest
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    """Define additional command lines to customise the examples."""
+    """
+    Define additional command line options for the Pact examples.
+
+    Args:
+        parser:
+            Parser used to register CLI options for the tests.
+    """
     parser.addoption(
         "--broker-url",
         help=(
@@ -30,7 +36,11 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 def pytest_runtest_setup(item: pytest.Item) -> None:
     """
-    Hook into the setup phase of tests.
+    Hook into the test setup phase to apply container markers.
+
+    Args:
+        item:
+            Pytest item under execution, used to inspect markers and options.
     """
     if "container" in item.keywords and not item.config.getoption("--container"):
         pytest.skip("need --container to run this test")

@@ -1909,7 +1909,7 @@ def version() -> str:
 
 def init(log_env_var: str) -> None:
     """
-    Initialise the mock server library.
+    Initialise the Pact FFI mock server library.
 
     This can provide an environment variable name to use to set the log levels.
     This function should only be called once, as it tries to install a global
@@ -1917,6 +1917,10 @@ def init(log_env_var: str) -> None:
 
     [Rust
     `pactffi_init`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_init)
+
+    Args:
+        log_env_var:
+            Name of the environment variable that controls Pact logging levels.
 
     # Safety
 
@@ -1927,7 +1931,7 @@ def init(log_env_var: str) -> None:
 
 def init_with_log_level(level: str = "INFO") -> None:
     """
-    Initialises logging, and sets the log level explicitly.
+    Initialises logging and sets the Pact FFI log level explicitly.
 
     This function should only be called once, as it tries to install a global
     tracing subscriber.
@@ -1977,7 +1981,7 @@ def log_message(
 
     Args:
         message:
-            The contents written to the log
+            The contents written to the log.
 
         log_level:
             The verbosity at which this message should be logged.
