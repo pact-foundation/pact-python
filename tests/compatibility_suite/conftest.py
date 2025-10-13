@@ -24,7 +24,9 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="session", autouse=True)
 def _submodule_init() -> None:
-    """Initialize the submodule."""
+    """
+    Initialize the compatibility suite Git submodule if required.
+    """
     # Locate the git execute
     submodule_dir = Path(__file__).parent / "definition"
     if submodule_dir.is_dir():
@@ -42,21 +44,30 @@ def _submodule_init() -> None:
 
 @pytest.fixture
 def verifier() -> Verifier:
-    """Return a new Verifier."""
+    """
+    Provide a Pact verifier instance scoped to a single test.
+
+    Returns:
+        Configurable verifier for compatibility suite scenarios.
+    """
     return Verifier("provider")
 
 
 @pytest.fixture(scope="session")
 def broker_url(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
     """
-    Fixture to run the Pact broker.
+    Yield the Pact Broker URL, starting a container when required.
 
-    This inspects whether the `--broker-url` option has been given. If it has,
-    it is assumed that the broker is already running and simply returns the
-    given URL.
+    If Pytest has been started with an explicit `--broker-url` option, then that
+    URL is returned by this fixture; otherwise, a Pact Broker container is
+    launched to run tests against it.
 
-    Otherwise, the Pact broker is started in a container. The URL of the
-    containerised broker is then returned.
+    Args:
+        request:
+            Active pytest request object used to inspect command-line options.
+
+    Yields:
+        Location of the Pact Broker to use for compatibility testing.
     """
     broker_url: str | None = request.config.getoption("--broker-url")
 

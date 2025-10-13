@@ -14,7 +14,10 @@ import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, MutableMapping, Sequence
 
 from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
@@ -72,7 +75,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         """
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
-    def clean(self, versions: list[str]) -> None:  # noqa: ARG002
+    def clean(self, versions: Sequence[str]) -> None:  # noqa: ARG002
         """
         Code called to clean.
 
@@ -85,7 +88,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
     def initialize(
         self,
         version: str,  # noqa: ARG002
-        build_data: dict[str, object],
+        build_data: MutableMapping[str, object],
     ) -> None:
         """
         Code called immediately before each build.
@@ -98,8 +101,8 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
                 Not used (but required by the parent class).
 
             build_data:
-                A dictionary to modify in-place used by Hatch when creating the
-                final wheel.
+                A mutable mapping to modify in-place used by Hatch when creating
+                the final wheel.
 
         Raises:
             UnsupportedPlatformError:
@@ -129,7 +132,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         """
         return next(t.platform for t in sys_tags())
 
-    def _install(self, version: str) -> dict[str, str]:
+    def _install(self, version: str) -> Mapping[str, str]:
         """
         Install the Pact standalone binaries.
 
@@ -234,7 +237,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             url:
                 The URL to download
 
-        Return:
+        Returns:
             The path to the downloaded artefact.
         """
         filename = url.split("/")[-1]

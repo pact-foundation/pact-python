@@ -17,7 +17,14 @@ import pact_cli
 
 def bin_to_sitepackages(exec_path: str | Path) -> Path:
     """
-    Find the expected site-packages directory for the given executable.
+    Compute the expected site-packages directory for a Pact executable.
+
+    Args:
+        exec_path:
+            Path to the binary whose site-packages root should be derived.
+
+    Returns:
+        Path to the site-packages directory associated with the executable.
     """
     if os.name == "nt":
         return Path(exec_path).parents[1] / "Lib" / "site-packages"
@@ -31,10 +38,14 @@ def bin_to_sitepackages(exec_path: str | Path) -> Path:
 
 def assert_in_sys_path(p: str | Path) -> None:
     """
-    Assert that a given path is in sys.path.
+    Assert that a resolved path exists in ``sys.path``.
 
-    This performs some normalization on platform where the filesystem is
-    case-insensitive.
+    This performs normalization on case-insensitive filesystems to avoid
+    comparison errors.
+
+    Args:
+        p:
+            Path that should be discoverable via `sys.path`.
     """
     if os.name == "nt":
         assert str(p).lower() in (path.lower() for path in sys.path)
@@ -58,8 +69,7 @@ def assert_in_sys_path(p: str | Path) -> None:
         pytest.param("PACTFLOW_PATH", "pactflow", id="pactflow"),
     ],
 )
-def test_constants(constant: str, expected: str) -> None:
-    """Test the values of constants in pact.constants."""
+def test_constants_are_valid_executable_paths(constant: str, expected: str) -> None:
     value: str = getattr(pact_cli, constant)
     if os.name == "nt":
         # As the Windows filesystem is case insensitive, we must normalize it.
@@ -80,7 +90,7 @@ def test_constants(constant: str, expected: str) -> None:
         pytest.param("pactflow", id="pactflow"),
     ],
 )
-def test_exec_wrapper(executable: str) -> None:
+def test_cli_exec_wrapper(executable: str) -> None:
     exec_path = shutil.which(executable)
     assert exec_path
 
@@ -105,12 +115,14 @@ def test_exec_wrapper(executable: str) -> None:
     assert "pact" in (result.stdout + result.stderr).lower()
 
 
-def test_exec_wrapper_mock_service() -> None:
+def test_cli_exec_wrapper_for_mock_service() -> None:
     """
-    Analogous to test_exec_wrapper, but specifically for pact-mock-service.
+    Same as `test_cli_exec_wrapper` for the `pact-mock-server`.
 
-    This is necessary because pact-mock-service is a long running service, so we
-    spawn the process, terminate it after a delay, and check the output.
+    The Pact mock service is a long running service, as it is expected to run a
+    mock service which can be tested against. The test pattern above doesn't
+    work, and instead, we spawn the process, wait a bit, terminate it, and then
+    check the output.
     """
     executable = "pact-mock-service"
     exec_path = shutil.which(executable)
@@ -148,7 +160,7 @@ def test_exec_wrapper_mock_service() -> None:
 )
 def test_exec_directly(executable: str) -> None:
     """
-    Test pact_cli._exec with --help, mocking sys.argv and capturing output.
+    Invoke ``pact_cli._exec`` directly to confirm ``execv`` receives the command.
     """
     cmd: str
     args: list[str]

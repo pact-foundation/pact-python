@@ -46,12 +46,15 @@ _BIN_DIR = Path(__file__).parent.resolve() / "bin"
 
 def _exec() -> None:
     """
-    A minimal wrapper to execute the Pact CLI tools.
+    Execute Pact CLI tools routed through the generated entry points.
 
-    This is designed to be used as an entry point the scripts defined in the
-    `pyproject.toml` file. It simply passes the command line arguments to the
-    appropriate Pact CLI tool based on the executable name.
+    This function is exposed via `pyproject.toml` console scripts and forwards
+    the provided command-line arguments to the matching Pact CLI binary.
 
+    Raises:
+        SystemExit:
+            If the requested command is unknown or an executable cannot be
+            located.
     """
     import sys  # noqa: PLC0415
 
@@ -117,7 +120,17 @@ def _find_executable(executable: str) -> str | None:
     if _USE_SYSTEM_BINS:
         bin_path = shutil.which(executable)
     else:
-        bin_path = shutil.which(executable, path=_BIN_DIR)
+        bin_path = shutil.which(executable, path=str(_BIN_DIR))
+        if bin_path is None:
+            system_path = shutil.which(executable)
+            if system_path is not None:
+                warnings.warn(
+                    f"Bundled {executable} binary not found; "
+                    "using system installation instead.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+            bin_path = system_path
     if bin_path is None:
         msg = f"Unable to find {executable} binary executable."
         warnings.warn(msg, RuntimeWarning, stacklevel=2)
