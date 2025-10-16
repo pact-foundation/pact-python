@@ -22,7 +22,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/google/yamlfmt
-    rev: v0.17.2
+    rev: v0.18.1
     hooks:
       - id: yamlfmt
 
