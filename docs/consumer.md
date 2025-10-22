@@ -186,6 +186,24 @@ The mock service can handle multiple interactions within a single test. This is 
 
 When the mock service is started with `pact.serve()`, it will handle requests for all defined interactions, ensuring the client code can be tested against a realistic sequence of operations. Furthermore, for the test to pass, all defined interactions must be exercised by the client code. If any interaction is not used, the test will fail.
 
+## Logging
+
+To enable logging for debugging and troubleshooting, configure the FFI (Foreign Function Interface) logging using [`pact_ffi.log_to_stderr`][pact_ffi.log_to_stderr]. This is particularly useful when you need to understand what's happening inside the mock service or diagnose issues with your tests.
+
+The recommended approach is to set up logging in a pytest fixture within your `conftest.py`:
+
+```python
+import pytest
+import pact_ffi
+
+@pytest.fixture(autouse=True, scope="session")
+def pact_logging():
+    """Configure Pact FFI logging for the test session."""
+    pact_ffi.log_to_stderr("INFO")
+```
+
+For more information on logging configuration, including advanced options and troubleshooting, see the [Logging Configuration](logging.md) page.
+
 ## Mock Service
 
 Pact provides a mock service that simulates the provider service based on the defined interactions. The mock service is started when the `pact` object is used as a context manager with `pact.serve()`, as shown in the [consumer test](#consumer-test) example above.
