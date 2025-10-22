@@ -242,139 +242,139 @@ verifier = (
 
 Support for both local files and Pact Brokers is retained in v3, with the `verify_pacts` and `verify_with_broker` methods replaced by a more flexible source configuration. This allows multiple sources to be combined, and selectors to be applied.
 
-<!-- markdownlint-disable code-block-style -->
+/// tab | Local Files
 
-=== "Local Files"
+```python title="v2"
+success, logs = verifier.verify_pacts(
+    './pacts/consumer1-provider.json',
+    './pacts/consumer2-provider.json'
+)
+```
 
-    ```python title="v2"
-    success, logs = verifier.verify_pacts(
-        './pacts/consumer1-provider.json',
-        './pacts/consumer2-provider.json'
+```python title="v3"
+verifier = (
+    Verifier('my-provider')
+    # It can discover all Pact files in a directory
+    .add_source('./pacts/')
+    # Or read individual files
+    .add_source('./pacts/specific-consumer.json')
+)
+```
+
+///
+
+/// tab | Pact Broker
+
+```python title="v2"
+success, logs = verifier.verify_with_broker(
+    broker_url='https://pact-broker.example.com',
+    broker_username='username',
+    broker_password='password'
+)
+```
+
+```python title="v3"
+verifier = (
+    Verifier('my-provider')
+    .broker_source(
+        'https://pact-broker.example.com',
+        username='username',
+        password='password'
     )
-    ```
+)
 
-    ```python title="v3"
-    verifier = (
-        Verifier('my-provider')
-        # It can discover all Pact files in a directory
-        .add_source('./pacts/')
-        # Or read individual files
-        .add_source('./pacts/specific-consumer.json')
+# Or with selectors for more control
+broker_builder = (
+    verifier
+    .broker_source(
+        'https://pact-broker.example.com',
+        selector=True
     )
-    ```
+    .include_pending()
+    .provider_branch('main')
+    .consumer_tags('main', 'develop')
+    .build()
+)
+```
 
-=== "Pact Broker"
+The `selector=True` argument returns a [`BrokerSelectorBuilder`][pact.verifier.BrokerSelectorBuilder] instance, which provides methods to configure which pacts to fetch. The `build()` call finalizes the configuration and returns the `Verifier` instance which can then be further configured.
 
-    ```python title="v2"
-    success, logs = verifier.verify_with_broker(
-        broker_url='https://pact-broker.example.com',
-        broker_username='username',
-        broker_password='password'
-    )
-    ```
-
-    ```python title="v3"
-    verifier = (
-        Verifier('my-provider')
-        .broker_source(
-            'https://pact-broker.example.com',
-            username='username',
-            password='password'
-        )
-    )
-
-    # Or with selectors for more control
-    broker_builder = (
-        verifier
-        .broker_source(
-            'https://pact-broker.example.com',
-            selector=True
-        )
-        .include_pending()
-        .provider_branch('main')
-        .consumer_tags('main', 'develop')
-        .build()
-    )
-    ```
-
-    The `selector=True` argument returns a [`BrokerSelectorBuilder`][pact.verifier.BrokerSelectorBuilder] instance, which provides methods to configure which pacts to fetch. The `build()` call finalizes the configuration and returns the `Verifier` instance which can then be further configured.
-
-<!-- markdownlint-enable code-block-style -->
+///
 
 #### Provider State Handling
 
 The old v2 API required the provider to expose an HTTP endpoint dedicated to handling provider states. This is still supported in v3, but there are now more flexible options, allowing Python functions (or mappings of state names to functions) to be used instead.
 
-<!-- markdownlint-disable code-block-style -->
+/// tab | URL-based State Handling
 
-=== "URL-based State Handling"
+```python title="v2"
+success, logs = verifier.verify_pacts(
+    './pacts/consumer-provider.json',
+    provider_states_setup_url='http://localhost:8080/_pact/provider_states'
+)
+```
 
-    ```python title="v2"
-    success, logs = verifier.verify_pacts(
-        './pacts/consumer-provider.json',
-        provider_states_setup_url='http://localhost:8080/_pact/provider_states'
+```python title="v3"
+# Option 1: URL-based (similar to v2)
+verifier = (
+    Verifier('my-provider')
+    .add_transport(url='http://localhost:8080')
+    .state_handler(
+        'http://localhost:8080/_pact/provider_states',
+        body=True  # (1)
     )
-    ```
+    .add_source('./pacts/')
+)
+```
 
-    ```python title="v3"
-    # Option 1: URL-based (similar to v2)
-    verifier = (
-        Verifier('my-provider')
-        .add_transport(url='http://localhost:8080')
-        .state_handler(
-            'http://localhost:8080/_pact/provider_states',
-            body=True  # (1)
-        )
-        .add_source('./pacts/')
-    )
-    ```
+1.  The `body` argument specifies whether to use a `POST` request and pass information in the body, or to use a `GET` request and pass information through HTTP headers. For more details, see the [`state_handler` API documentation][pact.verifier.Verifier.state_handler].
 
-    1.  The `body` argument specifies whether to use a `POST` request and pass information in the body, or to use a `GET` request and pass information through HTTP headers. For more details, see the [`state_handler` API documentation][pact.verifier.Verifier.state_handler].
+///
 
-=== "Functional State Handling"
+//// tab | Functional State Handling
 
-    ```python title="v2"
-    # Not supported
-    ```
+```python title="v2"
+# Not supported
+```
 
-    ```python title="v3 - Function"
-        def handler(name, params=None):
-            if name == 'user exists':
-                # Set up user in database/mock
-                create_user(params.get('id', 123))
-            elif name == 'no users exist':
-                # Clear users
-                clear_users()
-
-        verifier = (
-            Verifier('my-provider')
-            .add_transport(url='http://localhost:8080')
-            .state_handler(handler)
-            .add_source('./pacts/')
-        )
-    ```
-
-    ```python title="v3 - Mapping"
-    state_handlers = {
-        'user exists': lambda name, params: create_user(params.get('id', 123)),
-        'no users exist': lambda name, params: clear_users(),
-    }
+```python title="v3 - Function"
+def handler(name, params=None):
+    if name == 'user exists':
+        # Set up user in database/mock
+        create_user(params.get('id', 123))
+    elif name == 'no users exist':
+        # Clear users
+        clear_users()
 
     verifier = (
         Verifier('my-provider')
         .add_transport(url='http://localhost:8080')
-        .state_handler(state_handlers)
+        .state_handler(handler)
         .add_source('./pacts/')
     )
-    ```
+```
 
-    More information on the state handler function signature can be found in the [`state_handler` API documentation][pact.verifier.Verifier.state_handler]. By default, the handlers only _set up_ the provider state. If you need to also _tear down_ the state after verification, you can use the `teardown=True` argument to enable this behaviour.
+```python title="v3 - Mapping"
+state_handlers = {
+    'user exists': lambda name, params: create_user(params.get('id', 123)),
+    'no users exist': lambda name, params: clear_users(),
+}
 
-    !!! warning
+verifier = (
+    Verifier('my-provider')
+    .add_transport(url='http://localhost:8080')
+    .state_handler(state_handlers)
+    .add_source('./pacts/')
+)
+```
 
-        These functions run in the test process, so any side effects must be properly shared with the provider. If using mocking libraries, ensure the provider is started in a separate thread of the same process (using `threading.Thread` or similar), rather than a separate process (e.g., using `multiprocessing.Process` or `subprocess.Popen`).
+More information on the state handler function signature can be found in the [`state_handler` API documentation][pact.verifier.Verifier.state_handler]. By default, the handlers only _set up_ the provider state. If you need to also _tear down_ the state after verification, you can use the `teardown=True` argument to enable this behaviour.
 
-<!-- markdownlint-enable code-block-style -->
+/// warning
+These functions run in the test process, so any side effects must be properly shared with the provider. If using mocking libraries, ensure the provider is started in a separate thread of the same process (using `threading.Thread` or similar), rather than a separate process (e.g., using `multiprocessing.Process` or `subprocess.Popen`).
+///
+
+////
 
 #### Message Verification
 

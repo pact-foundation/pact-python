@@ -186,7 +186,8 @@ At present, it is the responsibility of the end user to set up the provider endp
 
 ---
 
-<!-- markdownlint-disable code-block-style -->
+/// define
 1 August 2025
-:   With the release of Pact Python `v3` and the splitting of the CLI and FFI into standalone packages, some hyperlinks and code snippets have been updated to point to the new locations. The _text_ has been kept unchanged to preserve the original context and intent of the post.
-<!-- markdownlint-enable code-block-style -->
+
+-   With the release of Pact Python `v3` and the splitting of the CLI and FFI into standalone packages, some hyperlinks and code snippets have been updated to point to the new locations. The _text_ has been kept unchanged to preserve the original context and intent of the post.
+///

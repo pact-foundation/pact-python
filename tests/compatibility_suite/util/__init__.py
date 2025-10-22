@@ -50,14 +50,14 @@ class PactInteractionTuple(Generic[_T]):
     and an `Interaction` subclass. This named tuple is used to pass these
     objects around more easily.
 
-    !!! note
-
-        This should be simplified in the future to simply being a
-        [`NamedTuple`][typing.NamedTuple]; however, earlier versions of Python
-        do not support inheriting from multiple classes, thereby preventing
-        `class PactInteractionTuple(NamedTuple, Generic[_T])` (even if
-        [`Generic[_T]`][typing.Generic] serves no purpose other than to allow
-        type hinting).
+    /// note
+    This should be simplified in the future to simply being a
+    [`NamedTuple`][typing.NamedTuple]; however, earlier versions of Python do
+    not support inheriting from multiple classes, thereby preventing `class
+    PactInteractionTuple(NamedTuple, Generic[_T])` (even if
+    [`Generic[_T]`][typing.Generic] serves no purpose other than to allow type
+    hinting).
+    ///
     """
 
     def __init__(self, pact: Pact, interaction: _T) -> None:

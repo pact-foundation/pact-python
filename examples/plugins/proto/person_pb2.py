@@ -7,9 +7,9 @@ Protocol buffer message and service definitions for the AddressBook pedagogical 
 
 This module is auto-generated from the person.proto file using the protobuf compiler. It provides Python classes for all messages and services defined in the proto file, and is intended for use in educational and demonstration contexts.
 
-!!! note
-
-    This file is generated code. Manual changes (except for documentation improvements) will be overwritten if the file is regenerated.
+/// note
+This file is generated code. Manual changes (except for documentation improvements) will be overwritten if the file is regenerated.
+///
 """
 
 from __future__ import annotations

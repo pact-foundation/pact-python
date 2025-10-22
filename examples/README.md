@@ -40,8 +40,7 @@ Each example can be run independently. Navigate to the specific example director
 
 Pact is a contract testing tool. Contract testing is a way to ensure that services (such as an API provider and a client) can communicate with each other. An interaction between a _consumer_ (i.e., a HTTP client, mobile app, website, microservice, etc.) and a _provider_ (i.e., a web server, microservice, etc.) would typically look like this:
 
-<!-- markdownlint-disable no-inline-html -->
-<div align="center">
+/// html | div[align="center"]
 
 ```mermaid
 sequenceDiagram
@@ -53,13 +52,9 @@ sequenceDiagram
     Provider ->> Consumer: 404 Not Found
 ```
 
-</div>
-<!-- markdownlint-enable no-inline-html -->
-
 Pact allows for each side of the interaction to be tested independently. Pact achieves this by mocking the other side of the interaction:
 
-<!-- markdownlint-disable no-inline-html -->
-<div align="center">
+/// html | div[align="center"]
 
 ```mermaid
 sequenceDiagram
@@ -83,9 +78,6 @@ sequenceDiagram
     P2->>Provider: GET /users/999
     Provider->>P2: 404 Not Found
 ```
-
-</div>
-<!-- markdownlint-enable no-inline-html -->
 
 Pact is **consumer driven**. This means that the consumer is responsible for defining the interactions it expects from the provider through the pattern of
 

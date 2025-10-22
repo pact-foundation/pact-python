@@ -5,11 +5,12 @@ This module provides a Python interface to the Pact FFI. It is a thin wrapper
 around the C API, and is intended to be used by the Pact Python client library
 to provide a Pythonic interface to Pact.
 
-!!! warning
+/// warning
+This module is not intended to be used directly by Pact users. Pact users should
+use the Pact Python client library instead. No guarantees are made about the
+stability of this module's API.
+///
 
-    This module is not intended to be used directly by Pact users. Pact users
-    should use the Pact Python client library instead. No guarantees are made
-    about the stability of this module's API.
 
 ## Developer Notes
 
@@ -6223,13 +6224,12 @@ def with_binary_file(
     """
     Adds a binary file as the body with the expected content type and contents.
 
-    !!! warning
-
-        This function is deprecated. Use
-        [`with_binary_body`][pact_ffi.with_binary_body] in order to set the
-        binary body, and use
-        [`with_matching_rules`][pact_ffi.with_matching_rules] to set the
-        matching rules to ensure that only the content type is being matched.
+    /// warning
+    This function is deprecated. Use
+    [`with_binary_body`][pact_ffi.with_binary_body] in order to set the binary
+    body, and use [`with_matching_rules`][pact_ffi.with_matching_rules] to set
+    the matching rules to ensure that only the content type is being matched.
+    ///
 
     Will use a mime type matcher to match the body. Returns false if the
     interaction or Pact can't be modified (i.e. the mock server for it has

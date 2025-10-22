@@ -2,8 +2,7 @@
 
 Pact is a consumer-driven contract testing tool. The consumer specifies the expected interactions with the provider, which are used to create a contract. This contract is then used to verify that the provider behaves as expected.
 
-<!-- markdownlint-disable no-inline-html -->
-<div align="center">
+/// html | div[align="center"]
 
 ```mermaid
 sequenceDiagram
@@ -28,8 +27,7 @@ sequenceDiagram
     Provider->>P2: 404 Not Found
 ```
 
-</div>
-<!-- markdownlint-enable no-inline-html -->
+///
 
 The provider verification process works by replaying the interactions from the consumer against the provider and checking that the responses match what was expected. This is done using the Pact files created by the consumer tests, either by reading them from the local file system or by fetching them from a Pact Broker.
 

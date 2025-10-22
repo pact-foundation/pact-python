@@ -15,12 +15,12 @@ When performing the verification, Pact will replay the interactions from the
 consumer against the provider and ensure that the provider's responses match the
 expectations set by the consumer.
 
-!!! info
-
-    The interface provided by this module could be improved. If you have any
-    suggestions, please consider creating a new [GitHub
-    discussion](https://github.com/pact-foundation/pact-python/discussions) or
-    reaching out over [Slack](https://slack.pact.io).
+/// info
+The interface provided by this module could be improved. If you have any
+suggestions, please consider creating a new [GitHub
+discussion](https://github.com/pact-foundation/pact-python/discussions) or
+reaching out over [Slack](https://slack.pact.io).
+///
 
 ## Usage
 

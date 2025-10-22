@@ -2,8 +2,7 @@
 
 Pact is a consumer-driven contract testing tool. The consumer specifies the expected interactions with the provider, which are used to create a contract. This contract is then used to verify that the provider meets the consumer's expectations.
 
-<!-- markdownlint-disable no-inline-html -->
-<div align="center">
+/// html | div[align="center']
 
 ```mermaid
 sequenceDiagram
@@ -28,8 +27,7 @@ sequenceDiagram
     Provider->>P2: 404 Not Found
 ```
 
-</div>
-<!-- markdownlint-enable no-inline-html -->
+///
 
 The consumer is the client that makes requests, and the provider is the server that responds. In most cases, the consumer is a front-end application and the provider is a back-end service; however, a back-end service may also require information from another service, making it a consumer of that service.
 
@@ -241,17 +239,20 @@ pact-broker publish \
 
 It expects the following environment variables to be set:
 
+/// define
 `PACT_BROKER_BASE_URL`
 
-:   The base URL of the Pact Broker (e.g., `https://test.pactflow.io` if using [PactFlow](https://pactflow.io), or the URL to your self-hosted Pact Broker instance).
+-   The base URL of the Pact Broker (e.g., `https://test.pactflow.io` if using [PactFlow](https://pactflow.io), or the URL to your self-hosted Pact Broker instance).
 
 `PACT_BROKER_USERNAME` / `PACT_BROKER_PASSWORD`
 
-:   The username and password for authenticating with the Pact Broker.
+-   The username and password for authenticating with the Pact Broker.
 
 `PACT_BROKER_TOKEN`
 
-:   An alternative to using username and password, this is a token that can be used for authentication (e.g., used with [PactFlow](https://pactflow.io)).
+-   An alternative to using username and password, this is a token that can be used for authentication (e.g., used with [PactFlow](https://pactflow.io)).
+
+///
 
 ## Pattern Matching
 
