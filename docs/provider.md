@@ -108,6 +108,24 @@ def test_provider_with_selectors():
 
 More information on the selector options is available in the [API reference][pact.verifier.BrokerSelectorBuilder].
 
+## Logging
+
+To enable logging for debugging and troubleshooting, configure the FFI (Foreign Function Interface) logging using [`pact_ffi.log_to_stderr`][pact_ffi.log_to_stderr]. This is particularly useful when you need to understand what's happening during provider verification or diagnose issues with provider state handlers.
+
+The recommended approach is to set up logging in a pytest fixture within your `conftest.py`:
+
+```python
+import pytest
+import pact_ffi
+
+@pytest.fixture(autouse=True, scope="session")
+def pact_logging():
+    """Configure Pact FFI logging for the test session."""
+    pact_ffi.log_to_stderr("INFO")
+```
+
+For more information on logging configuration, including advanced options and troubleshooting, see the [Logging Configuration](logging.md) page.
+
 ### Publishing Results
 
 To publish verification results to the Broker:

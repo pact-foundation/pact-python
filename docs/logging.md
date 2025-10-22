@@ -25,9 +25,11 @@ The following log levels are available (from least to most verbose):
 
 ## Recommended Setup with Pytest
 
+<!-- markdownlint-disable code-block-style -->
 !!! warning "One-time Initialization"
 
     The FFI logging can only be initialized **once** per process. Attempting to configure it multiple times will result in an error. For this reason, it's recommended to set up logging in a session-scoped fixture.
+<!-- markdownlint-enable code-block-style -->
 
 The recommended way to configure FFI logging in your test suite is to use a pytest fixture with `autouse=True` and `scope="session"` in your `conftest.py` file:
 
@@ -53,9 +55,11 @@ For more advanced use cases, the `pact_ffi` module provides additional logging f
 
 ### Logging to a File
 
+<!-- markdownlint-disable code-block-style -->
 !!! note "Not Yet Implemented"
 
     The `log_to_file` function is currently not implemented in the Python bindings. If you need this feature, please open an issue on the [Pact Python GitHub repository](https://github.com/pact-foundation/pact-python/issues).
+<!-- markdownlint-enable code-block-style -->
 
 To direct logs to a file instead of stderr, you would use:
 
@@ -83,15 +87,19 @@ This is particularly useful for:
 -   Including logs in test failure reports
 -   Processing or filtering log messages programmatically
 
+<!-- markdownlint-disable code-block-style -->
 !!! note "Retrieving Buffer Contents"
 
     The `fetch_log_buffer` function for retrieving buffered logs is currently not implemented in the Python bindings. If you need this feature, please open an issue on the [Pact Python GitHub repository](https://github.com/pact-foundation/pact-python/issues).
+<!-- markdownlint-enable code-block-style -->
 
 ### Multiple Sinks
 
+<!-- markdownlint-disable code-block-style -->
 !!! note "Advanced Usage"
 
     The functions `logger_init`, `logger_attach_sink`, and `logger_apply` are currently not implemented in the Python bindings. If you need these features, please open an issue on the [Pact Python GitHub repository](https://github.com/pact-foundation/pact-python/issues).
+<!-- markdownlint-enable code-block-style -->
 
 For the most advanced scenarios, the FFI supports configuring multiple log sinks simultaneously (e.g., logging to both stderr and a file). This requires using the lower-level `logger_init`, `logger_attach_sink`, and `logger_apply` functions, which are planned for future implementation.
 
