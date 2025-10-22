@@ -3,6 +3,7 @@
 -   [Home](README.md)
     -   [Consumer](consumer.md)
     -   [Provider](provider.md)
+    -   [Logging](logging.md)
     -   [Releases](releases.md)
     -   [Migration Guide](MIGRATION.md)
     -   [Changelog](CHANGELOG.md)
