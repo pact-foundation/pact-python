@@ -69,7 +69,8 @@ Happy testing!
 
 ----
 
-<!-- markdownlint-disable code-block-style -->
+/// define
 1 August 2025
-:   With the release of Pact Python `v3`, some hyperlinks have been removed from this blog post as they are no longer relevant.
-<!-- markdownlint-enable code-block-style -->
+
+-   With the release of Pact Python `v3`, some hyperlinks have been removed from this blog post as they are no longer relevant.
+///

@@ -16,10 +16,6 @@ class AsyncMessageInteraction(Interaction):
     and a provider. It defines the kind of messages a consumer can accept, and
     the is agnostic of the underlying protocol, be it a message queue, Apache
     Kafka, or some other asynchronous protocol.
-
-    !!! warning
-
-        This class is not yet fully implemented and is not yet usable.
     """
 
     def __init__(self, pact_handle: pact_ffi.PactHandle, description: str) -> None:

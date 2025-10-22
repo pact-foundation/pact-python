@@ -21,10 +21,6 @@ class SyncMessageInteraction(Interaction):
     a provider. As with [`HttpInteraction`][pact.pact.HttpInteraction], it
     defines a specific request that the consumer makes to the provider, and the
     response that the provider should return.
-
-    !!! warning
-
-        This class is not yet fully implemented and is not yet usable.
     """
 
     def __init__(self, pact_handle: pact_ffi.PactHandle, description: str) -> None:

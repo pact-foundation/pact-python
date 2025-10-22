@@ -12,23 +12,24 @@ random integers, dates, UUIDs, and more. This helps ensure that your contracts
 are resilient to changes and do not rely on hardcoded values, which can lead to
 brittle tests.
 
-!!! warning
+/// warning
+Do not import functions directly from `pact.generate` to avoid shadowing Python
+built-in types. Instead, import the `generate` module and use its functions as
+`generate.int`, `generate.str`, etc.
 
-    Do not import functions directly from `pact.generate` to avoid shadowing
-    Python built-in types. Instead, import the `generate` module and use its
-    functions as `generate.int`, `generate.str`, etc.
+```python
+# Recommended
+from pact import generate
 
-    ```python
-    # Recommended
-    from pact import generate
+generate.int(...)
 
-    generate.int(...)
+# Not recommended
+from pact.generate import int
 
-    # Not recommended
-    from pact.generate import int
+int(...)
+```
+///
 
-    int(...)
-    ```
 
 Many functions in this module are named after the type they generate (e.g.,
 `int`, `str`, `bool`). Importing directly from this module may shadow Python

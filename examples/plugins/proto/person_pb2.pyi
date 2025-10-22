@@ -3,9 +3,9 @@ Type stubs for protocol buffer messages and services for the AddressBook pedagog
 
 This module is auto-generated from the person.proto file and provides type hints for all messages and services defined in the proto file. It is intended for use in educational and demonstration contexts, and helps with static analysis and editor support.
 
-!!! note
-
-    This file is generated code. Manual changes (except for documentation improvements) will be overwritten if the file is regenerated.
+/// note
+This file is generated code. Manual changes (except for documentation improvements) will be overwritten if the file is regenerated.
+///
 """
 
 # ruff: noqa: PGH004

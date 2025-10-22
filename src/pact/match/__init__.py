@@ -11,22 +11,23 @@ response may include additional fields from the provider, such as an ID or
 creation timestamp. The contract can require the ID to match a specific format
 (e.g., integer or UUID) and the timestamp to be ISO 8601.
 
-!!! warning
+/// warning
+Do not import functions directly from this module. Instead, import the `match`
+module and use its functions:
 
-    Do not import functions directly from this module. Instead, import the
-    `match` module and use its functions:
+```python
+# Recommended
+from pact import match
 
-    ```python
-    # Recommended
-    from pact import match
+match.int(...)
 
-    match.int(...)
+# Not recommended
+from pact.match import int
 
-    # Not recommended
-    from pact.match import int
+int(...)
+```
+///
 
-    int(...)
-    ```
 
 Many functions in this module are named after the types they match (e.g., `int`,
 `str`, `bool`). Importing directly from this module may shadow Python built-in
@@ -37,12 +38,12 @@ values dynamically during contract tests. If a `value` is not provided, a
 generator is used; if a `value` is provided, a generator is not used. This is
 _not_ advised, as leads to non-deterministic tests.
 
-!!! note
+/// note
+You do not need to specify everything that will be returned from the provider in
+a JSON response. Any extra data that is received will be ignored and the tests
+will still pass, as long as the expected fields match the defined patterns.
+///
 
-    You do not need to specify everything that will be returned from the
-    provider in a JSON response. Any extra data that is received will be
-    ignored and the tests will still pass, as long as the expected fields
-    match the defined patterns.
 
 For more information about the Pact matching specification, see
 [Matching](https://docs.pact.io/getting_started/matching).
