@@ -51,7 +51,7 @@ requires-python = ">=3.10"
 [dependency-groups]
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
-dev   = ["ruff==0.14.1", { include-group = "test" }, { include-group = "types" }]
+dev   = ["ruff==0.14.2", { include-group = "test" }, { include-group = "types" }]
 test  = ["pytest-cov~=7.0", "pytest~=8.0"]
 types = ["mypy==1.18.2"]
 
