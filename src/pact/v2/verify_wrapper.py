@@ -1,13 +1,13 @@
 """Wrapper to verify previously created pacts."""
 
-from pact_cli import VERIFIER_PATH
-import sys
 import os
 import platform
-
 import subprocess
-from os.path import isdir, join, isfile
+import sys
 from os import listdir
+from os.path import isdir, isfile, join
+
+from pact_cli import VERIFIER_PATH, _telemetry_env
 
 
 def capture_logs(process, verbose):
@@ -95,10 +95,10 @@ def rerun_command():
             ' & set PACT_PROVIDER_STATE="'.format(command=' '.join(sys.argv)))
     else:
         command = ("PACT_DESCRIPTION='<PACT_DESCRIPTION>'"
-                   " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
-                   " {command}".format(command=' '.join(sys.argv)))
+            " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
+            " {command}".format(command=' '.join(sys.argv)))
 
-    env = os.environ.copy()
+    env = _telemetry_env()
     env['PACT_INTERACTION_RERUN_COMMAND'] = command
     return env
 

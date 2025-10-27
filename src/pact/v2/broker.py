@@ -2,12 +2,14 @@
 from __future__ import unicode_literals
 
 import fnmatch
+import logging
 import os
 from subprocess import Popen
 
+from pact_cli import _telemetry_env
+
 from .constants import BROKER_CLIENT_PATH
 
-import logging
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -106,7 +108,7 @@ class Broker():
 
             log.debug(f"PactBroker publish command: {log_command}")
 
-        publish_process = Popen(command)
+        publish_process = Popen(command, env=_telemetry_env())
         publish_process.wait()
         if publish_process.returncode != 0:
             url = self._get_broker_base_url()

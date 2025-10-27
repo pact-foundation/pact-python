@@ -1,5 +1,6 @@
 import os
 from unittest import TestCase
+from unittest.mock import ANY
 
 from mock import patch
 
@@ -48,7 +49,7 @@ class BrokerTestCase(TestCase):
             '--broker-username=username',
             '--broker-password=password',
             '--broker-token=token',
-            './TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'], env=ANY)
 
     def test_publish_with_broker_url_environment_variable(self):
         BROKER_URL_ENV = 'http://broker.url'
@@ -67,7 +68,7 @@ class BrokerTestCase(TestCase):
             f"--broker-base-url={BROKER_URL_ENV}",
             '--broker-username=username',
             '--broker-password=password',
-            './TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'], env=ANY)
 
         del os.environ["PACT_BROKER_BASE_URL"]
 
@@ -86,7 +87,7 @@ class BrokerTestCase(TestCase):
             '--broker-base-url=http://localhost',
             '--broker-username=username',
             '--broker-password=password',
-            './TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'], env=ANY)
 
     def test_token_authenticated_publish(self):
         broker = Broker(broker_base_url="http://localhost",
@@ -105,7 +106,7 @@ class BrokerTestCase(TestCase):
             '--broker-username=username',
             '--broker-password=password',
             '--broker-token=token',
-            './TestConsumer-TestProvider.json'])
+            './TestConsumer-TestProvider.json'], env=ANY)
 
     def test_git_tagged_publish(self):
         broker = Broker(broker_base_url="http://localhost")
@@ -120,7 +121,7 @@ class BrokerTestCase(TestCase):
             '--consumer-app-version=2.0.1',
             '--broker-base-url=http://localhost',
             './TestConsumer-TestProvider.json',
-            '--tag-with-git-branch'])
+            '--tag-with-git-branch'], env=ANY)
 
     def test_manual_tagged_publish(self):
         broker = Broker(broker_base_url="http://localhost")
@@ -136,7 +137,7 @@ class BrokerTestCase(TestCase):
             '--broker-base-url=http://localhost',
             './TestConsumer-TestProvider.json',
             '-t', 'tag1',
-            '-t', 'tag2'])
+            '-t', 'tag2'], env=ANY)
 
     def test_branch_publish(self):
         broker = Broker(broker_base_url="http://localhost")
@@ -151,7 +152,7 @@ class BrokerTestCase(TestCase):
             '--consumer-app-version=2.0.1',
             '--broker-base-url=http://localhost',
             './TestConsumer-TestProvider.json',
-            '--branch=consumer-branch'])
+            '--branch=consumer-branch'], env=ANY)
 
     def test_build_url_publish(self):
         broker = Broker(broker_base_url="http://localhost")
@@ -166,7 +167,7 @@ class BrokerTestCase(TestCase):
             '--consumer-app-version=2.0.1',
             '--broker-base-url=http://localhost',
             './TestConsumer-TestProvider.json',
-            '--build-url=http://ci'])
+            '--build-url=http://ci'], env=ANY)
 
     def test_auto_detect_version_properties_publish(self):
         broker = Broker(broker_base_url="http://localhost")
@@ -181,4 +182,4 @@ class BrokerTestCase(TestCase):
             '--consumer-app-version=2.0.1',
             '--broker-base-url=http://localhost',
             './TestConsumer-TestProvider.json',
-            '--auto-detect-version-properties'])
+            '--auto-detect-version-properties'], env=ANY)
