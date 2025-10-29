@@ -95,8 +95,8 @@ def rerun_command():
             ' & set PACT_PROVIDER_STATE="'.format(command=' '.join(sys.argv)))
     else:
         command = ("PACT_DESCRIPTION='<PACT_DESCRIPTION>'"
-            " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
-            " {command}".format(command=' '.join(sys.argv)))
+                   " PACT_PROVIDER_STATE='<PACT_PROVIDER_STATE>'"
+                   " {command}".format(command=' '.join(sys.argv)))
 
     env = _telemetry_env()
     env['PACT_INTERACTION_RERUN_COMMAND'] = command

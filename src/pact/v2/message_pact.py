@@ -178,7 +178,7 @@ class MessagePact(Broker):
             "--pact-dir", self.pact_dir,
             f"--pact-specification-version={self.version}",
             "--consumer", f"{self.consumer.name}",
-            '--provider', self.provider.name,
+            "--provider", f"{self.provider.name}",
         ]
 
         self._message_process = Popen(command, env=_telemetry_env())
