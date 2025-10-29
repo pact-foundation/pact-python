@@ -1,8 +1,9 @@
 import os
 import json
+from unittest import TestCase
+from unittest.mock import ANY
 
 from mock import patch
-from unittest import TestCase
 
 from pact.v2.message_consumer import MessageConsumer, Provider
 from pact.v2.message_pact import MessagePact
@@ -264,4 +265,4 @@ class PactGeneratePactFileTestCase(TestCase):
             '--pact-specification-version=3.0.0',
             '--consumer', 'TestConsumer',
             '--provider', 'TestProvider',
-        ])
+        ], env=ANY)

@@ -10,6 +10,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 
+from pact_cli import _telemetry_env
+
 from .broker import Broker
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
@@ -217,7 +219,7 @@ class Pact(Broker):
         if self.cors:
             command.extend(['--cors'])
 
-        self._process = Popen(command)
+        self._process = Popen(command, env=_telemetry_env())
         self._wait_for_server_start()
 
     def stop_service(self):

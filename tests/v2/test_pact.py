@@ -1,6 +1,7 @@
 import os
 from subprocess import Popen
 from unittest import TestCase
+from unittest.mock import ANY
 
 from mock import patch, call, Mock
 from psutil import Process
@@ -317,7 +318,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--pact-file-write-mode', 'overwrite',
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
-            '--provider', 'provider'])
+            '--provider', 'provider'], env=ANY)
 
     def test_start_no_ssl(self):
         pact = Pact(Consumer('consumer'), Provider('provider'),
@@ -333,7 +334,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--pact-file-write-mode', 'overwrite',
             '--pact-specification-version=2.0.0',
             '--consumer', 'consumer',
-            '--provider', 'provider'])
+            '--provider', 'provider'], env=ANY)
 
     def test_start_with_ssl(self):
         pact = Pact(Consumer('consumer'), Provider('provider'),
@@ -353,7 +354,7 @@ class PactStartShutdownServerTestCase(TestCase):
             '--provider', 'provider',
             '--ssl',
             '--sslcert', '/ssl.cert',
-            '--sslkey', '/ssl.key'])
+            '--sslkey', '/ssl.key'], env=ANY)
 
     def test_stop_posix(self):
         self.mock_publish.return_value.returncode = 0

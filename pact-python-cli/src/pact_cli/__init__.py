@@ -30,8 +30,10 @@ __url__ = "https://github.com/pact-foundation/pact-python"
 
 import os
 import shutil
+import sys
 import warnings
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pact_cli.__version__ import (
     __version__ as __version__,
@@ -40,8 +42,31 @@ from pact_cli.__version__ import (
     __version_tuple__ as __version_tuple__,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
 _USE_SYSTEM_BINS = os.getenv("PACT_USE_SYSTEM_BINS", "").upper() in ("TRUE", "YES")
 _BIN_DIR = Path(__file__).parent.resolve() / "bin"
+
+
+def _telemetry_env() -> Mapping[str, str]:
+    """
+    Get environment variables with Pact telemetry data.
+
+    Returns a copy of the current environment with the following two keys added:
+
+    -   `PACT_EXECUTING_LANGUAGE`: Set to "python".
+    -   `PACT_EXECUTING_LANGUAGE_VERSION`: Set to the current Python version
+        in "major.minor" format.
+
+    Returns:
+        Environment dictionary Pact telemetry added.
+    """
+    env = os.environ.copy()
+    env["PACT_EXECUTING_LANGUAGE"] = "python"
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    env["PACT_EXECUTING_LANGUAGE_VERSION"] = version
+    return env
 
 
 def _exec() -> None:
@@ -92,7 +117,7 @@ def _exec() -> None:
         print(f"Command '{command}' not found.", file=sys.stderr)  # noqa: T201
         sys.exit(1)
 
-    os.execv(executable, [executable, *args])  # noqa: S606
+    os.execve(executable, [executable, *args], _telemetry_env())  # noqa: S606
 
 
 def _find_executable(executable: str) -> str | None:

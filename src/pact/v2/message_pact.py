@@ -5,6 +5,8 @@ import json
 import os
 from subprocess import Popen
 
+from pact_cli import _telemetry_env
+
 from .broker import Broker
 from .constants import MESSAGE_PATH
 from .matchers import from_term
@@ -179,7 +181,7 @@ class MessagePact(Broker):
             "--provider", f"{self.provider.name}",
         ]
 
-        self._message_process = Popen(command)
+        self._message_process = Popen(command, env=_telemetry_env())
         self._message_process.wait()
 
     def _insert_message_if_complete(self):
