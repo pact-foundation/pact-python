@@ -8,8 +8,11 @@ that is handled by the compatibility suite.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
+from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -166,3 +169,117 @@ def test_logs(verifier: Verifier) -> None:
 def test_output(verifier: Verifier) -> None:
     output = verifier.output()
     assert output == ""
+
+
+@pytest.mark.parametrize(
+    ("selector_calls", "expected_selectors"),
+    [
+        pytest.param(
+            [{"consumer": "test-consumer"}],
+            [{"consumer": "test-consumer"}],
+            id="single_parameter",
+        ),
+        pytest.param(
+            [{"consumer": "test-consumer", "branch": "main", "latest": True}],
+            [{"consumer": "test-consumer", "branch": "main", "latest": True}],
+            id="multiple_parameters",
+        ),
+        pytest.param(
+            [{"deployed_or_released": True, "fallback_tag": "latest"}],
+            [{"deployedOrReleased": True, "fallbackTag": "latest"}],
+            id="camelcase_conversion",
+        ),
+        pytest.param(
+            [
+                {"branch": "main", "latest": True},
+                {"branch": "feature-branch", "latest": True},
+                {"deployed": True},
+            ],
+            [
+                {"branch": "main", "latest": True},
+                {"branch": "feature-branch", "latest": True},
+                {"deployed": True},
+            ],
+            id="multiple_selectors",
+        ),
+        pytest.param(
+            [
+                {
+                    "consumer": "test-consumer",
+                    "tag": "v1.0",
+                    "fallback_tag": "latest",
+                    "latest": True,
+                    "deployed_or_released": True,
+                    "deployed": True,
+                    "released": True,
+                    "environment": "staging",
+                    "main_branch": True,
+                    "branch": "feature-123",
+                    "matching_branch": True,
+                    "fallback_branch": "develop",
+                }
+            ],
+            [
+                {
+                    "consumer": "test-consumer",
+                    "tag": "v1.0",
+                    "fallbackTag": "latest",
+                    "latest": True,
+                    "deployedOrReleased": True,
+                    "deployed": True,
+                    "released": True,
+                    "environment": "staging",
+                    "mainBranch": True,
+                    "branch": "feature-123",
+                    "matchingBranch": True,
+                    "fallbackBranch": "develop",
+                }
+            ],
+            id="all_parameters",
+        ),
+        pytest.param(
+            [
+                {
+                    "consumer": "test-consumer",
+                    "branch": "main",
+                    "tag": None,
+                    "latest": None,
+                }
+            ],
+            [{"consumer": "test-consumer", "branch": "main"}],
+            id="none_values_excluded",
+        ),
+    ],
+)
+def test_consumer_version(
+    verifier: Verifier,
+    selector_calls: list[dict[str, Any]],
+    expected_selectors: list[dict[str, Any]],
+) -> None:
+    """Test consumer_version with various parameter combinations and selector counts."""
+    with patch("pact_ffi.verifier_broker_source_with_selectors") as mock_ffi:
+        selector_builder = verifier.broker_source(
+            "http://localhost:8080",
+            selector=True,
+        )
+
+        # Call consumer_version for each set of parameters
+        for params in selector_calls:
+            selector_builder.consumer_version(**params)
+
+        selector_builder.build()
+        # We call the hook explicitly to trigger the FFI call
+        assert verifier._broker_source_hook is not None  # noqa: SLF001
+        verifier._broker_source_hook()  # noqa: SLF001
+
+        # Verify FFI was called with correct selectors
+        mock_ffi.assert_called_once()
+        selectors = [json.loads(s) for s in mock_ffi.call_args[0][9]]
+
+        assert len(selectors) == len(expected_selectors)
+        for actual, expected in zip(selectors, expected_selectors, strict=True):
+            assert actual == expected
+            # For None value test case, verify excluded keys
+            if "tag" not in expected and "latest" not in expected:
+                assert "tag" not in actual
+                assert "latest" not in actual
