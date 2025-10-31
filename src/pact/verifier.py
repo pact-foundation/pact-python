@@ -76,6 +76,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import sys
 from collections.abc import Callable, Mapping
 from contextlib import nullcontext
 from datetime import date
@@ -95,6 +96,12 @@ from pact.types import (
     StateHandlerUrl,
     Unset,
 )
+
+if sys.version_info < (3, 13):
+    from typing_extensions import deprecated
+else:
+    from warnings import deprecated
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -1386,8 +1393,8 @@ class BrokerSelectorBuilder:
         self._provider_branch: str | None = None
         "The provider branch."
 
-        self._consumer_versions: list[str] | None = None
-        "List of consumer version regex patterns."
+        self._consumer_versions: list[str | dict[str, Any]] | None = None
+        "List of consumer version selectors."
 
         self._consumer_tags: list[str] | None = None
         "List of consumer tags to match."
@@ -1442,11 +1449,174 @@ class BrokerSelectorBuilder:
             self._verifier._branch = branch  # type: ignore  # noqa: PGH003, SLF001
         return self
 
+    def consumer_version(  # noqa: PLR0913
+        self,
+        *,
+        consumer: str | None = None,
+        tag: str | None = None,
+        fallback_tag: str | None = None,
+        latest: bool | None = None,
+        deployed_or_released: Literal[True] | None = None,
+        deployed: Literal[True] | None = None,
+        released: Literal[True] | None = None,
+        environment: str | None = None,
+        main_branch: Literal[True] | None = None,
+        branch: str | None = None,
+        matching_branch: Literal[True] | None = None,
+        fallback_branch: str | None = None,
+    ) -> Self:
+        """
+        Add a consumer version selector.
+
+        This method allows specifying consumer version selection criteria to
+        filter which consumer pacts are verified from the broker.
+
+        This function can be called multiple times to add multiple selectors.
+        The resulting selectors are combined with a logical OR, meaning that
+        pacts matching any of the selectors will be included in the
+        verification.
+
+        Args:
+            consumer:
+                Application name to filter the results on.
+
+                Allows a selector to only be applied to a certain consumer.
+
+            tag:
+                The tag name(s) of the consumer versions to get the pacts for.
+
+                This field is still supported but it is recommended to use the
+                `branch` in preference now.
+
+            fallback_tag:
+                The name of the tag to fallback to if the specified `tag` does
+                not exist.
+
+                This is useful when the consumer and provider use matching
+                branch names to coordinate the development of new features. This
+                field is still supported but it is recommended to use two
+                separate selectors - one with the main branch name and one with
+                the feature branch name.
+
+            latest:
+                Only select the latest (if false, this selects all pacts for a
+                tag).
+
+                Used in conjunction with the tag property. If a tag is
+                specified, and latest is true, then the latest pact for each of
+                the consumers with that tag will be returned. If a tag is
+                specified and the latest flag is not set to true, all the pacts
+                with the specified tag will be returned.
+
+            deployed_or_released:
+                Applications that have been deployed or released.
+
+                If the key is specified, can only be set to `True`. Returns the
+                pacts for all versions of the consumer that are currently
+                deployed or released and currently supported in any environment.
+                Use of this selector requires that the deployment of the
+                consumer application is recorded in the Pact Broker using the
+                `pact-broker record-deployment` or `pact-broker record-release`
+                CLI.
+
+            deployed:
+                Applications that have been deployed.
+
+                If the key is specified, can only be set to `True`. Returns the
+                pacts for all versions of the consumer that are currently
+                deployed to any environment. Use of this selector requires that
+                the deployment of the consumer application is recorded in the
+                Pact Broker using the `pact-broker record-deployment` CLI.
+
+            released:
+                Applications that have been released.
+
+                If the key is specified, can only be set to `True`. Returns the
+                pacts for all versions of the consumer that are released and
+                currently supported in any environment. Use of this selector
+                requires that the deployment of the consumer application is
+                recorded in the Pact Broker using the `pact-broker
+                record-release` CLI.
+
+            environment:
+                Applications in a given environment.
+
+                The name of the environment containing the consumer versions for
+                which to return the pacts. Used to further qualify `{
+                "deployed": true }` or `{ "released": true }`. Normally, this
+                would not be needed, as it is recommended to verify the pacts
+                for all currently deployed/currently supported released
+                versions.
+
+            main_branch:
+                Applications with the default branch set in the broker.
+
+                If the key is specified, can only be set to `True`. Return the
+                pacts for the configured `mainBranch` of each consumer. Use of
+                this selector requires that the consumer has configured the
+                `mainBranch` property, and has set a branch name when publishing
+                the pacts.
+
+            branch:
+                Applications with the given branch.
+
+                The branch name of the consumer versions to get the pacts for.
+                Use of this selector requires that the consumer has configured a
+                branch name when publishing the pacts.
+
+            matching_branch:
+                Applications that match the provider version branch sent during
+                verification.
+
+                If the key is specified, can only be set to `True`. When true,
+                returns the latest pact for any branch with the same name as the
+                specified `provider_version_branch`.
+
+            fallback_branch:
+                Fallback branch if branch doesn't exist.
+
+                The name of the branch to fallback to if the specified branch
+                does not exist. Use of this property is discouraged as it may
+                allow a pact to pass on a feature branch while breaking
+                backwards compatibility with the main branch, which is generally
+                not desired. It is better to use two separate consumer version
+                selectors, one with the main branch name, and one with the
+                feature branch name, rather than use this property.
+
+        Returns:
+            The builder instance for method chaining.
+        """
+        if self._consumer_versions is None:
+            self._consumer_versions = []
+
+        param_mapping = [
+            ("consumer", consumer),
+            ("tag", tag),
+            ("fallbackTag", fallback_tag),
+            ("latest", latest),
+            ("deployedOrReleased", deployed_or_released),
+            ("deployed", deployed),
+            ("released", released),
+            ("environment", environment),
+            ("mainBranch", main_branch),
+            ("branch", branch),
+            ("matchingBranch", matching_branch),
+            ("fallbackBranch", fallback_branch),
+        ]
+
+        self._consumer_versions.append({
+            key: value for key, value in param_mapping if value is not None
+        })
+        return self
+
+    @deprecated("Use `consumer_version` method with keyword arguments instead.")
     def consumer_versions(self, *versions: str) -> Self:
         """
         Set the consumer versions.
         """
-        self._consumer_versions = list(versions)
+        if self._consumer_versions is None:
+            self._consumer_versions = []
+        self._consumer_versions.extend(versions)
         return self
 
     def consumer_tags(self, *tags: str) -> Self:
@@ -1463,6 +1633,11 @@ class BrokerSelectorBuilder:
         Returns:
             The Verifier instance with the broker source added.
         """
+        consumer_versions = [
+            json.dumps(cv) if not isinstance(cv, str) else cv
+            for cv in (self._consumer_versions or [])
+        ]
+
         self._verifier._broker_source_hook = (  # noqa: SLF001
             lambda: pact_ffi.verifier_broker_source_with_selectors(
                 self._verifier._handle,  # noqa: SLF001
@@ -1474,7 +1649,7 @@ class BrokerSelectorBuilder:
                 self._include_wip_since,
                 self._provider_tags or [],
                 self._provider_branch or self._verifier._branch,  # noqa: SLF001
-                self._consumer_versions or [],
+                consumer_versions,
                 self._consumer_tags or [],
             )
         )

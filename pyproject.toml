@@ -44,6 +44,7 @@ dependencies = [
   "pact-python-ffi~=0.4.0",
   # External dependencies
   "yarl~=1.0",
+  "typing-extensions~=4.0 ; python_version < '3.13'",
 ]
 
   [project.urls]
