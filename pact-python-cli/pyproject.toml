@@ -1,4 +1,4 @@
-#:schema https://json.schemastore.org/pyproject.json
+#:schema https://www.schemastore.org/pyproject.json
 [project]
 description = "Pact CLI bundle for Python"
 name        = "pact-python-cli"

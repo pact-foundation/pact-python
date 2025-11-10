@@ -1,4 +1,4 @@
-#:schema https://json.schemastore.org/ruff.json
+#:schema https://www.schemastore.org/ruff.json
 extend = "../pyproject.toml"
 
 [lint.per-file-ignores]
