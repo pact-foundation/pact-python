@@ -284,36 +284,35 @@ requires      = ["hatch-vcs", "hatchling"]
 ################################################################################
 [tool.pytest]
 
-  [tool.pytest.ini_options]
-  addopts = [
-    "--import-mode=importlib",
-    # Coverage options
-    "--cov-config=pyproject.toml",
-    "--cov-report=xml",
-    "--cov=pact",
-  ]
-  asyncio_default_fixture_loop_scope = "session"
-  filterwarnings = [
-    "ignore::DeprecationWarning:examples",
-    "ignore::DeprecationWarning:pact",
-    "ignore::DeprecationWarning:tests",
-  ]
-  pythonpath = "."
-  reruns = 3
+addopts = [
+  "--import-mode=importlib",
+  # Coverage options
+  "--cov-config=pyproject.toml",
+  "--cov-report=xml",
+  "--cov=pact",
+]
+asyncio_default_fixture_loop_scope = "session"
+filterwarnings = [
+  "ignore::DeprecationWarning:examples",
+  "ignore::DeprecationWarning:pact",
+  "ignore::DeprecationWarning:tests",
+]
+pythonpath = "."
+reruns = 3
 
-  log_date_format = "%H:%M:%S"
-  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-  log_level       = "NOTSET"
+log_date_format = "%H:%M:%S"
+log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+log_level       = "NOTSET"
 
-  markers = [
-    # Marker for tests that require a container
-    "container",
+markers = [
+  # Marker for tests that require a container
+  "container",
 
-    # Markers for the compatibility suite
-    "consumer",
-    "message",
-    "provider",
-  ]
+  # Markers for the compatibility suite
+  "consumer",
+  "message",
+  "provider",
+]
 
 ################################################################################
 ## Coverage
