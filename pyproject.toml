@@ -1,4 +1,4 @@
-#:schema https://json.schemastore.org/pyproject.json
+#:schema https://www.schemastore.org/pyproject.json
 [project]
 description = "Tool for creating and verifying consumer-driven contracts using the Pact framework."
 name        = "pact-python"
