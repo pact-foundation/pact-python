@@ -131,19 +131,17 @@ requires      = ["hatch-vcs", "hatchling", "packaging", "cffi"]
 ## PyTest Configuration
 ################################################################################
 [tool.pytest]
+addopts = [
+  "--import-mode=importlib",
+  # Coverage options
+  "--cov-config=pyproject.toml",
+  "--cov-report=xml",
+  "--cov=pact_ffi",
+]
 
-  [tool.pytest.ini_options]
-  addopts = [
-    "--import-mode=importlib",
-    # Coverage options
-    "--cov-config=pyproject.toml",
-    "--cov-report=xml",
-    "--cov=pact_ffi",
-  ]
-
-  log_date_format = "%H:%M:%S"
-  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-  log_level       = "NOTSET"
+log_date_format = "%H:%M:%S"
+log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+log_level       = "NOTSET"
 
 ################################################################################
 ## Coverage

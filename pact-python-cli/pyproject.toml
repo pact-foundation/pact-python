@@ -52,7 +52,7 @@ requires-python = ">=3.10"
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
 dev   = ["ruff==0.14.4", { include-group = "test" }, { include-group = "types" }]
-test  = ["pytest-cov~=7.0", "pytest~=8.0"]
+test  = ["pytest-cov~=7.0", "pytest~=9.0"]
 types = ["mypy==1.18.2"]
 
 ################################################################################
@@ -134,19 +134,17 @@ requires      = ["hatch-vcs", "hatchling", "packaging"]
 ## PyTest Configuration
 ################################################################################
 [tool.pytest]
+addopts = [
+  "--import-mode=importlib",
+  # Coverage options
+  "--cov-config=pyproject.toml",
+  "--cov-report=xml",
+  "--cov=pact_cli",
+]
 
-  [tool.pytest.ini_options]
-  addopts = [
-    "--import-mode=importlib",
-    # Coverage options
-    "--cov-config=pyproject.toml",
-    "--cov-report=xml",
-    "--cov=pact_cli",
-  ]
-
-  log_date_format = "%H:%M:%S"
-  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-  log_level       = "NOTSET"
+log_date_format = "%H:%M:%S"
+log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+log_level       = "NOTSET"
 
 ################################################################################
 ## Coverage
