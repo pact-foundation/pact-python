@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import sys
 from typing import TYPE_CHECKING
 
 import pytest
@@ -32,10 +31,6 @@ if TYPE_CHECKING:
 ################################################################################
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing accept headers where the actual has additional parameters",
@@ -44,10 +39,6 @@ def test_comparing_accept_headers_where_the_actual_has_additional_parameters() -
     """Comparing accept headers where the actual has additional parameters."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing accept headers where the actual has is missing a value",
@@ -56,10 +47,6 @@ def test_comparing_accept_headers_where_the_actual_has_is_missing_a_value() -> N
     """Comparing accept headers where the actual has is missing a value."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing content type headers where the actual has a charset",
@@ -68,10 +55,6 @@ def test_comparing_content_type_headers_where_the_actual_has_a_charset() -> None
     """Comparing content type headers where the actual has a charset."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing content type headers where the actual has a different charset",
@@ -82,10 +65,6 @@ def test_comparing_content_type_headers_where_the_actual_has_a_different_charset
     """Comparing content type headers where the actual has a different charset."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing content type headers where the actual is missing a charset",
@@ -94,10 +73,6 @@ def test_comparing_content_type_headers_where_the_actual_is_missing_a_charset() 
     """Comparing content type headers where the actual is missing a charset."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing content type headers where they have the same charset",
@@ -106,10 +81,6 @@ def test_comparing_content_type_headers_where_they_have_the_same_charset() -> No
     """Comparing content type headers where they have the same charset."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_matching.feature",
     "Comparing content type headers which are equal",

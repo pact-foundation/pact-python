@@ -5,9 +5,7 @@ Basic HTTP provider feature test.
 from __future__ import annotations
 
 import logging
-import sys
 
-import pytest
 from pytest_bdd import given, parsers, scenario
 
 from tests.compatibility_suite.util import parse_horizontal_table
@@ -33,10 +31,6 @@ logger = logging.getLogger(__name__)
 ################################################################################
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_provider.feature",
     "Verifying an interaction with multiple defined provider states",
@@ -47,10 +41,6 @@ def test_verifying_an_interaction_with_multiple_defined_provider_states() -> Non
     """
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V3/http_provider.feature",
     "Verifying an interaction with a provider state with parameters",

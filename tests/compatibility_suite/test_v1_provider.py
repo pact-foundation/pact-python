@@ -5,7 +5,6 @@ Basic HTTP provider feature test.
 from __future__ import annotations
 
 import logging
-import sys
 
 import pytest
 from pytest_bdd import given, parsers, scenario
@@ -45,10 +44,6 @@ logger = logging.getLogger(__name__)
 ################################################################################
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying a simple HTTP request",
@@ -57,10 +52,6 @@ def test_verifying_a_simple_http_request() -> None:
     """Verifying a simple HTTP request."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying multiple Pact files",
@@ -69,10 +60,6 @@ def test_verifying_multiple_pact_files() -> None:
     """Verifying multiple Pact files."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Incorrect request is made to provider",
@@ -81,10 +68,6 @@ def test_incorrect_request_is_made_to_provider() -> None:
     """Incorrect request is made to provider."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
@@ -94,10 +77,6 @@ def test_verifying_a_simple_http_request_via_a_pact_broker() -> None:
     """Verifying a simple HTTP request via a Pact broker."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
@@ -107,10 +86,6 @@ def test_verifying_a_simple_http_request_via_a_pact_broker_with_publishing() -> 
     """Verifying a simple HTTP request via a Pact broker with publishing."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
@@ -120,10 +95,6 @@ def test_verifying_multiple_pact_files_via_a_pact_broker() -> None:
     """Verifying multiple Pact files via a Pact broker."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @pytest.mark.container
 @scenario(
     "definition/features/V1/http_provider.feature",
@@ -133,10 +104,6 @@ def test_incorrect_request_is_made_to_provider_via_a_pact_broker() -> None:
     """Incorrect request is made to provider via a Pact broker."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying an interaction with a defined provider state",
@@ -145,10 +112,6 @@ def test_verifying_an_interaction_with_a_defined_provider_state() -> None:
     """Verifying an interaction with a defined provider state."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying an interaction with no defined provider state",
@@ -157,10 +120,6 @@ def test_verifying_an_interaction_with_no_defined_provider_state() -> None:
     """Verifying an interaction with no defined provider state."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying an interaction where the provider state callback fails",
@@ -169,10 +128,6 @@ def test_verifying_an_interaction_where_the_provider_state_callback_fails() -> N
     """Verifying an interaction where the provider state callback fails."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying an interaction where a provider state callback is not configured",
@@ -181,10 +136,6 @@ def test_verifying_an_interaction_where_no_provider_state_callback_configured() 
     """Verifying an interaction where a provider state callback is not configured."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifying a HTTP request with a request filter configured",
@@ -193,10 +144,6 @@ def test_verifying_a_http_request_with_a_request_filter_configured() -> None:
     """Verifying a HTTP request with a request filter configured."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifies the response status code",
@@ -205,10 +152,6 @@ def test_verifies_the_response_status_code() -> None:
     """Verifies the response status code."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Verifies the response headers",
@@ -217,10 +160,6 @@ def test_verifies_the_response_headers() -> None:
     """Verifies the response headers."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with plain text body (positive case)",
@@ -229,10 +168,6 @@ def test_response_with_plain_text_body_positive_case() -> None:
     """Response with plain text body (positive case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with plain text body (negative case)",
@@ -241,10 +176,6 @@ def test_response_with_plain_text_body_negative_case() -> None:
     """Response with plain text body (negative case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with JSON body (positive case)",
@@ -253,10 +184,6 @@ def test_response_with_json_body_positive_case() -> None:
     """Response with JSON body (positive case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with JSON body (negative case)",
@@ -265,10 +192,6 @@ def test_response_with_json_body_negative_case() -> None:
     """Response with JSON body (negative case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with XML body (positive case)",
@@ -277,10 +200,6 @@ def test_response_with_xml_body_positive_case() -> None:
     """Response with XML body (positive case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with XML body (negative case)",
@@ -289,10 +208,6 @@ def test_response_with_xml_body_negative_case() -> None:
     """Response with XML body (negative case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with binary body (positive case)",
@@ -301,10 +216,6 @@ def test_response_with_binary_body_positive_case() -> None:
     """Response with binary body (positive case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with binary body (negative case)",
@@ -313,10 +224,6 @@ def test_response_with_binary_body_negative_case() -> None:
     """Response with binary body (negative case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with form post body (positive case)",
@@ -325,10 +232,6 @@ def test_response_with_form_post_body_positive_case() -> None:
     """Response with form post body (positive case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with form post body (negative case)",
@@ -337,10 +240,6 @@ def test_response_with_form_post_body_negative_case() -> None:
     """Response with form post body (negative case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with multipart body (positive case)",
@@ -349,10 +248,6 @@ def test_response_with_multipart_body_positive_case() -> None:
     """Response with multipart body (positive case)."""
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V1/http_provider.feature",
     "Response with multipart body (negative case)",

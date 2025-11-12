@@ -5,9 +5,7 @@ Basic HTTP provider feature test.
 from __future__ import annotations
 
 import logging
-import sys
 
-import pytest
 from pytest_bdd import given, parsers, scenario
 
 from tests.compatibility_suite.util import parse_horizontal_table
@@ -30,10 +28,6 @@ logger = logging.getLogger(__name__)
 ################################################################################
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V2/http_provider.feature",
     "Supports matching rules for the response headers (positive case)",
@@ -44,10 +38,6 @@ def test_supports_matching_rules_for_the_response_headers_positive_case() -> Non
     """
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V2/http_provider.feature",
     "Supports matching rules for the response headers (negative case)",
@@ -58,10 +48,6 @@ def test_supports_matching_rules_for_the_response_headers_negative_case() -> Non
     """
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V2/http_provider.feature",
     "Verifies the response body (positive case)",
@@ -72,10 +58,6 @@ def test_verifies_the_response_body_positive_case() -> None:
     """
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V2/http_provider.feature",
     "Verifies the response body (negative case)",
