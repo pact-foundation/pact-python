@@ -5,9 +5,7 @@ Basic HTTP provider feature test.
 from __future__ import annotations
 
 import logging
-import sys
 
-import pytest
 from pytest_bdd import scenario
 
 from tests.compatibility_suite.util.provider import (
@@ -30,10 +28,6 @@ logger = logging.getLogger(__name__)
 ################################################################################
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V4/message_provider.feature",
     "Verifying a pending message interaction",
@@ -44,10 +38,6 @@ def test_verifying_a_pending_message_interaction() -> None:
     """
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"),
-    reason="See pact-foundation/pact-python#639",
-)
 @scenario(
     "definition/features/V4/message_provider.feature",
     "Verifying a message interaction with comments",
