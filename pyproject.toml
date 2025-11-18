@@ -104,7 +104,7 @@ example = [
   "protobuf~=6.0",
   "pydantic~=2.0",
   "pytest-cov~=7.0",
-  "pytest~=8.0",
+  "pytest~=9.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
 ]
@@ -116,7 +116,7 @@ test = [
   "pytest-bdd~=8.0",
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
-  "pytest~=8.0",
+  "pytest~=9.0",
   "requests~=2.0",
   "testcontainers~=4.0",
 ]
@@ -134,7 +134,7 @@ example-v2 = [
   "fastapi~=0.0",
   "flask[async]~=3.0",
   "pytest-cov~=7.0",
-  "pytest~=8.0",
+  "pytest~=9.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
 ]
@@ -143,7 +143,7 @@ test-v2 = [
   "httpx~=0.0",
   "mock~=5.0",
   "pytest-cov~=7.0",
-  "pytest~=8.0",
+  "pytest~=9.0",
   "uvicorn[standard]~=0.0",
 ]
 
@@ -291,7 +291,9 @@ addopts = [
   "--cov-report=xml",
   "--cov=pact",
 ]
+
 asyncio_default_fixture_loop_scope = "session"
+
 filterwarnings = [
   "ignore::DeprecationWarning:examples",
   "ignore::DeprecationWarning:pact",

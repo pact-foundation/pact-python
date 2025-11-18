@@ -18,7 +18,8 @@ pact-python = { path = "../../../" }
 extend = "../../../pyproject.toml"
 
 [tool.pytest]
-addopts                            = ["--import-mode=importlib"]
+addopts = ["--import-mode=importlib"]
+
 asyncio_default_fixture_loop_scope = "session"
 
 log_date_format = "%H:%M:%S"
