@@ -1,12 +1,14 @@
 #:schema https://www.schemastore.org/ruff.json
 extend = "../pyproject.toml"
 
+# We have a number of helper files which contain assertions/magic values, etc.
+
 [lint]
 ignore = [
   "D103",    # Require docstring in public function
   "D104",    # Require docstring in public package
   "INP001",  # Forbid implicit namespaces
-  "PLR2004", # Forbid Magic Numbers
+  "PLR2004", # Forbid magic values
   "RUF018",  # Forbid assignment in assertions
   "S101",    # Forbid assert statements
   "TID252",  # Require absolute imports

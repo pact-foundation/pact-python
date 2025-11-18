@@ -284,7 +284,6 @@ requires      = ["hatch-vcs", "hatchling"]
 ## PyTest Configuration
 ################################################################################
 [tool.pytest]
-
 addopts = [
   "--import-mode=importlib",
   # Coverage options
@@ -362,6 +361,18 @@ extend-exclude = ["src/pact/v2/*", "tests/v2/*", "examples/v2/*"]
 
     [tool.ruff.lint.flake8-tidy-imports]
     ban-relative-imports = "all"
+
+    [tool.ruff.lint.per-file-ignores]
+    "test_*.py" = [
+      "D103",    # Require docstring in public function
+      "D104",    # Require docstring in public package
+      "INP001",  # Forbid implicit namespaces
+      "PLR2004", # Forbid magic values
+      "RUF018",  # Forbid assignment in assertions
+      "S101",    # Forbid assert statements
+      "TID252",  # Require absolute imports
+    ]
+
 
   [tool.ruff.format]
   docstring-code-format = true
