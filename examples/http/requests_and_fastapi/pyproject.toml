@@ -10,19 +10,18 @@ version         = "1.0.0"
 
 [dependency-groups]
 
-test = ["pact-python", "pytest~=8.0", "uvicorn~=0.29"]
+test = ["pact-python", "pytest~=9.0", "uvicorn~=0.29"]
+
 [tool.uv.sources]
 pact-python = { path = "../../../" }
 
 [tool.ruff]
-extend = "../../.ruff.toml"
+extend = "../../../pyproject.toml"
 
 [tool.pytest]
+addopts         = ["--import-mode=importlib"]
+log_date_format = "%H:%M:%S"
+log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+log_level       = "NOTSET"
 
-  [tool.pytest.ini_options]
-  addopts                            = ["--import-mode=importlib"]
-  asyncio_default_fixture_loop_scope = "session"
-
-  log_date_format = "%H:%M:%S"
-  log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-  log_level       = "NOTSET"
+asyncio_default_fixture_loop_scope = "session"
