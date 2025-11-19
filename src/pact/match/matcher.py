@@ -71,6 +71,43 @@ class AbstractMatcher(ABC, Generic[_T_co]):
             The matcher as a matching rule.
         """
 
+    def has_value(self) -> bool:
+        """
+        Check if the matcher has a value.
+
+        If a value is present, it _must_ be accessible via the `value`
+        attribute.
+
+        Returns:
+            True if the matcher has a value, otherwise False.
+        """
+        return not isinstance(getattr(self, "value", UNSET), Unset)
+
+    def __and__(self, other: object) -> AndMatcher[Any]:
+        """
+        Combine two matchers using a logical AND.
+
+        This allows for combining multiple matchers into a single matcher that
+        requires all conditions to be met.
+
+        Only a single example value is supported when combining matchers. The
+        first value found will be used.
+
+        Args:
+            other:
+                The other matcher to combine with.
+
+        Returns:
+            An `AndMatcher` that combines both matchers.
+        """
+        if isinstance(self, AndMatcher) and isinstance(other, AbstractMatcher):
+            return AndMatcher(*self._matchers, other)  # type: ignore[attr-defined]
+        if isinstance(other, AndMatcher):
+            return AndMatcher(self, *other._matchers)  # type: ignore[attr-defined]
+        if isinstance(other, AbstractMatcher):
+            return AndMatcher(self, other)
+        return NotImplemented
+
 
 class GenericMatcher(AbstractMatcher[_T_co]):
     """
@@ -133,15 +170,6 @@ class GenericMatcher(AbstractMatcher[_T_co]):
         self._extra_fields: Mapping[str, Any] = dict(
             chain((extra_fields or {}).items(), kwargs.items())
         )
-
-    def has_value(self) -> bool:
-        """
-        Check if the matcher has a value.
-
-        Returns:
-            True if the matcher has a value, otherwise False.
-        """
-        return not isinstance(self.value, Unset)
 
     def to_integration_json(self) -> dict[str, Any]:
         """
@@ -314,6 +342,68 @@ class EachValueMatcher(AbstractMatcher[Mapping[Matchable, _T_co]]):
         for more information.
         """
         return self._matcher.to_matching_rule()
+
+
+class AndMatcher(AbstractMatcher[_T_co]):
+    """
+    And matcher.
+
+    A matcher that combines multiple matchers using a logical AND.
+    """
+
+    def __init__(
+        self,
+        *matchers: AbstractMatcher[Any],
+        value: _T_co | Unset = UNSET,
+    ) -> None:
+        """
+        Initialize the matcher.
+
+        It is best practice to provide a value. This may be set when creating
+        the `AndMatcher`, or it may be inferred from one of the constituent
+        matchers. In the latter case, the value from the first matcher that has
+        a value will be used.
+
+        Args:
+            matchers:
+                List of matchers to combine.
+
+            value:
+                Example value to match against. If not provided, the value
+                from the first matcher that has a value will be used.
+        """
+        self._matchers = matchers
+        self._value: _T_co | Unset = value
+
+        if isinstance(self._value, Unset):
+            for matcher in matchers:
+                if matcher.has_value():
+                    # If `has_value` is true, `value` must be present
+                    self._value = matcher.value  # type: ignore[attr-defined]
+                    break
+
+    def to_integration_json(self) -> dict[str, Any]:
+        """
+        Convert the matcher to an integration JSON object.
+
+        See
+        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        for more information.
+        """
+        return {"pact:matcher:type": [m.to_integration_json() for m in self._matchers]}
+
+    def to_matching_rule(self) -> dict[str, Any]:
+        """
+        Convert the matcher to a matching rule.
+
+        See
+        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        for more information.
+        """
+        return {
+            "combine": "AND",
+            "matchers": [m.to_matching_rule() for m in self._matchers],
+        }
 
 
 class MatchingRuleJSONEncoder(JSONEncoder):
