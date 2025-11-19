@@ -60,15 +60,10 @@ repos:
     hooks:
       - id: committed
 
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.45.0
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.19.0
     hooks:
-      - id: markdownlint
-        exclude: |
-          (?x)^(
-            .github/PULL_REQUEST_TEMPLATE\.md |
-            CHANGELOG.md
-          )$
+      - id: markdownlint-cli2
 
   - repo: https://github.com/crate-ci/typos
     rev: v1.39.2
