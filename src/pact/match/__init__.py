@@ -968,6 +968,24 @@ def type(
     return GenericMatcher("type", value, min=min, max=max, generator=generator)
 
 
+def content_type(content_type: builtins.str) -> AbstractMatcher[Any]:
+    """
+    Match a value by content type.
+
+    Unlike other matchers, this matcher does not take a `value` argument, as it
+    is typically used to match binary data (e.g., images, files) where the
+    actual content is impractical to specify.
+
+    Args:
+        content_type:
+            Content type to match (e.g., "image/jpeg", "application/pdf").
+
+    Returns:
+        Matcher for the given content type.
+    """
+    return GenericMatcher("contentType", value=content_type)
+
+
 def like(
     value: _T,
     /,
