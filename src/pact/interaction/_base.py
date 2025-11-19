@@ -16,7 +16,7 @@ import json
 from typing import TYPE_CHECKING, Any, Literal
 
 import pact_ffi
-from pact.match.matcher import IntegrationJSONEncoder
+from pact.match.matcher import IntegrationJSONEncoder, MatchingRuleJSONEncoder
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -556,7 +556,7 @@ class Interaction(abc.ABC):
                 response.
         """
         if isinstance(rules, dict):
-            rules = json.dumps(rules)
+            rules = json.dumps(rules, cls=MatchingRuleJSONEncoder)
 
         pact_ffi.with_matching_rules(
             self._handle,

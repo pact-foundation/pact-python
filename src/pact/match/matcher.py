@@ -424,8 +424,12 @@ class MatchingRuleJSONEncoder(JSONEncoder):
         Returns:
             The encoded object.
         """
-        if isinstance(o, AbstractMatcher):
+        if isinstance(o, AndMatcher):
             return o.to_matching_rule()
+        if isinstance(o, AbstractMatcher):
+            # We need to convert all matchers in AndMatchers (even if there is
+            # only one).
+            return AndMatcher(o).to_matching_rule()
         return super().default(o)
 
 
