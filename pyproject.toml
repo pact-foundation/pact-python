@@ -90,7 +90,7 @@ docs = [
   "mkdocs-gen-files==0.5.0",
   "mkdocs-github-admonitions-plugin==0.1.1",
   "mkdocs-literate-nav==0.6.2",
-  "mkdocs-llmstxt==0.4.0",
+  "mkdocs-llmstxt==0.5.0",
   "mkdocs-material[recommended,git,imaging]==9.7.0",
   "mkdocs-section-index==0.3.10",
   "mkdocs==1.6.1",
