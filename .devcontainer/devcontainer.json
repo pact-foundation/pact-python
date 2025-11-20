@@ -1,0 +1,35 @@
+{
+  "name": "Pact Python Development",
+  "build": {
+    "dockerfile": "Containerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python3",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests/"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
+      }
+    }
+  },
+  "containerEnv": {
+    "PYTHONUNBUFFERED": "1"
+  },
+  "postCreateCommand": "git submodule update --init && hatch env create",
+  "remoteUser": "vscode",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace"
+}
