@@ -317,7 +317,7 @@ def __import__(  # noqa: N807
     name: builtins.str,
     globals: Mapping[builtins.str, object] | None = None,
     locals: Mapping[builtins.str, object] | None = None,
-    fromlist: Sequence[builtins.str] = (),
+    fromlist: Sequence[builtins.str] | None = None,
     level: builtins.int = 0,
 ) -> ModuleType:
     """
@@ -328,6 +328,7 @@ def __import__(  # noqa: N807
     avoid shadowing built-in types and functions.
     """
     __tracebackhide__ = True
+    fromlist = fromlist or ()
     if name == "pact.match" and len(set(fromlist) - {"AbstractMatcher"}) > 0:
         warnings.warn(
             "Avoid `from pact.match import <func>`. "
