@@ -146,7 +146,7 @@ def __import__(  # noqa: N807
     name: builtins.str,
     globals: Mapping[builtins.str, object] | None = None,
     locals: Mapping[builtins.str, object] | None = None,
-    fromlist: Sequence[builtins.str] = (),
+    fromlist: Sequence[builtins.str] | None = None,
     level: builtins.int = 0,
 ) -> ModuleType:
     """
@@ -157,6 +157,7 @@ def __import__(  # noqa: N807
     done to avoid shadowing built-in types and functions.
     """
     __tracebackhide__ = True
+    fromlist = fromlist or ()
     if name == "pact.generate" and len(set(fromlist) - {"AbstractGenerator"}) > 0:
         warnings.warn(
             "Avoid `from pact.generate import <func>`. "

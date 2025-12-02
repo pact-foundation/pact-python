@@ -73,7 +73,7 @@ dependencies = [
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
 dev = [
-  "ruff==0.14.5",
+  "ruff==0.14.7",
   { include-group = "docs" },
   { include-group = "example" },
   { include-group = "test" },
@@ -87,14 +87,14 @@ docs = [
   "griffe-inherited-method-crossrefs==0.0.1.4",
   "griffe-pydantic==1.1.8",
   "griffe-warnings-deprecated==1.1.0",
-  "mkdocs-gen-files==0.5.0",
+  "mkdocs-gen-files==0.6.0",
   "mkdocs-github-admonitions-plugin==0.1.1",
   "mkdocs-literate-nav==0.6.2",
-  "mkdocs-llmstxt==0.4.0",
+  "mkdocs-llmstxt==0.5.0",
   "mkdocs-material[recommended,git,imaging]==9.7.0",
   "mkdocs-section-index==0.3.10",
   "mkdocs==1.6.1",
-  "mkdocstrings[python]==0.30.1",
+  "mkdocstrings[python]==1.0.0",
   "pathspec==0.12.1",
 ]
 example = [
@@ -104,6 +104,7 @@ example = [
   "protobuf~=6.0",
   "pydantic~=2.0",
   "pytest-cov~=7.0",
+  "pytest-rerunfailures~=16.0",
   "pytest~=9.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
@@ -121,7 +122,7 @@ test = [
   "testcontainers~=4.0",
 ]
 types = [
-  "mypy==1.18.2",
+  "mypy==1.19.0",
   "types-grpcio~=1.0",
   "types-protobuf~=6.0",
   "types-requests~=2.0",
@@ -134,6 +135,7 @@ example-v2 = [
   "fastapi~=0.0",
   "flask[async]~=3.0",
   "pytest-cov~=7.0",
+  "pytest-rerunfailures~=16.0",
   "pytest~=9.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
@@ -143,6 +145,7 @@ test-v2 = [
   "httpx~=0.0",
   "mock~=5.0",
   "pytest-cov~=7.0",
+  "pytest-rerunfailures~=16.0",
   "pytest~=9.0",
   "uvicorn[standard]~=0.0",
 ]
@@ -290,6 +293,8 @@ addopts = [
   "--cov-config=pyproject.toml",
   "--cov-report=xml",
   "--cov=pact",
+  # Reruns
+  "--reruns=5",
 ]
 
 asyncio_default_fixture_loop_scope = "session"

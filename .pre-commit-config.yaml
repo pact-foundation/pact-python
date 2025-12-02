@@ -34,12 +34,12 @@ repos:
       - id: check-json5
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: v2.3.6
+    rev: v2.3.8
     hooks:
       - id: biome-check
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.5
+    rev: v0.14.7
     hooks:
       - id: ruff-check
         exclude: |
@@ -61,12 +61,12 @@ repos:
       - id: committed
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.19.0
+    rev: v0.19.1
     hooks:
       - id: markdownlint-cli2
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.39.2
+    rev: v1.40.0
     hooks:
       - id: typos
         exclude: |

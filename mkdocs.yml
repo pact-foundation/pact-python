@@ -28,6 +28,7 @@ plugins:
         python:
           inventories:
             - https://docs.aiohttp.org/en/stable/objects.inv
+            - https://docs.pydantic.dev/latest/objects.inv
             - https://docs.python.org/3/objects.inv
             - https://fastapi.tiangolo.com/objects.inv
             - https://flask.palletsprojects.com/en/stable/objects.inv
