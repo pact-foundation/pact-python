@@ -39,14 +39,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def start_fastapi_server(host: str, port: int) -> None:
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-    )
-
-
 @pytest.fixture(scope="session")
 def app_server() -> str:
     """

@@ -96,12 +96,36 @@ def test_provider_with_selectors():
         )
         .include_pending()  # Include pending pacts
         .include_wip_since("2023-01-01")  # Include WIP pacts since date
-        .provider_tags("main", "develop")
-        .consumer_tags("production", "main")
+        .provider_branch("main")
+        .consumer_version(branch="main")  # Specific consumer version selectors
+        .consumer_version(branch="develop")  # Can be called multiple times
         .build()  # Build the selector
     )
 
     verifier.verify()
+```
+
+#### Consumer Version Selectors
+
+The `consumer_version` method provides fine-grained control over which consumer pacts are verified. It can be called multiple times to add multiple selectors, which are combined with a logical OR (pacts matching any selector will be included).
+
+Common use cases:
+
+```python
+# Verify pacts from a specific branch
+.consumer_version(branch="feature/new-api")
+
+# Verify pacts from deployed or released versions
+.consumer_version(deployed_or_released=True)
+
+# Verify pacts from main branch
+.consumer_version(main_branch=True)
+
+# Verify pacts from a specific consumer only
+.consumer_version(consumer="mobile-app", branch="main")
+
+# Verify pacts from a specific environment
+.consumer_version(deployed=True, environment="production")
 ```
 
 More information on the selector options is available in the [API reference][pact.verifier.BrokerSelectorBuilder].
@@ -139,7 +163,6 @@ if "CI" in os.environ:
     verifier.set_publish_options(  # (1)
         version="1.2.3",
         branch="main",
-        tags=["production"],
     )
 
 verifier.verify()

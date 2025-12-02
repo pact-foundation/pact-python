@@ -292,12 +292,15 @@ broker_builder = (
     )
     .include_pending()
     .provider_branch('main')
-    .consumer_tags('main', 'develop')
+    .consumer_version(branch='main')
+    .consumer_version(branch='develop')
     .build()
 )
 ```
 
 The `selector=True` argument returns a [`BrokerSelectorBuilder`][pact.verifier.BrokerSelectorBuilder] instance, which provides methods to configure which pacts to fetch. The `build()` call finalizes the configuration and returns the `Verifier` instance which can then be further configured.
+
+The `consumer_version` method provides fine-grained control over which consumer pacts are verified and can be called multiple times to add multiple selectors (combined with a logical OR). The older `consumer_versions` method is now deprecated in favor of `consumer_version`.
 
 ///
 
