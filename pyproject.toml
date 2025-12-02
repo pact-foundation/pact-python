@@ -295,7 +295,6 @@ addopts = [
   "--cov=pact",
   # Reruns
   "--reruns=5",
-  "--rerun-except=AssertionError",
 ]
 
 asyncio_default_fixture_loop_scope = "session"
