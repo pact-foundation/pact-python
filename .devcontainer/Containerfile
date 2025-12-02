@@ -21,14 +21,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 USER $USERNAME
 
-RUN pip install --user pipx \
-    && python -m pipx ensurepath
+ENV PATH="/home/${USERNAME}/.cargo/bin:/home/${USERNAME}/.local/bin:${PATH}"
 
-ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
-
-RUN pipx install hatch \
-    && pipx install uv
-
-WORKDIR /workspace
-
-CMD ["/bin/bash"]
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && uv tool install hatch
