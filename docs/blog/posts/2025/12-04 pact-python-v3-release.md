@@ -107,7 +107,6 @@ pact = Pact('my-web-front-end', 'my-backend-service')
     .with_header('Accept', 'application/json')
     .with_query_parameter('include', 'profile')
     .will_respond_with(200)
-    .with_header('Content-Type', 'application/json')
     .with_body({'id': 123, 'name': 'Alice'}, content_type='application/json')
 )
 
