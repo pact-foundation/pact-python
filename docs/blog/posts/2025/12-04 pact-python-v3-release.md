@@ -65,7 +65,7 @@ provider = Provider('my-backend-service')
 pact = consumer.has_pact_with(provider, pact_dir='/path/to/pacts')
 (
     pact
-    .given('user exists')  # 1
+    .given('user exists')  # (1)
     .upon_receiving('a request for user data')
     .with_request(
         'GET',
@@ -80,12 +80,12 @@ pact = consumer.has_pact_with(provider, pact_dir='/path/to/pacts')
     )
 )
 
-pact.start_service()  # 2
+pact.start_service()  # (2)
 pact.setup()
 response = requests.get(pact.uri + '/users/123')
 assert response.json() == {'id': 123, 'name': 'Alice'}
-pact.verify()         # 3
-pact.stop_service()   # 4
+pact.verify()         # (3)
+pact.stop_service()   # (4)
 # Pact file is written as part of verify() or when the service stops
 ```
 
@@ -102,7 +102,7 @@ pact = Pact('my-web-front-end', 'my-backend-service')
 (
     pact
     .upon_receiving('a request for user data')
-    .given('user exists', id=123, name='Alice')  # 1
+    .given('user exists', id=123, name='Alice')  # (1)
     .with_request('GET', '/users/123')
     .with_header('Accept', 'application/json')
     .with_query_parameter('include', 'profile')
@@ -111,10 +111,10 @@ pact = Pact('my-web-front-end', 'my-backend-service')
     .with_body({'id': 123, 'name': 'Alice'}, content_type='application/json')
 )
 
-with pact.serve() as srv:  # 2
+with pact.serve() as srv:  # (2)
     response = requests.get(f"{srv.url}/users/123")
     assert response.json() == {'id': 123, 'name': 'Alice'}
-pact.write_file('/path/to/pacts')  # 3
+pact.write_file('/path/to/pacts')  # (3)
 ```
 
 1.  In v3, provider states can be parameterized, making it easier to reuse and manage test data across different scenarios.
