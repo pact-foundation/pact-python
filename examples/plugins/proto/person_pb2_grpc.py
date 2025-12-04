@@ -104,7 +104,8 @@ class AddressBookServiceServicer(object):
             The response containing the person's details.
 
         Raises:
-            If the method is not implemented.
+            NotImplementedError:
+                If the method is not implemented.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")

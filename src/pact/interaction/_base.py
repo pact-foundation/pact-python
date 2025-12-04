@@ -34,9 +34,9 @@ class Interaction(abc.ABC):
     provider. The concrete subclasses define the type of interaction, and
     include:
 
-    -  [`HttpInteraction`][pact.interaction.HttpInteraction]
-    -  [`AsyncMessageInteraction`][pact.interaction.AsyncMessageInteraction]
-    -  [`SyncMessageInteraction`][pact.interaction.SyncMessageInteraction]
+    -  [`HttpInteraction`][HttpInteraction]
+    -  [`AsyncMessageInteraction`][AsyncMessageInteraction]
+    -  [`SyncMessageInteraction`][SyncMessageInteraction]
 
     # Interaction Part
 
@@ -244,8 +244,7 @@ class Interaction(abc.ABC):
         Adds a binary body to the request or response.
 
         Note that for HTTP interactions, this function will overwrite the body
-        if it has been set using
-        [`with_body`][pact.interaction.Interaction.with_body].
+        if it has been set using [`with_body`][with_body].
 
         Args:
             body:
@@ -295,8 +294,8 @@ class Interaction(abc.ABC):
         The values must be serializable to JSON using [`json.dumps`][json.dumps]
         and may contain matchers and generators. If you wish to use a valid
         JSON-encoded string as a metadata value, prefer the
-        [`set_metadata`][pact.interaction.Interaction.set_metadata] method as
-        this does not perform any additional parsing of the string.
+        [`set_metadata`][set_metadata] method as this does not perform any
+        additional parsing of the string.
 
         Args:
             metadata:
@@ -340,10 +339,9 @@ class Interaction(abc.ABC):
         """
         Add metadata for the interaction.
 
-        This function behaves exactly like
-        [`with_metadata`][pact.interaction.Interaction.with_metadata] but does
-        not perform any parsing of the value strings. The strings must be valid
-        JSON-encoded strings.
+        This function behaves exactly like [`with_metadata`][with_metadata] but
+        does not perform any parsing of the value strings. The strings must be
+        valid JSON-encoded strings.
 
         The value of `None` will remove the metadata key from the interaction.
         This is distinct from using an empty string or a string containing the
@@ -452,7 +450,8 @@ class Interaction(abc.ABC):
         # Warning
 
         This function will overwrite any existing comment with the same key. In
-        particular, the `text` key is used by `add_text_comment`.
+        particular, the `text` key is used by
+        [`add_text_comment`][add_text_comment].
         """
         if isinstance(value, str) or value is None:
             pact_ffi.set_comment(self._handle, key, value)
@@ -475,7 +474,7 @@ class Interaction(abc.ABC):
 
         Internally, the comments are appended to an array under the `text`
         comment key. Care should be taken to ensure that conflicts are not
-        introduced by [`set_comment`][pact.interaction.Interaction.set_comment].
+        introduced by [`set_comment`][set_comment].
         """
         pact_ffi.add_text_comment(self._handle, comment)
         return self

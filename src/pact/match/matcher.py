@@ -176,7 +176,7 @@ class GenericMatcher(AbstractMatcher[_T_co]):
         Convert the matcher to an integration JSON object.
 
         See
-        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        [`AbstractMatcher.to_integration_json`][AbstractMatcher.to_integration_json]
         for more information.
         """
         return {
@@ -195,7 +195,7 @@ class GenericMatcher(AbstractMatcher[_T_co]):
         Convert the matcher to a matching rule.
 
         See
-        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        [`AbstractMatcher.to_matching_rule`][AbstractMatcher.to_matching_rule]
         for more information.
         """
         return {
@@ -230,7 +230,7 @@ class ArrayContainsMatcher(AbstractMatcher[Sequence[_T_co]]):
         Convert the matcher to an integration JSON object.
 
         See
-        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        [`AbstractMatcher.to_integration_json`][AbstractMatcher.to_integration_json]
         for more information.
         """
         return self._matcher.to_integration_json()
@@ -240,7 +240,7 @@ class ArrayContainsMatcher(AbstractMatcher[Sequence[_T_co]]):
         Convert the matcher to a matching rule.
 
         See
-        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        [`AbstractMatcher.to_matching_rule`][AbstractMatcher.to_matching_rule]
         for more information.
         """
         return self._matcher.to_matching_rule()
@@ -279,7 +279,7 @@ class EachKeyMatcher(AbstractMatcher[Mapping[_T, Matchable]]):
         Convert the matcher to an integration JSON object.
 
         See
-        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        [`AbstractMatcher.to_integration_json`][AbstractMatcher.to_integration_json]
         for more information.
         """
         return self._matcher.to_integration_json()
@@ -289,7 +289,7 @@ class EachKeyMatcher(AbstractMatcher[Mapping[_T, Matchable]]):
         Convert the matcher to a matching rule.
 
         See
-        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        [`AbstractMatcher.to_matching_rule`][AbstractMatcher.to_matching_rule]
         for more information.
         """
         return self._matcher.to_matching_rule()
@@ -328,7 +328,7 @@ class EachValueMatcher(AbstractMatcher[Mapping[Matchable, _T_co]]):
         Convert the matcher to an integration JSON object.
 
         See
-        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        [`AbstractMatcher.to_integration_json`][AbstractMatcher.to_integration_json]
         for more information.
         """
         return self._matcher.to_integration_json()
@@ -338,7 +338,7 @@ class EachValueMatcher(AbstractMatcher[Mapping[Matchable, _T_co]]):
         Convert the matcher to a matching rule.
 
         See
-        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        [`AbstractMatcher.to_matching_rule`][AbstractMatcher.to_matching_rule]
         for more information.
         """
         return self._matcher.to_matching_rule()
@@ -387,7 +387,7 @@ class AndMatcher(AbstractMatcher[_T_co]):
         Convert the matcher to an integration JSON object.
 
         See
-        [`AbstractMatcher.to_integration_json`][pact.match.matcher.AbstractMatcher.to_integration_json]
+        [`AbstractMatcher.to_integration_json`][AbstractMatcher.to_integration_json]
         for more information.
         """
         return {"pact:matcher:type": [m.to_integration_json() for m in self._matchers]}
@@ -397,7 +397,7 @@ class AndMatcher(AbstractMatcher[_T_co]):
         Convert the matcher to a matching rule.
 
         See
-        [`AbstractMatcher.to_matching_rule`][pact.match.matcher.AbstractMatcher.to_matching_rule]
+        [`AbstractMatcher.to_matching_rule`][AbstractMatcher.to_matching_rule]
         for more information.
         """
         return {

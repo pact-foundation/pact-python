@@ -32,8 +32,7 @@ class HttpInteraction(Interaction):
     HTTP interaction. As many elements are shared between the request and
     response, this class provides a common interface for both. The functions
     intelligently determine whether the element should be added to the request
-    or the response based on whether
-    [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
+    or the response based on whether [`will_respond_with`][will_respond_with]
     has been called.
 
     For example, the following two interactions are equivalent:
@@ -165,9 +164,8 @@ class HttpInteraction(Interaction):
 
                 If `None`, then the function intelligently determines whether
                 the header should be added to the request or the response, based
-                on whether the
-                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
-                method has been called.
+                on whether the [`will_respond_with`][will_respond_with] method
+                has been called.
         """
         interaction_part = self._parse_interaction_part(part)
         name_lower = name.lower()
@@ -204,10 +202,10 @@ class HttpInteraction(Interaction):
         -   Passing in an iterable of key-value tuples.
 
         -   Make multiple calls to this function or
-            [`with_header`][pact.interaction.HttpInteraction.with_header].
+            [`with_header`][with_header].
 
         See
-        [`with_header`][pact.interaction.HttpInteraction.with_header]
+        [`with_header`][with_header]
         for more information.
 
         Args:
@@ -220,9 +218,8 @@ class HttpInteraction(Interaction):
 
                 If `None`, then the function intelligently determines whether
                 the header should be added to the request or the response, based
-                on whether the
-                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
-                method has been called.
+                on whether the [`will_respond_with`][will_respond_with] method
+                has been called.
         """
         if isinstance(headers, dict):
             headers = headers.items()
@@ -239,10 +236,9 @@ class HttpInteraction(Interaction):
         r"""
         Add a header to the request.
 
-        Unlike
-        [`with_header`][pact.interaction.HttpInteraction.with_header], this
-        function does no additional processing of the header value. This is
-        useful for headers that contain a JSON object.
+        Unlike [`with_header`][with_header], this function does no additional
+        processing of the header value. This is useful for headers that contain
+        a JSON object.
 
         Args:
             name:
@@ -257,9 +253,8 @@ class HttpInteraction(Interaction):
 
                 If `None`, then the function intelligently determines whether
                 the header should be added to the request or the response, based
-                on whether the
-                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
-                method has been called.
+                on whether the [`will_respond_with`][will_respond_with] method
+                has been called.
         """
         pact_ffi.set_header(
             self._handle,
@@ -287,10 +282,9 @@ class HttpInteraction(Interaction):
         -   Passing in an iterable of key-value tuples.
 
         -   Make multiple calls to this function or
-            [`with_header`][pact.interaction.HttpInteraction.with_header].
+            [`with_header`][with_header].
 
-        See [`set_header`][pact.interaction.HttpInteraction.set_header] for
-        more information.
+        See [`set_header`][set_header] for more information.
 
         Args:
             headers:
@@ -302,8 +296,7 @@ class HttpInteraction(Interaction):
 
                 If `None`, then the function intelligently determines whether
                 the headers should be added to the request or the response,
-                based on whether the
-                [`will_respond_with`][pact.interaction.HttpInteraction.will_respond_with]
+                based on whether the [`will_respond_with`][will_respond_with]
                 method has been called.
         """
         if isinstance(headers, dict):
@@ -372,11 +365,9 @@ class HttpInteraction(Interaction):
         -   Passing in an iterable of key-value tuples.
 
         -   Make multiple calls to this function or
-            [`with_query_parameter`][pact.interaction.HttpInteraction.with_query_parameter].
+            [`with_query_parameter`][with_query_parameter].
 
-        See
-        [`with_query_parameter`][pact.interaction.HttpInteraction.with_query_parameter]
-        for more information.
+        See [`with_query_parameter`][with_query_parameter] for more information.
 
         Args:
             parameters:
@@ -393,9 +384,8 @@ class HttpInteraction(Interaction):
         Set the response status.
 
         Ideally, this function is called once all of the request information has
-        been set. This allows functions such as
-        [`with_header`][pact.interaction.HttpInteraction.with_header]
-        to intelligently determine whether this is a request or response header.
+        been set. This allows functions such as [`with_header`][with_header] to
+        intelligently determine whether this is a request or response header.
 
         Alternatively, the `part` argument can be used to explicitly specify
         whether the header should be added to the request or the response.

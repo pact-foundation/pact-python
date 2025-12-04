@@ -383,7 +383,7 @@ def integer(
     max: builtins.int | None = None,
 ) -> AbstractMatcher[builtins.int]:
     """
-    Alias for [`match.int`][pact.match.int].
+    Alias for [`match.int`][int].
     """
     return int(value, min=min, max=max)
 
@@ -428,7 +428,7 @@ def decimal(
     precision: builtins.int | None = None,
 ) -> AbstractMatcher[_NumberT]:
     """
-    Alias for [`match.float`][pact.match.float].
+    Alias for [`match.float`][float].
     """
     return float(value, precision=precision)
 
@@ -592,7 +592,7 @@ def string(
     generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[builtins.str]:
     """
-    Alias for [`match.str`][pact.match.str].
+    Alias for [`match.str`][str].
     """
     return str(value, size=size, generator=generator)
 
@@ -709,7 +709,7 @@ def bool(value: builtins.bool | Unset = UNSET, /) -> AbstractMatcher[builtins.bo
 
 def boolean(value: builtins.bool | Unset = UNSET, /) -> AbstractMatcher[builtins.bool]:
     """
-    Alias for [`match.bool`][pact.match.bool].
+    Alias for [`match.bool`][bool].
     """
     return bool(value)
 
@@ -915,7 +915,7 @@ def timestamp(
     disable_conversion: builtins.bool = False,
 ) -> AbstractMatcher[builtins.str]:
     """
-    Alias for [`match.datetime`][pact.match.datetime].
+    Alias for [`match.datetime`][datetime].
     """
     return datetime(value, format, disable_conversion=disable_conversion)
 
@@ -929,7 +929,7 @@ def none() -> AbstractMatcher[None]:
 
 def null() -> AbstractMatcher[None]:
     """
-    Alias for [`match.none`][pact.match.none].
+    Alias for [`match.none`][none].
     """
     return none()
 
@@ -996,7 +996,7 @@ def like(
     generator: AbstractGenerator | None = None,
 ) -> AbstractMatcher[_T]:
     """
-    Alias for [`match.type`][pact.match.type].
+    Alias for [`match.type`][type].
     """
     return type(value, min=min, max=max, generator=generator)
 
