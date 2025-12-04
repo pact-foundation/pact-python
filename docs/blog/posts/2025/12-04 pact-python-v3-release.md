@@ -140,7 +140,7 @@ I would also like to acknowledge contributors to the (now legacy) v2 codebase an
 
 -   **Core architecture and early development:** [Elliott Murray](https://github.com/elliottmurray), [Matthew Balvanz](https://github.com/matthewbalvanz-wf).
 -   **Message pact and provider support:** [Tuan Pham](https://github.com/tuan-pham), [William Infante](https://github.com/williaminfante), [Fabio Pulvirenti](https://github.com/pulphix).
--   **Testing and verification:** [Peter Yasi](https://github.com/pyasi), S[imon Nizov](https://github.com/thatguysimon), [mikahjc](https://github.com/mikahjc), [Maciej Olko](https://github.com/m-aciek), [Matt Fellows](https://github.com/mefellows), [Janneck Wullschleger](https://github.com/jawu), [Rory Hart](https://github.com/hartror), [simkev2](https://github.com/SimKev2).
+-   **Testing and verification:** [Peter Yasi](https://github.com/pyasi), [Simon Nizov](https://github.com/thatguysimon), [mikahjc](https://github.com/mikahjc), [Maciej Olko](https://github.com/m-aciek), [Matt Fellows](https://github.com/mefellows), [Janneck Wullschleger](https://github.com/jawu), [Rory Hart](https://github.com/hartror), [simkev2](https://github.com/SimKev2).
 -   **Other features, fixes, and support:** [B3nnyL](https://github.com/B3nnyL), [Yousaf Nabi](https://github.com/YOU54F), [Beth Skurrie](https://github.com/bethesque), [Francois Campbell](https://github.com/francoiscampbell), [Serghei Iakovlev](https://github.com/sergeyklay), and many others over the years.
 
 And certainly not least, a huge thank you to those who have helped with documentation, onboarding, and community support:
