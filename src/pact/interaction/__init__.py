@@ -2,7 +2,7 @@
 Interaction module.
 
 This module defines the classes that are used to define individual interactions
-within a [`Pact`][pact.pact.Pact] between a consumer and a provider. These
+within a [`Pact`][pact.Pact] between a consumer and a provider. These
 interactions can be of different types, such as HTTP requests, synchronous
 messages, or asynchronous messages.
 

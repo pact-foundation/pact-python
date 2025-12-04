@@ -355,12 +355,12 @@ class Verifier:
         1.  A fully fledged function that will be called for all messages. This
             is the most powerful option as it allows for full control over the
             message generation. The function's signature must be compatible with
-            the [`MessageProducerArgs`][pact.types.MessageProducerArgs] type.
+            the [`MessageProducerArgs`][types.MessageProducerArgs] type.
 
         2.  A dictionary mapping message names to either (a) producer functions,
-            (b) [`Message`][pact.types.Message] dictionaries, or (c) raw
-            bytes. If using a producer function, it must be compatible with the
-            [`MessageProducerArgs`][pact.types.MessageProducerArgs] type.
+            (b) [`Message`][types.Message] dictionaries, or (c) raw bytes. If
+            using a producer function, it must be compatible with the
+            [`MessageProducerArgs`][types.MessageProducerArgs] type.
 
         ## Implementation
 
@@ -558,8 +558,8 @@ class Verifier:
         in Python.
 
         The function signature must be compatible with the
-        [`StateHandlerArgs`][pact.types.StateHandlerArgs]. If the function
-        has additional arguments, these must either have default values, or be
+        [`StateHandlerArgs`][types.StateHandlerArgs]. If the function has
+        additional arguments, these must either have default values, or be
         filled by using the [`partial`][functools.partial] function.
 
         Pact also uses a special state denoted with the empty string `""`. This
@@ -879,7 +879,7 @@ class Verifier:
                 Name of the branch used for verification.
 
                 The first time a branch is set here or through
-                [`provider_branch`][pact.verifier.BrokerSelectorBuilder.provider_branch],
+                [`provider_branch`][BrokerSelectorBuilder.provider_branch],
                 the value will be saved and use as a default for both.
         """
         if not self._branch and branch:
@@ -1189,12 +1189,11 @@ class Verifier:
 
         By default, or if `selector=False`, this function returns the verifier
         instance to allow for method chaining. If `selector=True` is given, this
-        function returns a
-        [`BrokerSelectorBuilder`][pact.verifier.BrokerSelectorBuilder] instance
-        which allows for further configuration of the broker source in a fluent
-        interface. The [`build()`][pact.verifier.BrokerSelectorBuilder.build]
-        call is then used to finalise the broker source and return the verifier
-        instance for further configuration.
+        function returns a [`BrokerSelectorBuilder`][BrokerSelectorBuilder]
+        instance which allows for further configuration of the broker source in
+        a fluent interface. The [`build()`][BrokerSelectorBuilder.build] call is
+        then used to finalise the broker source and return the verifier instance
+        for further configuration.
 
         Args:
             url:
@@ -1216,10 +1215,10 @@ class Verifier:
 
             selector:
                 Whether to return a
-                [BrokerSelectorBuilder][pact.verifier.BrokerSelectorBuilder]
-                instance. The builder instance allows for further configuration
-                of the broker source and must be finalised with a call to
-                [`build()`][pact.verifier.BrokerSelectorBuilder.build].
+                [BrokerSelectorBuilder][BrokerSelectorBuilder] instance. The
+                builder instance allows for further configuration of the broker
+                source and must be finalised with a call to
+                [`build()`][BrokerSelectorBuilder.build].
 
             use_env:
                 Whether to read missing values from the environment variables.
@@ -1441,8 +1440,8 @@ class BrokerSelectorBuilder:
         Set the provider branch.
 
         The first time a branch is set here or through
-        [`set_publish_options`][pact.verifier.Verifier.set_publish_options], the
-        value will be saved and use as a default for both.
+        [`set_publish_options`][Verifier.set_publish_options], the value will be
+        saved and use as a default for both.
         """
         self._provider_branch = branch
         if not self._verifier._branch:  # type: ignore  # noqa: PGH003, SLF001

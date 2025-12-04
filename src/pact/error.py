@@ -77,8 +77,8 @@ class PactVerificationError(PactError):
     All of the errors that occurred during the verification of all of the
     interactions are stored in the `errors` attribute.
 
-    This is different from the [`MismatchesError`][pact.error.MismatchesError]
-    which is raised when there are mismatches detected by the mock server.
+    This is different from the [`MismatchesError`][error.MismatchesError] which
+    is raised when there are mismatches detected by the mock server.
     """
 
     def __init__(self, errors: list[InteractionVerificationError]) -> None:

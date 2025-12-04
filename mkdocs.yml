@@ -61,7 +61,7 @@ plugins:
               ignore_init_summary: true
             docstring_section_style: spacy
             merge_init_into_class: true
-            relative_crossrefs: true
+            # relative_crossrefs: true
             scoped_crossrefs: true
             show_if_no_docstring: true
             # Signature

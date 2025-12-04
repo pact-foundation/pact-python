@@ -13,13 +13,13 @@ implementations.
 
 The primary entry points for contract testing are:
 
--   [`Pact`][pact.Pact]: For consumer-side contract testing, defining expected
+-   [`Pact`][Pact]: For consumer-side contract testing, defining expected
     interactions and generating contract files.
--   [`Verifier`][pact.Verifier]: For provider-side contract verification,
+-   [`Verifier`][Verifier]: For provider-side contract verification,
     validating that a provider implementation satisfies consumer contracts.
 
-These functions are defined in [`pact.pact`][pact.pact] and
-[`pact.verifier`][pact.verifier] and re-exported for convenience.
+These functions are defined in [`pact.pact`][pact] and
+[`pact.verifier`][verifier] and re-exported for convenience.
 
 ### Matching and Generation
 

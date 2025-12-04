@@ -37,7 +37,7 @@ class AbstractGenerator(ABC):
         Convert the generator to an integration JSON object.
 
         See
-        [`AbstractGenerator.to_integration_json`][pact.generate.generator.AbstractGenerator.to_integration_json]
+        [`AbstractGenerator.to_integration_json`][AbstractGenerator.to_integration_json]
         for more information.
         """
 
@@ -102,7 +102,7 @@ class GenericGenerator(AbstractGenerator):
         Convert the generator to an integration JSON object.
 
         See
-        [`AbstractGenerator.to_integration_json`][pact.generate.generator.AbstractGenerator.to_integration_json]
+        [`AbstractGenerator.to_integration_json`][AbstractGenerator.to_integration_json]
         for more information.
         """
         return {
@@ -115,7 +115,7 @@ class GenericGenerator(AbstractGenerator):
         Convert the generator to a generator JSON object.
 
         See
-        [`AbstractGenerator.to_generator_json`][pact.generate.generator.AbstractGenerator.to_generator_json]
+        [`AbstractGenerator.to_generator_json`][AbstractGenerator.to_generator_json]
         for more information.
         """
         return {

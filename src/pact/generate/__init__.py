@@ -202,7 +202,7 @@ def integer(
     max: builtins.int | None = None,
 ) -> AbstractGenerator:
     """
-    Alias for [`generate.int`][pact.generate.int].
+    Alias for [`generate.int`][int].
 
     Args:
         min:
@@ -239,7 +239,7 @@ def float(precision: builtins.int | None = None) -> AbstractGenerator:
 
 def decimal(precision: builtins.int | None = None) -> AbstractGenerator:
     """
-    Alias for [`generate.float`][pact.generate.float].
+    Alias for [`generate.float`][float].
 
     Args:
         precision:
@@ -270,7 +270,7 @@ def hex(digits: builtins.int | None = None) -> AbstractGenerator:
 
 def hexadecimal(digits: builtins.int | None = None) -> AbstractGenerator:
     """
-    Alias for [`generate.hex`][pact.generate.hex].
+    Alias for [`generate.hex`][hex].
 
     Args:
         digits:
@@ -301,7 +301,7 @@ def str(size: builtins.int | None = None) -> AbstractGenerator:
 
 def string(size: builtins.int | None = None) -> AbstractGenerator:
     """
-    Alias for [`generate.str`][pact.generate.str].
+    Alias for [`generate.str`][str].
 
     Args:
         size:
@@ -448,7 +448,7 @@ def timestamp(
     disable_conversion: builtins.bool = False,
 ) -> AbstractGenerator:
     """
-    Alias for [`generate.datetime`][pact.generate.datetime].
+    Alias for [`generate.datetime`][datetime].
 
     Returns:
         Generator producing datetimes in the specified format.
@@ -468,7 +468,7 @@ def bool() -> AbstractGenerator:
 
 def boolean() -> AbstractGenerator:
     """
-    Alias for [`generate.bool`][pact.generate.bool].
+    Alias for [`generate.bool`][bool].
 
     Returns:
         Generator producing random boolean values.
