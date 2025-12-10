@@ -45,7 +45,10 @@ requires-python = ">=3.10"
   pact-mock-service      = "pact_cli:_exec"
   pact-plugin-cli        = "pact_cli:_exec"
   pact-provider-verifier = "pact_cli:_exec"
+  pact-stub-server       = "pact_cli:_exec"
   pact-stub-service      = "pact_cli:_exec"
+  pact_mock_server_cli   = "pact_cli:_exec"
+  pact_verifier_cli      = "pact_cli:_exec"
   pactflow               = "pact_cli:_exec"
 
 [dependency-groups]

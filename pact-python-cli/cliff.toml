@@ -9,7 +9,7 @@ header = """
 
 All notable changes to this project will be documented in this file.
 
-Note that this _only_ includes changes to the Python re-packaging of the Pact CLI. For changes to the Pact CLI itself, see the [Pact CLI changelog](https://github.com/pact-foundation/pact-ruby-standalone/blob/master/CHANGELOG.md).
+Note that this _only_ includes changes to the Python re-packaging of the Pact CLI. For changes to the Pact CLI itself, see the [Pact CLI changelog](https://github.com/pact-foundation/pact-standalone/blob/master/CHANGELOG.md).
 
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- markdownlint-disable emph-style -->

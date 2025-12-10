@@ -56,17 +56,22 @@ def assert_in_sys_path(p: str | Path) -> None:
 @pytest.mark.parametrize(
     ("constant", "expected"),
     [
-        pytest.param("PACT_PATH", "pact", id="pact"),
-        pytest.param("BROKER_PATH", "pact-broker", id="pact-broker"),
         pytest.param("BROKER_CLIENT_PATH", "pact-broker", id="pact-broker"),
+        pytest.param("BROKER_PATH", "pact-broker", id="pact-broker"),
         pytest.param("MESSAGE_PATH", "pact-message", id="pactmessage"),
-        pytest.param("MOCK_SERVICE_PATH", "pact-mock-service", id="pact-message"),
+        pytest.param(
+            "MOCK_SERVER_PATH", "pact_mock_server_cli", id="pact_mock_server_cli"
+        ),
+        pytest.param("MOCK_SERVICE_PATH", "pact-mock-service", id="pact-mock-service"),
+        pytest.param("PACTFLOW_PATH", "pactflow", id="pactflow"),
+        pytest.param("PACT_PATH", "pact", id="pact"),
         pytest.param("PLUGIN_CLI_PATH", "pact-plugin-cli", id="pact-plugin-cli"),
+        pytest.param("STUB_SERVER_PATH", "pact-stub-server", id="pact-stub-server"),
+        pytest.param("STUB_SERVICE_PATH", "pact-stub-service", id="pact-stub-service"),
+        pytest.param("VERIFIER_CLI_PATH", "pact_verifier_cli", id="pact_verifier_cli"),
         pytest.param(
             "VERIFIER_PATH", "pact-provider-verifier", id="pact-provider-verifier"
         ),
-        pytest.param("STUB_SERVICE_PATH", "pact-stub-service", id="pact-stub-service"),
-        pytest.param("PACTFLOW_PATH", "pactflow", id="pactflow"),
     ],
 )
 def test_constants_are_valid_executable_paths(constant: str, expected: str) -> None:
@@ -86,7 +91,10 @@ def test_constants_are_valid_executable_paths(constant: str, expected: str) -> N
         pytest.param("pact-message", id="pact-message"),
         pytest.param("pact-plugin-cli", id="pact-plugin-cli"),
         pytest.param("pact-provider-verifier", id="pact-provider-verifier"),
+        pytest.param("pact-stub-server", id="pact-stub-server"),
         pytest.param("pact-stub-service", id="pact-stub-service"),
+        pytest.param("pact_mock_server_cli", id="pact_mock_server_cli"),
+        pytest.param("pact_verifier_cli", id="pact_verifier_cli"),
         pytest.param("pactflow", id="pactflow"),
     ],
 )
@@ -154,7 +162,10 @@ def test_cli_exec_wrapper_for_mock_service() -> None:
         pytest.param("pact-mock-service", id="pact-mock-service"),
         pytest.param("pact-plugin-cli", id="pact-plugin-cli"),
         pytest.param("pact-provider-verifier", id="pact-provider-verifier"),
+        pytest.param("pact-stub-server", id="pact-stub-server"),
         pytest.param("pact-stub-service", id="pact-stub-service"),
+        pytest.param("pact_mock_server_cli", id="pact_mock_server_cli"),
+        pytest.param("pact_verifier_cli", id="pact_verifier_cli"),
         pytest.param("pactflow", id="pactflow"),
     ],
 )
@@ -167,21 +178,23 @@ def test_exec_directly(executable: str) -> None:
 
     with (
         patch.object(sys, "argv", new=[executable, "--help"]),
-        patch("os.execv") as mock_execv,
+        patch("os.execve") as mock_execve,
     ):
         pact_cli._exec()  # noqa: SLF001
-    mock_execv.assert_called_once()
-    cmd, args = mock_execv.call_args[0]
+    mock_execve.assert_called_once()
+    cmd, args, env = mock_execve.call_args[0]
     assert (os.sep + executable) in cmd
     assert args == [cmd, "--help"]
+    assert env
 
     patch.object(sys, "argv", new=[executable])
     with (
         patch.object(sys, "argv", new=[executable]),
-        patch("os.execv") as mock_execv,
+        patch("os.execve") as mock_execve,
     ):
         pact_cli._exec()  # noqa: SLF001
-    mock_execv.assert_called_once()
-    cmd, args = mock_execv.call_args[0]
+    mock_execve.assert_called_once()
+    cmd, args, env = mock_execve.call_args[0]
     assert (os.sep + executable) in cmd
     assert args == [cmd]
+    assert env
