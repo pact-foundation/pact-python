@@ -90,7 +90,7 @@
 
 ---
 
-This sub-package is part of the [Pact Python](https://github.com/pact-foundation/pact-python) project and exists solely to distribute the [Pact CLI](https://github.com/pact-foundation/pact-ruby-standalone) as a Python package. If you are looking for the main Pact Python library for contract testing, please see the [root package](https://github.com/pact-foundation/pact-python#pact-python).
+This sub-package is part of the [Pact Python](https://github.com/pact-foundation/pact-python) project and exists solely to distribute the [Pact CLI](https://github.com/pact-foundation/pact-standalone) as a Python package. If you are looking for the main Pact Python library for contract testing, please see the [root package](https://github.com/pact-foundation/pact-python#pact-python).
 
 It is used by version 2 of Pact Python, and can be used to install the Pact CLI in Python environments.
 
@@ -108,7 +108,7 @@ pip install pact-python-cli
 
 Contributions to this package are generally not required as it contains minimal Python functionality and generally only requires updating the version number. This is done by pushing a tag of the form `pact-python-cli/<version>` which will automatically trigger a release build in the CI pipeline.
 
-To contribute to the Pact CLI itself, please refer to the [Pact Ruby Standalone repository](https://github.com/pact-foundation/pact-ruby-standalone).
+To contribute to the Pact CLI itself, please refer to the [Pact Ruby Standalone repository](https://github.com/pact-foundation/pact-standalone).
 
 For contributing to Pact Python, see the [main contributing guide](https://github.com/pact-foundation/pact-python/blob/main/CONTRIBUTING.md).
 
