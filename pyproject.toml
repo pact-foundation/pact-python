@@ -61,7 +61,7 @@ dependencies = [
   # Dependencies required for v2 only
   compat-v2 = [
     # Pact dependencies
-    "pact-python-cli~=2.0",
+    "pact-python-cli~=2.5",
     # External dependencies
     "click~=8.0",
     "psutil~=7.0",
