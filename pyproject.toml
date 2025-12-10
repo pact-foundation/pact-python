@@ -106,6 +106,7 @@ example = [
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
   "pytest~=9.0",
+  "python-multipart~=0.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
 ]
