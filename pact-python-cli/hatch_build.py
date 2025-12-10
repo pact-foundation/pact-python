@@ -186,8 +186,6 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             machine = "arm64"
         elif platform.endswith(("x86_64", "amd64")):
             machine = "x86_64"
-        elif platform.endswith(("i386", "i686", "x86", "win32")):
-            machine = "x86"
         else:
             raise UnsupportedPlatformError(platform)
 

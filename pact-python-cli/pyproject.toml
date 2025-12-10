@@ -189,6 +189,9 @@ exclude = ''
 # with false-positives missing libraries despite being bundled.
 repair-wheel-command = ""
 
+  [tool.cibuildwheel.windows]
+  archs = ["auto64"]
+
   [[tool.cibuildwheel.overrides]]
   environment.MACOSX_DEPLOYMENT_TARGET = "10.13"
   select                               = "*-macosx_x86_64"
