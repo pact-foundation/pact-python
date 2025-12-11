@@ -138,9 +138,13 @@ def test_server_log(pact: Pact) -> None:
 
 def test_interactions_all_with_mixed_types(pact: Pact) -> None:
     pact.with_specification("V4")
-    pact.upon_receiving("a request", "HTTP").with_request("GET", "/").will_respond_with(200)
+    pact.upon_receiving("a request", "HTTP").with_request("GET", "/").will_respond_with(
+        200
+    )
     pact.upon_receiving("a message", "Async").with_body("{}")
-    pact.upon_receiving("a sync message", "Sync").with_body("request").will_respond_with().with_body("response")
+    pact.upon_receiving("a sync message", "Sync").with_body(
+        "request"
+    ).will_respond_with().with_body("response")
 
     http_count = sum(1 for _ in pact.interactions("HTTP"))
     async_count = sum(1 for _ in pact.interactions("Async"))
@@ -151,4 +155,4 @@ def test_interactions_all_with_mixed_types(pact: Pact) -> None:
     assert http_count == 1
     assert async_count == 1
     assert sync_count == 1
-    assert all_count >= 1
+    assert all_count == 3

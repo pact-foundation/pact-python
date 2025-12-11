@@ -393,7 +393,13 @@ class Pact:
     def interactions(
         self,
         kind: Literal["All"],
-    ) -> Generator[pact_ffi.PactInteraction, None, None]: ...
+    ) -> Generator[
+        pact_ffi.SynchronousHttp
+        | pact_ffi.SynchronousMessage
+        | pact_ffi.AsynchronousMessage,
+        None,
+        None,
+    ]: ...
 
     def interactions(
         self,
@@ -402,7 +408,13 @@ class Pact:
         Generator[pact_ffi.SynchronousHttp, None, None]
         | Generator[pact_ffi.SynchronousMessage, None, None]
         | Generator[pact_ffi.AsynchronousMessage, None, None]
-        | Generator[pact_ffi.PactInteraction, None, None]
+        | Generator[
+            pact_ffi.SynchronousHttp
+            | pact_ffi.SynchronousMessage
+            | pact_ffi.AsynchronousMessage,
+            None,
+            None,
+        ]
     ):
         """
         Return an iterator over the Pact's interactions.
@@ -421,7 +433,9 @@ class Pact:
         elif kind == "Async":
             yield from pact_ffi.pact_handle_get_async_message_iter(self._handle)
         elif kind == "All":
-            yield from pact_ffi.pact_handle_get_message_iter(self._handle)
+            yield from pact_ffi.pact_handle_get_sync_http_iter(self._handle)
+            yield from pact_ffi.pact_handle_get_sync_message_iter(self._handle)
+            yield from pact_ffi.pact_handle_get_async_message_iter(self._handle)
         else:
             msg = f"Unknown interaction type: {kind}"
             raise ValueError(msg)

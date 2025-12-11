@@ -1000,7 +1000,7 @@ class PactInteraction:
         """
         Destructor for the Pact Interaction.
         """
-        if not self._owned:
+        if self._owned:
             pass  # pact_interaction_delete not implemented yet
 
 
@@ -1085,8 +1085,7 @@ class PactMessageIterator:
         """
         if ffi.typeof(ptr).cname != "struct PactMessageIterator *":
             msg = (
-                "ptr must be a struct PactMessageIterator, got"
-                f" {ffi.typeof(ptr).cname}"
+                f"ptr must be a struct PactMessageIterator, got {ffi.typeof(ptr).cname}"
             )
             raise TypeError(msg)
         self._ptr = ptr
