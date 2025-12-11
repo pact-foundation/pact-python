@@ -960,7 +960,48 @@ class PactServerHandle:
         return self._ref
 
 
-class PactInteraction: ...
+class PactInteraction:
+    """
+    A Pact Interaction.
+
+    This is a minimal implementation to support iteration over all interactions.
+    Full support requires additional upstream library development.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = False) -> None:
+        """
+        Initialise a new Pact Interaction.
+
+        Args:
+            ptr:
+                CFFI data structure.
+
+            owned:
+                Whether the interaction is owned by something else or not. This
+                determines whether the interaction should be freed when the
+                Python object is destroyed.
+        """
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactInteraction"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactInteraction({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Interaction.
+        """
+        if not self._owned:
+            pass  # pact_interaction_delete not implemented yet
 
 
 class PactInteractionIterator:
@@ -1009,11 +1050,76 @@ class PactInteractionIterator:
         """
         pact_interaction_iter_delete(self)
 
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
     def __next__(self) -> PactInteraction:
         """
         Get the next interaction from the iterator.
         """
         return pact_interaction_iter_next(self)
+
+
+class PactMessageIterator:
+    """
+    Iterator over a Pact's interactions.
+
+    Interactions encompasses all types of interactions, including HTTP
+    interactions and messages.
+    """
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        """
+        Initialise a new Pact Message Iterator.
+
+        Args:
+            ptr:
+                CFFI data structure.
+
+        Raises:
+            TypeError:
+                If the `ptr` is not a `struct PactMessageIterator`.
+        """
+        if ffi.typeof(ptr).cname != "struct PactMessageIterator *":
+            msg = (
+                "ptr must be a struct PactMessageIterator, got"
+                f" {ffi.typeof(ptr).cname}"
+            )
+            raise TypeError(msg)
+        self._ptr = ptr
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "PactMessageIterator"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"PactMessageIterator({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact Message Iterator.
+        """
+        pact_message_iter_delete(self)
+
+    def __iter__(self) -> Self:
+        """
+        Return the iterator itself.
+        """
+        return self
+
+    def __next__(self) -> PactInteraction:
+        """
+        Get the next interaction from the iterator.
+        """
+        return pact_message_iter_next(self)
 
 
 class PactSyncHttpIterator:
@@ -4036,8 +4142,7 @@ def pact_interaction_iter_next(iter: PactInteractionIterator) -> PactInteraction
     ptr = lib.pactffi_pact_interaction_iter_next(iter._ptr)
     if ptr == ffi.NULL:
         raise StopIteration
-    raise NotImplementedError
-    return PactInteraction(ptr)
+    return PactInteraction(ptr, owned=True)
 
 
 def pact_interaction_iter_delete(iter: PactInteractionIterator) -> None:
@@ -4048,6 +4153,33 @@ def pact_interaction_iter_delete(iter: PactInteractionIterator) -> None:
     `pactffi_pact_interaction_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_iter_delete)
     """
     lib.pactffi_pact_interaction_iter_delete(iter._ptr)
+
+
+def pact_message_iter_next(iter: PactMessageIterator) -> PactInteraction:
+    """
+    Get the next interaction from the pact.
+
+    [Rust
+    `pactffi_pact_message_iter_next`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_message_iter_next)
+
+    Raises:
+        StopIteration:
+            If the iterator has reached the end.
+    """
+    ptr = lib.pactffi_pact_message_iter_next(iter._ptr)
+    if ptr == ffi.NULL:
+        raise StopIteration
+    return PactInteraction(ptr, owned=True)
+
+
+def pact_message_iter_delete(iter: PactMessageIterator) -> None:
+    """
+    Free the iterator when you're done using it.
+
+    [Rust
+    `pactffi_pact_message_iter_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_message_iter_delete)
+    """
+    lib.pactffi_pact_message_iter_delete(iter._ptr)
 
 
 def matching_rule_to_json(rule: MatchingRule) -> str:
@@ -6642,6 +6774,32 @@ def pact_handle_get_sync_http_iter(pact: PactHandle) -> PactSyncHttpIterator:
     ('\0') bytes.
     """
     return PactSyncHttpIterator(lib.pactffi_pact_handle_get_sync_http_iter(pact._ref))
+
+
+def pact_handle_get_message_iter(pact: PactHandle) -> PactMessageIterator:
+    r"""
+    Get an iterator over all the interactions of the Pact.
+
+    The returned iterator needs to be freed with
+    `pactffi_pact_message_iter_delete`.
+
+    [Rust
+    `pactffi_pact_handle_get_message_iter`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_handle_get_message_iter)
+
+    # Safety
+
+    The iterator contains a copy of the Pact, so it is always safe to use.
+
+    # Error Handling
+
+    On failure, this function will return a NULL pointer.
+
+    This function may fail if any of the Rust strings contain embedded null
+    ('\0') bytes.
+    """
+    return PactMessageIterator(
+        lib.pactffi_pact_handle_get_message_iter(pact._ref),
+    )
 
 
 def pact_handle_write_file(

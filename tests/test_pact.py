@@ -78,6 +78,7 @@ def test_invalid_interaction(pact: Pact) -> None:
         "HTTP",
         "Sync",
         "Async",
+        "All",
     ],
 )
 def test_interactions_iter(
@@ -86,6 +87,7 @@ def test_interactions_iter(
         "HTTP",
         "Sync",
         "Async",
+        "All",
     ],
 ) -> None:
     interactions = pact.interactions(interaction_type)
@@ -132,3 +134,21 @@ def test_specification(pact: Pact, version: str) -> None:
 def test_server_log(pact: Pact) -> None:
     with pact.serve() as srv:
         assert srv.logs is not None
+
+
+def test_interactions_all_with_mixed_types(pact: Pact) -> None:
+    pact.with_specification("V4")
+    pact.upon_receiving("a request", "HTTP").with_request("GET", "/").will_respond_with(200)
+    pact.upon_receiving("a message", "Async").with_body("{}")
+    pact.upon_receiving("a sync message", "Sync").with_body("request").will_respond_with().with_body("response")
+
+    http_count = sum(1 for _ in pact.interactions("HTTP"))
+    async_count = sum(1 for _ in pact.interactions("Async"))
+    sync_count = sum(1 for _ in pact.interactions("Sync"))
+    all_interactions = list(pact.interactions("All"))
+    all_count = len(all_interactions)
+
+    assert http_count == 1
+    assert async_count == 1
+    assert sync_count == 1
+    assert all_count >= 1
