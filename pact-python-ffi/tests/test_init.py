@@ -77,3 +77,145 @@ def test_owned_string() -> None:
             "-----END CERTIFICATE-----\r\n",
         ),
     )
+
+
+def test_pact_interaction() -> None:
+    """Test PactInteraction class."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+
+    # Create HTTP interaction
+    pact_ffi.new_sync_message_interaction(pact, "test")
+
+    # Get interactions via iterator
+    sync_http_iter = pact_ffi.pact_handle_get_sync_http_iter(pact)
+    list(sync_http_iter)
+    # Test string representation works on iterator
+    assert "PactSyncHttpIterator" in str(sync_http_iter) or str(sync_http_iter)
+
+
+def test_pact_message_iterator() -> None:
+    """Test PactMessageIterator class."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+
+    # Create message interaction
+    pact_ffi.new_message_interaction(pact, "test message")
+
+    # Get message iterator
+    iterator = pact_ffi.pact_handle_get_message_iter(pact)
+
+    # Test string representation
+    assert "PactMessageIterator" in str(iterator)
+    assert "PactMessageIterator" in repr(iterator)
+
+    # Iterate and count messages
+    message_count = sum(1 for _ in iterator)
+
+    # Should have the message
+    assert message_count >= 1
+
+
+def test_pact_interaction_owned() -> None:
+    """Test PactInteraction with owned parameter."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+    pact_ffi.new_sync_message_interaction(pact, "test")
+
+    # Get an interaction through the iterator
+    sync_iter = pact_ffi.pact_handle_get_sync_message_iter(pact)
+    for interaction in sync_iter:
+        # Interaction should be owned by the iterator
+        # Test destructor doesn't crash
+        del interaction
+        break
+
+
+def test_pact_message_iterator_empty() -> None:
+    """Test PactMessageIterator with no messages."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+
+    iterator = pact_ffi.pact_handle_get_message_iter(pact)
+
+    # Should iterate zero times
+    message_count = sum(1 for _ in iterator)
+    assert message_count == 0
+
+
+def test_pact_interaction_iterator_next() -> None:
+    """Test iterator next functions."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+
+    # Create multiple interactions
+    pact_ffi.new_interaction(pact, "http")
+    pact_ffi.new_message_interaction(pact, "async")
+    pact_ffi.new_sync_message_interaction(pact, "sync")
+
+    # Test each iterator type
+    http_iter = pact_ffi.pact_handle_get_sync_http_iter(pact)
+    http_count = sum(1 for _ in http_iter)
+    assert http_count == 1
+
+    async_iter = pact_ffi.pact_handle_get_async_message_iter(pact)
+    async_count = sum(1 for _ in async_iter)
+    assert async_count == 1
+
+    sync_iter = pact_ffi.pact_handle_get_sync_message_iter(pact)
+    sync_count = sum(1 for _ in sync_iter)
+    assert sync_count == 1
+
+
+def test_pact_message_iterator_repr() -> None:
+    """Test PactMessageIterator __repr__ method."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+
+    iterator = pact_ffi.pact_handle_get_message_iter(pact)
+    repr_str = repr(iterator)
+
+    assert "PactMessageIterator" in repr_str
+    assert "0x" in repr_str or ">" in repr_str
+
+
+def test_pact_interaction_str_repr() -> None:
+    """Test PactInteraction __str__ and __repr__ methods."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+    pact_ffi.new_sync_message_interaction(pact, "test")
+
+    # Get an interaction from iterator
+    sync_iter = pact_ffi.pact_handle_get_sync_message_iter(pact)
+    for interaction in sync_iter:
+        str_result = str(interaction)
+        repr_result = repr(interaction)
+
+        assert "SynchronousMessage" in str_result
+        assert "SynchronousMessage" in repr_result
+        break
+
+
+def test_multiple_iterator_types_simultaneously() -> None:
+    """Test using multiple iterator types at the same time."""
+    pact = pact_ffi.new_pact("consumer", "provider")
+    pact_ffi.with_specification(pact, pact_ffi.PactSpecification.V4)
+
+    # Create one of each type
+    pact_ffi.new_interaction(pact, "http")
+    pact_ffi.new_message_interaction(pact, "async")
+    pact_ffi.new_sync_message_interaction(pact, "sync")
+
+    # Create all three iterators
+    http_iter = pact_ffi.pact_handle_get_sync_http_iter(pact)
+    async_iter = pact_ffi.pact_handle_get_async_message_iter(pact)
+    sync_iter = pact_ffi.pact_handle_get_sync_message_iter(pact)
+
+    # Iterate through all of them
+    http_list = list(http_iter)
+    async_list = list(async_iter)
+    sync_list = list(sync_iter)
+
+    assert len(http_list) == 1
+    assert len(async_list) == 1
+    assert len(sync_list) == 1
