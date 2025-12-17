@@ -147,7 +147,7 @@ class Foo:  # noqa: D101
     def __init__(self) -> None:  # noqa: D107
         pass
 
-    def __call__(self, a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+    def __call__(self, a: int, b: str, c: float, d: bytes = b"d") -> Args:
         return Args(
             args={"a": a, "b": b, "c": c, "d": d},
             kwargs={},
@@ -155,7 +155,7 @@ class Foo:  # noqa: D101
             variadic_kwargs={},
         )
 
-    def method(self, a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+    def method(self, a: int, b: str, c: float, d: bytes = b"d") -> Args:
         return Args(
             args={"a": a, "b": b, "c": c, "d": d},
             kwargs={},
@@ -164,7 +164,7 @@ class Foo:  # noqa: D101
         )
 
     @classmethod
-    def class_method(cls, a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+    def class_method(cls, a: int, b: str, c: float, d: bytes = b"d") -> Args:
         return Args(
             args={"a": a, "b": b, "c": c, "d": d},
             kwargs={},
@@ -173,7 +173,7 @@ class Foo:  # noqa: D101
         )
 
     @staticmethod
-    def static_method(a: int, b: str, c: float, d: bytes = b"d") -> Args:  # noqa: D102
+    def static_method(a: int, b: str, c: float, d: bytes = b"d") -> Args:
         return Args(
             args={"a": a, "b": b, "c": c, "d": d},
             kwargs={},
