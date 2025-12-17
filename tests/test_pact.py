@@ -4,12 +4,12 @@ Pact unit tests.
 
 from __future__ import annotations
 
+import itertools
 import json
 from typing import TYPE_CHECKING, Literal
 
 import pytest
 
-import pact_ffi
 from pact import Pact
 from pact_ffi import PactSpecification
 
@@ -73,33 +73,6 @@ def test_invalid_interaction(pact: Pact) -> None:
         pact.upon_receiving("a basic request", "Invalid")  # type: ignore[call-overload]
 
 
-@pytest.mark.parametrize(
-    "interaction_type",
-    [
-        "HTTP",
-        "Sync",
-        "Async",
-        "All",
-    ],
-)
-def test_interactions_iter(
-    pact: Pact,
-    interaction_type: Literal[
-        "HTTP",
-        "Sync",
-        "Async",
-        "All",
-    ],
-) -> None:
-    interactions = pact.interactions(interaction_type)
-    assert interactions is not None
-    for _interaction in interactions:
-        # This should be an empty list and therefore the error should never be
-        # raised.
-        msg = "Should not be reached"
-        raise RuntimeError(msg)
-
-
 def test_write_file(pact: Pact, tmp_path: Path) -> None:
     pact.write_file(tmp_path)
     outfile = tmp_path / "consumer-provider.json"
@@ -137,122 +110,126 @@ def test_server_log(pact: Pact) -> None:
         assert srv.logs is not None
 
 
-def test_interactions_all_with_mixed_types(pact: Pact) -> None:
-    pact.with_specification("V4")
-    pact.upon_receiving("a request", "HTTP").with_request("GET", "/").will_respond_with(
-        200
+class TestInteractionsIter:
+    """
+    Collection of for `pact.interactions` iterator tests.
+    """
+
+    @staticmethod
+    def _interaction_count(
+        pact: Pact,
+        interaction_type: Literal["HTTP", "Sync", "Async", "All"],
+    ) -> int:
+        """
+        Count the number of interactions for the requested type.
+
+        Args:
+            pact:
+                Pact instance under test.
+
+            interaction_type:
+                Interaction type to count (HTTP, Async, Sync, All).
+
+        Returns:
+            Number of interactions that match the provided type.
+        """
+        return sum(1 for _ in pact.interactions(interaction_type))
+
+    @pytest.mark.parametrize(
+        "interaction_type",
+        [
+            "HTTP",
+            "Sync",
+            "Async",
+            "All",
+        ],
     )
-    pact.upon_receiving("a message", "Async").with_body("{}")
-    pact.upon_receiving("a sync message", "Sync").with_body(
-        "request"
-    ).will_respond_with().with_body("response")
+    def test_empty(
+        self,
+        pact: Pact,
+        interaction_type: Literal[
+            "HTTP",
+            "Sync",
+            "Async",
+            "All",
+        ],
+    ) -> None:
+        interactions = pact.interactions(interaction_type)
+        assert interactions is not None
+        for _interaction in interactions:
+            # This should be an empty list and therefore the error should never be
+            # raised.
+            msg = "Should not be reached"
+            raise RuntimeError(msg)
 
-    http_count = sum(1 for _ in pact.interactions("HTTP"))
-    async_count = sum(1 for _ in pact.interactions("Async"))
-    sync_count = sum(1 for _ in pact.interactions("Sync"))
-    all_interactions = list(pact.interactions("All"))
-    all_count = len(all_interactions)
+    @classmethod
+    def _add_http_interaction(cls, pact: Pact, id_: int) -> None:
+        (
+            pact.upon_receiving(f"HTTP request {id_}", "HTTP")
+            .with_request("GET", f"/{id_}")
+            .will_respond_with(200)
+        )
 
-    assert http_count == 1
-    assert async_count == 1
-    assert sync_count == 1
-    assert all_count == 3
+    @classmethod
+    def _add_async_interaction(cls, pact: Pact, id_: int) -> None:
+        (pact.upon_receiving(f"Async message {id_}", "Async").with_body({"count": id_}))
 
-    # Verify the interactions can be iterated multiple times
-    all_interactions_second = list(pact.interactions("All"))
-    assert len(all_interactions_second) == 3
+    @classmethod
+    def _add_sync_interaction(cls, pact: Pact, id_: int) -> None:
+        (
+            pact.upon_receiving(f"Sync message {id_}", "Sync")
+            .with_body(f"request {id_}")
+            .will_respond_with()
+            .with_body(f"response {id_}")
+        )
 
-    # Verify each interaction type is represented in "All"
-    http_found = False
-    async_found = False
-    sync_found = False
+    @classmethod
+    def _add_interactions(cls, pact: Pact, id_: int) -> None:
+        cls._add_http_interaction(pact, id_)
+        cls._add_async_interaction(pact, id_)
+        cls._add_sync_interaction(pact, id_)
 
-    for interaction in pact.interactions("All"):
-        # Check string representation works
-        str(interaction)
-        repr(interaction)
-
-        if isinstance(interaction, pact_ffi.SynchronousHttp):
-            http_found = True
-        elif isinstance(interaction, pact_ffi.AsynchronousMessage):
-            async_found = True
-        elif isinstance(interaction, pact_ffi.SynchronousMessage):
-            sync_found = True
-
-    assert http_found
-    assert async_found
-    assert sync_found
-
-
-def test_interactions_all_with_only_http(pact: Pact) -> None:
-    pact.with_specification("V4")
-    pact.upon_receiving("request 1", "HTTP").with_request("GET", "/").will_respond_with(
-        200
+    @pytest.mark.parametrize(
+        "version",
+        ["1", "1.1", "2", "3", "4"],
     )
-    pact.upon_receiving("request 2", "HTTP").with_request(
-        "POST", "/"
-    ).will_respond_with(201)
+    def test_pact_versions(self, pact: Pact, version: str) -> None:
+        pact.with_specification(version)
+        self._add_interactions(pact, 1)
 
-    all_interactions = list(pact.interactions("All"))
-    assert len(all_interactions) == 2
+        assert self._interaction_count(pact, "HTTP") == 1
+        assert self._interaction_count(pact, "Async") == 1
+        assert self._interaction_count(pact, "Sync") == 1
+        assert self._interaction_count(pact, "All") == 3
 
-
-def test_interactions_all_with_only_async(pact: Pact) -> None:
-    pact.with_specification("V4")
-    pact.upon_receiving("message 1", "Async").with_body("{}")
-    pact.upon_receiving("message 2", "Async").with_body("{}")
-
-    all_interactions = list(pact.interactions("All"))
-    assert len(all_interactions) == 2
-
-
-def test_interactions_all_with_only_sync(pact: Pact) -> None:
-    pact.with_specification("V4")
-    pact.upon_receiving("sync 1", "Sync").with_body(
-        "req1"
-    ).will_respond_with().with_body("resp1")
-    pact.upon_receiving("sync 2", "Sync").with_body(
-        "req2"
-    ).will_respond_with().with_body("resp2")
-
-    all_interactions = list(pact.interactions("All"))
-    assert len(all_interactions) == 2
-
-
-def test_interactions_all_empty(pact: Pact) -> None:
-    pact.with_specification("V4")
-    all_interactions = list(pact.interactions("All"))
-    assert len(all_interactions) == 0
-
-
-def test_interactions_all_multiple_of_each_type(pact: Pact) -> None:
-    """Test All iterator with multiple interactions of each type."""
-    pact.with_specification("V4")
-
-    # Create multiple HTTP interactions
-    pact.upon_receiving("http 1", "HTTP").with_request("GET", "/1").will_respond_with(
-        200
+    @pytest.mark.parametrize(
+        ("version", "http", "async_", "sync"),
+        itertools.product(["1", "1.1", "2", "3", "4"], range(3), range(3), range(3)),
     )
-    pact.upon_receiving("http 2", "HTTP").with_request("GET", "/2").will_respond_with(
-        200
-    )
+    def test_mixed_interactions(
+        self,
+        pact: Pact,
+        version: str,
+        http: int,
+        async_: int,
+        sync: int,
+    ) -> None:
+        pact.with_specification(version)
+        for i in range(http):
+            self._add_http_interaction(pact, i)
+        for i in range(async_):
+            self._add_async_interaction(pact, i)
+        for i in range(sync):
+            self._add_sync_interaction(pact, i)
 
-    # Create multiple Async interactions
-    pact.upon_receiving("async 1", "Async").with_body("{}")
-    pact.upon_receiving("async 2", "Async").with_body("{}")
+        # Verify the expected counts
+        assert self._interaction_count(pact, "HTTP") == http
+        assert self._interaction_count(pact, "Async") == async_
+        assert self._interaction_count(pact, "Sync") == sync
+        assert self._interaction_count(pact, "All") == (http + async_ + sync)
 
-    # Create multiple Sync interactions
-    pact.upon_receiving("sync 1", "Sync").with_body("r1").will_respond_with().with_body(
-        "s1"
-    )
-    pact.upon_receiving("sync 2", "Sync").with_body("r2").will_respond_with().with_body(
-        "s2"
-    )
-
-    # Count all interactions
-    all_count = sum(1 for _ in pact.interactions("All"))
-    assert all_count == 6
-
-    # Verify we can iterate again
-    all_count_second = sum(1 for _ in pact.interactions("All"))
-    assert all_count_second == 6
+        # Verify repeated iteration works
+        assert self._interaction_count(pact, "HTTP") == http
+        assert self._interaction_count(pact, "Async") == async_
+        assert self._interaction_count(pact, "Sync") == sync
+        assert self._interaction_count(pact, "All") == (http + async_ + sync)
