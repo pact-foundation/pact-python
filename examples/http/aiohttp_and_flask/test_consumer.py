@@ -70,7 +70,8 @@ async def test_get_user(pact: Pact) -> None:
         "created_on": match.datetime(),
     }
     (
-        pact.upon_receiving("A user request")
+        pact
+        .upon_receiving("A user request")
         .given("the user exists", id=123, name="Alice")
         .with_request("GET", "/users/123")
         .will_respond_with(200)
@@ -94,7 +95,8 @@ async def test_get_unknown_user(pact: Pact) -> None:
     """
     response = {"detail": "User not found"}
     (
-        pact.upon_receiving("A request for an unknown user")
+        pact
+        .upon_receiving("A request for an unknown user")
         .given("the user doesn't exist", id=123)
         .with_request("GET", "/users/123")
         .will_respond_with(404)
@@ -126,7 +128,8 @@ async def test_create_user(pact: Pact) -> None:
     }
 
     (
-        pact.upon_receiving("A request to create a new user")
+        pact
+        .upon_receiving("A request to create a new user")
         .with_request("POST", "/users")
         .with_body(payload, content_type="application/json")
         .will_respond_with(201)
@@ -150,7 +153,8 @@ async def test_delete_user(pact: Pact) -> None:
     correctly.
     """
     (
-        pact.upon_receiving("A user deletion request")
+        pact
+        .upon_receiving("A user deletion request")
         .given("the user exists", id=124, name="Bob")
         .with_request("DELETE", "/users/124")
         .will_respond_with(204)

@@ -53,7 +53,8 @@ def test_provider_state_generator(
 ) -> None:
     """Test the provider state generator."""
     (
-        pact.upon_receiving("a generators request")
+        pact
+        .upon_receiving("a generators request")
         .given("a provider state exists", {"id": 1000})
         .with_request("POST", "/")
         .with_body({"one": "a", "two": "b"})
@@ -245,19 +246,31 @@ def the_request_is_prepared_with_context(
 
 
 GENERATOR_PATTERN: dict[str, Callable[[object], bool]] = {
-    "upper-case-hyphenated UUID": lambda v: isinstance(v, str)
-    and re.match(r"^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$", v)
-    is not None,
-    "lower-case-hyphenated UUID": lambda v: isinstance(v, str)
-    and re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v)
-    is not None,
-    "simple UUID": lambda v: isinstance(v, str)
-    and re.match(r"^[0-9a-fA-F]{32}$", v) is not None,
-    "URN UUID": lambda v: isinstance(v, str)
-    and re.match(
-        r"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v
-    )
-    is not None,
+    "upper-case-hyphenated UUID": lambda v: (
+        isinstance(v, str)
+        and re.match(
+            r"^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$", v
+        )
+        is not None
+    ),
+    "lower-case-hyphenated UUID": lambda v: (
+        isinstance(v, str)
+        and re.match(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v
+        )
+        is not None
+    ),
+    "simple UUID": lambda v: (
+        isinstance(v, str) and re.match(r"^[0-9a-fA-F]{32}$", v) is not None
+    ),
+    "URN UUID": lambda v: (
+        isinstance(v, str)
+        and re.match(
+            r"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            v,
+        )
+        is not None
+    ),
 }
 
 

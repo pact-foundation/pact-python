@@ -153,27 +153,38 @@ def the_request_is_prepared_for_use(pact: Pact) -> requests.Response:
 ################################################################################
 
 GENERATOR_PATTERN: dict[str, Callable[[object], bool]] = {
-    "UUID": lambda v: isinstance(v, str)
-    and re.match(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v)
-    is not None,
+    "UUID": lambda v: (
+        isinstance(v, str)
+        and re.match(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", v
+        )
+        is not None
+    ),
     "boolean": lambda v: isinstance(v, bool),
-    "date": lambda v: isinstance(v, str)
-    and re.match(r"^\d{4}-\d{2}-\d{2}$", v) is not None,
-    "time": lambda v: isinstance(v, str)
-    and re.match(r"^\d{2}:\d{2}:\d{2}(\.\d+)?$", v) is not None,
-    "date-time": lambda v: isinstance(v, str)
-    and re.match(
-        r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})$", v
-    )
-    is not None,
-    "decimal number": lambda v: isinstance(v, str)
-    and re.match(r"^-?\d+\.\d+$", v) is not None,
-    "hexadecimal number": lambda v: isinstance(v, str)
-    and re.match(r"^[0-9a-fA-F]+$", v) is not None,
+    "date": lambda v: (
+        isinstance(v, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", v) is not None
+    ),
+    "time": lambda v: (
+        isinstance(v, str) and re.match(r"^\d{2}:\d{2}:\d{2}(\.\d+)?$", v) is not None
+    ),
+    "date-time": lambda v: (
+        isinstance(v, str)
+        and re.match(
+            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})$", v
+        )
+        is not None
+    ),
+    "decimal number": lambda v: (
+        isinstance(v, str) and re.match(r"^-?\d+\.\d+$", v) is not None
+    ),
+    "hexadecimal number": lambda v: (
+        isinstance(v, str) and re.match(r"^[0-9a-fA-F]+$", v) is not None
+    ),
     "integer": lambda v: isinstance(v, int) or (isinstance(v, str) and v.isdigit()),
     "random string": lambda v: isinstance(v, str) and len(v) > 0,
-    "string from the regex": lambda v: isinstance(v, str)
-    and re.match(r"^\d{1,8}$", v) is not None,
+    "string from the regex": lambda v: (
+        isinstance(v, str) and re.match(r"^\d{1,8}$", v) is not None
+    ),
 }
 
 

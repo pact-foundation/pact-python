@@ -153,7 +153,8 @@ class Interaction(abc.ABC):
 
         ```python
         (
-            pact.upon_receiving("a request")
+            pact
+            .upon_receiving("a request")
             .given("a user exists", id=123, name="Alice")
             .given("a user exists", id=456, name="Bob")
         )
