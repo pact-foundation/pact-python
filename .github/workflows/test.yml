@@ -99,8 +99,6 @@ jobs:
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
 
       - name: Run tests (v2)
-        # Temporary workaround until Pydantic 3.12 is released with Python 3.14 support
-        if: matrix.python-version != '3.14'
         run: hatch run v2-test.py${{ matrix.python-version }}:test --junit-xml=v2-junit.xml
 
       - name: Run tests (CLI)
@@ -143,9 +141,7 @@ jobs:
           - '3.11'
           - '3.12'
           - '3.13'
-          # Temporarily excluded until Pydantic 3.12 is released with Python
-          # 3.14 support
-          # - '3.14'
+          - '3.14'
 
     steps:
       - name: Checkout code
@@ -169,6 +165,7 @@ jobs:
 
           while IFS= read -r -d $'\0' file <&3; do
             cd "$(dirname "$file")"
+            echo "Running example in $(pwd)"
             uv run --python ${{ matrix.python-version }} --group test pytest --junit-xml=junit.xml
           done 3< <(find "$(pwd)/examples" -name pyproject.toml -print0)
 
