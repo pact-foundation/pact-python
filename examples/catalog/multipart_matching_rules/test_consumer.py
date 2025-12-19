@@ -133,7 +133,8 @@ def test_multipart_upload_with_matching_rules(pact: Pact) -> None:
 
     # Define the interaction with matching rules
     (
-        pact.upon_receiving("a multipart upload with JSON metadata and image")
+        pact
+        .upon_receiving("a multipart upload with JSON metadata and image")
         .with_request("POST", "/upload")
         .with_header(
             "Content-Type",

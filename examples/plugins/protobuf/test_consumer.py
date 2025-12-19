@@ -75,7 +75,8 @@ def test_get_person_by_id(pact: Pact) -> None:
     expected_protobuf_data = alice.SerializeToString()
 
     (
-        pact.upon_receiving("a request to get person by ID")
+        pact
+        .upon_receiving("a request to get person by ID")
         .given("person with the given ID exists", user_id=1)
         .with_request("GET", "/person/1")
         .will_respond_with(200)
@@ -118,7 +119,8 @@ def test_get_nonexistent_person(pact: Pact) -> None:
     code with an appropriate error message as a JSON response.
     """
     (
-        pact.upon_receiving("a request to get non-existent person")
+        pact
+        .upon_receiving("a request to get non-existent person")
         .given("person with the given ID does not exist", user_id=999)
         .with_request("GET", "/person/999")
         .will_respond_with(404)

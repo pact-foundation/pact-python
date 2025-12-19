@@ -38,7 +38,8 @@ def test_repr(pact: Pact) -> None:
 
 def test_with_metadata_with_positional_dict(pact: Pact) -> None:
     (
-        pact.upon_receiving("with_metadatadict", "Sync")
+        pact
+        .upon_receiving("with_metadatadict", "Sync")
         .with_body("request", content_type="text/plain")
         .with_metadata({"foo": "bar"})
         .will_respond_with()
@@ -54,7 +55,8 @@ def test_with_metadata_with_positional_dict(pact: Pact) -> None:
 
 def test_with_metadata_with_keyword_args(pact: Pact) -> None:
     (
-        pact.upon_receiving("with_metadata_kwargs", "Sync")
+        pact
+        .upon_receiving("with_metadata_kwargs", "Sync")
         .with_body("request", content_type="text/plain")
         .with_metadata(foo="bar")
         .will_respond_with()
@@ -70,7 +72,8 @@ def test_with_metadata_with_keyword_args(pact: Pact) -> None:
 
 def test_with_metadata_with_mixed_args(pact: Pact) -> None:
     (
-        pact.upon_receiving("with_metadata_mixed", "Sync")
+        pact
+        .upon_receiving("with_metadata_mixed", "Sync")
         .with_body("request", content_type="text/plain")
         .with_metadata({"foo": {"bar": 1.23}}, metadata=123)
         .will_respond_with()
@@ -88,7 +91,8 @@ def test_with_metadata_with_mixed_args(pact: Pact) -> None:
 
 def test_with_metadata_with_part(pact: Pact) -> None:
     (
-        pact.upon_receiving("with_metadata_part", "Sync")
+        pact
+        .upon_receiving("with_metadata_part", "Sync")
         .with_body("request", content_type="text/plain")
         .will_respond_with()
         .with_body("response", content_type="text/plain")

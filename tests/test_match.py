@@ -123,7 +123,8 @@ def test_matchers() -> None:
     pact_dir = Path(Path(__file__).parent.parent.parent / "pacts")
     pact = Pact("consumer", "provider").with_specification("V4")
     (
-        pact.upon_receiving("a request")
+        pact
+        .upon_receiving("a request")
         .given("a state", {"providerStateArgument": "providerStateValue"})
         .with_request("GET", match.regex("/path/to/100", regex=r"/path/to/\d{1,4}"))
         .with_query_parameter(

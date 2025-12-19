@@ -63,7 +63,8 @@ pact = Pact("consumer", "provider")
 
 # Define expected interactions
 (
-    pact.upon_receiving("get user")
+    pact
+    .upon_receiving("get user")
     .given("user exists")
     .with_request(method="GET", path="/users/123")
     .will_respond_with(

@@ -36,7 +36,8 @@ DOCS_DEST = "."
 ALL_FILES = sorted(
     map(
         Path,
-        subprocess.check_output(["git", "ls-files", SRC_ROOT])  # noqa: S603, S607
+        subprocess  # noqa: S603
+        .check_output(["git", "ls-files", SRC_ROOT])  # noqa: S607
         .decode("utf-8")
         .splitlines(),
     ),

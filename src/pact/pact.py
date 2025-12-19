@@ -47,7 +47,8 @@ interaction in a more concise manner:
 pact = Pact("consumer", "provider")
 
 (
-    pact.upon_receiving("a basic request")
+    pact
+    .upon_receiving("a basic request")
     .given("user 123 exists")
     .with_request("GET", "/user/123")
     .will_respond_with(200)

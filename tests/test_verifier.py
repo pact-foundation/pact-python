@@ -148,7 +148,8 @@ def test_broker_source(verifier: Verifier) -> None:
 
 def test_broker_source_selector(verifier: Verifier) -> None:
     (
-        verifier.broker_source("http://localhost:8080", selector=True)
+        verifier
+        .broker_source("http://localhost:8080", selector=True)
         .consumer_tags("main", "test")
         .provider_tags("main", "test")
         .consumer_versions('{"latest": true}')
