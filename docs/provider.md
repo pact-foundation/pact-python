@@ -57,6 +57,33 @@ def test_provider():
 
 The `Verifier` inspects the specified directory for Pact files matching the provider name, and verifies each interaction against the running provider at the given URL.
 
+### Basic Usage (Sync / Async)  
+  
+You can verify Pacts that are `Sync` or `Async` my defining a custom "message handler".  
+in a simlar way to as follows:  
+
+```python
+from pact import Verifier
+from pact.types import Message
+
+def event_file_created_message_handler() -> Message:
+    ...
+
+def test_provider():
+    """Test the provider against the consumer contract."""
+    verifier = (
+        Verifier("my-provider")  # Provider name
+        .add_source("./pacts/")  # Directory containing Pact files
+        .message_handler(
+            {
+                "message": message_handler
+            }
+        )  # Message handler, use this, or `.add_transport`, not both
+    )
+
+    verifier.verify()
+```
+
 ### Verifying from a Pact Broker
 
 Although local Pact files are useful for quick tests, in most cases you will want to verify Pacts from a Pact Broker. In this case, specify the broker URL and any necessary authentication:
