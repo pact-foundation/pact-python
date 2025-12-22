@@ -1054,8 +1054,8 @@ class PactInteraction:
         """
         Destructor for the Pact Interaction.
         """
-        if self._owned:
-            pass  # pact_interaction_delete not implemented yet
+        if not self._owned:
+            pact_interaction_delete(self)
 
     def as_synchronous_http(self) -> SynchronousHttp:
         """
@@ -2571,7 +2571,7 @@ def pact_interaction_delete(interaction: PactInteraction) -> None:
 
     [Rust `pactffi_pact_interaction_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_interaction_delete(interaction._ptr)
 
 
 def async_message_new() -> AsynchronousMessage:
