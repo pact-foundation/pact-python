@@ -814,7 +814,48 @@ class Mismatches: ...
 class MismatchesIterator: ...
 
 
-class Pact: ...
+class Pact:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = True) -> None:
+        """
+        Wrapper for a Pact model pointer.
+
+        Args:
+            ptr:
+                CFFI pointer to `struct Pact *`.
+
+            owned:
+                Whether the pact is owned by something else or not. This
+                determines whether the pact should be freed when the Python
+                object is destroyed.
+
+        Raises:
+            TypeError:
+                If `ptr` is not a `struct Pact *`.
+        """
+        if ffi.typeof(ptr).cname != "struct Pact *":
+            msg = f"ptr must be a struct Pact, got {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "Pact"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"Pact({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact.
+        """
+        if not self._owned:
+            pact_model_delete(self)
 
 
 class PactAsyncMessageIterator:
@@ -2446,7 +2487,7 @@ def pact_model_delete(pact: Pact) -> None:
 
     [Rust `pactffi_pact_model_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_model_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_model_delete(pact._ptr)
 
 
 def pact_model_interaction_iterator(pact: Pact) -> PactInteractionIterator:
