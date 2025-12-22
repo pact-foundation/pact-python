@@ -951,6 +951,19 @@ class PactHandle:
         """
         return f"PactHandle({self._ref!r})"
 
+    def pointer(self) -> Pact:
+        """
+        Unwrap the handle to access the underlying Pact model.
+
+        This function clones the underlying structure, therefore any
+        modification to the original handle will not be reflected in the
+        returned Pact model, and vice versa.
+
+        Returns:
+            The underlying Pact model.
+        """
+        return pact_handle_to_pointer(self)
+
 
 class PactServerHandle:
     """
@@ -5454,15 +5467,27 @@ def new_pact(consumer_name: str, provider_name: str) -> PactHandle:
 
 def pact_handle_to_pointer(pact: PactHandle) -> Pact:
     """
-    Unwraps a Pact handle to the underlying Pact.
+    Copy a Pact handle to a raw Pact.
 
-    The Pact model which has been cloned from the Pact handle's inner Pact
-    model.
+    The underlying data is cloned, therefore, any changes made to the original
+    Pact handle will not be reflected in the Pact model, and vice versa.
 
-    The returned Pact model must be freed with the `pactffi_pact_model_delete`
-    function when no longer needed.
+    Args:
+        pact:
+            The Pact handle to unwrap.
+
+    Returns:
+        The underlying Pact model pointer.
+
+    Raises:
+        RuntimeError:
+            If the unwrap operation fails.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_handle_to_pointer(pact._ref)
+    if ptr == ffi.NULL:
+        msg = f"Failed to unwrap pact handle: {pact}"
+        raise RuntimeError(msg)
+    return Pact(ptr, owned=False)
 
 
 def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
