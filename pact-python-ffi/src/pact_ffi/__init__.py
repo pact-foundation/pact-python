@@ -3708,7 +3708,7 @@ def sync_http_delete(interaction: SynchronousHttp) -> None:
     [Rust
     `pactffi_sync_http_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_delete)
     """
-    lib.pactffi_sync_http_delete(interaction)
+    lib.pactffi_sync_http_delete(interaction._ptr)
 
 
 def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
