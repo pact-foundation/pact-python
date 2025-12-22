@@ -2540,17 +2540,20 @@ def pact_model_interaction_iterator(pact: Pact) -> PactInteractionIterator:
     [Rust
     `pactffi_pact_model_interaction_iterator`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_model_interaction_iterator)
 
-    The iterator will have to be deleted using the
-    `pactffi_pact_interaction_iter_delete` function. The iterator will contain a
-    copy of the interactions, so it will not be affected but mutations to the
-    Pact model and will still function if the Pact model is deleted.
+    The iterator will contain a copy of the interactions, so it will not be
+    affected but mutations to the Pact model and will still function if the Pact
+    model is deleted.
 
-    # Safety This function is safe as long as the Pact pointer is a valid
-    pointer.
+    Args:
+        pact:
+            The Pact model.
 
-    # Errors On any error, this function will return a NULL pointer.
+    Returns:
+        An iterator over all interactions in the Pact.
     """
-    raise NotImplementedError
+    return PactInteractionIterator(
+        lib.pactffi_pact_model_interaction_iterator(pact._ptr)
+    )
 
 
 def pact_spec_version(pact: Pact) -> PactSpecification:
