@@ -1057,6 +1057,36 @@ class PactInteraction:
         if self._owned:
             pass  # pact_interaction_delete not implemented yet
 
+    def as_synchronous_http(self) -> SynchronousHttp:
+        """
+        Cast this interaction as a synchronous HTTP interaction.
+
+        Raises:
+            TypeError:
+                If the interaction is not a synchronous HTTP interaction.
+        """
+        return pact_interaction_as_synchronous_http(self)
+
+    def as_asynchronous_message(self) -> AsynchronousMessage:
+        """
+        Cast this interaction as an asynchronous message interaction.
+
+        Raises:
+            TypeError:
+                If the interaction is not an asynchronous message interaction.
+        """
+        return pact_interaction_as_asynchronous_message(self)
+
+    def as_synchronous_message(self) -> SynchronousMessage:
+        """
+        Cast this interaction as a synchronous message interaction.
+
+        Raises:
+            TypeError:
+                If the interaction is not a synchronous message interaction.
+        """
+        return pact_interaction_as_synchronous_message(self)
+
 
 class PactInteractionIterator:
     """
@@ -4034,70 +4064,85 @@ def sync_http_get_provider_state_iter(
 def pact_interaction_as_synchronous_http(
     interaction: PactInteraction,
 ) -> SynchronousHttp:
-    r"""
-    Casts this interaction to a `SynchronousHttp` interaction.
-
-    Returns a NULL pointer if the interaction can not be casted to a
-    `SynchronousHttp` interaction (for instance, it is a message interaction).
-    The returned pointer must be freed with `pactffi_sync_http_delete` when no
-    longer required.
-
-    [Rust
-    `pactffi_pact_interaction_as_synchronous_http`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_http)
-
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
-
-    # Errors On any error, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    Cast this interaction to a `SynchronousHttp` interaction.
+
+    [Rust `pactffi_pact_interaction_as_synchronous_http`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_http)
+
+    Args:
+        interaction:
+            The interaction to cast.
+
+    Returns:
+        The interaction cast as a `SynchronousHttp`.
+
+    Raises:
+        TypeError:
+            If the interaction cannot be cast to a `SynchronousHttp`
+            interaction.
+    """
+    ptr = lib.pactffi_pact_interaction_as_synchronous_http(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Interaction is not a SynchronousHttp interaction"
+        raise TypeError(msg)
+    return SynchronousHttp(ptr, owned=False)
 
 
 def pact_interaction_as_asynchronous_message(
     interaction: PactInteraction,
 ) -> AsynchronousMessage:
     """
-    Casts this interaction to a `AsynchronousMessage` interaction.
-
-    Returns a NULL pointer if the interaction can not be casted to a
-    `AsynchronousMessage` interaction (for instance, it is a http interaction).
-    The returned pointer must be freed with `pactffi_async_message_delete` when
-    no longer required.
-
-    [Rust
-    `pactffi_pact_interaction_as_asynchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_asynchronous_message)
+    Cast this interaction to an `AsynchronousMessage` interaction.
 
     Note that if the interaction is a V3 `Message`, it will be converted to a V4
     `AsynchronousMessage` before being returned.
 
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
+    [Rust `pactffi_pact_interaction_as_asynchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_asynchronous_message)
 
-    # Errors On any error, this function will return a NULL pointer.
+    Args:
+        interaction:
+            The interaction to cast.
+
+    Returns:
+        The interaction cast as an `AsynchronousMessage`.
+
+    Raises:
+        TypeError:
+            If the interaction cannot be cast to an `AsynchronousMessage`
+            interaction.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_interaction_as_asynchronous_message(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Interaction is not an AsynchronousMessage interaction"
+        raise TypeError(msg)
+    return AsynchronousMessage(ptr, owned=False)
 
 
 def pact_interaction_as_synchronous_message(
     interaction: PactInteraction,
 ) -> SynchronousMessage:
     """
-    Casts this interaction to a `SynchronousMessage` interaction.
+    Cast this interaction to a `SynchronousMessage` interaction.
 
-    Returns a NULL pointer if the interaction can not be casted to a
-    `SynchronousMessage` interaction (for instance, it is a http interaction).
-    The returned pointer must be freed with `pactffi_sync_message_delete` when
-    no longer required.
+    [Rust `pactffi_pact_interaction_as_synchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_message)
 
-    [Rust
-    `pactffi_pact_interaction_as_synchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_message)
+    Args:
+        interaction:
+            The interaction to cast.
 
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
+    Returns:
+        The interaction cast as a `SynchronousMessage`.
 
-    # Errors On any error, this function will return a NULL pointer.
+    Raises:
+        TypeError:
+            If the interaction cannot be cast to a `SynchronousMessage`
+            interaction.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_interaction_as_synchronous_message(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Interaction is not a SynchronousMessage interaction"
+        raise TypeError(msg)
+    return SynchronousMessage(ptr, owned=False)
 
 
 def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> AsynchronousMessage:
