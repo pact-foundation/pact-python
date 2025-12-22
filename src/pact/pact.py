@@ -395,9 +395,7 @@ class Pact:
         self,
         kind: Literal["All"],
     ) -> Generator[
-        pact_ffi.SynchronousHttp
-        | pact_ffi.SynchronousMessage
-        | pact_ffi.AsynchronousMessage,
+        pact_ffi.PactInteraction,
         None,
         None,
     ]: ...
@@ -410,9 +408,7 @@ class Pact:
         | Generator[pact_ffi.SynchronousMessage, None, None]
         | Generator[pact_ffi.AsynchronousMessage, None, None]
         | Generator[
-            pact_ffi.SynchronousHttp
-            | pact_ffi.SynchronousMessage
-            | pact_ffi.AsynchronousMessage,
+            pact_ffi.PactInteraction,
             None,
             None,
         ]
@@ -427,20 +423,21 @@ class Pact:
             ValueError:
                 If the kind is unknown.
         """
+        if kind == "All":
+            yield from pact_ffi.pact_model_interaction_iterator(self._handle.pointer())
+            return
         if kind == "HTTP":
             yield from pact_ffi.pact_handle_get_sync_http_iter(self._handle)
-        elif kind == "Sync":
+            return
+        if kind == "Sync":
             yield from pact_ffi.pact_handle_get_sync_message_iter(self._handle)
-        elif kind == "Async":
+            return
+        if kind == "Async":
             yield from pact_ffi.pact_handle_get_async_message_iter(self._handle)
-        elif kind == "All":
-            yield from pact_ffi.pact_handle_get_sync_http_iter(self._handle)
-            yield from pact_ffi.pact_handle_get_sync_message_iter(self._handle)
-            yield from pact_ffi.pact_handle_get_async_message_iter(self._handle)
-        else:
-            msg = f"Unknown interaction type: {kind}"
-            raise ValueError(msg)
-        return  # Ensures that the parent object outlives the generator
+            return
+
+        msg = f"Unknown interaction kind: {kind}"
+        raise ValueError(msg)
 
     @overload
     def verify(
