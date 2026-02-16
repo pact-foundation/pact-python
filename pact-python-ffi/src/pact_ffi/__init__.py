@@ -6452,7 +6452,7 @@ def with_binary_body(
         interaction._ref,
         part.value,
         content_type.encode("utf-8") if content_type else ffi.NULL,
-        body if body else ffi.NULL,
+        body or ffi.NULL,
         len(body) if body else 0,
     )
     if not success:
@@ -6511,7 +6511,7 @@ def with_binary_file(
         interaction._ref,
         part.value,
         content_type.encode("utf-8") if content_type else ffi.NULL,
-        body if body else ffi.NULL,
+        body or ffi.NULL,
         len(body) if body else 0,
     )
     if not success:

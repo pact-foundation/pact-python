@@ -238,7 +238,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         Returns:
             The path to the downloaded artefact.
         """
-        filename = url.split("/")[-1]
+        filename = url.rsplit("/", maxsplit=1)[-1]
         artefact = PKG_DIR / "data" / filename
         artefact.parent.mkdir(parents=True, exist_ok=True)
 
