@@ -151,7 +151,7 @@ def format_code_to_java_format(code: str) -> str:
         raise ValueError(msg)
 
     # The following codes simply do not have a direct equivalent in Java.
-    if code in ["w"]:
+    if code == "w":
         msg = f"Python format code `%{code}` is not supported in Java"
         raise ValueError(msg)
 

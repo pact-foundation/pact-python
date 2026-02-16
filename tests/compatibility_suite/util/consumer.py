@@ -239,7 +239,7 @@ def request_n_is_made_to_the_mock_server(stacklevel: int = 1) -> None:
                 if definition.query
                 else None
             ),
-            headers=definition.headers if definition.headers else None,  # type: ignore[arg-type]
+            headers=definition.headers or None,  # type: ignore[arg-type]
             data=definition.body.bytes if definition.body else None,
             timeout=5,
         )
@@ -293,7 +293,7 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
                 if definition.query
                 else None
             ),
-            headers=definition.headers if definition.headers else None,  # type: ignore[arg-type]
+            headers=definition.headers or None,  # type: ignore[arg-type]
             data=definition.body.bytes if definition.body else None,
             timeout=5,
         )
