@@ -200,7 +200,7 @@ requires      = ["hatchling", "versioningit"]
       example            = "pytest --ignore=examples/v2 examples/ {args}"
       format             = "ruff format {args}"
       lint               = "ruff check --output-format=full --show-fixes {args}"
-      test               = "pytest --ignore=tests/v2 tests/ {args}"
+      test               = "pytest --ignore=tests/v2 {args:tests/}"
       typecheck          = ["typecheck-examples", "typecheck-src", "typecheck-tests"]
       typecheck-examples = "mypy examples/ {args}"
       typecheck-src      = "mypy src/ {args}"
