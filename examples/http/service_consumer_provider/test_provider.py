@@ -87,26 +87,28 @@ def app_server() -> str:
     raise RuntimeError(msg)
 
 
-def set_auth_accepts(_parameters: dict[str, object] | None) -> None:
+def set_auth_accepts(parameters: dict[str, object] | None = None) -> None:
     """
     Provider state: auth-service accepts credentials.
 
     Args:
-        _parameters:
+        parameters:
             Optional Pact state parameters.
     """
+    del parameters
     reset_state()
     set_auth_verifier(StubAuthVerifier(valid=True))
 
 
-def set_auth_rejects(_parameters: dict[str, object] | None) -> None:
+def set_auth_rejects(parameters: dict[str, object] | None = None) -> None:
     """
     Provider state: auth-service rejects credentials.
 
     Args:
-        _parameters:
+        parameters:
             Optional Pact state parameters.
     """
+    del parameters
     reset_state()
     set_auth_verifier(StubAuthVerifier(valid=False))
 
