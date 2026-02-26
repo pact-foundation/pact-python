@@ -6,4 +6,5 @@ This directory contains examples of HTTP-based contract testing with Pact.
 
 -   [`aiohttp_and_flask/`](aiohttp_and_flask/) - Async aiohttp consumer with Flask provider
 -   [`requests_and_fastapi/`](requests_and_fastapi/) - requests consumer with FastAPI provider
+-   [`service_consumer_provider/`](service_consumer_provider/) - One service acting as both consumer and provider
 -   [`xml_example/`](xml_example/) - requests consumer with FastAPI provider using XML bodies

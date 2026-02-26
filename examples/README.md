@@ -30,6 +30,13 @@ The code within the examples is intended to be well-documented and you are encou
 -   **Consumer**: requests-based HTTP client
 -   **Provider**: FastAPI-based HTTP server
 
+#### [Service as Consumer and Provider](./http/service_consumer_provider/README.md)
+
+-   **Location**: `examples/http/service_consumer_provider/`
+-   **Scenario**: A single service (`user-service`) acting as both:
+    -   **Provider** to a frontend client
+    -   **Consumer** of an upstream auth service
+
 ### Message Examples
 
 -   **Location**: `examples/message/`
