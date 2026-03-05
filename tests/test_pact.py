@@ -165,7 +165,8 @@ class TestInteractionsIter:
     @classmethod
     def _add_http_interaction(cls, pact: Pact, id_: int) -> None:
         (
-            pact.upon_receiving(f"HTTP request {id_}", "HTTP")
+            pact
+            .upon_receiving(f"HTTP request {id_}", "HTTP")
             .with_request("GET", f"/{id_}")
             .will_respond_with(200)
         )
@@ -177,7 +178,8 @@ class TestInteractionsIter:
     @classmethod
     def _add_sync_interaction(cls, pact: Pact, id_: int) -> None:
         (
-            pact.upon_receiving(f"Sync message {id_}", "Sync")
+            pact
+            .upon_receiving(f"Sync message {id_}", "Sync")
             .with_body(f"request {id_}")
             .will_respond_with()
             .with_body(f"response {id_}")

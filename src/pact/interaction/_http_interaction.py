@@ -39,7 +39,8 @@ class HttpInteraction(Interaction):
 
     ```python
     (
-        pact.upon_receiving("a request")
+        pact
+        .upon_receiving("a request")
         .with_request("GET", "/")
         .with_header("X-Foo", "bar")
         .will_respond_with(200)
@@ -49,7 +50,8 @@ class HttpInteraction(Interaction):
 
     ```python
     (
-        pact.upon_receiving("a request")
+        pact
+        .upon_receiving("a request")
         .with_request("GET", "/")
         .will_respond_with(200)
         .with_header("X-Foo", "bar", part="Request")
@@ -132,7 +134,8 @@ class HttpInteraction(Interaction):
 
         ```python
         (
-            pact.upon_receiving("a request")
+            pact
+            .upon_receiving("a request")
             .with_header("X-Foo", "bar")
             .with_header("X-Foo", "baz")
         )
@@ -320,7 +323,8 @@ class HttpInteraction(Interaction):
 
         ```python
         (
-            pact.upon_receiving("a request")
+            pact
+            .upon_receiving("a request")
             .with_query_parameter("name", "John")
             .with_query_parameter("name", "Mary")
         )

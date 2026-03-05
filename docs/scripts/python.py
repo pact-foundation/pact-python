@@ -165,7 +165,8 @@ def process_python(
     ignore_spec = PathSpec.from_lines("gitwildmatch", ignore or [])
     files = sorted(
         Path(p)
-        for p in subprocess.check_output(  # noqa: S603
+        for p in subprocess  # noqa: S603
+        .check_output(
             ["git", "ls-files", src],  # noqa: S607
         )
         .decode("utf-8")

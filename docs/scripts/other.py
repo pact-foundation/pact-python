@@ -36,7 +36,8 @@ DOCS_DEST = "."
 ALL_FILES = sorted(
     map(
         Path,
-        subprocess.check_output(["git", "ls-files", SRC_ROOT])  # noqa: S603, S607
+        subprocess  # noqa: S603
+        .check_output(["git", "ls-files", SRC_ROOT])  # noqa: S607
         .decode("utf-8")
         .splitlines(),
     ),
@@ -71,7 +72,7 @@ def is_binary(buffer: bytes) -> bool:
 for source_path in ALL_FILES:
     if not source_path.is_file():
         continue
-    if source_path.parts[0] in ["docs"]:
+    if source_path.parts[0] == "docs":
         continue
 
     dest_path = Path(DOCS_DEST, source_path)

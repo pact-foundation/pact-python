@@ -73,7 +73,7 @@ dependencies = [
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
 dev = [
-  "ruff==0.14.9",
+  "ruff==0.15.2",
   { include-group = "docs" },
   { include-group = "example" },
   { include-group = "test" },
@@ -85,17 +85,17 @@ dev = [
 docs = [
   "griffe-generics==1.0.13",
   "griffe-inherited-method-crossrefs==0.0.1.4",
-  "griffe-pydantic==1.1.8",
-  "griffe-warnings-deprecated==1.1.0",
+  "griffe-pydantic==1.3.1",
+  "griffe-warnings-deprecated==1.1.1",
   "mkdocs-gen-files==0.6.0",
   "mkdocs-github-admonitions-plugin==0.1.1",
   "mkdocs-literate-nav==0.6.2",
   "mkdocs-llmstxt==0.5.0",
-  "mkdocs-material[recommended,git,imaging]==9.7.0",
+  "mkdocs-material[recommended,git,imaging]==9.7.3",
   "mkdocs-section-index==0.3.10",
   "mkdocs==1.6.1",
-  "mkdocstrings[python]==1.0.0",
-  "pathspec==0.12.1",
+  "mkdocstrings[python]==1.0.3",
+  "pathspec==1.0.4",
 ]
 example = [
   "fastapi~=0.0",

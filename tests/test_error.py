@@ -33,7 +33,8 @@ def pact() -> Pact:
 @pytest.mark.asyncio
 async def test_missing_request(pact: Pact) -> None:
     (
-        pact.upon_receiving("a missing request")
+        pact
+        .upon_receiving("a missing request")
         .with_request("GET", "/")
         .will_respond_with(200)
     )
@@ -67,7 +68,8 @@ async def test_missing_request(pact: Pact) -> None:
 @pytest.mark.asyncio
 async def test_query_mismatch_value(pact: Pact) -> None:
     (
-        pact.upon_receiving("a query mismatch")
+        pact
+        .upon_receiving("a query mismatch")
         .with_request("GET", "/resource")
         .with_query_parameter("param", "expected")
         .will_respond_with(200)
@@ -107,7 +109,8 @@ with value 'expected' but was 'actual'"""
 @pytest.mark.asyncio
 async def test_query_mismatch_different_keys(pact: Pact) -> None:
     (
-        pact.upon_receiving("a query mismatch with different keys")
+        pact
+        .upon_receiving("a query mismatch with different keys")
         .with_request("GET", "/resource")
         .with_query_parameter("key", "value")
         .will_respond_with(200)
@@ -148,7 +151,8 @@ async def test_query_mismatch_different_keys(pact: Pact) -> None:
 @pytest.mark.asyncio
 async def test_header_mismatch(pact: Pact) -> None:
     (
-        pact.upon_receiving("a header mismatch")
+        pact
+        .upon_receiving("a header mismatch")
         .with_request("GET", "/")
         .with_header("X-Foo", "expected")
         .will_respond_with(200)
@@ -183,7 +187,8 @@ async def test_header_mismatch(pact: Pact) -> None:
 @pytest.mark.asyncio
 async def test_body_type_mismatch(pact: Pact) -> None:
     (
-        pact.upon_receiving("a body type mismatch")
+        pact
+        .upon_receiving("a body type mismatch")
         .with_request("POST", "/")
         .with_body("{}", "application/json")
         .will_respond_with(200)
@@ -228,7 +233,8 @@ async def test_body_type_mismatch(pact: Pact) -> None:
 @pytest.mark.asyncio
 async def test_body_mismatch(pact: Pact) -> None:
     (
-        pact.upon_receiving("a body mismatch")
+        pact
+        .upon_receiving("a body mismatch")
         .with_request("POST", "/")
         .with_body("expected")
         .will_respond_with(200)

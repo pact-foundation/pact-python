@@ -814,7 +814,48 @@ class Mismatches: ...
 class MismatchesIterator: ...
 
 
-class Pact: ...
+class Pact:
+    def __init__(self, ptr: cffi.FFI.CData, *, owned: bool = True) -> None:
+        """
+        Wrapper for a Pact model pointer.
+
+        Args:
+            ptr:
+                CFFI pointer to `struct Pact *`.
+
+            owned:
+                Whether the pact is owned by something else or not. This
+                determines whether the pact should be freed when the Python
+                object is destroyed.
+
+        Raises:
+            TypeError:
+                If `ptr` is not a `struct Pact *`.
+        """
+        if ffi.typeof(ptr).cname != "struct Pact *":
+            msg = f"ptr must be a struct Pact, got {ffi.typeof(ptr).cname}"
+            raise TypeError(msg)
+        self._ptr = ptr
+        self._owned = owned
+
+    def __str__(self) -> str:
+        """
+        Nice string representation.
+        """
+        return "Pact"
+
+    def __repr__(self) -> str:
+        """
+        Debugging representation.
+        """
+        return f"Pact({self._ptr!r})"
+
+    def __del__(self) -> None:
+        """
+        Destructor for the Pact.
+        """
+        if not self._owned:
+            pact_model_delete(self)
 
 
 class PactAsyncMessageIterator:
@@ -910,6 +951,19 @@ class PactHandle:
         """
         return f"PactHandle({self._ref!r})"
 
+    def pointer(self) -> Pact:
+        """
+        Unwrap the handle to access the underlying Pact model.
+
+        This function clones the underlying structure, therefore any
+        modification to the original handle will not be reflected in the
+        returned Pact model, and vice versa.
+
+        Returns:
+            The underlying Pact model.
+        """
+        return pact_handle_to_pointer(self)
+
 
 class PactServerHandle:
     """
@@ -1000,8 +1054,38 @@ class PactInteraction:
         """
         Destructor for the Pact Interaction.
         """
-        if self._owned:
-            pass  # pact_interaction_delete not implemented yet
+        if not self._owned:
+            pact_interaction_delete(self)
+
+    def as_synchronous_http(self) -> SynchronousHttp:
+        """
+        Cast this interaction as a synchronous HTTP interaction.
+
+        Raises:
+            TypeError:
+                If the interaction is not a synchronous HTTP interaction.
+        """
+        return pact_interaction_as_synchronous_http(self)
+
+    def as_asynchronous_message(self) -> AsynchronousMessage:
+        """
+        Cast this interaction as an asynchronous message interaction.
+
+        Raises:
+            TypeError:
+                If the interaction is not an asynchronous message interaction.
+        """
+        return pact_interaction_as_asynchronous_message(self)
+
+    def as_synchronous_message(self) -> SynchronousMessage:
+        """
+        Cast this interaction as a synchronous message interaction.
+
+        Raises:
+            TypeError:
+                If the interaction is not a synchronous message interaction.
+        """
+        return pact_interaction_as_synchronous_message(self)
 
 
 class PactInteractionIterator:
@@ -2446,7 +2530,7 @@ def pact_model_delete(pact: Pact) -> None:
 
     [Rust `pactffi_pact_model_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_model_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_model_delete(pact._ptr)
 
 
 def pact_model_interaction_iterator(pact: Pact) -> PactInteractionIterator:
@@ -2456,17 +2540,20 @@ def pact_model_interaction_iterator(pact: Pact) -> PactInteractionIterator:
     [Rust
     `pactffi_pact_model_interaction_iterator`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_model_interaction_iterator)
 
-    The iterator will have to be deleted using the
-    `pactffi_pact_interaction_iter_delete` function. The iterator will contain a
-    copy of the interactions, so it will not be affected but mutations to the
-    Pact model and will still function if the Pact model is deleted.
+    The iterator will contain a copy of the interactions, so it will not be
+    affected but mutations to the Pact model and will still function if the Pact
+    model is deleted.
 
-    # Safety This function is safe as long as the Pact pointer is a valid
-    pointer.
+    Args:
+        pact:
+            The Pact model.
 
-    # Errors On any error, this function will return a NULL pointer.
+    Returns:
+        An iterator over all interactions in the Pact.
     """
-    raise NotImplementedError
+    return PactInteractionIterator(
+        lib.pactffi_pact_model_interaction_iterator(pact._ptr)
+    )
 
 
 def pact_spec_version(pact: Pact) -> PactSpecification:
@@ -2484,7 +2571,7 @@ def pact_interaction_delete(interaction: PactInteraction) -> None:
 
     [Rust `pactffi_pact_interaction_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_delete)
     """
-    raise NotImplementedError
+    lib.pactffi_pact_interaction_delete(interaction._ptr)
 
 
 def async_message_new() -> AsynchronousMessage:
@@ -3621,7 +3708,7 @@ def sync_http_delete(interaction: SynchronousHttp) -> None:
     [Rust
     `pactffi_sync_http_delete`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_sync_http_delete)
     """
-    lib.pactffi_sync_http_delete(interaction)
+    lib.pactffi_sync_http_delete(interaction._ptr)
 
 
 def sync_http_get_request(interaction: SynchronousHttp) -> HttpRequest:
@@ -3980,70 +4067,85 @@ def sync_http_get_provider_state_iter(
 def pact_interaction_as_synchronous_http(
     interaction: PactInteraction,
 ) -> SynchronousHttp:
-    r"""
-    Casts this interaction to a `SynchronousHttp` interaction.
-
-    Returns a NULL pointer if the interaction can not be casted to a
-    `SynchronousHttp` interaction (for instance, it is a message interaction).
-    The returned pointer must be freed with `pactffi_sync_http_delete` when no
-    longer required.
-
-    [Rust
-    `pactffi_pact_interaction_as_synchronous_http`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_http)
-
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
-
-    # Errors On any error, this function will return a NULL pointer.
     """
-    raise NotImplementedError
+    Cast this interaction to a `SynchronousHttp` interaction.
+
+    [Rust `pactffi_pact_interaction_as_synchronous_http`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_http)
+
+    Args:
+        interaction:
+            The interaction to cast.
+
+    Returns:
+        The interaction cast as a `SynchronousHttp`.
+
+    Raises:
+        TypeError:
+            If the interaction cannot be cast to a `SynchronousHttp`
+            interaction.
+    """
+    ptr = lib.pactffi_pact_interaction_as_synchronous_http(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Interaction is not a SynchronousHttp interaction"
+        raise TypeError(msg)
+    return SynchronousHttp(ptr, owned=False)
 
 
 def pact_interaction_as_asynchronous_message(
     interaction: PactInteraction,
 ) -> AsynchronousMessage:
     """
-    Casts this interaction to a `AsynchronousMessage` interaction.
-
-    Returns a NULL pointer if the interaction can not be casted to a
-    `AsynchronousMessage` interaction (for instance, it is a http interaction).
-    The returned pointer must be freed with `pactffi_async_message_delete` when
-    no longer required.
-
-    [Rust
-    `pactffi_pact_interaction_as_asynchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_asynchronous_message)
+    Cast this interaction to an `AsynchronousMessage` interaction.
 
     Note that if the interaction is a V3 `Message`, it will be converted to a V4
     `AsynchronousMessage` before being returned.
 
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
+    [Rust `pactffi_pact_interaction_as_asynchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_asynchronous_message)
 
-    # Errors On any error, this function will return a NULL pointer.
+    Args:
+        interaction:
+            The interaction to cast.
+
+    Returns:
+        The interaction cast as an `AsynchronousMessage`.
+
+    Raises:
+        TypeError:
+            If the interaction cannot be cast to an `AsynchronousMessage`
+            interaction.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_interaction_as_asynchronous_message(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Interaction is not an AsynchronousMessage interaction"
+        raise TypeError(msg)
+    return AsynchronousMessage(ptr, owned=False)
 
 
 def pact_interaction_as_synchronous_message(
     interaction: PactInteraction,
 ) -> SynchronousMessage:
     """
-    Casts this interaction to a `SynchronousMessage` interaction.
+    Cast this interaction to a `SynchronousMessage` interaction.
 
-    Returns a NULL pointer if the interaction can not be casted to a
-    `SynchronousMessage` interaction (for instance, it is a http interaction).
-    The returned pointer must be freed with `pactffi_sync_message_delete` when
-    no longer required.
+    [Rust `pactffi_pact_interaction_as_synchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_message)
 
-    [Rust
-    `pactffi_pact_interaction_as_synchronous_message`](https://docs.rs/pact_ffi/0.4.28/pact_ffi/?search=pactffi_pact_interaction_as_synchronous_message)
+    Args:
+        interaction:
+            The interaction to cast.
 
-    # Safety This function is safe as long as the interaction pointer is a valid
-    pointer.
+    Returns:
+        The interaction cast as a `SynchronousMessage`.
 
-    # Errors On any error, this function will return a NULL pointer.
+    Raises:
+        TypeError:
+            If the interaction cannot be cast to a `SynchronousMessage`
+            interaction.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_interaction_as_synchronous_message(interaction._ptr)
+    if ptr == ffi.NULL:
+        msg = "Interaction is not a SynchronousMessage interaction"
+        raise TypeError(msg)
+    return SynchronousMessage(ptr, owned=False)
 
 
 def pact_async_message_iter_next(iter: PactAsyncMessageIterator) -> AsynchronousMessage:
@@ -5413,15 +5515,27 @@ def new_pact(consumer_name: str, provider_name: str) -> PactHandle:
 
 def pact_handle_to_pointer(pact: PactHandle) -> Pact:
     """
-    Unwraps a Pact handle to the underlying Pact.
+    Copy a Pact handle to a raw Pact.
 
-    The Pact model which has been cloned from the Pact handle's inner Pact
-    model.
+    The underlying data is cloned, therefore, any changes made to the original
+    Pact handle will not be reflected in the Pact model, and vice versa.
 
-    The returned Pact model must be freed with the `pactffi_pact_model_delete`
-    function when no longer needed.
+    Args:
+        pact:
+            The Pact handle to unwrap.
+
+    Returns:
+        The underlying Pact model pointer.
+
+    Raises:
+        RuntimeError:
+            If the unwrap operation fails.
     """
-    raise NotImplementedError
+    ptr = lib.pactffi_pact_handle_to_pointer(pact._ref)
+    if ptr == ffi.NULL:
+        msg = f"Failed to unwrap pact handle: {pact}"
+        raise RuntimeError(msg)
+    return Pact(ptr, owned=False)
 
 
 def new_interaction(pact: PactHandle, description: str) -> InteractionHandle:
@@ -6338,7 +6452,7 @@ def with_binary_body(
         interaction._ref,
         part.value,
         content_type.encode("utf-8") if content_type else ffi.NULL,
-        body if body else ffi.NULL,
+        body or ffi.NULL,
         len(body) if body else 0,
     )
     if not success:
@@ -6397,7 +6511,7 @@ def with_binary_file(
         interaction._ref,
         part.value,
         content_type.encode("utf-8") if content_type else ffi.NULL,
-        body if body else ffi.NULL,
+        body or ffi.NULL,
         len(body) if body else 0,
     )
     if not success:

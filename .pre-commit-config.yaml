@@ -22,24 +22,24 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/google/yamlfmt
-    rev: v0.20.0
+    rev: v0.21.0
     hooks:
       - id: yamlfmt
 
   - repo: https://gitlab.com/bmares/check-json5
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       # As above, this only checks for valid JSON files. This implementation
       # allows for comments within JSON files.
       - id: check-json5
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: v2.3.8
+    rev: v2.4.4
     hooks:
       - id: biome-check
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.9
+    rev: v0.15.2
     hooks:
       - id: ruff-check
         exclude: |
@@ -56,17 +56,17 @@ repos:
           )$
 
   - repo: https://github.com/crate-ci/committed
-    rev: v1.1.8
+    rev: v1.1.11
     hooks:
       - id: committed
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.20.0
+    rev: v0.21.0
     hooks:
       - id: markdownlint-cli2
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.40.0
+    rev: v1.43.5
     hooks:
       - id: typos
         exclude: |
