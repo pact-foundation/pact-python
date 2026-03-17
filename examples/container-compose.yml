@@ -1,6 +1,4 @@
 ---
-version: '3.9'
-
 services:
   broker:
     image: pactfoundation/pact-broker:latest-multi
