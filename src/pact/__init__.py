@@ -26,7 +26,7 @@ These functions are defined in [`pact.pact`][pact] and
 For flexible contract definitions, use the matching and generation modules:
 
 ```python
-from pact import match, generate
+from pact import match, generate, xml
 
 # Import modules, not individual functions
 # Use functions via module namespace to avoid shadowing built-ins
@@ -37,6 +37,15 @@ created_at = match.datetime()
 # Generators work similarly
 response_id = generate.uuid()
 score = generate.float(precision=2)
+
+# XML bodies use the xml module
+response = xml.body(
+    xml.element(
+        "user",
+        xml.element("id", match.int(123)),
+        xml.element("name", match.str("Alice")),
+    )
+)
 ```
 
 The functions within these modules are designed to align with a number of
@@ -102,6 +111,7 @@ For more detailed usage examples, see the
 
 from __future__ import annotations
 
+from pact import xml as xml
 from pact.__version__ import __version__, __version_tuple__
 from pact.pact import Pact
 from pact.verifier import Verifier
@@ -115,4 +125,5 @@ __all__ = [
     "Verifier",
     "__version__",
     "__version_tuple__",
+    "xml",
 ]
