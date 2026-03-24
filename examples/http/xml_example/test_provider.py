@@ -49,9 +49,11 @@ def app_server() -> str:
         daemon=True,
     ).start()
     for _ in range(50):
-        with contextlib.suppress(ConnectionRefusedError, OSError):
-            with socket.create_connection((hostname, port), timeout=0.1):
-                break
+        with (
+            contextlib.suppress(ConnectionRefusedError, OSError),
+            socket.create_connection((hostname, port), timeout=0.1),
+        ):
+            break
         time.sleep(0.1)
     return f"http://{hostname}:{port}"
 
