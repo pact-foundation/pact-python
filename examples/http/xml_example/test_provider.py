@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import socket
+import time
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -46,6 +48,11 @@ def app_server() -> str:
         kwargs={"host": hostname, "port": port},
         daemon=True,
     ).start()
+    for _ in range(50):
+        with contextlib.suppress(ConnectionRefusedError, OSError):
+            with socket.create_connection((hostname, port), timeout=0.1):
+                break
+        time.sleep(0.1)
     return f"http://{hostname}:{port}"
 
 
