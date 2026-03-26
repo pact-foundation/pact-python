@@ -105,6 +105,6 @@ class UserClient:
         response.raise_for_status()
         root = ET.fromstring(response.text)  # noqa: S314
         return User(
-            id=int(root.findtext("id")),
-            name=root.findtext("name"),
+            id=int(root.findtext("id") or 0),
+            name=root.findtext("name") or "",
         )
