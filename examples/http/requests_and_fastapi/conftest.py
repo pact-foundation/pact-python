@@ -12,6 +12,7 @@ after the examples have been run.
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 
 import pytest
@@ -32,4 +33,6 @@ def _setup_pact_logging() -> None:
     """
     Set up logging for the pact package.
     """
-    pact_ffi.log_to_stderr("INFO")
+    # If the logger is already configured, this will raise a RuntimeError.
+    with contextlib.suppress(RuntimeError):
+        pact_ffi.log_to_stderr("INFO")
