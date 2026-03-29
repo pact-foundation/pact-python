@@ -96,18 +96,18 @@ jobs:
         run: uv tool install hatch
 
       - name: Run tests
-        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
+        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-tests.xml
 
       - name: Run tests (v2)
-        run: hatch run v2-test.py${{ matrix.python-version }}:test --junit-xml=v2-junit.xml
+        run: hatch run v2-test.py${{ matrix.python-version }}:test --junit-xml=v2-junit.xml --cov-report=xml:coverage-v2.xml
 
       - name: Run tests (CLI)
         working-directory: pact-python-cli
-        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
+        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-cli.xml
 
       - name: Run tests (FFI)
         working-directory: pact-python-ffi
-        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml
+        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-ffi.xml
 
       - name: Upload coverage
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
@@ -115,6 +115,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: tests
+          files: coverage-tests.xml,coverage-v2.xml,pact-python-cli/coverage-cli.xml,pact-python-ffi/coverage-ffi.xml
 
       - name: Upload test results
         if: ${{ !cancelled() }}
@@ -166,7 +167,7 @@ jobs:
           while IFS= read -r -d $'\0' file <&3; do
             cd "$(dirname "$file")"
             echo "Running example in $(pwd)"
-            uv run --python ${{ matrix.python-version }} --group test pytest --junit-xml=junit.xml
+            uv run --python ${{ matrix.python-version }} --group test --with pytest-cov pytest --junit-xml=junit.xml --cov=pact --cov-report=xml:coverage-example.xml
           done 3< <(find "$(pwd)/examples" -name pyproject.toml -print0)
 
       - name: Upload coverage
@@ -175,6 +176,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: examples
+          files: examples/**/coverage-example.xml
 
       - name: Upload test results
         if: ${{ !cancelled() }}
