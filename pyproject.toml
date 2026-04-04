@@ -125,7 +125,7 @@ test = [
 types = [
   "mypy==1.20.0",
   "types-grpcio~=1.0",
-  "types-protobuf~=6.0",
+  "types-protobuf~=7.34",
   "types-requests~=2.0",
   # This is required for Python 3.10 support
   "typing-extensions~=4.0",
