@@ -6,8 +6,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pact_ffi
 import pytest
+
+import pact_ffi
 
 EXAMPLE_DIR = Path(__file__).parent.resolve()
 

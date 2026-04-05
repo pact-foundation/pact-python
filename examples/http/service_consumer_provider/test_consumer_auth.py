@@ -40,7 +40,12 @@ def pact(pacts_path: Path) -> Generator[Pact, None, None]:
         pytest.param("wrong-password", False, id="invalid"),
     ],
 )
-def test_validate_credentials(pact: Pact, password: str, expected_valid: bool) -> None:
+def test_validate_credentials(
+    pact: Pact,
+    password: str,
+    *,
+    expected_valid: bool,
+) -> None:
     """
     Verify user-service auth client contract.
 

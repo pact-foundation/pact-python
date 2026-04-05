@@ -30,7 +30,7 @@ class StubAuthVerifier:
     Test verifier used by provider state handlers.
     """
 
-    def __init__(self, valid: bool) -> None:
+    def __init__(self, *, valid: bool) -> None:
         """
         Create a stub verifier.
 

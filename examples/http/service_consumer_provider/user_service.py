@@ -90,7 +90,21 @@ class CreateAccountResponse(BaseModel):
 
 
 ACCOUNT_STORE = InMemoryAccountStore()
-AUTH_VERIFIER: CredentialsVerifier = AuthClient("http://auth-service")
+
+
+class _ServiceState:
+    """
+    Mutable state used by provider-state handlers in tests.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialise default collaborators.
+        """
+        self.auth_verifier: CredentialsVerifier = AuthClient("http://auth-service")
+
+
+SERVICE_STATE = _ServiceState()
 
 app = FastAPI()
 
@@ -103,8 +117,7 @@ def set_auth_verifier(verifier: CredentialsVerifier) -> None:
         verifier:
             New verifier implementation.
     """
-    global AUTH_VERIFIER
-    AUTH_VERIFIER = verifier
+    SERVICE_STATE.auth_verifier = verifier
 
 
 def reset_state() -> None:
@@ -130,7 +143,10 @@ async def create_account(payload: CreateAccountRequest) -> CreateAccountResponse
         HTTPException:
             If credentials are invalid.
     """
-    if not AUTH_VERIFIER.validate_credentials(payload.username, payload.password):
+    if not SERVICE_STATE.auth_verifier.validate_credentials(
+        payload.username,
+        payload.password,
+    ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     account = ACCOUNT_STORE.create(payload.username)
