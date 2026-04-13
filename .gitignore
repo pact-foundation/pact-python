@@ -11,6 +11,9 @@ src/pact/__version__.py
 # Wheels from CIBuildWheel
 wheelhouse/
 
+# Git worktrees
+.worktrees/
+
 ################################################################################
 ## Standard Templates
 ################################################################################
