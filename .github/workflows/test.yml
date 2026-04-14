@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 env:
-  STABLE_PYTHON_VERSION: '3.13'
+  STABLE_PYTHON_VERSION: '3.10'
   PYTEST_ADDOPTS: --color=yes
   HATCH_VERBOSE: '1'
   FORCE_COLOR: '1'
