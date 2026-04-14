@@ -1,5 +1,47 @@
 """
-FastAPI service that acts as both a consumer and a provider.
+FastAPI service acting as both a Pact consumer and a Pact provider.
+
+This module is the centrepiece of the example. `user-service` sits in the middle
+of a two-hop request path:
+
+```text
+frontend-web  →  user-service  →  auth-service
+```
+
+This means it plays two Pact roles simultaneously:
+
+- **Provider** of the `POST /accounts` endpoint consumed by `frontend-web`. The
+  provider verification test lives in
+  [`test_provider`][examples.http.service_consumer_provider.test_provider].
+
+- **Consumer** of `auth-service`'s `POST /auth/validate` endpoint. The consumer
+  contract test lives in
+  [`test_consumer_auth`][examples.http.service_consumer_provider.test_consumer_auth].
+
+## Testability design
+
+Provider verification requires the service to be started as a real HTTP server.
+To avoid needing a real `auth-service` during those tests, this module uses the
+[`CredentialsVerifier`][examples.http.service_consumer_provider.user_service.CredentialsVerifier]
+protocol as a seam. In production the seam is filled by
+[`AuthClient`][examples.http.service_consumer_provider.auth_client.AuthClient];
+in tests it is replaced with a
+[`StubAuthVerifier`][examples.http.service_consumer_provider.test_provider.StubAuthVerifier]
+via
+[`set_auth_verifier`][examples.http.service_consumer_provider.user_service.set_auth_verifier].
+
+This avoids mocking at the HTTP level. The real FastAPI application runs, and
+only the collaborator that calls `auth-service` is swapped out.
+
+## Module-level state
+
+[`SERVICE_STATE`][examples.http.service_consumer_provider.user_service.SERVICE_STATE]
+and
+[`ACCOUNT_STORE`][examples.http.service_consumer_provider.user_service.ACCOUNT_STORE]
+are intentional module-level globals. Because provider state handlers in Pact
+run in the same process as the application, these globals are the simplest way
+for the test harness to reconfigure the service between interactions without an
+additional HTTP endpoint.
 """
 
 from __future__ import annotations

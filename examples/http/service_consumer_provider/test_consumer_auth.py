@@ -1,5 +1,21 @@
 """
-Consumer contract tests for user-service -> auth-service.
+Consumer contract tests for `user-service` → `auth-service`.
+
+This module defines the contract that
+[`user_service`][examples.http.service_consumer_provider.user_service] (acting
+as a *consumer*) expects `auth-service` (the *provider*) to honour. When these
+tests run, Pact starts a mock server in place of `auth-service` and verifies
+that
+[`AuthClient`][examples.http.service_consumer_provider.auth_client.AuthClient]
+makes exactly the requests specified here and can handle the responses.
+
+The generated Pact file (written to the `pacts/` directory) would normally be
+published to a Pact Broker so that the `auth-service` team can run provider
+verification against it. In this self-contained example the file is consumed
+locally by the provider verification tests.
+
+For background on consumer testing, see the [Pact consumer test
+guide](https://docs.pact.io/5-minute-getting-started-guide#scope-of-a-consumer-pact-test).
 """
 
 from __future__ import annotations
@@ -19,14 +35,21 @@ if TYPE_CHECKING:
 @pytest.fixture
 def pact(pacts_path: Path) -> Generator[Pact, None, None]:
     """
-    Pact fixture for user-service as consumer.
+    Pact fixture for `user-service` as consumer of `auth-service`.
+
+    Creates a V4 Pact between `user-service` (consumer) and `auth-service`
+    (provider). Each test in this module can define one or more expected
+    interactions on the returned `Pact` object; the mock provider will validate
+    that the consumer code sends exactly those requests and handles the
+    responses correctly. After the test, the contract is written to *pacts_path*
+    for use in provider verification.
 
     Args:
         pacts_path:
-            Directory where Pact files are written.
+            Directory where the generated Pact file is written.
 
     Yields:
-        Pact configured for user-service -> auth-service.
+        Pact configured for `user-service` → `auth-service`.
     """
     pact = Pact("user-service", "auth-service").with_specification("V4")
     yield pact
@@ -47,17 +70,30 @@ def test_validate_credentials(
     expected_valid: bool,
 ) -> None:
     """
-    Verify user-service auth client contract.
+    Verify the `AuthClient` contract for both valid and invalid credentials.
+
+    This parametrised test covers two interactions in a single contract:
+
+    - **Valid credentials**: `auth-service` responds `{"valid": true}`, and
+      [`AuthClient.validate_credentials`][examples.http.service_consumer_provider.auth_client.AuthClient.validate_credentials]
+      returns `True`.
+    - **Invalid credentials**: `auth-service` responds `{"valid": false}`, and
+      `AuthClient.validate_credentials` returns `False`.
+
+    Both cases map to the same endpoint (`POST /auth/validate`) but are modelled
+    as separate Pact interactions with different provider states. This ensures
+    that `auth-service` must support both outcomes, not just the happy path.
 
     Args:
         pact:
-            Pact fixture.
+            Pact fixture for `user-service` → `auth-service`.
 
         password:
-            Password sent to auth-service.
+            Password sent to `auth-service`; determines which provider state
+            (and therefore which mock response) is used.
 
         expected_valid:
-            Expected validation result.
+            The validation result the consumer expects to receive and act on.
     """
     state = (
         "user credentials are valid"
