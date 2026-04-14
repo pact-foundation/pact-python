@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  STABLE_PYTHON_VERSION: '3.13'
+  STABLE_PYTHON_VERSION: '3.10'
   FORCE_COLOR: '1'
   HATCH_VERBOSE: '1'
 
