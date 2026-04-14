@@ -1,0 +1,280 @@
+---
+# Release workflow for pact-python-cli (CLI wrapper package).
+#
+# This package tracks the upstream pact-foundation/pact-standalone project and
+# versions itself as `{upstream_version}.{N}` (e.g. `2.4.0.0`). The release
+# lifecycle runs in three stages:
+#
+# Stage 1: Prepare (trigger: push to main)
+#   The `prepare` job runs `scripts/release.py prepare cli`, which fetches the
+#   latest `v*` release from pact-foundation/pact-standalone, computes the next
+#   wrapper version, updates pyproject.toml and CHANGELOG.md, and force-pushes
+#   those changes to the fixed branch `release/pact-python-cli`. It then
+#   creates (or updates the title and body of) the release PR targeting main.
+#
+# Stage 2: Tag (trigger: release PR merged → `closed` event, merged == true)
+#   When the release PR on `release/pact-python-cli` is merged, the `tag` job
+#   runs `scripts/release.py tag cli`, which reads the version from
+#   pyproject.toml and pushes a git tag of the form `pact-python-cli/X.Y.Z.N`.
+#
+# Stage 3: Publish (trigger: tag push matching `pact-python-cli/*`)
+#   The `build-sdist`, `build-wheels`, and `publish` jobs build the full wheel
+#   matrix (macOS/Linux/Windows, multiple architectures), create a GitHub
+#   release with the changelog, and publish all artifacts to PyPI.
+#
+# Additional: `build-sdist` and `build-wheels` also run on open/updated release
+# PRs (not closed) to verify builds before merging.
+#
+# The `closed` PR type is listed in the trigger so that Stage 2 fires on merge.
+# All jobs except `tag` guard against closed-but-not-merged events with
+# explicit `if` conditions.
+name: release cli
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - pact-python-cli/*
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+
+env:
+  # Bump to 3.11 to access tomllib, otherwise, we would use the oldest supported Python version
+  STABLE_PYTHON_VERSION: '311'
+  HATCH_VERBOSE: '1'
+  FORCE_COLOR: '1'
+  CIBW_BUILD_FRONTEND: build
+
+jobs:
+  complete:
+    name: Release CLI completion check
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+      - tag
+      - build-sdist
+      - build-wheels
+      - publish
+    steps:
+      - name: Failed
+        run: exit 1
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+
+  prepare:
+    name: Update CLI release PR
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: release-pr
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          # Need full history for git-cliff to determine the next version and
+          # generate the changelog
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install git-cliff and typos
+        uses: taiki-e/install-action@0abfcd587b70a713fdaa7fb502c885e2112acb15  # v2.75.7
+        with:
+          tool: git-cliff,typos
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57  # v8.0.0
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Update release PR
+        run: uv run python scripts/release.py prepare cli
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  tag:
+    name: Create CLI release tag
+    if: >-
+      github.event_name == 'pull_request' && github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name,
+      'release') && github.event.pull_request.head.ref == 'release/pact-python-cli'
+    runs-on: ubuntu-latest
+    environment:
+      name: release-pr
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          ref: main
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57  # v8.0.0
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Create and push release tag
+        run: uv run python scripts/release.py tag cli
+        env:
+          # Require GH_TOKEN (PAT) instead of GITHUB_TOKEN so that the PR can
+          # itself trigger workflows
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build-sdist:
+    name: Build CLI source distribution
+    # Prepare the wheels for upload, and also verify that the build works on
+    # release PRs before merging.
+    if: >-
+      (
+        github.event_name == 'push' &&
+        startsWith(github.ref, 'refs/tags/pact-python-cli/')
+      ) || (
+        github.event_name == 'pull_request' &&
+        github.event.action != 'closed' &&
+        github.event.pull_request.head.ref == 'release/pact-python-cli'
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57  # v8.0.0
+
+      - name: Install Python
+        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
+
+      - name: Install hatch
+        run: uv tool install hatch
+
+      - name: Build source distribution
+        working-directory: pact-python-cli
+        run: hatch build --target sdist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: wheels-sdist
+          path: pact-python-cli/dist/*.tar*
+          if-no-files-found: error
+          compression-level: 0
+
+  build-wheels:
+    name: Build CLI wheel (release) on ${{ matrix.os }}
+    # Prepare the wheels for upload, and also verify that the build works on
+    # release PRs before merging.
+    if: >-
+      (
+        github.event_name == 'push' &&
+        startsWith(github.ref, 'refs/tags/pact-python-cli/')
+      ) || (
+        github.event_name == 'pull_request' &&
+        github.event.action != 'closed' &&
+        github.event.pull_request.head.ref == 'release/pact-python-cli'
+      )
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15-intel
+          - macos-latest
+          - ubuntu-24.04-arm
+          - ubuntu-latest
+          - windows-11-arm
+          - windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084  # v3.4.1
+        with:
+          package-dir: pact-python-cli
+        env:
+          # Only target the oldest supported Python version, as the CLI wrapper
+          # is thin and should be compatible with future Python versions.
+          CIBW_BUILD: cp${{ env.STABLE_PYTHON_VERSION }}-*
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    name: Publish CLI wheels and sdist
+    if: >-
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/pact-python-cli/')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pact-python-cli
+    needs:
+      - build-sdist
+      - build-wheels
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Extract release changelog
+        run: |
+          version="${{ github.ref_name }}"
+          version="${version#*/}"
+          out="${{ runner.temp }}/release-changelog.md"
+          awk -v ver="$version" '
+            /^## / { if (found) exit; if (index($0, ver)) found=1; next }
+            found { print }
+          ' pact-python-cli/CHANGELOG.md > "$out"
+          if [ ! -s "$out" ]; then
+            printf '> [!WARNING]\n>\n> No changelog entry found for %s.\n' "$version" > "$out"
+          fi
+
+      - name: Find previous release tag
+        id: previous-tag
+        run: |
+          git fetch --tags --quiet
+          previous=$(git tag --list 'pact-python-cli/*' --sort=-version:refname \
+            | grep -v "^${{ github.ref_name }}$" | head -1)
+          echo "tag=${previous}" >> "$GITHUB_OUTPUT"
+
+      - name: Download wheels and sdist
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          path: wheelhouse
+          merge-multiple: true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        with:
+          files: wheelhouse/*
+          body_path: ${{ runner.temp }}/release-changelog.md
+          previous_tag: ${{ steps.previous-tag.outputs.tag }}
+          draft: false
+          prerelease: false
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # v1.14.0
+        with:
+          skip-existing: true
+          packages-dir: wheelhouse
