@@ -124,13 +124,24 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             raise ValueError(msg)
 
         try:
-            build_data["force_include"] = self._install_ruby_cli(cli_version)
-            self._install_rust_cli()
+            force_include = self._install_ruby_cli(cli_version)
+        except UnsupportedPlatformError as err:
+            # The Ruby standalone is deprecated and not available on all
+            # platforms (e.g. Windows ARM). Warn and continue rather than
+            # failing the build.
+            self.app.display_warning(
+                f"Pact Ruby standalone CLI not available for {err.platform}; skipping."
+            )
+            force_include = {}
+
+        try:
+            force_include = {**force_include, **self._install_rust_cli()}
         except UnsupportedPlatformError as err:
             msg = f"Pact CLI is not available for {err.platform}."
             self.app.display_error(msg)
             raise
 
+        build_data["force_include"] = force_include
         build_data["tag"] = self._infer_tag()
 
     def _sys_tag_platform(self) -> str:
@@ -162,7 +173,6 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         self._extract(artefact)
         return {
             str(PKG_DIR / "bin"): "pact_cli/bin",
-            # TODO(epoch-transition): Remove lib/ when standalone dropped  # noqa: TD003
             str(PKG_DIR / "lib"): "pact_cli/lib",
         }
 
@@ -187,6 +197,9 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             os_name = "linux"
             ext = "tar.gz"
         elif platform.startswith("win"):
+            if platform.endswith(("arm64", "aarch64")):
+                # The Ruby standalone has no Windows ARM release.
+                raise UnsupportedPlatformError(platform)
             os_name = "windows"
             ext = "zip"
         else:
@@ -255,7 +268,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             ext=ext,
         )
 
-    def _install_rust_cli(self) -> None:
+    def _install_rust_cli(self) -> Mapping[str, str]:
         """
         Install the Rust pact binary from pact-cli.
 
@@ -274,6 +287,8 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         shutil.copy2(artefact, dest)
         if sys.platform != "win32":
             dest.chmod(0o755)
+
+        return {str(PKG_DIR / "bin"): "pact_cli/bin"}
 
     def _extract(self, artefact: Path) -> None:
         """
