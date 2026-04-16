@@ -108,7 +108,7 @@ jobs:
     name: Create release tag
     if: >-
       github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.head.ref
-      == 'release/pact-python' && contains(github.event.pull_request.labels.*.name, 'release')
+      == 'release/pact-python'
     runs-on: ubuntu-latest
     environment:
       name: release-pr
