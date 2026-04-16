@@ -41,7 +41,7 @@ dependencies = ["cffi~=2.0"]
   "Repository" = "https://github.com/pact-foundation/pact-python"
 
 [dependency-groups]
-dev = ["ruff==0.15.10", { include-group = "test" }, { include-group = "types" }]
+dev = ["ruff==0.15.11", { include-group = "test" }, { include-group = "types" }]
 test = ["pytest~=9.0", "pytest-cov~=7.0"]
 types = ["mypy==1.20.1", "typing-extensions~=4.0"]
 
