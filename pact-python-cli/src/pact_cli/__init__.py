@@ -131,18 +131,15 @@ def _exec() -> None:
                 flush=True,
             )
 
-    if not _USE_SYSTEM_BINS:
-        executable = _find_executable(command)
-    else:
-        # To avoid finding the same executable, we have to process the PATH
-        # variable and remove the current executable's directory.
-        script_dir = Path(sys.argv[0]).parent.resolve()
-        os.environ["PATH"] = os.pathsep.join(
-            p
-            for p in os.getenv("PATH", "").split(os.pathsep)
-            if Path(p).resolve() != script_dir
-        )
-        executable = _find_executable(command)
+    # To avoid finding the same executable, remove the current entry point's
+    # directory from PATH before searching.
+    script_dir = Path(sys.argv[0]).parent.resolve()
+    os.environ["PATH"] = os.pathsep.join(
+        p
+        for p in os.getenv("PATH", "").split(os.pathsep)
+        if Path(p).resolve() != script_dir
+    )
+    executable = _find_executable(command)
 
     if not executable:
         print(f"Command '{command}' not found.", file=sys.stderr)  # noqa: T201
