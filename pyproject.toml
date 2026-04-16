@@ -1,11 +1,12 @@
 #:schema https://www.schemastore.org/pyproject.json
+
 [project]
+name = "pact-python"
+version = "3.2.1"
 description = "Tool for creating and verifying consumer-driven contracts using the Pact framework."
-name        = "pact-python"
-version     = "3.2.1"
+readme = "README.md"
+license = { file = "LICENSE" }
 keywords = ["contract-testing", "pact", "testing"]
-license  = { file = "LICENSE" }
-readme   = "README.md"
 
 authors = [
   { name = "Joshua Ellis", email = "josh@jpellis.me" },
@@ -21,13 +22,13 @@ classifiers = [
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python",
   "Topic :: Software Development :: Testing",
 ]
 
@@ -41,17 +42,17 @@ requires-python = ">=3.10"
 dependencies = [
   # Pact dependencies
   "pact-python-ffi~=0.4.0",
+  "typing-extensions~=4.0 ; python_version < '3.13'",
   # External dependencies
   "yarl~=1.0",
-  "typing-extensions~=4.0 ; python_version < '3.13'",
 ]
 
   [project.urls]
-  changelog     = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
+  changelog = "https://github.com/pact-foundation/pact-python/blob/main/CHANGELOG.md"
   documentation = "https://pact-foundation.github.io/pact-python/"
-  homepage      = "https://pact.io"
-  issues        = "https://github.com/pact-foundation/pact-python/issues"
-  source        = "https://github.com/pact-foundation/pact-python"
+  homepage = "https://pact.io"
+  issues = "https://github.com/pact-foundation/pact-python/issues"
+  source = "https://github.com/pact-foundation/pact-python"
 
   [project.scripts]
   pact-verifier = "pact.v2.cli.verify:main"
@@ -75,10 +76,10 @@ dev = [
   "ruff==0.15.10",
   { include-group = "docs" },
   { include-group = "example" },
-  { include-group = "test" },
-  { include-group = "types" },
   { include-group = "example-v2" },
+  { include-group = "test" },
   { include-group = "test-v2" },
+  { include-group = "types" },
 ]
 
 docs = [
@@ -86,13 +87,13 @@ docs = [
   "griffe-inherited-method-crossrefs==0.0.1.4",
   "griffe-pydantic==1.3.1",
   "griffe-warnings-deprecated==1.1.1",
+  "mkdocs==1.6.1",
   "mkdocs-gen-files==0.6.1",
   "mkdocs-github-admonitions-plugin==0.1.1",
   "mkdocs-literate-nav==0.6.3",
   "mkdocs-llmstxt==0.5.0",
   "mkdocs-material[recommended,git,imaging]==9.7.6",
   "mkdocs-section-index==0.3.11",
-  "mkdocs==1.6.1",
   "mkdocstrings[python]==1.0.4",
   "pathspec==1.0.4",
 ]
@@ -102,9 +103,9 @@ example = [
   "grpcio~=1.0",
   "protobuf~=7.34",
   "pydantic~=2.0",
+  "pytest~=9.0",
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
-  "pytest~=9.0",
   "python-multipart~=0.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
@@ -113,11 +114,11 @@ test = [
   "aiohttp~=3.0",
   "flask~=3.0",
   "pact-python-cli",
+  "pytest~=9.0",
   "pytest-asyncio~=1.0",
   "pytest-bdd~=8.0",
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
-  "pytest~=9.0",
   "requests~=2.0",
   "testcontainers~=4.0",
 ]
@@ -126,17 +127,16 @@ types = [
   "types-grpcio~=1.0",
   "types-protobuf~=7.34",
   "types-requests~=2.0",
-  # This is required for Python 3.10 support
-  "typing-extensions~=4.0",
+  "typing-extensions~=4.0",  # For Python 3.10 support
 ]
 
 # Dependencies for v2 example and test environments
 example-v2 = [
   "fastapi~=0.0",
   "flask[async]~=3.0",
+  "pytest~=9.0",
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
-  "pytest~=9.0",
   "testcontainers~=4.0",
   "uvicorn[standard]~=0.0",
 ]
@@ -144,249 +144,195 @@ test-v2 = [
   "fastapi~=0.0",
   "httpx~=0.0",
   "mock~=5.0",
+  "pytest~=9.0",
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
-  "pytest~=9.0",
   "uvicorn[standard]~=0.0",
 ]
 
-################################################################################
-## Hatch Configuration
-################################################################################
 [build-system]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
-requires      = ["hatchling"]
 
-[tool.hatch]
+[tool]
+  [tool.coverage]
+    [tool.coverage.paths]
+    pact = ["/src/pact"]
+    tests = ["/examples", "/tests"]
 
-  [tool.hatch.build]
-  packages  = ["src/pact"]
-
-  ########################################
-  ## Hatch Environment Configuration
-  ########################################
-  [tool.hatch.envs]
-
-    # Install dev dependencies in the default environment to simplify the developer
-    # workflow.
-    [tool.hatch.envs.default]
-    extra-dependencies = ["hatchling", "packaging"]
-    installer          = "uv"
-    path               = ".venv"
-    # This is require to get around an incompatibility between hatch and uv
-    # See: https://github.com/pypa/hatch/issues/1639
-    # See: https://github.com/pypa/hatch/issues/1852
-    pre-install-commands = [
-      "uv pip install --group dev -e .",
-      "uv pip install --group dev -e ./pact-python-ffi",
-      "uv pip install --group dev -e ./pact-python-cli",
-    ] #
-
-    # Update paths to ensure the shared library can be found
-    # TODO: See if this can be overridden on a per-platform basis
-    # https://github.com/pypa/hatch/discussions/2024
-    # [tool.hatch.envs.default.overrides]
-    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
-
-      [tool.hatch.envs.default.scripts]
-      all                = ["example", "format", "lint", "test", "typecheck"]
-      docs               = "mkdocs serve {args}"
-      docs-build         = "mkdocs build {args}"
-      example            = "pytest --ignore=examples/v2 examples/ {args}"
-      format             = "ruff format {args}"
-      lint               = "ruff check --output-format=full --show-fixes {args}"
-      test               = "pytest --ignore=tests/v2 tests/ {args}"
-      typecheck          = ["typecheck-examples", "typecheck-src", "typecheck-tests"]
-      typecheck-examples = "mypy examples/ {args}"
-      typecheck-src      = "mypy src/ {args}"
-      typecheck-tests    = "mypy tests/ {args}"
-
-    # Test environment for running unit tests.
-    [tool.hatch.envs.test]
-    installer            = "uv"
-    path                 = ".venv/test"
-    pre-install-commands = ["uv pip install --group test -e ."]
-
-      [[tool.hatch.envs.test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-
-    # Test environment for running unit tests. This automatically tests against all
-    # supported Python versions.
-    [tool.hatch.envs.example]
-    installer            = "uv"
-    path                 = ".venv/example"
-    pre-install-commands = ["uv pip install --group example -e ."]
-
-      [tool.hatch.envs.example.scripts]
-      all = ["example"]
-
-      [[tool.hatch.envs.example.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-
-    [tool.hatch.envs.v2-test]
-    features             = ["compat-v2"]
-    installer            = "uv"
-    path                 = ".venv/v2-test"
-    pre-install-commands = ["uv pip install --group test-v2 -e ."]
-
-      [tool.hatch.envs.v2-test.scripts]
-      all  = ["test"]
-      test = "pytest tests/v2 {args}"
-
-      [[tool.hatch.envs.v2-test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-
-    [tool.hatch.envs.v2-example]
-    features             = ["compat-v2"]
-    installer            = "uv"
-    path                 = ".venv/v2-example"
-    pre-install-commands = ["uv pip install --group example-v2 -e ."]
-
-      [tool.hatch.envs.v2-example.scripts]
-      all     = ["example"]
-      example = "pytest examples/v2 {args}"
-
-      [[tool.hatch.envs.v2-example.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-
-################################################################################
-## UV Workspace
-################################################################################
-[tool.uv]
-  [tool.uv.sources]
-  pact-python-cli = { workspace = true }
-  pact-python-ffi = { workspace = true }
-
-  [tool.uv.workspace]
-  members = ["pact-python-cli", "pact-python-ffi"]
-
-################################################################################
-## PyTest Configuration
-################################################################################
-[tool.pytest]
-addopts = [
-  "--import-mode=importlib",
-  # Coverage options
-  "--cov-config=pyproject.toml",
-  "--cov-report=xml",
-  "--cov=pact",
-  # Reruns
-  "--reruns=5",
-]
-
-asyncio_default_fixture_loop_scope = "session"
-
-filterwarnings = [
-  "ignore::DeprecationWarning:examples",
-  "ignore::DeprecationWarning:pact",
-  "ignore::DeprecationWarning:tests",
-]
-
-log_date_format = "%H:%M:%S"
-log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-log_level       = "NOTSET"
-
-markers = [
-  # Marker for tests that require a container
-  "container",
-
-  # Markers for the compatibility suite
-  "consumer",
-  "message",
-  "provider",
-]
-
-################################################################################
-## Coverage
-################################################################################
-[tool.coverage]
-
-  [tool.coverage.paths]
-  pact  = ["/src/pact"]
-  tests = ["/examples", "/tests"]
-
-  [tool.coverage.report]
-  exclude_lines = [
-    "@(abc\\.)?abstractmethod",   # Ignore abstract methods
-    "if TYPE_CHECKING:",          # Ignore typing
-    "if __name__ == .__main__.:", # Ignore non-runnable code
-    "raise NotImplementedError",  # Ignore defensive assertions
-  ]
-
-################################################################################
-## Ruff Configuration
-################################################################################
-[tool.ruff]
-extend-exclude = ["src/pact/v2/*", "tests/v2/*", "examples/v2/*"]
-
-  [tool.ruff.lint]
-  select = ["ALL"]
-
-  ignore = [
-    "D200",   # Require single line docstrings to be on one line.
-    "D203",   # Require blank line before class docstring
-    "D212",   # Multi-line docstring summary must start at the first line
-    "FIX002", # Forbid TODO in comments
-    "TD002",  # Assign someone to 'TODO' comments
-
-    # The following are disabled for compatibility with the formatter
-    "COM812", # enforce trailing commas
-    "ISC001", # require imports to be sorted
-  ]
-
-    [tool.ruff.lint.pyupgrade]
-    keep-runtime-typing = true
-
-    [tool.ruff.lint.pydocstyle]
-    convention = "google"
-
-    [tool.ruff.lint.isort]
-    known-first-party = ["pact", "pact_cli", "pact_ffi"]
-
-    [tool.ruff.lint.flake8-tidy-imports]
-    ban-relative-imports = "all"
-
-    [tool.ruff.lint.per-file-ignores]
-    "test_*.py" = [
-      "D103",    # Require docstring in public function
-      "D104",    # Require docstring in public package
-      "INP001",  # Forbid implicit namespaces
-      "PLR2004", # Forbid magic values
-      "RUF018",  # Forbid assignment in assertions
-      "S101",    # Forbid assert statements
-      "TID252",  # Require absolute imports
+    [tool.coverage.report]
+    exclude_lines = [
+      "@(abc\\.)?abstractmethod",  # Ignore abstract methods
+      "if TYPE_CHECKING:",  # Ignore typing
+      "if __name__ == .__main__.:",  # Ignore non-runnable code
+      "raise NotImplementedError",  # Ignore defensive assertions
     ]
 
+  [tool.hatch]
+    [tool.hatch.build]
+    packages = ["src/pact"]
 
-  [tool.ruff.format]
-  docstring-code-format = true
-  preview               = true
+    [tool.hatch.envs]
+      [tool.hatch.envs.default]
+      installer = "uv"
+      path = ".venv"
+      extra-dependencies = ["hatchling", "packaging"]
+      dependency-groups = ["dev"]
 
-################################################################################
-## Mypy Configuration
-################################################################################
-[tool.mypy]
-exclude = """(?x)^(
-  (src/pact|tests|examples)/v2/.*\\.pyi?
-)$"""
+        [tool.hatch.envs.default.workspace]
+        parallel = true
+        members = [
+          { path = "pact-python-cli", group = "dev" },
+          { path = "pact-python-ffi", group = "dev" },
+        ]
 
-################################################################################
-## CI Build Wheel
-################################################################################
-[tool.cibuildwheel]
+        [tool.hatch.envs.default.scripts]
+        all = ["example", "format", "lint", "test", "typecheck"]
+        docs = "mkdocs serve {args}"
+        docs-build = "mkdocs build {args}"
+        example = "pytest --ignore=examples/v2 examples/ {args}"
+        format = "ruff format {args}"
+        lint = "ruff check --output-format=full --show-fixes {args}"
+        test = "pytest --ignore=tests/v2 tests/ {args}"
+        typecheck = ["typecheck-examples", "typecheck-src", "typecheck-tests"]
+        typecheck-examples = "mypy examples/ {args}"
+        typecheck-src = "mypy src/ {args}"
+        typecheck-tests = "mypy tests/ {args}"
 
-################################################################################
-## Typos
-################################################################################
-[tool.typos]
+      # Test environment for running unit tests.
+      [tool.hatch.envs.test]
+      installer = "uv"
+      path = ".venv/test"
+      dependency-groups = ["test"]
 
-  [tool.typos.default]
-  extend-ignore-re = [
-    # Ignore spelling on a specific line
-    "(?Rm)^.*(#|//)\\s*spellchecker:disable-line$",
-    # Ignore spelling in a specific block
-    "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on",
+        [[tool.hatch.envs.test.matrix]]
+        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+      [tool.hatch.envs.example]
+      installer = "uv"
+      path = ".venv/example"
+      dependency-groups = ["example"]
+
+        [[tool.hatch.envs.example.matrix]]
+        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+      [tool.hatch.envs.v2-test]
+      features = ["compat-v2"]
+      installer = "uv"
+      path = ".venv/v2-test"
+      pre-install-commands = ["uv pip install --group test-v2 -e ."]
+
+        [tool.hatch.envs.v2-test.scripts]
+        all = ["test"]
+        test = "pytest tests/v2 {args}"
+
+        [[tool.hatch.envs.v2-test.matrix]]
+        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+      [tool.hatch.envs.v2-example]
+      features = ["compat-v2"]
+      installer = "uv"
+      path = ".venv/v2-example"
+      pre-install-commands = ["uv pip install --group example-v2 -e ."]
+
+        [tool.hatch.envs.v2-example.scripts]
+        all = ["example"]
+        example = "pytest examples/v2 {args}"
+
+        [[tool.hatch.envs.v2-example.matrix]]
+        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+  [tool.mypy]
+  exclude = """(?x)^(
+    (src/pact|tests|examples)/v2/.*\\.pyi?
+  )$"""
+
+  [tool.pytest]
+  addopts = [
+    # Coverage options
+    "--cov-config=pyproject.toml",
+    "--cov-report=xml",
+    "--cov=pact",
+    "--import-mode=importlib",
+    # Reruns
+    "--reruns=5",
   ]
 
-  [tool.typos.files]
-  extend-exclude = ["*.svg"]
+  asyncio_default_fixture_loop_scope = "session"
+
+  filterwarnings = [
+    "ignore::DeprecationWarning:examples",
+    "ignore::DeprecationWarning:pact",
+    "ignore::DeprecationWarning:tests",
+  ]
+
+  log_date_format = "%H:%M:%S"
+  log_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level = "NOTSET"
+
+  markers = [
+    # Marker for tests that require a container
+    "container",
+
+    # Markers for the compatibility suite
+    "consumer",
+    "message",
+    "provider",
+  ]
+
+  [tool.ruff]
+  extend-exclude = ["src/pact/v2/*", "tests/v2/*", "examples/v2/*"]
+
+    [tool.ruff.lint]
+    select = ["ALL"]
+
+    ignore = [
+      "D200",  # Require single line docstrings to be on one line.
+      "D203",  # Require blank line before class docstring
+      "D212",  # Multi-line docstring summary must start at the first line
+      "FIX002",  # Forbid TODO in comments
+      "TD002",  # Assign someone to 'TODO' comments
+
+      # The following are disabled for compatibility with the formatter
+      "COM812",  # enforce trailing commas
+      "ISC001",  # require imports to be sorted
+    ]
+
+      [tool.ruff.lint.pyupgrade]
+      keep-runtime-typing = true
+
+      [tool.ruff.lint.pydocstyle]
+      convention = "google"
+
+      [tool.ruff.lint.isort]
+      known-first-party = ["pact", "pact_cli", "pact_ffi"]
+
+      [tool.ruff.lint.flake8-tidy-imports]
+      ban-relative-imports = "all"
+
+      [tool.ruff.lint.per-file-ignores]
+      "test_*.py" = [
+        "D103",  # Require docstring in public function
+        "D104",  # Require docstring in public package
+        "INP001",  # Forbid implicit namespaces
+        "PLR2004",  # Forbid magic values
+        "RUF018",  # Forbid assignment in assertions
+        "S101",  # Forbid assert statements
+        "TID252",  # Require absolute imports
+      ]
+
+    [tool.ruff.format]
+    docstring-code-format = true
+    preview = true
+
+  [tool.typos]
+    [tool.typos.default]
+    extend-ignore-re = [
+      # Ignore spelling on a specific line
+      "(?Rm)^.*(#|//)\\s*spellchecker:disable-line$",
+      # Ignore spelling in a specific block
+      "(?s)(#|//)\\s*spellchecker:off.*?\\n\\s*(#|//)\\s*spellchecker:on",
+    ]
+
+    [tool.typos.files]
+    extend-exclude = ["*.svg"]

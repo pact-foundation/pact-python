@@ -74,6 +74,12 @@ repos:
             mascot\.svg
           )$
 
+  - repo: https://github.com/tombi-toml/tombi-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: tombi-format
+      - id: tombi-lint
+
   - repo: local
     hooks:
       # Mypy is difficult to run pre-commit's isolated environment as it needs

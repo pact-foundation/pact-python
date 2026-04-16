@@ -1,7 +1,8 @@
 #:schema https://www.schemastore.org/ruff.json
+
 extend = "../../pyproject.toml"
 
 [lint]
 ignore = [
-  "INP001", # Forbid implicit namespaces
+  "INP001",  # Forbid implicit namespaces
 ]

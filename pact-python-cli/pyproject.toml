@@ -1,13 +1,14 @@
 #:schema https://www.schemastore.org/pyproject.json
-[project]
-description = "Pact CLI bundle for Python"
-name        = "pact-python-cli"
-version     = "2.5.7.0"
-keywords = ["pact", "cli", "pact-python", "contract-testing"]
-license  = "MIT"
-readme   = "README.md"
 
-authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
+[project]
+name = "pact-python-cli"
+version = "2.5.7.0"
+description = "Pact CLI bundle for Python"
+readme = "README.md"
+license = "MIT"
+keywords = ["cli", "contract-testing", "pact", "pact-python"]
+
+authors = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 
 classifiers = [
@@ -18,160 +19,137 @@ classifiers = [
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python",
   "Topic :: Software Development :: Testing",
 ]
 
 requires-python = ">=3.10"
 
   [project.urls]
-  "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
-  "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/pact-python-cli/CHANGELOG.md"
+  "Bug Tracker" = "https://github.com/pact-foundation/pact-python/issues"
+  "Changelog" = "https://github.com/pact-foundation/pact-python/blob/main/pact-python-cli/CHANGELOG.md"
   "Documentation" = "https://docs.pact.io"
-  "Homepage"      = "https://pact.io"
-  "Repository"    = "https://github.com/pact-foundation/pact-python"
+  "Homepage" = "https://pact.io"
+  "Repository" = "https://github.com/pact-foundation/pact-python"
 
   [project.scripts]
-  pact                   = "pact_cli:_exec"
-  pact-broker            = "pact_cli:_exec"
-  pact-message           = "pact_cli:_exec"
-  pact-mock-service      = "pact_cli:_exec"
-  pact-plugin-cli        = "pact_cli:_exec"
+  pact = "pact_cli:_exec"
+  pact-broker = "pact_cli:_exec"
+  pact-message = "pact_cli:_exec"
+  pact_mock_server_cli = "pact_cli:_exec"
+  pact-mock-service = "pact_cli:_exec"
+  pact-plugin-cli = "pact_cli:_exec"
   pact-provider-verifier = "pact_cli:_exec"
-  pact-stub-server       = "pact_cli:_exec"
-  pact-stub-service      = "pact_cli:_exec"
-  pact_mock_server_cli   = "pact_cli:_exec"
-  pact_verifier_cli      = "pact_cli:_exec"
-  pactflow               = "pact_cli:_exec"
+  pact-stub-server = "pact_cli:_exec"
+  pact-stub-service = "pact_cli:_exec"
+  pact_verifier_cli = "pact_cli:_exec"
+  pactflow = "pact_cli:_exec"
 
 [dependency-groups]
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
-dev   = ["ruff==0.15.10", { include-group = "test" }, { include-group = "types" }]
-test  = ["pytest-cov~=7.0", "pytest~=9.0"]
+dev = ["ruff==0.15.10", { include-group = "test" }, { include-group = "types" }]
+test = ["pytest~=9.0", "pytest-cov~=7.0"]
 types = ["mypy==1.20.1"]
 
-################################################################################
 ## Build System
-################################################################################
 [build-system]
+requires = ["hatchling", "packaging"]
 build-backend = "hatchling.build"
-requires      = ["hatchling", "packaging"]
 
-[tool.hatch]
+[tool]
+  [tool.cibuildwheel]
+  # The repair tool unfortunately did not like the bundled Ruby distributable,
+  # with false-positives missing libraries despite being bundled.
+  repair-wheel-command = ""
 
-  [tool.hatch.build]
-  packages  = ["src/pact_cli"]
+    [tool.cibuildwheel.windows]
+    archs = ["auto64"]
 
-    [tool.hatch.build.targets.wheel.hooks.custom]
-    patch = "hatch_build.py"
+    [[tool.cibuildwheel.overrides]]
+    environment.MACOSX_DEPLOYMENT_TARGET = "10.13"
+    select = "*-macosx_x86_64"
 
-  ########################################
-  ## Hatch Environment Configuration
-  ########################################
-  [tool.hatch.envs]
+    [[tool.cibuildwheel.overrides]]
+    environment.MACOSX_DEPLOYMENT_TARGET = "11.0"
+    select = "*-macosx_arm64"
 
-    # Install dev dependencies in the default environment to simplify the developer
-    # workflow.
-    [tool.hatch.envs.default]
-    extra-dependencies = [
-      "hatchling",
-      "packaging",
-      "requests",
-      "setuptools ; python_version >= '3.12'",
+  [tool.coverage]
+    [tool.coverage.paths]
+    pact-cli = ["/src/pact_cli"]
+    tests = ["/tests"]
+
+    [tool.coverage.report]
+    exclude_lines = [
+      "@(abc\\.)?abstractmethod",  # Ignore abstract methods
+      "if TYPE_CHECKING:",  # Ignore typing
+      "if __name__ == .__main__.:",  # Ignore non-runnable code
+      "raise NotImplementedError",  # Ignore defensive assertions
     ]
-    installer = "uv"
-    path = ".venv"
-    pre-install-commands = ["uv pip install --group dev -e ."]
 
-      [tool.hatch.envs.default.scripts]
-      all             = ["format", "lint", "test", "typecheck"]
-      format          = "ruff format {args}"
-      lint            = "ruff check --show-fixes {args}"
-      test            = "pytest tests/ {args}"
-      typecheck       = ["typecheck-src", "typecheck-tests"]
-      typecheck-src   = "mypy src/ {args}"
-      typecheck-tests = "mypy tests/ {args}"
+  [tool.hatch]
+    [tool.hatch.build]
+    packages = ["src/pact_cli"]
 
-    # Test environment for running unit tests. This automatically tests against all
-    # supported Python versions.
-    [tool.hatch.envs.test]
-    installer            = "uv"
-    path                 = ".venv/test"
-    pre-install-commands = ["uv pip install --group test -e ."]
+      [tool.hatch.build.targets.wheel.hooks.custom]
+      patch = "hatch_build.py"
 
-      [[tool.hatch.envs.test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    [tool.hatch.envs]
+      [tool.hatch.envs.default]
+      installer = "uv"
+      path = ".venv"
+      extra-dependencies = [
+        "hatchling",
+        "packaging",
+        "requests",
+        "setuptools ; python_version >= '3.12'",
+      ]
+      dependency-groups = ["dev"]
 
-################################################################################
-## PyTest Configuration
-################################################################################
-[tool.pytest]
-addopts = [
-  "--import-mode=importlib",
-  # Coverage options
-  "--cov-config=pyproject.toml",
-  "--cov-report=xml",
-  "--cov=pact_cli",
-]
+        [tool.hatch.envs.default.scripts]
+        all = ["format", "lint", "test", "typecheck"]
+        format = "ruff format {args}"
+        lint = "ruff check --show-fixes {args}"
+        test = "pytest tests/ {args}"
+        typecheck = ["typecheck-src", "typecheck-tests"]
+        typecheck-src = "mypy src/ {args}"
+        typecheck-tests = "mypy tests/ {args}"
 
-log_date_format = "%H:%M:%S"
-log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-log_level       = "NOTSET"
+      # Test environment for running unit tests.
+      [tool.hatch.envs.test]
+      installer = "uv"
+      path = ".venv/test"
+      dependency-groups = ["test"]
 
-################################################################################
-## Coverage
-################################################################################
-[tool.coverage]
+        [[tool.hatch.envs.test.matrix]]
+        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
-  [tool.coverage.paths]
-  pact-cli = ["/src/pact_cli"]
-  tests    = ["/tests"]
+  [tool.mypy]
+  # Overwrite the exclusions from the root pyproject.toml.
+  exclude = ""
 
-  [tool.coverage.report]
-  exclude_lines = [
-    "@(abc\\.)?abstractmethod",   # Ignore abstract methods
-    "if TYPE_CHECKING:",          # Ignore typing
-    "if __name__ == .__main__.:", # Ignore non-runnable code
-    "raise NotImplementedError",  # Ignore defensive assertions
+  ## PyTest Configuration
+  [tool.pytest]
+  addopts = [
+    # Coverage options
+    "--cov-config=pyproject.toml",
+    "--cov-report=xml",
+    "--cov=pact_cli",
+    "--import-mode=importlib",
   ]
 
-################################################################################
-## Ruff Configuration
-################################################################################
-[tool.ruff]
-extend = "../pyproject.toml"
+  log_date_format = "%H:%M:%S"
+  log_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level = "NOTSET"
 
-exclude = []
+  ## Ruff Configuration
+  [tool.ruff]
+  extend = "../pyproject.toml"
 
-################################################################################
-## Mypy Configuration
-################################################################################
-[tool.mypy]
-# Overwrite the exclusions from the root pyproject.toml.
-exclude = ''
-
-################################################################################
-## CI Build Wheel
-################################################################################
-[tool.cibuildwheel]
-# The repair tool unfortunately did not like the bundled Ruby distributable,
-# with false-positives missing libraries despite being bundled.
-repair-wheel-command = ""
-
-  [tool.cibuildwheel.windows]
-  archs = ["auto64"]
-
-  [[tool.cibuildwheel.overrides]]
-  environment.MACOSX_DEPLOYMENT_TARGET = "10.13"
-  select                               = "*-macosx_x86_64"
-
-  [[tool.cibuildwheel.overrides]]
-  environment.MACOSX_DEPLOYMENT_TARGET = "11.0"
-  select                               = "*-macosx_arm64"
+  exclude = []

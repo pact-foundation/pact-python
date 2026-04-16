@@ -1,6 +1,7 @@
 #:schema https://www.schemastore.org/pyproject.toml
+
 [project]
-name    = "pact-python-catalog"
+name = "pact-python-catalog"
 version = "1.0.0"
 
 dependencies = [
@@ -15,15 +16,16 @@ requires-python = ">=3.10"
 [dependency-groups]
 test = ["pact-python", "pytest~=9.0", "uvicorn~=0.30"]
 
-[tool.uv.sources]
-pact-python = { path = "../../" }
+[tool]
+  [tool.uv.sources]
+  pact-python = { path = "../../" }
 
-[tool.ruff]
-extend = "../../pyproject.toml"
+  [tool.ruff]
+  extend = "../../pyproject.toml"
 
-[tool.pytest]
-addopts = ["--import-mode=importlib"]
+  [tool.pytest]
+  addopts = ["--import-mode=importlib"]
 
-log_date_format = "%H:%M:%S"
-log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-log_level       = "NOTSET"
+  log_date_format = "%H:%M:%S"
+  log_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level = "NOTSET"
