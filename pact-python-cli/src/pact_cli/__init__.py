@@ -43,16 +43,22 @@ from pact_cli.__version__ import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Container, Mapping
+    from collections.abc import Mapping
 
 _USE_SYSTEM_BINS = os.getenv("PACT_USE_SYSTEM_BINS", "").upper() in ("TRUE", "YES")
 _BIN_DIR = Path(__file__).parent.resolve() / "bin"
-_LEGACY_BINS: Container[str] = frozenset((
-    "pact-message",
-    "pact-mock-service",
-    "pact-provider-verifier",
-    "pact-stub-service",
-))
+_DEPRECATED_COMMANDS: Mapping[str, str | None] = {
+    "pact-broker": "pact broker",
+    "pact-message": None,  # being removed; no Rust equivalent
+    "pact-mock-service": "pact mock",
+    "pact-plugin-cli": "pact plugin",
+    "pact-provider-verifier": "pact verifier",
+    "pact-stub-server": "pact stub",
+    "pact-stub-service": "pact stub",
+    "pact_mock_server_cli": "pact mock",
+    "pact_verifier_cli": "pact verifier",
+    "pactflow": "pact pactflow",
+}
 
 
 def _telemetry_env() -> Mapping[str, str]:
@@ -108,14 +114,22 @@ def _exec() -> None:
         print("Unknown command:", command, file=sys.stderr)  # noqa: T201
         sys.exit(1)
 
-    if command in _LEGACY_BINS:
-        warnings.warn(
-            f"The '{command}' executable is deprecated and will be removed in "
-            "a future release. Please migrate to the new Pact CLI tools. "
-            "See: <https://github.com/pact-foundation/pact-standalone>",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+    if command in _DEPRECATED_COMMANDS:
+        replacement = _DEPRECATED_COMMANDS[command]
+        if replacement:
+            print(  # noqa: T201
+                f"WARNING: '{command}' is deprecated and will be removed in a "
+                f"future release. Use '{replacement}' instead.\n",
+                file=sys.stderr,
+                flush=True,
+            )
+        else:
+            print(  # noqa: T201
+                f"WARNING: '{command}' is deprecated and will be removed in a "
+                "future release.\n",
+                file=sys.stderr,
+                flush=True,
+            )
 
     if not _USE_SYSTEM_BINS:
         executable = _find_executable(command)
