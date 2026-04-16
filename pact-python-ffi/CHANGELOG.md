@@ -8,6 +8,51 @@ Note that this _only_ includes changes to the Python FFI interface. For changes 
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-ffi/0.5.3.0] _2026-04-16_
+
+### 🚀 Features
+
+-   Removed:
+    -   `create_mock_server` (use `create_mock_server_for_transport` instead)
+    -   `create_mock_server_for_pact` (use `create_mock_server_for_pact_and_transport` instead)
+    -   `verify`
+    -   `verifier_cli_args`
+-   Added:
+    -   `verifier_set_follow_redirects`
+    -   `using_plugin_with_delay`
+-   Allow iteration over all interactions
+-   Implement the Pact class
+-   Add handle to pointer conversion
+-   Add casting interaction to subtypes
+-   Add iterator over all interactions
+
+### 🐛 Bug Fixes
+
+-   Incorrect sync http deletion
+
+### 📚 Documentation
+
+-   Update changelogs
+
+### ⚙️ Miscellaneous Tasks
+
+-   Update non-compliant docstrings and types
+-   Upgrade pymdownx extensions
+-   Fix json schema url
+-   Remove ruff sub-configs
+-   Switch to versioningit
+-   Ensure pact interactions get deleted
+-   Add ruff ignores for tests
+-   Refactor ffi tests
+-   Remove versioningit, switch to static version in pyproject.toml
+-   Minor update to cliff config
+-   Replace taplo with tombi
+
+### Contributors
+
+-   @JP-Ellis
+-   @Nikhil172913832
+
 ## [pact-python-ffi/0.4.28.2] _2025-10-06_
 
 ### 📚 Documentation
