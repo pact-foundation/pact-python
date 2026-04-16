@@ -110,8 +110,8 @@ jobs:
   tag:
     name: Create CLI release tag
     if: >-
-      github.event_name == 'pull_request' && github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name,
-      'release') && github.event.pull_request.head.ref == 'release/pact-python-cli'
+      github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.head.ref
+      == 'release/pact-python-cli'
     runs-on: ubuntu-latest
     environment:
       name: release-pr
