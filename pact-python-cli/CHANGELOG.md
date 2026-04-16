@@ -8,6 +8,27 @@ Note that this _only_ includes changes to the Python re-packaging of the Pact CL
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-cli/2.6.0.0] _2026-04-16_
+
+### 🐛 Bug Fixes
+
+-   Bundle both ruby and rust CLIs
+
+### 📚 Documentation
+
+-   Update changelog for pact-python-cli/2.5.7.0
+
+### ⚙️ Miscellaneous Tasks
+
+-   Remove versioningit, switch to static version in pyproject.toml
+-   Minor update to cliff config
+-   Replace taplo with tombi
+-   Allow windows arm cli builds to proceed
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-cli/2.5.7.0] _2025-12-10_
 
 ### 🚀 Features

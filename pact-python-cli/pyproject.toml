@@ -2,7 +2,7 @@
 
 [project]
 name = "pact-python-cli"
-version = "2.5.7.0"
+version = "2.6.0.0"
 description = "Pact CLI bundle for Python"
 readme = "README.md"
 license = "MIT"
