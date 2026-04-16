@@ -2,11 +2,12 @@
 ## Configuration for committed
 ##
 ## See <https://github.com/crate-ci/committed/blob/master/docs/reference.md>
+
 style = "conventional"
 
-line_length         = 80
-merge_commit        = false
-no_fixup            = false
+line_length = 80
+merge_commit = false
+no_fixup = false
 subject_capitalized = false
 
 allowed_types = [

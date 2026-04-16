@@ -11,7 +11,7 @@
     "ms-python.mypy-type-checker",
     "ms-python.python",
     "redhat.vscode-yaml",
-    "tamasfe.even-better-toml",
-    "yzhang.markdown-all-in-one"
+    "yzhang.markdown-all-in-one",
+    "tombi-toml.tombi"
   ]
 }

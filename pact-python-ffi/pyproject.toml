@@ -1,13 +1,14 @@
 #:schema https://www.schemastore.org/pyproject.json
-[project]
-description = "Python bindings for the Pact FFI library"
-name        = "pact-python-ffi"
-version     = "0.4.28.2"
-keywords = ["pact", "ffi", "pact-python", "contract-testing"]
-license  = "MIT"
-readme   = "README.md"
 
-authors     = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
+[project]
+name = "pact-python-ffi"
+version = "0.4.28.2"
+description = "Python bindings for the Pact FFI library"
+readme = "README.md"
+license = "MIT"
+keywords = ["contract-testing", "ffi", "pact", "pact-python"]
+
+authors = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 maintainers = [{ name = "Joshua Ellis", email = "josh@jpellis.me" }]
 
 classifiers = [
@@ -18,13 +19,13 @@ classifiers = [
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python",
   "Topic :: Software Development :: Testing",
 ]
 
@@ -33,163 +34,127 @@ requires-python = ">=3.10"
 dependencies = ["cffi~=2.0"]
 
   [project.urls]
-  "Bug Tracker"   = "https://github.com/pact-foundation/pact-python/issues"
-  "Changelog"     = "https://github.com/pact-foundation/pact-python/blob/main/pact-python-ffi/CHANGELOG.md"
+  "Bug Tracker" = "https://github.com/pact-foundation/pact-python/issues"
+  "Changelog" = "https://github.com/pact-foundation/pact-python/blob/main/pact-python-ffi/CHANGELOG.md"
   "Documentation" = "https://docs.pact.io"
-  "Homepage"      = "https://pact.io"
-  "Repository"    = "https://github.com/pact-foundation/pact-python"
+  "Homepage" = "https://pact.io"
+  "Repository" = "https://github.com/pact-foundation/pact-python"
 
 [dependency-groups]
-dev   = ["ruff==0.15.10", { include-group = "test" }, { include-group = "types" }]
-test  = ["pytest-cov~=7.0", "pytest~=9.0"]
+dev = ["ruff==0.15.10", { include-group = "test" }, { include-group = "types" }]
+test = ["pytest~=9.0", "pytest-cov~=7.0"]
 types = ["mypy==1.20.1", "typing-extensions~=4.0"]
 
-################################################################################
-## Build System
-################################################################################
 [build-system]
+requires = ["cffi", "hatchling", "packaging", "setuptools"]
 build-backend = "hatchling.build"
-requires      = ["hatchling", "packaging", "cffi", "setuptools"]
 
-[tool.hatch]
+[tool]
+  [tool.cibuildwheel]
+  environment.HATCH_VERBOSE = "1"
 
-  [tool.hatch.build]
-  packages  = ["src/pact_ffi"]
+    [tool.cibuildwheel.linux]
+    before-build = ["uv pip install --system abi3audit"]
+    environment.PACT_LIB_DIR = "/tmp/pact_ffi"
+    repair-wheel-command = [
+      "export LD_LIBRARY_PATH=\"$PACT_LIB_DIR:$LD_LIBRARY_PATH\"",
+      "auditwheel repair -w {dest_dir} {wheel}",
+      "abi3audit --strict --report {wheel}",
+    ]
 
-    [tool.hatch.build.targets.wheel.hooks.custom]
-    patch = "hatch_build.py"
+    [tool.cibuildwheel.macos]
+    before-build = ["pip install abi3audit"]
+    environment.PACT_LIB_DIR = "/tmp/pact_ffi"
+    repair-wheel-command = [
+      "export DYLD_LIBRARY_PATH=\"$PACT_LIB_DIR:$DYLD_LIBRARY_PATH\"",
+      "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}",
+      "abi3audit --strict --report {wheel}",
+    ]
 
-  ########################################
-  ## Hatch Environment Configuration
-  ########################################
-  [tool.hatch.envs]
+    [tool.cibuildwheel.windows]
+    archs = ["auto64"]
+    before-build = ["pip install abi3audit delvewheel"]
+    environment.PACT_LIB_DIR = "C:/tmp/pact_ffi"
+    repair-wheel-command = [
+      "delvewheel repair -vv --add-path \"%PACT_LIB_DIR%\" -w {dest_dir} {wheel}",
+      "abi3audit --strict --report {wheel}",
+    ]
 
-    # Install dev dependencies in the default environment to simplify the developer
-    # workflow.
-    [tool.hatch.envs.default]
-    extra-dependencies   = ["hatchling", "packaging", "cffi"]
-    installer            = "uv"
-    path                 = ".venv"
-    pre-install-commands = ["uv pip install --group dev -e ."]
+    [[tool.cibuildwheel.overrides]]
+    environment.MACOSX_DEPLOYMENT_TARGET = "12.0"
+    inherit.environment = "append"
+    select = "*-macosx_x86_64"
 
-    # Update paths to ensure the shared library can be found
-    # TODO: See if this can be overridden on a per-platform basis
-    # https://github.com/pypa/hatch/discussions/2024
-    # [tool.hatch.envs.default.overrides]
-    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
+    [[tool.cibuildwheel.overrides]]
+    environment.MACOSX_DEPLOYMENT_TARGET = "12.0"
+    inherit.environment = "append"
+    select = "*-macosx_arm64"
 
-      [tool.hatch.envs.default.scripts]
-      all             = ["format", "lint", "test", "typecheck"]
-      format          = "ruff format {args}"
-      lint            = "ruff check --show-fixes {args}"
-      test            = "pytest tests/ {args}"
-      typecheck       = ["typecheck-src", "typecheck-tests"]
-      typecheck-src   = "mypy src/ {args}"
-      typecheck-tests = "mypy tests/ {args}"
+  [tool.coverage]
+    [tool.coverage.paths]
+    pact-ffi = ["/src/pact_ffi"]
+    tests = ["/tests"]
 
-    # Test environment for running unit tests. This automatically tests against all
-    # supported Python versions.
-    [tool.hatch.envs.test]
-    installer            = "uv"
-    path                 = ".venv/test"
-    pre-install-commands = ["uv pip install --group test -e ."]
+    [tool.coverage.report]
+    exclude_lines = [
+      "@(abc\\.)?abstractmethod",  # Ignore abstract methods
+      "if TYPE_CHECKING:",  # Ignore typing
+      "if __name__ == .__main__.:",  # Ignore non-runnable code
+      "raise NotImplementedError",  # Ignore defensive assertions
+    ]
 
-    # Update paths to ensure the shared library can be found
-    # TODO: See if this can be overridden on a per-platform basis
-    # https://github.com/pypa/hatch/discussions/2024
-    # [tool.hatch.envs.default.overrides]
-    # platform.windows.env-vars = { PATH = "{root}/src/pact_ffi;{env:PATH}" }
+  [tool.hatch]
+    [tool.hatch.build]
+    packages = ["src/pact_ffi"]
 
-      [[tool.hatch.envs.test.matrix]]
-      python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+      [tool.hatch.build.targets.wheel.hooks.custom]
+      patch = "hatch_build.py"
 
-################################################################################
-## PyTest Configuration
-################################################################################
-[tool.pytest]
-addopts = [
-  "--import-mode=importlib",
-  # Coverage options
-  "--cov-config=pyproject.toml",
-  "--cov-report=xml",
-  "--cov=pact_ffi",
-]
+    [tool.hatch.envs]
+      [tool.hatch.envs.default]
+      installer = "uv"
+      path = ".venv"
+      extra-dependencies = ["hatchling", "packaging", "cffi"]
+      dependency-groups = ["dev"]
 
-log_date_format = "%H:%M:%S"
-log_format      = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
-log_level       = "NOTSET"
+        [tool.hatch.envs.default.scripts]
+        all = ["format", "lint", "test", "typecheck"]
+        format = "ruff format {args}"
+        lint = "ruff check --show-fixes {args}"
+        test = "pytest tests/ {args}"
+        typecheck = ["typecheck-src", "typecheck-tests"]
+        typecheck-src = "mypy src/ {args}"
+        typecheck-tests = "mypy tests/ {args}"
 
-################################################################################
-## Coverage
-################################################################################
-[tool.coverage]
+      # Test environment for running unit tests.
+      [tool.hatch.envs.test]
+      installer = "uv"
+      path = ".venv/test"
+      dependency-groups = ["test"]
 
-  [tool.coverage.paths]
-  pact-ffi = ["/src/pact_ffi"]
-  tests    = ["/tests"]
+        [[tool.hatch.envs.test.matrix]]
+        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
-  [tool.coverage.report]
-  exclude_lines = [
-    "@(abc\\.)?abstractmethod",   # Ignore abstract methods
-    "if TYPE_CHECKING:",          # Ignore typing
-    "if __name__ == .__main__.:", # Ignore non-runnable code
-    "raise NotImplementedError",  # Ignore defensive assertions
+  [tool.mypy]
+  # Overwrite the exclusions from the root pyproject.toml.
+  exclude = ""
+
+  ## PyTest Configuration
+  [tool.pytest]
+  addopts = [
+    # Coverage options
+    "--cov-config=pyproject.toml",
+    "--cov-report=xml",
+    "--cov=pact_ffi",
+    "--import-mode=importlib",
   ]
 
-################################################################################
-## Ruff Configuration
-################################################################################
-[tool.ruff]
-extend = "../pyproject.toml"
+  log_date_format = "%H:%M:%S"
+  log_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+  log_level = "NOTSET"
 
-exclude = []
+  ## Ruff Configuration
+  [tool.ruff]
+  extend = "../pyproject.toml"
 
-################################################################################
-## Mypy Configuration
-################################################################################
-[tool.mypy]
-# Overwrite the exclusions from the root pyproject.toml.
-exclude = ''
-
-################################################################################
-## CI Build Wheel
-################################################################################
-[tool.cibuildwheel]
-environment.HATCH_VERBOSE = "1"
-
-  [tool.cibuildwheel.linux]
-  before-build = ["uv pip install --system abi3audit"]
-  environment.PACT_LIB_DIR = "/tmp/pact_ffi"
-  repair-wheel-command = [
-    "export LD_LIBRARY_PATH=\"$PACT_LIB_DIR:$LD_LIBRARY_PATH\"",
-    "auditwheel repair -w {dest_dir} {wheel}",
-    "abi3audit --strict --report {wheel}",
-  ]
-
-  [tool.cibuildwheel.macos]
-  before-build = ["pip install abi3audit"]
-  environment.PACT_LIB_DIR = "/tmp/pact_ffi"
-  repair-wheel-command = [
-    "export DYLD_LIBRARY_PATH=\"$PACT_LIB_DIR:$DYLD_LIBRARY_PATH\"",
-    "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}",
-    "abi3audit --strict --report {wheel}",
-  ]
-
-  [tool.cibuildwheel.windows]
-  archs = ["auto64"]
-  before-build = ["pip install abi3audit delvewheel"]
-  environment.PACT_LIB_DIR = "C:/tmp/pact_ffi"
-  repair-wheel-command = [
-    "delvewheel repair -vv --add-path \"%PACT_LIB_DIR%\" -w {dest_dir} {wheel}",
-    "abi3audit --strict --report {wheel}",
-  ]
-
-  [[tool.cibuildwheel.overrides]]
-  environment.MACOSX_DEPLOYMENT_TARGET = "12.0"
-  inherit.environment                  = "append"
-  select                               = "*-macosx_x86_64"
-
-  [[tool.cibuildwheel.overrides]]
-  environment.MACOSX_DEPLOYMENT_TARGET = "12.0"
-  inherit.environment                  = "append"
-  select                               = "*-macosx_arm64"
+  exclude = []
