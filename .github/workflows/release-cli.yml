@@ -53,8 +53,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
 
 env:
-  # Bump to 3.11 to access tomllib, otherwise, we would use the oldest supported Python version
-  STABLE_PYTHON_VERSION: '311'
+  STABLE_PYTHON_VERSION: '310'
   HATCH_VERBOSE: '1'
   FORCE_COLOR: '1'
   CIBW_BUILD_FRONTEND: build
@@ -100,7 +99,8 @@ jobs:
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57  # v8.0.0
 
       - name: Install Python
-        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
+        # Bump to 3.11 to access tomllib
+        run: uv python install 311
 
       - name: Update release PR
         run: uv run python scripts/release.py prepare cli
@@ -126,7 +126,8 @@ jobs:
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57  # v8.0.0
 
       - name: Install Python
-        run: uv python install ${{ env.STABLE_PYTHON_VERSION }}
+        # Bump to 3.11 to access tomllib
+        run: uv python install 311
 
       - name: Create and push release tag
         run: uv run python scripts/release.py tag cli
