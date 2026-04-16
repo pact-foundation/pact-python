@@ -198,3 +198,42 @@ def test_exec_directly(executable: str) -> None:
     assert (os.sep + executable) in cmd
     assert args == [cmd]
     assert env
+
+
+def test_deprecated_command_warns_with_replacement(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Ruby commands with a Rust equivalent print a hint to stderr."""
+    with (
+        patch.object(sys, "argv", new=["pact-broker", "--help"]),
+        patch("os.execve"),
+    ):
+        pact_cli._exec()  # noqa: SLF001
+    captured = capsys.readouterr()
+    assert "deprecated" in captured.err
+    assert "pact broker" in captured.err
+
+
+def test_deprecated_command_warns_without_replacement(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Ruby commands without a Rust equivalent print a generic warning."""
+    with (
+        patch.object(sys, "argv", new=["pact-message", "--help"]),
+        patch("os.execve"),
+    ):
+        pact_cli._exec()  # noqa: SLF001
+    captured = capsys.readouterr()
+    assert "deprecated" in captured.err
+    assert "Use " not in captured.err  # no replacement hint
+
+
+def test_pact_command_does_not_warn(capsys: pytest.CaptureFixture[str]) -> None:
+    """The Rust pact binary does not trigger any deprecation warning."""
+    with (
+        patch.object(sys, "argv", new=["pact", "--help"]),
+        patch("os.execve"),
+    ):
+        pact_cli._exec()  # noqa: SLF001
+    captured = capsys.readouterr()
+    assert "deprecated" not in captured.err

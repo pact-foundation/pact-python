@@ -24,7 +24,14 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
 
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_cli"
+
+# Remove when pact-standalone is removed
 PACT_CLI_URL = "https://github.com/pact-foundation/pact-standalone/releases/download/v{version}/pact-{version}-{os}-{machine}.{ext}"
+
+# Remove fixed version and infer from package metadata when pact-cli versioning
+# is adopted.
+PACT_RUST_CLI_VERSION = "0.9.5"
+PACT_RUST_CLI_URL = "https://github.com/pact-foundation/pact-cli/releases/download/v{version}/pact-{arch}-{os}{ext}"
 
 
 class UnsupportedPlatformError(RuntimeError):
@@ -83,6 +90,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         passed to `hatch build`.
         """
         for subdir in ["bin", "lib", "data"]:
+            # TODO(epoch-transition): Remove "lib" when standalone dropped # noqa: TD003
             shutil.rmtree(PKG_DIR / subdir, ignore_errors=True)
 
     def initialize(
@@ -116,7 +124,8 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             raise ValueError(msg)
 
         try:
-            build_data["force_include"] = self._install(cli_version)
+            build_data["force_include"] = self._install_ruby_cli(cli_version)
+            self._install_rust_cli()
         except UnsupportedPlatformError as err:
             msg = f"Pact CLI is not available for {err.platform}."
             self.app.display_error(msg)
@@ -132,9 +141,9 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         """
         return next(t.platform for t in sys_tags())
 
-    def _install(self, version: str) -> Mapping[str, str]:
+    def _install_ruby_cli(self, version: str) -> Mapping[str, str]:
         """
-        Install the Pact standalone binaries.
+        Install the Pact Ruby standalone binaries.
 
         The binaries are installed in `src/pact_cli/bin`, and the relevant
         version for the current operating system is determined automatically.
@@ -148,25 +157,26 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             wheel. Each `src` is a full path in the current filesystem, and the
             `dst` is the corresponding path within the wheel.
         """
-        url = self._pact_bin_url(version)
+        url = self._pact_ruby_bin_url(version)
         artefact = self._download(url)
         self._extract(artefact)
         return {
             str(PKG_DIR / "bin"): "pact_cli/bin",
+            # TODO(epoch-transition): Remove lib/ when standalone dropped  # noqa: TD003
             str(PKG_DIR / "lib"): "pact_cli/lib",
         }
 
-    def _pact_bin_url(self, version: str) -> str:
+    def _pact_ruby_bin_url(self, version: str) -> str:
         """
-        Generate the download URL for the Pact binaries.
+        Generate the download URL for the Pact Ruby binaries.
 
         Args:
             version:
                 The Pact CLI version to download.
 
         Returns:
-            The URL to download the Pact binaries from. If the platform is not
-            supported, the resulting URL may be invalid.
+            The URL to download the Pact Ruby binaries from. If the platform is
+            not supported, the resulting URL may be invalid.
         """
         platform = self._sys_tag_platform()
 
@@ -195,6 +205,75 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
             machine=machine,
             ext=ext,
         )
+
+    def _pact_rust_bin_url(self, version: str) -> str:
+        """
+        Generate the download URL for the Rust pact binary from pact-cli.
+
+        The pact-cli release assets are plain binaries (not archives) named
+        ``pact-{arch}-{os}`` (e.g. ``pact-aarch64-macos``), with ``.exe``
+        appended on Windows.
+
+        Args:
+            version:
+                The pact-cli version to download.
+
+        Returns:
+            The URL to the pact binary asset.
+
+        Raises:
+            UnsupportedPlatformError:
+                If the current platform's OS or architecture is not recognised.
+        """
+        platform = self._sys_tag_platform()
+
+        if platform.startswith("macosx"):
+            os_name = "macos"
+            ext = ""
+        elif "linux" in platform:
+            # musl-based Linux targets (e.g. Alpine) are not distinguished;
+            # the linux-gnu binary is used for all Linux targets.
+            os_name = "linux-gnu"
+            ext = ""
+        elif platform.startswith("win"):
+            os_name = "windows-msvc"
+            ext = ".exe"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        if platform.endswith(("arm64", "aarch64")):
+            arch = "aarch64"
+        elif platform.endswith(("x86_64", "amd64")):
+            arch = "x86_64"
+        else:
+            raise UnsupportedPlatformError(platform)
+
+        return PACT_RUST_CLI_URL.format(
+            version=version,
+            arch=arch,
+            os=os_name,
+            ext=ext,
+        )
+
+    def _install_rust_cli(self) -> None:
+        """
+        Install the Rust pact binary from pact-cli.
+
+        Overwrites the `pact` binary bundled with pact-standalone.
+
+        The binary is downloaded from the pact-cli GitHub release as a plain
+        executable (not an archive) and placed in `bin/` as `pact`
+        (or `pact.exe` on Windows).
+        """
+        url = self._pact_rust_bin_url(PACT_RUST_CLI_VERSION)
+        artefact = self._download(url)
+
+        bin_name = "pact.exe" if sys.platform == "win32" else "pact"
+        dest = PKG_DIR / "bin" / bin_name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(artefact, dest)
+        if sys.platform != "win32":
+            dest.chmod(0o755)
 
     def _extract(self, artefact: Path) -> None:
         """
