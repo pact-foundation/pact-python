@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -648,6 +649,38 @@ def parse_existing_pr(gh_output: str) -> PullRequest | None:
     return PullRequest(number=data["number"], head_ref_name=data["headRefName"])
 
 
+def check_github_token() -> None:
+    """
+    Ensure that a GitHub token is set for authenticated API access.
+
+    In CI, the PAT is expected to be provided via the `GH_TOKEN` environment
+    variable. When running locally, if `GITHUB_TOKEN` is not already set, this
+    function will attempt to retrieve a token using the `gh` CLI tool (which may
+    be authenticated via `gh auth login`) and set it in the environment for
+    subsequent API calls.
+
+    If no token can be found, a warning is logged and API requests may be
+    subject to stricter rate limits.
+    """
+    if os.getenv("GITHUB_TOKEN"):
+        return
+
+    if token := os.getenv("GH_TOKEN"):
+        logger.debug("Using GH_TOKEN from environment variable for authentication")
+        os.environ["GITHUB_TOKEN"] = token
+        return
+
+    if "CI" not in os.environ:
+        logger.info("Generating a GitHub token for authenticated API access")
+        if token := subprocess.check_output(
+            ["gh", "auth", "token"],
+            text=True,
+        ).strip():
+            os.environ["GITHUB_TOKEN"] = token
+            return
+        logger.warning("No GitHub token found. API requests may be rate-limited.")
+
+
 def main() -> None:
     """Entry point for the release management script."""
     parser = argparse.ArgumentParser(
@@ -673,6 +706,8 @@ def main() -> None:
     logging.basicConfig(level=level, format=fmt)
 
     pkg = PACKAGES[args.package]
+
+    check_github_token()
 
     if args.command == "tag":
         pkg.tag(dry_run=args.dry_run)
