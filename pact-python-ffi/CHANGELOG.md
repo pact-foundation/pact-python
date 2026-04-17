@@ -8,6 +8,9 @@ Note that this _only_ includes changes to the Python FFI interface. For changes 
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-ffi/0.5.3.1] _2026-04-17_
+
+
 ## [pact-python-ffi/0.5.3.0] _2026-04-16_
 
 ### 🚀 Features
