@@ -222,7 +222,12 @@ class Pact:
         pact_ffi.with_specification(self._handle, version)
         return self
 
-    def using_plugin(self, name: str, version: str | None = None) -> Self:
+    def using_plugin(
+        self,
+        name: str,
+        version: str | None = None,
+        delay: int | None = None,
+    ) -> Self:
         """
         Add a plugin to be used by the test.
 
@@ -234,8 +239,15 @@ class Pact:
 
             version:
                 Version of the plugin. This is optional and can be `None`.
+
+            delay:
+                An arbitrary delay in milliseconds to add before the function
+                returns to allow asynchronous tasks to complete.
         """
-        pact_ffi.using_plugin(self._handle, name, version)
+        if delay is not None:
+            pact_ffi.using_plugin_with_delay(self._handle, name, version, delay)
+        else:
+            pact_ffi.using_plugin(self._handle, name, version)
         return self
 
     def with_metadata(
