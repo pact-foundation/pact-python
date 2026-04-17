@@ -76,7 +76,13 @@ build-backend = "hatchling.build"
     before-build = ["pip install abi3audit delvewheel"]
     environment.PACT_LIB_DIR = "C:/tmp/pact_ffi"
     repair-wheel-command = [
-      "delvewheel repair -vv --add-path \"%PACT_LIB_DIR%\" -w {dest_dir} {wheel}",
+      # ext-ms-* DLLs are no-export forwarding stubs present in System32 on all
+      # modern Windows. delvewheel 1.12.0 removed them from its no-bundle list
+      # (they have no exports so the author assumed nothing links to them), but
+      # they do appear in DLL import tables and cannot be bundled. Exclude the
+      # whole ext-ms-* family until upstream fixes ignore_regexes.
+      # See: https://github.com/adang1345/delvewheel/issues/<TBD>
+      "delvewheel repair -vv --add-path \"%PACT_LIB_DIR%\" --exclude \"ext-ms-*\" -w {dest_dir} {wheel}",
       "abi3audit --strict --report {wheel}",
     ]
 
