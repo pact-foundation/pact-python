@@ -2,7 +2,7 @@
 
 [project]
 name = "pact-python"
-version = "3.2.1"
+version = "3.3.0"
 description = "Tool for creating and verifying consumer-driven contracts using the Pact framework."
 readme = "README.md"
 license = { file = "LICENSE" }
