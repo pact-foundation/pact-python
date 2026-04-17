@@ -179,13 +179,6 @@ build-backend = "hatchling.build"
       extra-dependencies = ["hatchling", "packaging"]
       dependency-groups = ["dev"]
 
-        [tool.hatch.envs.default.workspace]
-        parallel = true
-        members = [
-          { path = "pact-python-cli", group = "dev" },
-          { path = "pact-python-ffi", group = "dev" },
-        ]
-
         [tool.hatch.envs.default.scripts]
         all = ["example", "format", "lint", "test", "typecheck"]
         docs = "mkdocs serve {args}"
@@ -336,3 +329,11 @@ build-backend = "hatchling.build"
 
     [tool.typos.files]
     extend-exclude = ["*.svg"]
+
+  [tool.uv]
+    [tool.uv.sources]
+    pact-python-cli = { workspace = true }
+    pact-python-ffi = { workspace = true }
+
+    [tool.uv.workspace]
+    members = ["pact-python-cli", "pact-python-ffi"]
