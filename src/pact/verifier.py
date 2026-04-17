@@ -943,6 +943,20 @@ class Verifier:
             self.add_custom_header(name, value)
         return self
 
+    def follow_redirects(self, follow: bool) -> Self:  # noqa: FBT001
+        """
+        Set whether redirects should be followed.
+
+        By default, the Pact verifier does follow redirects, testing the final
+        non-redirect response (mimicking the default behaviour of most HTTP
+        clients).
+
+        In some cases, it may be desirable to test the redirect response itself,
+        in which case this method can be used to disable following redirects.
+        """
+        pact_ffi.verifier_set_follow_redirects(self._handle, follow=follow)
+        return self
+
     @overload
     def add_source(
         self,
