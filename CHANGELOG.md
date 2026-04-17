@@ -6,6 +6,70 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.3.0] _2026-04-17_
+
+### 🚀 Features
+
+-   Add xml matching
+
+    A new `pact.xml` module provides builder functions for constructing XML request and response bodies with embedded Pact matchers. Use `xml.element()` to describe the XML structure and attach matchers where needed, then wrap the result with `xml.body()` before passing it to `with_body(..., content_type="application/xml")`:
+
+    ```python
+    from pact import match, xml
+
+    response = xml.body(
+        xml.element(
+            "user",
+            xml.element("id", match.int(123)),
+            xml.element("name", match.str("Alice")),
+        )
+    )
+    interaction.with_body(response, content_type="application/xml")
+    ```
+
+    Repeating elements are supported via `.each(min=1, examples=2)` on any `XmlElement`. Attributes (including namespace declarations) can be passed via the `attrs` keyword argument.
+-   Allow iteration over all interactions
+-   Use common `PactInteraction` type
+-   Can toggle follow redirects
+-   Allow plugin loading delay
+
+### 📚 Documentation
+
+-   Update changelog for pact-python/3.2.1
+-   _(examples)_ Add http+xml example
+-   Update xml example to use new matcher
+-   _(examples)_ Add service consumer/provider HTTP example
+
+### ⚙️ Miscellaneous Tasks
+
+-   _(ci)_ Re-enable 3.14 tests
+-   Upgrade stable python version
+-   Add .worktrees to .gitignore
+-   _(ci)_ Reduce ci usage
+-   _(ci)_ Downgrade stable python version
+-   _(ci)_ Remove unused workflows
+-   Remove versioningit, switch to static version in pyproject.toml
+-   Add release script
+-   Minor update to cliff config
+-   Authenticate gh api calls
+-   Remove release label
+-   Replace taplo with tombi
+-   _(ci)_ Have wheel target 310
+-   _(ci)_ Avoid most of CI on draft PRs
+-   Fix hatch env workspaces
+-   Remove connect test
+
+### � Other
+
+-   Fix coverage upload overwrite and add example coverage
+
+### Contributors
+
+-   @JP-Ellis
+-   @adityagiri3600
+-   @benaduo
+-   @Nikhil172913832
+
 ## [pact-python/3.2.1] _2025-12-10_
 
 ### 📚 Documentation
