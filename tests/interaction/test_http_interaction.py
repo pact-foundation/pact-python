@@ -28,7 +28,6 @@ ALL_HTTP_METHODS = [
     "HEAD",
     "OPTIONS",
     "TRACE",
-    "CONNECT",
 ]
 
 
