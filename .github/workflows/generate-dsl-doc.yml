@@ -23,7 +23,7 @@ jobs:
         run: uv run --no-project scripts/generate_dsl_doc.py
 
       - name: Format dsl.python.md
-        run: uvx mdformat docs/ai-tools/dsl.python.md
+        run: uvx --from mdformat==0.7.22 mdformat docs/ai-tools/dsl.python.md
 
       - name: Check for changes
         id: diff
