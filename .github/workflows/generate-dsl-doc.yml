@@ -28,7 +28,10 @@ jobs:
       - name: Check for changes
         id: diff
         run: |
-          git diff --quiet docs/ai-tools/dsl.python.md \
+          # Stage the generated file before diffing so newly created
+          # untracked files are detected on the first workflow run.
+          git add docs/ai-tools/dsl.python.md
+          git diff --cached --quiet -- docs/ai-tools/dsl.python.md \
             && echo "changed=false" >> "$GITHUB_OUTPUT" \
             || echo "changed=true" >> "$GITHUB_OUTPUT"
 
