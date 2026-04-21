@@ -1,0 +1,41 @@
+name: Generate Python DSL doc
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"  # Every Monday at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          python-version: "3.13"
+
+      - name: Generate dsl.python.md
+        run: uv run --no-project scripts/generate_dsl_doc.py
+
+      - name: Format dsl.python.md
+        run: uvx mdformat docs/ai-tools/dsl.python.md
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet docs/ai-tools/dsl.python.md \
+            && echo "changed=false" >> "$GITHUB_OUTPUT" \
+            || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated DSL doc
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/ai-tools/dsl.python.md
+          git commit -m "chore: regenerate docs/ai-tools/dsl.python.md"
+          git push

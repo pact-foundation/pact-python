@@ -78,7 +78,9 @@ repos:
     rev: v0.9.19
     hooks:
       - id: tombi-format
+        language_version: python3.13
       - id: tombi-lint
+        language_version: python3.13
 
   - repo: local
     hooks:
