@@ -18,12 +18,17 @@ Usage (from repo root):
     uv run scripts/generate_dsl_doc.py --output path/to/output.md
     uv run scripts/generate_dsl_doc.py --check   # exit 1 if file would change
 """
+
 from __future__ import annotations
 
 import argparse
 import re
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 import tree_sitter_python as tspython
 from tree_sitter import Language, Node, Parser
@@ -40,6 +45,7 @@ _BUILTIN_PREFIX = re.compile(r"\bbuiltins\.")
 # Tree-sitter helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_parser() -> Parser:
     return Parser(_LANGUAGE)
 
@@ -55,7 +61,7 @@ def _parse_file(path: Path) -> tuple[bytes, Node]:
 
 
 def _text(source: bytes, node: Node) -> str:
-    return source[node.start_byte:node.end_byte].decode("utf-8")
+    return source[node.start_byte : node.end_byte].decode("utf-8")
 
 
 def _norm(text: str) -> str:
@@ -63,7 +69,7 @@ def _norm(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def _iter_items(source: bytes, body: Node):
+def _iter_items(source: bytes, body: Node) -> Iterator[tuple[Node, list[str]]]:
     """Yield (func_node, decorator_names) for every function in a body node."""
     for child in body.children:
         decorators: list[str] = []
@@ -116,7 +122,7 @@ def _should_skip(source: bytes, func_node: Node, decorators: list[str]) -> bool:
 
 
 def _is_trivial_alias(source: bytes, func_node: Node) -> bool:
-    """True if body is a single `return lowercase_func(...)` (after optional docstring)."""
+    """True if body is `return lowercase_func(...)` (after optional docstring)."""
     body = func_node.child_by_field_name("body")
     if not body:
         return False
@@ -133,7 +139,9 @@ def _is_trivial_alias(source: bytes, func_node: Node) -> bool:
         stmts.append(child)
     if len(stmts) != 1 or stmts[0].type != "return_statement":
         return False
-    call_candidates = [c for c in stmts[0].children if c.type not in ("return", "newline")]
+    call_candidates = [
+        c for c in stmts[0].children if c.type not in ("return", "newline")
+    ]
     if not call_candidates or call_candidates[0].type != "call":
         return False
     func_part = call_candidates[0].child_by_field_name("function")
@@ -153,7 +161,11 @@ def _format_params(source: bytes, params_node: Node | None) -> list[str]:
             continue
         if child.type == "identifier" and _text(source, child) in ("self", "cls"):
             continue
-        if child.type in ("typed_parameter", "typed_default_parameter", "default_parameter"):
+        if child.type in (
+            "typed_parameter",
+            "typed_default_parameter",
+            "default_parameter",
+        ):
             first_id = next((c for c in child.children if c.type == "identifier"), None)
             if first_id and _text(source, first_id) in ("self", "cls"):
                 continue
@@ -199,12 +211,16 @@ def _get_docstring_summary(source: bytes, func_node: Node) -> str:
                 continue
             raw = _text(source, expr)
             for delim in ('"""', "'''", '"', "'"):
-                if raw.startswith(delim) and raw.endswith(delim) and len(raw) > 2 * len(delim):
-                    content = raw[len(delim):-len(delim)]
-                    for line in content.strip().splitlines():
-                        line = line.strip().rstrip(".")
-                        if line:
-                            return line
+                if (
+                    raw.startswith(delim)
+                    and raw.endswith(delim)
+                    and len(raw) > 2 * len(delim)
+                ):
+                    content = raw[len(delim) : -len(delim)]
+                    for raw_line in content.strip().splitlines():
+                        stripped = raw_line.strip().rstrip(".")
+                        if stripped:
+                            return stripped
                     break
         break
     return ""
@@ -236,10 +252,12 @@ def _clean(text: str) -> str:
 # Section builders
 # ---------------------------------------------------------------------------
 
+
 def _class_block(
     source: bytes,
     root: Node,
     class_name: str,
+    *,
     skip_init: bool = False,
     skip_aliases: bool = False,
 ) -> str:
@@ -302,6 +320,7 @@ def _func_block(
 # Document sections
 # ---------------------------------------------------------------------------
 
+
 def _section_pact() -> str:
     source, root = _parse("pact.py")
     pact = _class_block(source, root, "Pact")
@@ -321,9 +340,15 @@ def _section_interaction() -> str:
     base_src, base_root = _parse("interaction/_base.py")
     http_src, http_root = _parse("interaction/_http_interaction.py")
     base_block = _class_block(base_src, base_root, "Interaction", skip_init=True)
-    http_block = _class_block(http_src, http_root, "HttpInteraction", skip_init=True, skip_aliases=True)
+    http_block = _class_block(
+        http_src, http_root, "HttpInteraction", skip_init=True, skip_aliases=True
+    )
+    base_header = (
+        "File: src/pact/interaction/_base.py"
+        "  (shared methods — available on all interaction types)"
+    )
     return f"""\
-File: src/pact/interaction/_base.py  (shared methods — available on all interaction types)
+{base_header}
 ```python
 {base_block}
 ```
@@ -337,18 +362,25 @@ File: src/pact/interaction/_http_interaction.py  (HTTP-specific methods)
 def _section_match() -> str:
     source, root = _parse("match/__init__.py")
     public = [
-        "int", "integer",
-        "float", "decimal",
+        "int",
+        "integer",
+        "float",
+        "decimal",
         "number",
-        "str", "string",
+        "str",
+        "string",
         "regex",
         "uuid",
-        "bool", "boolean",
+        "bool",
+        "boolean",
         "date",
         "time",
-        "datetime", "timestamp",
-        "none", "null",
-        "type", "like",
+        "datetime",
+        "timestamp",
+        "none",
+        "null",
+        "type",
+        "like",
         "each_like",
         "includes",
         "array_containing",
@@ -357,11 +389,17 @@ def _section_match() -> str:
         "content_type",
     ]
     alias_map = {
-        "integer": "int", "decimal": "float", "string": "str",
-        "boolean": "bool", "timestamp": "datetime", "null": "none",
+        "integer": "int",
+        "decimal": "float",
+        "string": "str",
+        "boolean": "bool",
+        "timestamp": "datetime",
+        "null": "none",
         "like": "type",
     }
-    block = _func_block(source, root, ordered_names=public, alias_map=alias_map, module_prefix="match")
+    block = _func_block(
+        source, root, ordered_names=public, alias_map=alias_map, module_prefix="match"
+    )
     return f"""\
 File: src/pact/match/__init__.py
 ```python
@@ -375,24 +413,40 @@ File: src/pact/match/__init__.py
 def _section_generate() -> str:
     source, root = _parse("generate/__init__.py")
     public = [
-        "bool", "boolean",
-        "int", "integer",
-        "float", "decimal",
-        "str", "string",
+        "bool",
+        "boolean",
+        "int",
+        "integer",
+        "float",
+        "decimal",
+        "str",
+        "string",
         "regex",
         "uuid",
         "date",
         "time",
-        "datetime", "timestamp",
-        "hex", "hexadecimal",
+        "datetime",
+        "timestamp",
+        "hex",
+        "hexadecimal",
         "provider_state",
         "mock_server_url",
     ]
     alias_map = {
-        "boolean": "bool", "integer": "int", "decimal": "float",
-        "string": "str", "timestamp": "datetime", "hexadecimal": "hex",
+        "boolean": "bool",
+        "integer": "int",
+        "decimal": "float",
+        "string": "str",
+        "timestamp": "datetime",
+        "hexadecimal": "hex",
     }
-    block = _func_block(source, root, ordered_names=public, alias_map=alias_map, module_prefix="generate")
+    block = _func_block(
+        source,
+        root,
+        ordered_names=public,
+        alias_map=alias_map,
+        module_prefix="generate",
+    )
     return f"""\
 File: src/pact/generate/__init__.py
 ```python
@@ -418,18 +472,25 @@ File: src/pact/verifier.py
 
 _MATCH_SPEC: dict[str, str] = {
     "regex": "V2",
-    "like": "V2", "type": "V2",
+    "like": "V2",
+    "type": "V2",
     "each_like": "V2",
-    "int": "V3", "integer": "V3",
-    "float": "V3", "decimal": "V3",
+    "int": "V3",
+    "integer": "V3",
+    "float": "V3",
+    "decimal": "V3",
     "number": "V3",
-    "str": "V3", "string": "V3",
+    "str": "V3",
+    "string": "V3",
     "uuid": "V3",
-    "bool": "V3", "boolean": "V3",
+    "bool": "V3",
+    "boolean": "V3",
     "date": "V3",
     "time": "V3",
-    "datetime": "V3", "timestamp": "V3",
-    "none": "V3", "null": "V3",
+    "datetime": "V3",
+    "timestamp": "V3",
+    "none": "V3",
+    "null": "V3",
     "includes": "V3",
     "array_containing": "V3",
     "each_key_matches": "V4",
@@ -460,8 +521,12 @@ _MATCH_EXAMPLES: dict[str, str] = {
     "content_type": 'match.content_type("image/jpeg")',
 }
 
-_EXAMPLE_CONSUMER = ROOT / "examples" / "http" / "requests_and_fastapi" / "test_consumer.py"
-_EXAMPLE_PROVIDER = ROOT / "examples" / "http" / "requests_and_fastapi" / "test_provider.py"
+_EXAMPLE_CONSUMER = (
+    ROOT / "examples" / "http" / "requests_and_fastapi" / "test_consumer.py"
+)
+_EXAMPLE_PROVIDER = (
+    ROOT / "examples" / "http" / "requests_and_fastapi" / "test_provider.py"
+)
 
 
 def _extract_func_source(path: Path, func_names: list[str]) -> list[str]:
@@ -489,10 +554,25 @@ def _section_matcher_table() -> str:
     source, root = _parse("match/__init__.py")
     by_name = _module_funcs(source, root)
     primaries = [
-        "int", "float", "number", "str", "regex", "uuid", "bool",
-        "date", "time", "datetime", "none", "type", "like",
-        "each_like", "includes", "array_containing",
-        "each_key_matches", "each_value_matches", "content_type",
+        "int",
+        "float",
+        "number",
+        "str",
+        "regex",
+        "uuid",
+        "bool",
+        "date",
+        "time",
+        "datetime",
+        "none",
+        "type",
+        "like",
+        "each_like",
+        "includes",
+        "array_containing",
+        "each_key_matches",
+        "each_value_matches",
+        "content_type",
     ]
     rows = ["| Matcher | Min Spec | Description |", "|---|---|---|"]
     for name in primaries:
@@ -502,11 +582,12 @@ def _section_matcher_table() -> str:
         desc = _get_docstring_summary(source, entry[0]) if entry else ""
         rows.append(f"| `{example}` | {spec} | {desc} |")
     notes = (
-        "\n**Date/time format note**: `match.date/time/datetime` accept Python `strftime`"
-        " format strings (e.g., `\"%Y-%m-%d\"`) and convert them to Java `SimpleDateFormat`"
-        " internally. Pass `disable_conversion=True` to supply a Java format string directly."
-        "\n\n**Import pattern** — always use the module, never import functions directly:"
-        "\n```python\nfrom pact import match, generate   # correct"
+        "\n**Date/time format note**: `match.date/time/datetime` accept"
+        ' Python `strftime` format strings (e.g., `"%Y-%m-%d"`) and'
+        " convert them to Java `SimpleDateFormat` internally."
+        " Pass `disable_conversion=True` to supply a Java format string directly."
+        "\n\n**Import pattern** — always use the module, never import functions"
+        " directly:\n```python\nfrom pact import match, generate   # correct"
         "\nfrom pact.match import int         # wrong — shadows built-in int\n```"
     )
     return "## Matcher Quick Reference\n\n" + "\n".join(rows) + "\n" + notes
@@ -523,6 +604,21 @@ def _section_examples() -> str:
     provider_block = "\n\n".join(provider_funcs)
     src_consumer = "examples/http/requests_and_fastapi/test_consumer.py"
     src_provider = "examples/http/requests_and_fastapi/test_provider.py"
+    key_rules = (
+        "**Key rules**:\n"
+        "- Call `with_request` before `will_respond_with`. Headers/body added"
+        " _before_ `will_respond_with` target the request; _after_ it, the response.\n"
+        "- `pact.serve()` is a context manager; access the mock server URL"
+        " via `srv.url` (a `yarl.URL`).\n"
+        "- Always provide example values in matchers (`match.int(1)` not"
+        " `match.int()`) to keep tests deterministic."
+    )
+    state_note = (
+        "**State handler signatures**: when `teardown=True`, each function"
+        " receives `(action: str, params: dict)` where action is"
+        ' `"setup"` or `"teardown"`. When `teardown=False` (default),'
+        " functions receive only `(params: dict)`."
+    )
     return f"""\
 ---
 
@@ -534,10 +630,7 @@ def _section_examples() -> str:
 {consumer_block}
 ```
 
-**Key rules**:
-- Call `with_request` before `will_respond_with`. Headers/body added _before_ `will_respond_with` target the request; _after_ it, the response.
-- `pact.serve()` is a context manager; access the mock server URL via `srv.url` (a `yarl.URL`).
-- Always provide example values in matchers (`match.int(1)` not `match.int()`) to keep tests deterministic.
+{key_rules}
 
 ---
 
@@ -549,7 +642,7 @@ def _section_examples() -> str:
 {provider_block}
 ```
 
-**State handler signatures**: when `teardown=True`, each function receives `(action: str, params: dict)` where action is `"setup"` or `"teardown"`. When `teardown=False` (default), functions receive only `(params: dict)`.
+{state_note}
 
 ---
 
@@ -560,10 +653,13 @@ def _section_examples() -> str:
 # Entrypoint
 # ---------------------------------------------------------------------------
 
+
 def build_doc() -> str:
+    """Assemble and return the full DSL reference document."""
     sections = [
-        "While you already know this, here is a reminder of the key pact-python classes,"
-        " methods, and functions you will need to use to create a Pact test in Python"
+        "While you already know this, here is a reminder of the key"
+        " pact-python classes, methods, and functions you will need to use"
+        " to create a Pact test in Python"
         " (having omitted deprecated and unadvised methods):\n",
         "> **Auto-generated** from pact-python source by `scripts/generate_dsl_doc.py`."
         " Do not edit this file directly — run the workflow or the script instead.\n",
@@ -578,6 +674,7 @@ def build_doc() -> str:
 
 
 def main() -> int:
+    """CLI entry point — parse args, generate, write or check."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default=str(DEFAULT_OUT), help="Output path")
     parser.add_argument(
@@ -590,13 +687,15 @@ def main() -> int:
     content = build_doc()
     if args.check:
         if out_path.exists() and out_path.read_text(encoding="utf-8") == content:
-            print(f"✓ {out_path} is up to date")
+            print(f"✓ {out_path} is up to date")  # noqa: T201
             return 0
-        print(f"✗ {out_path} is out of date — run: uv run scripts/generate_dsl_doc.py")
+        print(  # noqa: T201
+            f"✗ {out_path} is out of date — run: uv run scripts/generate_dsl_doc.py"
+        )
         return 1
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(content, encoding="utf-8")
-    print(f"Written: {out_path}")
+    print(f"Written: {out_path}")  # noqa: T201
     return 0
 
 
