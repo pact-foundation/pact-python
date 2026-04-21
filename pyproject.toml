@@ -240,6 +240,11 @@ build-backend = "hatchling.build"
     (src/pact|tests|examples)/v2/.*\\.pyi?
   )$"""
 
+    [[tool.mypy.overrides]]
+    # tree-sitter packages are PEP 723 script-only deps, not installed in the project venv
+    module = ["tree_sitter", "tree_sitter_python"]
+    ignore_missing_imports = true
+
   [tool.pytest]
   addopts = [
     # Coverage options
