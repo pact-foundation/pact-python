@@ -53,8 +53,8 @@ jobs:
 
   test:
     name: >-
-      Test Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os,
-      'windows-') && 'Windows' || 'Linux' }}
+      Test Python ${{ matrix.python-version }}
+      on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
 
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ${{ matrix.os }}
@@ -127,8 +127,8 @@ jobs:
 
   example:
     name: >-
-      Test Python Example ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS'
-      || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+      Test Python Example ${{ matrix.python-version }}
+      on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
 
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ${{ matrix.os }}
@@ -279,40 +279,17 @@ jobs:
         run: hatch run typecheck
 
   prek:
-    name: Prek (pre-commit)
+    name: Prek
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      - name: Cache prek
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          path: |-
-            ~/.cache/prek
-          key: >-
-            ${{ runner.os }}-prek-${{
-              hashFiles(
-                '**/.pre-commit-config.yaml',
-                '**/.pre-commit-config.yml'
-              ) }}
-          restore-keys: |-
-            ${{ runner.os }}-prek-
-
       - name: Set up uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b  # v8.1.0
-        with:
-          enable-cache: true
-          cache-suffix: prek
-          cache-dependency-glob: |-
-            **/.pre-commit-config.yaml
-            **/.pre-commit-config.yml
 
-      - name: Install prek
-        run: uv tool install prek
       - name: Install hatch
         run: uv tool install hatch
 
-      - name: Run prek
-        run: prek run --show-diff-on-failure --color=always --all-files
+      - uses: j178/prek-action@cbc2f23eb5539cf20d82d1aabd0d0ecbcc56f4e3  # v2.0.2
