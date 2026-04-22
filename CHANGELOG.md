@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.3.1] _2026-04-22_
+
+### 🐛 Bug Fixes
+
+-   Avoid rare port clash
+
+### ⚙️ Miscellaneous Tasks
+
+-   Simplify find_free_port
+-   Replace pre-commit with prek
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/3.3.0] _2026-04-17_
 
 ### 🚀 Features
