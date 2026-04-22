@@ -13,7 +13,6 @@ import inspect
 import logging
 import socket
 import warnings
-from contextlib import closing
 from functools import partial
 from inspect import Parameter, _ParameterKind
 from typing import TYPE_CHECKING, TypeVar
@@ -173,9 +172,8 @@ def find_free_port() -> int:
     Returns:
         The port number.
     """
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("", 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
 
 
