@@ -76,7 +76,6 @@ from typing import (
 from yarl import URL
 
 import pact_ffi
-from pact._util import find_free_port
 from pact.error import (
     InteractionVerificationError,
     Mismatch,
@@ -667,7 +666,7 @@ class PactServer:
                 independently of `raises`.
         """
         self._host = host
-        self._port = port or find_free_port()
+        self._port = port or 0
         self._transport = transport
         self._transport_config = transport_config
         self._pact_handle = pact_handle
