@@ -95,7 +95,7 @@ docs = [
   "mkdocs-material[recommended,git,imaging]==9.7.6",
   "mkdocs-section-index==0.3.12",
   "mkdocstrings[python]==1.0.4",
-  "pathspec==1.0.4",
+  "pathspec==1.1.0",
 ]
 example = [
   "fastapi~=0.0",
