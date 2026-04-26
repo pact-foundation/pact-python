@@ -615,15 +615,21 @@ def compute_wrapper_version(upstream_version: str, current_version: str) -> str:
         upstream_version:
             The latest upstream semver string, e.g. `"0.4.28"`.
         current_version:
-            The current 4-part package version, e.g. `"0.4.28.2"`.
+            The current 4-part package version, e.g. `"0.4.28.2"`or `"0.4.28"`.
 
     Returns:
         The next 4-part version string, e.g. `"0.4.28.3"` or `"0.4.29.0"`.
     """
+    upstream_part_count = 3
     current_parts = current_version.split(".")
-    current_upstream = ".".join(current_parts[:3])
+    current_upstream = ".".join(current_parts[:upstream_part_count])
+    current_suffix = (
+        int(current_parts[upstream_part_count])
+        if len(current_parts) > upstream_part_count
+        else 0
+    )
     if upstream_version == current_upstream:
-        return f"{upstream_version}.{int(current_parts[3]) + 1}"
+        return f"{upstream_version}.{current_suffix + 1}"
     return f"{upstream_version}.0"
 
 
