@@ -480,6 +480,55 @@ class Interaction(abc.ABC):
         pact_ffi.add_text_comment(self._handle, comment)
         return self
 
+    def add_external_reference(
+        self,
+        group: str,
+        name: str,
+        value: str,
+    ) -> Self:
+        """
+        Add an external reference to the interaction.
+
+        This is used by V4 interactions to record references to external
+        resources, such as tickets or pull requests, against the interaction.
+        References are stored under `comments.references[group][name]` in the
+        generated Pact file.
+
+        This method may be called multiple times to add references to multiple
+        external systems. Calling it with the same `group` and `name` will
+        overwrite the previous value.
+
+        Args:
+            group:
+                Group or system the reference belongs to (e.g. `"Jira"`,
+                `"OpenAPI"`, `"GitHub"`).
+
+            name:
+                Name or identifier of the reference (e.g. `"TICKET"`,
+                `"OperationID"`, `"PullRequest"`).
+
+            value:
+                Value of the reference, typically an ID (e.g., `"TICKET-123"`,
+                `"getUserById"`, `"#123"`).
+
+        Example:
+            ```python
+            (
+                pact
+                .upon_receiving("a request")
+                .add_external_reference(
+                    "Jira",
+                    "TICKET-123",
+                    "https://jira.example.com/browse/TICKET-123",
+                )
+                .with_request("GET", "/users/123")
+                .will_respond_with(200)
+            )
+            ```
+        """
+        pact_ffi.add_interaction_reference(self._handle, group, name, value)
+        return self
+
     def test_name(
         self,
         name: str,

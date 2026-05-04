@@ -4,12 +4,17 @@ Pact Sync Message Interaction unit tests.
 
 from __future__ import annotations
 
+import json
 import re
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
 
 from pact import Pact
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture
@@ -106,3 +111,24 @@ def test_with_metadata_with_part(pact: Pact) -> None:
     assert handler.call_args[0][1]["foo"] == {"bar": 1.23}
     assert "metadata" in handler.call_args[0][1]
     assert handler.call_args[0][1]["metadata"] == 123
+
+
+def test_add_external_reference(pact: Pact, tmp_path: Path) -> None:
+    (
+        pact
+        .upon_receiving("a sync message with an external reference", "Sync")
+        .add_external_reference(
+            "Jira",
+            "TICKET-789",
+            "https://jira.example.com/browse/TICKET-789",
+        )
+        .with_body("request", content_type="text/plain")
+        .will_respond_with()
+        .with_body("response", content_type="text/plain")
+    )
+    pact.write_file(tmp_path)
+    data = json.load((tmp_path / "consumer-provider.json").open())
+    references = data["interactions"][0]["comments"]["references"]
+    assert (
+        references["Jira"]["TICKET-789"] == "https://jira.example.com/browse/TICKET-789"
+    )

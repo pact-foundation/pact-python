@@ -589,6 +589,46 @@ async def test_name(pact: Pact) -> None:
                 assert await resp.read() == b""
 
 
+def test_add_external_reference(pact: Pact, tmp_path: Path) -> None:
+    (
+        pact
+        .upon_receiving("a request with an external reference")
+        .add_external_reference(
+            "Jira",
+            "TICKET-123",
+            "https://jira.example.com/browse/TICKET-123",
+        )
+        .with_request("GET", "/")
+        .will_respond_with(200)
+    )
+    pact.write_file(tmp_path)
+    data = json.load((tmp_path / "consumer-provider.json").open())
+    references = data["interactions"][0]["comments"]["references"]
+    assert (
+        references["Jira"]["TICKET-123"] == "https://jira.example.com/browse/TICKET-123"
+    )
+
+
+def test_add_external_reference_multiple(pact: Pact, tmp_path: Path) -> None:
+    (
+        pact
+        .upon_receiving("a request with multiple external references")
+        .add_external_reference(
+            "Jira", "TICKET-123", "https://jira.example.com/TICKET-123"
+        )
+        .add_external_reference(
+            "GitHub", "PR-456", "https://github.com/org/repo/pull/456"
+        )
+        .with_request("GET", "/")
+        .will_respond_with(200)
+    )
+    pact.write_file(tmp_path)
+    data = json.load((tmp_path / "consumer-provider.json").open())
+    references = data["interactions"][0]["comments"]["references"]
+    assert references["Jira"]["TICKET-123"] == "https://jira.example.com/TICKET-123"
+    assert references["GitHub"]["PR-456"] == "https://github.com/org/repo/pull/456"
+
+
 @pytest.mark.asyncio
 async def test_with_plugin(pact: Pact) -> None:
     (
