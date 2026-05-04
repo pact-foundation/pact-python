@@ -91,7 +91,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Install git-cliff and typos
-        uses: taiki-e/install-action@481c34c1cf3a84c68b5e46f4eccfc82af798415a  # v2.75.23
+        uses: taiki-e/install-action@db5fb34fa772531a3ece57ca434f579eb334e0fb  # v2.75.30
         with:
           tool: git-cliff,typos
 
