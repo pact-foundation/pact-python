@@ -30,7 +30,7 @@ PACT_CLI_URL = "https://github.com/pact-foundation/pact-standalone/releases/down
 
 # Remove fixed version and infer from package metadata when pact-cli versioning
 # is adopted.
-PACT_RUST_CLI_VERSION = "0.9.5"
+PACT_RUST_CLI_VERSION = "0.10.2"
 PACT_RUST_CLI_URL = "https://github.com/pact-foundation/pact-cli/releases/download/v{version}/pact-{arch}-{os}{ext}"
 
 
