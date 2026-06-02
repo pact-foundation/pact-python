@@ -8,6 +8,16 @@ Note that this _only_ includes changes to the Python re-packaging of the Pact CL
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-cli/2.6.0.1] _2026-06-02_
+
+### 🚀 Features
+
+-   Bump Rust CLI to 0.10.2. See [Pact CLI releases](https://github.com/pact-foundation/pact-cli/releases) for details.
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-cli/2.6.0.0] _2026-04-16_
 
 ### 🐛 Bug Fixes
