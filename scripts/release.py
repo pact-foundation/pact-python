@@ -162,7 +162,8 @@ class Package:
         """Return the next semver via git cliff, or None.
 
         Returns `None` when there are no unreleased commits that would produce a
-        version bump (git cliff exits non-zero or returns empty output).
+        version bump (git cliff exits non-zero, returns empty output, or returns
+        the version that is already in `pyproject.toml`).
 
         Returns:
             The next version string (e.g. `"3.2.2"`), or `None` if no bump is
@@ -182,6 +183,15 @@ class Package:
         raw = result.stdout.strip()
         # git cliff outputs the full tag name (e.g. "pact-python/3.2.2"); strip prefix
         version = strip_tag_prefix(raw, self.tag_prefix)
+        # When all commits since the last tag are excluded from version bumping
+        # (e.g. chore(deps) commits), git cliff returns the already-released
+        # version rather than exiting non-zero.  Treat this as "nothing to do".
+        current = self.read_version()
+        if version == current:
+            logger.debug(
+                "git cliff returned current version %s — no bump needed", version
+            )
+            return None
         logger.debug("git cliff bumped version: %s", version)
         return version
 
