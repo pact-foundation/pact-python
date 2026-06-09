@@ -8,6 +8,11 @@ Note that this _only_ includes changes to the Python re-packaging of the Pact CL
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-cli/2.6.1.0] _2026-06-09_
+
+### Contributors
+
+
 ## [pact-python-cli/2.6.0.1] _2026-06-02_
 
 ### 🚀 Features
