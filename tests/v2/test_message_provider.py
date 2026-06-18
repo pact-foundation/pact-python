@@ -2,6 +2,7 @@ import os
 # import pytest
 from mock import patch, Mock
 from unittest import TestCase
+from unittest.mock import ANY
 
 from pact.v2.message_provider import MessageProvider
 from pact.v2 import message_provider as message_provider
@@ -123,7 +124,7 @@ class SetupStateTestCase(MessageProviderTestCase):
             }
         }
 
-        mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/setup', verify=False, json=expected_payload)
+        mock_requests.assert_called_once_with(f'{self.provider._proxy_url()}/setup', headers={'User-Agent': ANY}, verify=False, json=expected_payload)
 
 
 class WaitForServerStartTestCase(MessageProviderTestCase):
@@ -141,7 +142,7 @@ class WaitForServerStartTestCase(MessageProviderTestCase):
         session = mock_Session.return_value
         session.mount.assert_called_once_with(
             'http://', mock_HTTPAdapter.return_value)
-        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/ping', verify=False)
+        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/ping', headers={'User-Agent': ANY}, verify=False)
         mock_HTTPAdapter.assert_called_once_with(
             max_retries=mock_Retry.return_value)
         mock_Retry.assert_called_once_with(total=9, backoff_factor=0.5)
@@ -160,7 +161,7 @@ class WaitForServerStartTestCase(MessageProviderTestCase):
         session = mock_Session.return_value
         session.mount.assert_called_once_with(
             'http://', mock_HTTPAdapter.return_value)
-        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/ping', verify=False)
+        session.get.assert_called_once_with(f'{self.provider._proxy_url()}/ping', headers={'User-Agent': ANY}, verify=False)
         mock_HTTPAdapter.assert_called_once_with(
             max_retries=mock_Retry.return_value)
         mock_Retry.assert_called_once_with(total=9, backoff_factor=0.5)

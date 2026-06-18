@@ -6,6 +6,9 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 from multiprocessing import Process
+
+from pact._util import user_agent
+
 from .verifier import Verifier
 from .http_proxy import run_proxy
 
@@ -26,6 +29,8 @@ class MessageProvider(object):
         version='3.0.0'
     )
     """
+
+    HEADERS = {'User-Agent': user_agent()}
 
     def __init__(
         self,
@@ -59,6 +64,7 @@ class MessageProvider(object):
             message_handlers[f'{key}'] = handler()
 
         resp = requests.post(f'{self._proxy_url()}/setup',
+                             headers=self.HEADERS,
                              verify=False,
                              json={"messageHandlers": message_handlers})
         assert resp.status_code == 201, resp.text
@@ -75,7 +81,7 @@ class MessageProvider(object):
         retries = Retry(total=9, backoff_factor=0.5)
         http_mount = 'http://'
         s.mount(http_mount, HTTPAdapter(max_retries=retries))
-        resp = s.get(f'{self._proxy_url()}/ping', verify=False)
+        resp = s.get(f'{self._proxy_url()}/ping', headers=self.HEADERS, verify=False)
         if resp.status_code != 200:
             self._stop_proxy()
             raise RuntimeError(
