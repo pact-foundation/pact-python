@@ -12,6 +12,8 @@ from requests.packages.urllib3 import Retry
 
 from pact_cli import _telemetry_env
 
+from pact._util import user_agent
+
 from .broker import Broker
 from .constants import MOCK_SERVICE_PATH
 from .matchers import from_term
@@ -40,7 +42,7 @@ class Pact(Broker):
     does match the defined interaction, it will respond with the text `Hello!`.
     """
 
-    HEADERS = {'X-Pact-Mock-Service': 'true'}
+    HEADERS = {'X-Pact-Mock-Service': 'true', 'User-Agent': user_agent()}
 
     MANDATORY_FIELDS = {'response', 'description', 'request'}
 

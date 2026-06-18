@@ -235,13 +235,13 @@ class PactSetupTestCase(PactTestCase):
          .will_respond_with(200, body='success'))
 
         self.delete_call = call('delete', 'http://localhost:1234/interactions',
-                                headers={'X-Pact-Mock-Service': 'true'},
+                                headers={'X-Pact-Mock-Service': 'true', 'User-Agent': ANY},
                                 verify=False)
 
         self.put_interactions_call = call(
             'put', 'http://localhost:1234/interactions',
             data=None,
-            headers={'X-Pact-Mock-Service': 'true'},
+            headers={'X-Pact-Mock-Service': 'true', 'User-Agent': ANY},
             verify=False,
             json={'interactions': [{
                 'response': {'status': 200, 'body': 'success'},
@@ -449,7 +449,7 @@ class PactWaitForServerStartTestCase(TestCase):
             'http://', self.mock_HTTPAdapter.return_value)
         session.get.assert_called_once_with(
             'http://localhost:1234',
-            headers={'X-Pact-Mock-Service': 'true'},
+            headers={'X-Pact-Mock-Service': 'true', 'User-Agent': ANY},
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
@@ -469,7 +469,7 @@ class PactWaitForServerStartTestCase(TestCase):
             'http://', self.mock_HTTPAdapter.return_value)
         session.get.assert_called_once_with(
             'http://localhost:1234',
-            headers={'X-Pact-Mock-Service': 'true'},
+            headers={'X-Pact-Mock-Service': 'true', 'User-Agent': ANY},
             verify=False)
         self.mock_HTTPAdapter.assert_called_once_with(
             max_retries=self.mock_Retry.return_value)
@@ -491,14 +491,14 @@ class PactVerifyTestCase(PactTestCase):
          .will_respond_with(200, body='success'))
         self.get_verification_call = call(
             'get', 'http://localhost:1234/interactions/verification',
-            headers={'X-Pact-Mock-Service': 'true'},
+            headers={'X-Pact-Mock-Service': 'true', 'User-Agent': ANY},
             verify=False,
             params=None)
 
         self.post_publish_pacts_call = call(
             'post', 'http://localhost:1234/pact',
             data=None,
-            headers={'X-Pact-Mock-Service': 'true'},
+            headers={'X-Pact-Mock-Service': 'true', 'User-Agent': ANY},
             verify=False,
             json=None)
 
