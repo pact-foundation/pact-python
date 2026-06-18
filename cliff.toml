@@ -87,12 +87,12 @@ commit_parsers = [
   { group = "<!-- 00 -->🚀 Features", message = "^feat" },
   { group = "<!-- 01 -->🐛 Bug Fixes", message = "^fix" },
   { group = "<!-- 50 -->🚜 Refactor", message = "^refactor" },
-  { group = "<!-- 51 -->⚡ Performance", message = "^perf" },
+  { group = "<!-- 51 -->⚡️ Performance", message = "^perf" },
   { group = "<!-- 52 -->🎨 Styling", message = "^style" },
   { group = "<!-- 60 -->📚 Documentation", message = "^docs" },
   { group = "<!-- 80 -->🧪 Testing", message = "^test" },
-  { group = "<!-- 98 -->◀️ Revert", message = "^revert" },
-  { group = "<!-- 99 -->⚙️ Miscellaneous Tasks", message = "^chore" },
+  { group = "<!-- 98 -->↩️ Revert", message = "^revert" },
+  { group = "<!-- 99 -->🛠️ Miscellaneous Tasks", message = "^chore" },
   { group = "<!-- 99 -->� Other", message = ".*" },
 ]
 # filter out the commits that are not matched by commit parsers
