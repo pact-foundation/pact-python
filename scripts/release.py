@@ -302,48 +302,6 @@ class Package:
             cwd=self.directory,
         )
 
-    def _configure_git_for_ci(self) -> None:
-        """Configure git identity and authenticate the remote for CI operations.
-
-        Sets `user.name` and `user.email` only when they are not already
-        configured (preserving a developer's local git config when running
-        outside CI).  If `GH_TOKEN` is set, embeds the token in the HTTPS
-        remote URL so that `git push` and `gh` operations authenticate without
-        a separate credential helper.
-        """
-        logger.debug("Configuring git identity for CI")
-        if not subprocess.run(
-            ["git", "config", "--get", "user.name"],
-            text=True,
-            check=False,
-            capture_output=True,
-            cwd=ROOT,
-        ).stdout.strip():
-            logger.debug("Setting git user.name to github-actions[bot]")
-            subprocess.check_call(
-                ["git", "config", "user.name", "github-actions[bot]"],
-                text=True,
-                cwd=ROOT,
-            )
-        if not subprocess.run(
-            ["git", "config", "--get", "user.email"],
-            text=True,
-            check=False,
-            capture_output=True,
-            cwd=ROOT,
-        ).stdout.strip():
-            logger.debug("Setting git user.email to github-actions[bot]@...")
-            subprocess.check_call(
-                [
-                    "git",
-                    "config",
-                    "user.email",
-                    "github-actions[bot]@users.noreply.github.com",
-                ],
-                text=True,
-                cwd=ROOT,
-            )
-
     def _push_release_branch(
         self,
         pr_title: str,
@@ -489,7 +447,6 @@ class Package:
             return
 
         try:
-            self._configure_git_for_ci()
             self._push_release_branch(pr_title, changelog, existing_pr)
         finally:
             # Return to main so the local repo is left in a clean state, even on failure
