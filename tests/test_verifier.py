@@ -16,6 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
+from pact.types import Message
 from pact.verifier import Verifier
 
 ASSETS_DIR = Path(__file__).parent / "assets"
@@ -160,6 +161,81 @@ def test_broker_source_selector(verifier: Verifier) -> None:
 def test_verify(verifier: Verifier) -> None:
     verifier.add_transport(url="http://localhost:8080")
     verifier.verify()
+
+
+@pytest.mark.parametrize(
+    "message_first",
+    [
+        pytest.param(True, id="message_handler_before_add_transport"),
+        pytest.param(False, id="add_transport_before_message_handler"),
+    ],
+)
+def test_verify_http_primary_regardless_of_order(
+    verifier: Verifier,
+    *,
+    message_first: bool,
+) -> None:
+    """
+    The HTTP transport must always be the primary provider info.
+
+    The internal `message` transport added by `message_handler` must never
+    become the primary transport, regardless of the order in which
+    `message_handler` and `add_transport` are called.
+    """
+    if message_first:
+        verifier.message_handler(
+            lambda name, metadata: Message(  # noqa: ARG005
+                contents=b"",
+                metadata=None,
+                content_type=None,
+            )
+        )
+        verifier.add_transport(url="http://localhost:8080")
+    else:
+        verifier.add_transport(url="http://localhost:8080")
+        verifier.message_handler(
+            lambda name, metadata: Message(  # noqa: ARG005
+                contents=b"",
+                metadata=None,
+                content_type=None,
+            )
+        )
+
+    with (
+        patch("pact_ffi.verifier_set_provider_info") as mock_set_info,
+        patch("pact_ffi.verifier_add_provider_transport") as mock_add_transport,
+        patch("pact_ffi.verifier_execute"),
+    ):
+        verifier.verify()
+
+    mock_set_info.assert_called_once()
+    # The primary transport's port (4th positional arg) must be the HTTP one.
+    assert mock_set_info.call_args[0][4] == 8080
+
+    # The internal message transport must be added as a secondary transport.
+    assert mock_add_transport.call_count == 1
+    assert mock_add_transport.call_args[0][1] == "message"
+
+
+def test_verify_message_only(verifier: Verifier) -> None:
+    """A message-only verification must still work."""
+    verifier.message_handler(
+        lambda name, metadata: Message(  # noqa: ARG005
+            contents=b"",
+            metadata=None,
+            content_type=None,
+        )
+    )
+
+    with (
+        patch("pact_ffi.verifier_set_provider_info") as mock_set_info,
+        patch("pact_ffi.verifier_add_provider_transport") as mock_add_transport,
+        patch("pact_ffi.verifier_execute"),
+    ):
+        verifier.verify()
+
+    mock_set_info.assert_called_once()
+    mock_add_transport.assert_not_called()
 
 
 def test_logs(verifier: Verifier) -> None:
