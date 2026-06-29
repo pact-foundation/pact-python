@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.4.1] _2026-06-29_
+
+### 🐛 Bug Fixes
+
+-   Pass http transport first to ffi
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(ci)_ Handle version degeneracy nicely
+-   Set user agent
+-   _(ci)_ Use GitHub App token
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/3.4.0] _2026-05-04_
 
 ### 🚀 Features
