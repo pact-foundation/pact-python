@@ -1306,7 +1306,18 @@ class Verifier:
             msg = "No transports have been set"
             raise RuntimeError(msg)
 
-        first, *rest = self._transports
+        # The first transport has special significance in the Pact FFI, and
+        # should always be the main HTTP(S) transport.
+        primary_idx = next(
+            (
+                i
+                for i, t in enumerate(self._transports)
+                if t["transport"].startswith("http")
+            ),
+            0,
+        )
+        first = self._transports[primary_idx]
+        rest = [t for i, t in enumerate(self._transports) if i != primary_idx]
 
         pact_ffi.verifier_set_provider_info(
             self._handle,
