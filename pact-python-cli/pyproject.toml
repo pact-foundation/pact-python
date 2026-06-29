@@ -72,14 +72,6 @@ build-backend = "hatchling.build"
     [tool.cibuildwheel.windows]
     archs = ["auto64"]
 
-    [[tool.cibuildwheel.overrides]]
-    environment.MACOSX_DEPLOYMENT_TARGET = "10.13"
-    select = "*-macosx_x86_64"
-
-    [[tool.cibuildwheel.overrides]]
-    environment.MACOSX_DEPLOYMENT_TARGET = "11.0"
-    select = "*-macosx_arm64"
-
   [tool.coverage]
     [tool.coverage.paths]
     pact-cli = ["/src/pact_cli"]
