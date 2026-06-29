@@ -31,6 +31,7 @@ __url__ = "https://github.com/pact-foundation/pact-python"
 import os
 import shutil
 import sys
+import sysconfig
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -43,7 +44,7 @@ from pact_cli.__version__ import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Iterator, Mapping
 
 _USE_SYSTEM_BINS = os.getenv("PACT_USE_SYSTEM_BINS", "").upper() in ("TRUE", "YES")
 _BIN_DIR = Path(__file__).parent.resolve() / "bin"
@@ -148,6 +149,39 @@ def _exec() -> None:
     os.execve(executable, [executable, *args], _telemetry_env())  # noqa: S606
 
 
+def _bundled_bin_dirs() -> Iterator[Path]:
+    """
+    Determine the directories that may contain the bundled Pact binaries.
+
+    The binaries are normally bundled in a `bin` directory alongside this
+    module, which is the first location searched. Relying solely on the
+    module-relative path is fragile, however: for editable or relocated
+    installs, or when a virtual environment is reused across several checkouts,
+    `__file__` may resolve to a directory that no longer contains the binaries.
+    The installation's `site-packages` directories are therefore also derived
+    from `sysconfig` so the bundled `bin` directory can be located independently
+    of `__file__`.
+
+    Returns:
+        The candidate directories to search, in order of preference and
+        deduplicated.
+    """
+    seen: set[Path] = set()
+    resolved_bin_dir = _BIN_DIR.resolve()
+    if resolved_bin_dir.is_dir():
+        yield resolved_bin_dir
+    seen.add(resolved_bin_dir)
+    for name in ("platlib", "purelib"):
+        if (
+            (path := sysconfig.get_path(name))
+            and (candidate := Path(path).resolve() / "pact_cli" / "bin")
+            and candidate.is_dir()
+            and candidate not in seen
+        ):
+            yield candidate
+            seen.add(candidate)
+
+
 def _find_executable(executable: str) -> str | None:
     """
     Find the path to an executable.
@@ -173,7 +207,8 @@ def _find_executable(executable: str) -> str | None:
     if _USE_SYSTEM_BINS:
         bin_path = shutil.which(executable)
     else:
-        bin_path = shutil.which(executable, path=str(_BIN_DIR))
+        search_path = os.pathsep.join(str(d) for d in _bundled_bin_dirs())
+        bin_path = shutil.which(executable, path=search_path) if search_path else None
         if bin_path is None:
             system_path = shutil.which(executable)
             if system_path is not None:
