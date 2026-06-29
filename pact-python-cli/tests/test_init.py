@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import sysconfig
 import time
 from pathlib import Path
 from unittest.mock import patch
@@ -237,3 +238,46 @@ def test_pact_command_does_not_warn(capsys: pytest.CaptureFixture[str]) -> None:
         pact_cli._exec()  # noqa: SLF001
     captured = capsys.readouterr()
     assert "deprecated" not in captured.err
+
+
+def test_find_executable_resolves_via_sysconfig(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    Bundled binaries are found via the install location, not just `__file__`.
+
+    This reproduces the cross-checkout failure: a virtual environment is reused
+    across multiple checkouts, so the module-relative `bin` directory (derived
+    from `__file__`) points at a location that no longer contains the binary.
+    The binary remains discoverable through the install's `site-packages`
+    location reported by `sysconfig`.
+    """
+    # The module-relative bin directory exists but does not contain the binary.
+    empty_bin = tmp_path / "stale" / "pact_cli" / "bin"
+    empty_bin.mkdir(parents=True)
+    monkeypatch.setattr(pact_cli, "_BIN_DIR", empty_bin)
+    monkeypatch.setattr(pact_cli, "_USE_SYSTEM_BINS", False)
+
+    # The binary is only present in the install's site-packages bin directory.
+    site_packages = tmp_path / "site-packages"
+    real_bin = site_packages / "pact_cli" / "bin"
+    real_bin.mkdir(parents=True)
+    name = "pact.exe" if os.name == "nt" else "pact"
+    binary = real_bin / name
+    binary.write_text("")
+    binary.chmod(0o755)
+
+    monkeypatch.setattr(
+        sysconfig,
+        "get_path",
+        lambda key, *_args, **_kwargs: (
+            str(site_packages) if key in ("platlib", "purelib") else None
+        ),
+    )
+    # Ensure the binary is not discoverable on PATH.
+    monkeypatch.setenv("PATH", str(tmp_path / "nonexistent"))
+
+    found = pact_cli._find_executable("pact")  # noqa: SLF001
+    assert found is not None
+    assert Path(found).resolve() == binary.resolve()
