@@ -164,11 +164,16 @@ jobs:
           set -o errexit
           set -o pipefail
 
+          root="$(pwd)"
+
           while IFS= read -r -d $'\0' file <&3; do
             cd "$(dirname "$file")"
-            echo "Running example in $(pwd)"
+            example="${PWD#"$root"/}"
+
+            echo "::group::${example}"
             uv run --python ${{ matrix.python-version }} --group test --with pytest-cov pytest --junit-xml=junit.xml --cov=pact --cov-report=xml:coverage-example.xml
-          done 3< <(find "$(pwd)/examples" -name pyproject.toml -print0)
+            echo "::endgroup::"
+          done 3< <(find "$root/examples" -name pyproject.toml -print0)
 
       - name: Upload coverage
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
