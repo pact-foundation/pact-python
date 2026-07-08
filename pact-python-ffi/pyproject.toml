@@ -2,7 +2,7 @@
 
 [project]
 name = "pact-python-ffi"
-version = "0.5.4.0"
+version = "0.5.4.1"
 description = "Python bindings for the Pact FFI library"
 readme = "README.md"
 license = "MIT"
