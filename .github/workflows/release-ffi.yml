@@ -106,7 +106,7 @@ jobs:
           git config user.email "$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq '.id')+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
 
       - name: Install git-cliff and typos
-        uses: taiki-e/install-action@07b4745e0c39a41822af610387492e3e53aa222b  # v2.83.4
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf  # v2.85.2
         with:
           tool: git-cliff,typos
 
