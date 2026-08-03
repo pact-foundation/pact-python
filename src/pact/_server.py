@@ -282,9 +282,21 @@ class MessageProducerHandler(SimpleHTTPRequestHandler, Generic[_CM]):
             self.send_error(400, "Bad Request")
             return
 
-        self.send_response(200, "OK")
+        # The handler must be called before the response line is sent. Any
+        # exception it raises has to be reported as a 500, and not leave the
+        # client with a truncated 200 response.
+        try:
+            message = self.server.handler(description, data)
+        except Exception as e:
+            logger.exception("Message handler for %s raised an exception.", description)
+            self.send_error(
+                500,
+                "Message handler failed",
+                f"{type(e).__name__}: {e}",
+            )
+            return
 
-        message = self.server.handler(description, data)
+        self.send_response(200, "OK")
 
         metadata = message.get("metadata") or {}
         if content_type := message.get("content_type"):
@@ -491,7 +503,17 @@ class StateCallbackHandler(SimpleHTTPRequestHandler, Generic[_CN]):
             self.send_error(400, "Bad Request")
             return
 
-        self.server.handler(state, action, params)
+        try:
+            self.server.handler(state, action, params)
+        except Exception as e:
+            logger.exception("State handler for %s raised an exception.", state)
+            self.send_error(
+                500,
+                "State handler failed",
+                f"{type(e).__name__}: {e}",
+            )
+            return
+
         self.send_response(200, "OK")
         self.end_headers()
 
