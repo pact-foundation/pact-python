@@ -15,11 +15,10 @@ applyTo: "**/tests/**/*.py"
         [
             pytest.param(v1, x1, r1, id="description1"),
             pytest.param(v2, x2, r2, id="description2"),
-            ...
-        ]
+            ...,
+        ],
     )
-    def test_function(param1: Type1, param2: Type2, expected: ReturnType) -> None:
-        ...
+    def test_function(param1: Type1, param2: Type2, expected: ReturnType) -> None: ...
     ```
 
 -   Ensure test coverage for:

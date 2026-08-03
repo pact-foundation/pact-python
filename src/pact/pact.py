@@ -670,7 +670,7 @@ class PactServer:
         self._transport = transport
         self._transport_config = transport_config
         self._pact_handle = pact_handle
-        self._handle: None | pact_ffi.PactServerHandle = None
+        self._handle: pact_ffi.PactServerHandle | None = None
         self._raises = raises
         self._verbose = verbose
         self._mismatches: list[Mismatch] | None = None

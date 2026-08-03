@@ -92,6 +92,7 @@ The new `state_handler` method replaces the `set_state` method and simplifies th
 ```python
 from pact import Verifier
 
+
 def provider_state_callback(
     name: str,  # (1)
     action: Literal["setup", "teardown"],  # (2)
@@ -118,6 +119,7 @@ def provider_state_callback(
     """
     ...
 
+
 def test_provider():
     verifier = Verifier("provider_name")
     verifier.state_handler(provider_state_callback, teardown=True)
@@ -140,11 +142,12 @@ This snippet showcases a way to set up the provider state with a function that i
     ```python
     from pact import Verifier
 
+
     def provider_state_callback(
         name: str,
         parameters: dict[str, Any] | None,
-    ) -> None:
-        ...
+    ) -> None: ...
+
 
     def test_provider():
         verifier = Verifier("provider_name")
@@ -160,17 +163,18 @@ This snippet showcases a way to set up the provider state with a function that i
     ```python
     from pact import Verifier
 
+
     def user_state_callback(
         action: Literal["setup", "teardown"],
         parameters: dict[str, Any] | None,
-    ) -> None:
-        ...
+    ) -> None: ...
+
 
     def no_users_state_callback(
         action: Literal["setup", "teardown"],
         parameters: dict[str, Any] | None,
-    ) -> None:
-        ...
+    ) -> None: ...
+
 
     def test_provider():
         verifier = Verifier("provider_name")
@@ -191,15 +195,16 @@ This snippet showcases a way to set up the provider state with a function that i
     ```python
     from pact import Verifier
 
+
     def user_state_callback(
         parameters: dict[str, Any] | None,
-    ) -> None:
-        ...
+    ) -> None: ...
+
 
     def no_users_state_callback(
         parameters: dict[str, Any] | None,
-    ) -> None:
-        ...
+    ) -> None: ...
+
 
     def test_provider():
         verifier = Verifier("provider_name")
@@ -226,6 +231,7 @@ With the update to 2.3.0, the `Verifier` class has a new `message_handler` metho
 from pact import Verifier
 from pact.types import Message
 
+
 def message_producer_callback(
     name: str,  # (1)
     metadata: dict[str, Any] | None,  # (2)
@@ -245,6 +251,7 @@ def message_producer_callback(
     """
     ...
 
+
 def test_provider():
     verifier = Verifier("provider_name")
     verifier.message_handler(message_producer_callback)
@@ -263,6 +270,7 @@ The output of the callback function should be an instance of the `Message` type.
 
 ```python
 from pact.types import Message
+
 
 def message_producer_callback(
     name: str,
@@ -306,8 +314,9 @@ In much the same way as the `state_handler` method, the `message_handler` method
 from pact import Verifier
 from pact.types import Message
 
-def delete_user_message(metadata: dict[str, Any] | None) -> Message:
-    ...
+
+def delete_user_message(metadata: dict[str, Any] | None) -> Message: ...
+
 
 def test_provider():
     verifier = Verifier("provider_name")

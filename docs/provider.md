@@ -44,6 +44,7 @@ You can verify Pacts from a local directory as follows:
 ```python
 from pact import Verifier
 
+
 def test_provider():
     """Test the provider against the consumer contract."""
     verifier = (
@@ -64,6 +65,7 @@ Although local Pact files are useful for quick tests, in most cases you will wan
 ```python
 from pact import Verifier
 
+
 def test_provider_from_broker():
     """Test the provider against contracts from a Pact Broker."""
     verifier = (
@@ -83,6 +85,7 @@ For advanced broker configurations, use the selector builder pattern to filter w
 
 ```python
 from pact import Verifier
+
 
 def test_provider_with_selectors():
     """Test with advanced broker selectors."""
@@ -139,6 +142,7 @@ The recommended approach is to set up logging in a pytest fixture within your `c
 ```python
 import pytest
 import pact_ffi
+
 
 @pytest.fixture(autouse=True, scope="session")
 def pact_logging():
@@ -227,6 +231,7 @@ A single function can handle all provider states:
 from pact import Verifier
 from typing import Literal, Any
 
+
 def handle_provider_state(
     state: str,
     action: Literal["setup", "teardown"],
@@ -250,6 +255,7 @@ def handle_provider_state(
     msg = f"Unknown state/action: {state}/{action}"
     raise ValueError(msg)
 
+
 verifier = (
     Verifier("my-provider")
     .add_transport(url="http://localhost:8080")
@@ -268,6 +274,7 @@ Map specific state names to dedicated handler functions:
 from pact import Verifier
 from typing import Literal, Any
 
+
 def mock_user_exists(
     action: Literal["setup", "teardown"],
     parameters: dict[str, Any] | None,
@@ -278,14 +285,17 @@ def mock_user_exists(
 
     if action == "setup":
         # Set up the user in your test database/mock
-        return UserDb.create(User(
-            id=user_id,
-            name=parameters.get("name", "Test User"),
-            email=parameters.get("email", "test@example.com"),
-        ))
+        return UserDb.create(
+            User(
+                id=user_id,
+                name=parameters.get("name", "Test User"),
+                email=parameters.get("email", "test@example.com"),
+            )
+        )
     if action == "teardown":
         # Clean up after the test
         return UserDb.delete(user_id)
+
 
 def mock_user_does_not_exist(
     action: Literal["setup", "teardown"],
@@ -299,6 +309,7 @@ def mock_user_does_not_exist(
         # Ensure the user doesn't exist
         if UserDb.get(user_id):
             UserDb.delete(user_id)
+
 
 # Map state names to handler functions
 state_handlers = {

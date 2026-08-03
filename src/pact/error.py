@@ -809,6 +809,7 @@ class BodyTypeMismatch(Mismatch):
         expected: str,
         actual: str,
         mismatch: str,
+        *,
         expected_body: bytes | None = None,
         expectedBody: bytes | None = None,  # noqa: N803
         actual_body: bytes | None = None,

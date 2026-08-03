@@ -75,9 +75,11 @@ from pact import Pact
 
 from my_consumer import process_message
 
+
 def handler(body: str | bytes | None, metadata: dict[str, Any]) -> None:
     message = json.loads(body)
     process_message(message)
+
 
 pact = Pact(
     consumer="deleteUserService",
@@ -85,9 +87,7 @@ pact = Pact(
 ).with_specification("V3")  # (1)
 
 (
-    pact
-    .upon_receiving("a request to delete a user", "Async")
-    .with_body(
+    pact.upon_receiving("a request to delete a user", "Async").with_body(
         json.dumps({
             "action": "delete_user",
             "user_id": "123",
@@ -114,12 +114,14 @@ As the underlying protocol is abstracted away, Pact uses a local HTTP server to 
 ```python
 from pact import Verifier
 
+
 class Provider:
     """
     A simple HTTP provider that sends messages to the consumer.
 
     This would typically use the same underlying functions that would generate messages, except that instead of being sent into the message queue, they are sent to the consumer's HTTP server.
     """
+
 
 provider = Provider()
 
@@ -132,7 +134,7 @@ provider = Provider()
         protocol="message",
         path="/_pact/message",
     )
- )
+)
 ```
 
 1.  The provider URL is required, but is only used if the Pact being verified contains both HTTP and message interactions. It is not used for message interactions, and should the Pact not contain any HTTP interactions, the endpoint need not be active.

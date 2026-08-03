@@ -53,11 +53,13 @@ from datetime import datetime
 from typing import Any
 import requests
 
+
 @dataclass()
 class User:  # (1)
     id: int
     name: str
     created_on: datetime
+
 
 class UserClient:
     """Simple HTTP client for interacting with a user provider service."""
@@ -93,12 +95,14 @@ from pathlib import Path
 import pytest
 from pact import Pact, match
 
+
 @pytest.fixture
 def pact() -> Generator[Pact, None, None]:  # (1)
     """Set up a Pact mock provider for consumer tests."""
     pact = Pact("user-consumer", "user-provider").with_specification("V4")  # (2)
     yield pact
     pact.write_file(Path(__file__).parent / "pacts")
+
 
 def test_get_user(pact: Pact) -> None:
     """Test the GET request for a user."""
@@ -108,7 +112,8 @@ def test_get_user(pact: Pact) -> None:
         "created_on": match.datetime(),
     }
     (
-        pact.upon_receiving("A user request")  # (4)
+        pact
+        .upon_receiving("A user request")  # (4)
         .given("the user exists", id=123, name="Alice")  # (5)
         .with_request("GET", "/users/123")  # (6)
         .will_respond_with(200)  # (7)
@@ -157,14 +162,16 @@ The mock service can handle multiple interactions within a single test. This is 
 
 ```python
 (
-    pact.upon_receiving("A request to create a task")
+    pact
+    .upon_receiving("A request to create a task")
     .with_request("POST", "/tasks", body={"type": "long_running"})
     .will_respond_with(202)
     .with_header("Location", "/tasks/1/status")
 )
 
 (
-    pact.upon_receiving("A request to check task status")
+    pact
+    .upon_receiving("A request to check task status")
     .with_request("GET", "/tasks/1/status")
     .will_respond_with(200)
     .with_body({"status": "completed"})
@@ -175,7 +182,8 @@ The mock service can handle multiple interactions within a single test. This is 
 )
 
 (
-    pact.upon_receiving("A request to get task result")
+    pact
+    .upon_receiving("A request to get task result")
     .with_request("GET", "/tasks/1/result")
     .will_respond_with(200)
     .with_body({"result": "Task completed successfully"})
@@ -193,6 +201,7 @@ The recommended approach is to set up logging in a pytest fixture within your `c
 ```python
 import pytest
 import pact_ffi
+
 
 @pytest.fixture(autouse=True, scope="session")
 def pact_logging():
@@ -263,16 +272,16 @@ from pact import match
 
 # Instead of exact matches that break easily:
 response = {
-    "id": 12345,                          # Brittle - specific value
-    "email": "user@example.com",          # Fails if email changes
-    "created_at": "2024-01-15T10:30:00Z"  # Breaks on different timestamps
+    "id": 12345,  # Brittle - specific value
+    "email": "user@example.com",  # Fails if email changes
+    "created_at": "2024-01-15T10:30:00Z",  # Breaks on different timestamps
 }
 
 # Use flexible matchers:
 response = {
-    "id": match.int(12345),               # Any integer
+    "id": match.int(12345),  # Any integer
     "email": match.regex("user@example.com", regex=r".+@.+\..+"),
-    "created_at": match.datetime("2024-01-15T10:30:00Z")
+    "created_at": match.datetime("2024-01-15T10:30:00Z"),
 }
 ```
 
@@ -296,16 +305,16 @@ from pact import generate
 
 # Instead of static values in your mock responses
 response = {
-    "user_id": 123,                    # Always the same
-    "session_token": "abc-def-123",    # Predictable
-    "created_at": "2024-07-20T14:30:00+00:00"  # Never changes
+    "user_id": 123,  # Always the same
+    "session_token": "abc-def-123",  # Predictable
+    "created_at": "2024-07-20T14:30:00+00:00",  # Never changes
 }
 
 # Use generators for dynamic, realistic data
 response = {
     "user_id": generate.int(min=1, max=999999),
     "session_token": generate.uuid(),
-    "created_at": generate.datetime("%Y-%m-%dT%H:%M:%S%z")
+    "created_at": generate.datetime("%Y-%m-%dT%H:%M:%S%z"),
 }
 ```
 
@@ -325,27 +334,22 @@ response = {
     # Numeric values with constraints
     "user_id": generate.int(min=1, max=999999),
     "price": generate.float(precision=2),  # 2 total digits
-    "hex_color": generate.hex(digits=6),   # 6-digit hex code
-
+    "hex_color": generate.hex(digits=6),  # 6-digit hex code
     # String and text data
-    "username": generate.str(size=8),      # 8-character string
+    "username": generate.str(size=8),  # 8-character string
     "confirmation": generate.regex(r"[A-Z]{3}-\d{4}"),  # Pattern-based
-
     # Identifiers
-    "session_id": generate.uuid(),         # Standard UUID format
+    "session_id": generate.uuid(),  # Standard UUID format
     "simple_id": generate.uuid(format="simple"),  # No hyphens
-
     # Dates and times
     "created_at": generate.datetime("%Y-%m-%dT%H:%M:%S%z"),
     "birth_date": generate.date("%Y-%m-%d"),
     "start_time": generate.time("%H:%M:%S"),
-
     # Boolean values
     "is_active": generate.bool(),
-
     # Provider-specific values
     "server_url": generate.mock_server_url(),
-    "dynamic_value": generate.provider_state("${expression}")
+    "dynamic_value": generate.provider_state("${expression}"),
 }
 ```
 
@@ -358,19 +362,18 @@ Matchers and generators work together to create flexible, realistic contracts. U
 request_body = {
     "email": match.regex("user@example.com", regex=r".+@.+\..+"),
     "age": match.int(25, min=18, max=100),
-    "preferences": match.array_containing([match.str("notifications")])
+    "preferences": match.array_containing([match.str("notifications")]),
 }
 
 # Response generation with dynamic data
 response_body = {
     "id": generate.int(min=100000, max=999999),
     "email": match.str("user@example.com"),  # Echo back the input
-    "verification_token": generate.uuid(),    # Fresh token each time
+    "verification_token": generate.uuid(),  # Fresh token each time
     "created_at": generate.datetime("%Y-%m-%dT%H:%M:%S%z"),
     "profile_url": generate.mock_server_url(
-        example="/profiles/12345",
-        regex=r"/profiles/\d+"
-    )
+        example="/profiles/12345", regex=r"/profiles/\d+"
+    ),
 }
 ```
 

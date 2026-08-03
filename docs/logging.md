@@ -35,6 +35,7 @@ The recommended way to configure FFI logging in your test suite is to use a pyte
 import pytest
 import pact_ffi
 
+
 @pytest.fixture(autouse=True, scope="session")
 def pact_logging():
     """Configure Pact FFI logging for the test session."""
