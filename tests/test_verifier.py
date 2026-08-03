@@ -238,6 +238,45 @@ def test_verify_message_only(verifier: Verifier) -> None:
     mock_add_transport.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    ("handler", "match"),
+    [
+        pytest.param(
+            {"a-message": {"field": "value"}},
+            r"missing the 'contents' key",
+            id="dict_without_contents",
+        ),
+        pytest.param(
+            {"a-message": 42},
+            r"expected a callable, bytes, or a Message dictionary, got int",
+            id="unsupported_value_type",
+        ),
+    ],
+)
+def test_message_handler_invalid_dict_value(
+    verifier: Verifier,
+    handler: dict[str, Any],
+    match: str,
+) -> None:
+    """
+    Invalid handler values must be rejected when the handler is set.
+
+    Deferring the error to verification time hides the cause behind a failed
+    interaction. See #1665.
+    """
+    with pytest.raises(TypeError, match=match):
+        verifier.message_handler(handler)
+
+
+def test_message_handler_unknown_message(verifier: Verifier) -> None:
+    """A message with no handler must name the messages which do have one."""
+    verifier.message_handler({"a-message": b"", "b-message": b""})
+    handler = verifier._message_producer._handler  # noqa: SLF001
+
+    with pytest.raises(KeyError, match=r"Known messages: a-message, b-message"):
+        handler("c-message", None)
+
+
 def test_logs(verifier: Verifier) -> None:
     logs = verifier.logs
     assert logs == ""
