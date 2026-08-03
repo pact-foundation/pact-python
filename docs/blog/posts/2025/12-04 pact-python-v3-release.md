@@ -59,33 +59,33 @@ What does this look like in practice? Here's a side-by-side comparison of a simp
 from pact.v2 import Consumer, Provider
 import requests
 
-consumer = Consumer('my-web-front-end')
-provider = Provider('my-backend-service')
+consumer = Consumer("my-web-front-end")
+provider = Provider("my-backend-service")
 
-pact = consumer.has_pact_with(provider, pact_dir='/path/to/pacts')
+pact = consumer.has_pact_with(provider, pact_dir="/path/to/pacts")
 (
     pact
-    .given('user exists')  # (1)
-    .upon_receiving('a request for user data')
+    .given("user exists")  # (1)
+    .upon_receiving("a request for user data")
     .with_request(
-        'GET',
-        '/users/123',
-        headers={'Accept': 'application/json'},
-        query={'include': 'profile'}
+        "GET",
+        "/users/123",
+        headers={"Accept": "application/json"},
+        query={"include": "profile"},
     )
     .will_respond_with(
         200,
-        headers={'Content-Type': 'application/json'},
-        body={'id': 123, 'name': 'Alice'}
+        headers={"Content-Type": "application/json"},
+        body={"id": 123, "name": "Alice"},
     )
 )
 
 pact.start_service()  # (2)
 pact.setup()
-response = requests.get(pact.uri + '/users/123')
-assert response.json() == {'id': 123, 'name': 'Alice'}
-pact.verify()         # (3)
-pact.stop_service()   # (4)
+response = requests.get(pact.uri + "/users/123")
+assert response.json() == {"id": 123, "name": "Alice"}
+pact.verify()  # (3)
+pact.stop_service()  # (4)
 # Pact file is written as part of verify() or when the service stops
 ```
 
@@ -98,22 +98,22 @@ pact.stop_service()   # (4)
 from pact import Pact
 import requests
 
-pact = Pact('my-web-front-end', 'my-backend-service')
+pact = Pact("my-web-front-end", "my-backend-service")
 (
     pact
-    .upon_receiving('a request for user data')
-    .given('user exists', id=123, name='Alice')  # (1)
-    .with_request('GET', '/users/123')
-    .with_header('Accept', 'application/json')
-    .with_query_parameter('include', 'profile')
+    .upon_receiving("a request for user data")
+    .given("user exists", id=123, name="Alice")  # (1)
+    .with_request("GET", "/users/123")
+    .with_header("Accept", "application/json")
+    .with_query_parameter("include", "profile")
     .will_respond_with(200)
-    .with_body({'id': 123, 'name': 'Alice'}, content_type='application/json')
+    .with_body({"id": 123, "name": "Alice"}, content_type="application/json")
 )
 
 with pact.serve() as srv:  # (2)
     response = requests.get(f"{srv.url}/users/123")
-    assert response.json() == {'id': 123, 'name': 'Alice'}
-pact.write_file('/path/to/pacts')  # (3)
+    assert response.json() == {"id": 123, "name": "Alice"}
+pact.write_file("/path/to/pacts")  # (3)
 ```
 
 1.  In v3, provider states can be parameterized, making it easier to reuse and manage test data across different scenarios.

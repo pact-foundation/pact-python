@@ -6532,7 +6532,7 @@ def with_generators(
         raise RuntimeError(msg)
 
 
-def with_multipart_file_v2(  # noqa: PLR0913
+def with_multipart_file_v2(  # noqa: PLR0913, PLR0917
     interaction: InteractionHandle,
     part: InteractionPart,
     content_type: str | None,
@@ -7010,7 +7010,7 @@ def verifier_shutdown(handle: VerifierHandle) -> None:
     lib.pactffi_verifier_shutdown(handle._ref)
 
 
-def verifier_set_provider_info(  # noqa: PLR0913
+def verifier_set_provider_info(  # noqa: PLR0913, PLR0917
     handle: VerifierHandle,
     name: str | None,
     scheme: str | None,
@@ -7482,7 +7482,7 @@ def verifier_broker_source(
     )
 
 
-def verifier_broker_source_with_selectors(  # noqa: PLR0913
+def verifier_broker_source_with_selectors(  # noqa: PLR0913, PLR0917
     handle: VerifierHandle,
     url: str,
     username: str | None,
@@ -8008,7 +8008,7 @@ def matches_bool_value(
     raise NotImplementedError
 
 
-def matches_binary_value(  # noqa: PLR0913
+def matches_binary_value(  # noqa: PLR0913, PLR0917
     matching_rule: MatchingRule,
     expected_value: str,
     expected_value_len: int,

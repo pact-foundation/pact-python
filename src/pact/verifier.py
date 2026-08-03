@@ -1151,9 +1151,9 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | None | Unset = UNSET,
+        url: str | URL | Unset | None = UNSET,
         *,
-        token: str | None | Unset = UNSET,
+        token: str | Unset | None = UNSET,
         selector: Literal[False] = False,
         use_env: bool = True,
     ) -> Self: ...
@@ -1161,10 +1161,10 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | None | Unset = UNSET,
+        url: str | URL | Unset | None = UNSET,
         *,
-        username: str | None | Unset = UNSET,
-        password: str | None | Unset = UNSET,
+        username: str | Unset | None = UNSET,
+        password: str | Unset | None = UNSET,
         selector: Literal[True],
         use_env: bool = True,
     ) -> BrokerSelectorBuilder: ...
@@ -1172,20 +1172,20 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | None | Unset = UNSET,
+        url: str | URL | Unset | None = UNSET,
         *,
-        token: str | None | Unset = UNSET,
+        token: str | Unset | None = UNSET,
         selector: Literal[True],
         use_env: bool = True,
     ) -> BrokerSelectorBuilder: ...
 
     def broker_source(  # noqa: PLR0913
         self,
-        url: str | URL | None | Unset = UNSET,
+        url: str | URL | Unset | None = UNSET,
         *,
-        username: str | None | Unset = UNSET,
-        password: str | None | Unset = UNSET,
-        token: str | None | Unset = UNSET,
+        username: str | Unset | None = UNSET,
+        password: str | Unset | None = UNSET,
+        token: str | Unset | None = UNSET,
         selector: bool = False,
         use_env: bool = True,
     ) -> BrokerSelectorBuilder | Self:

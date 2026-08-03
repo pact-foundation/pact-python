@@ -57,7 +57,8 @@ constructs the body description from nested
 from pact import match, xml
 
 response = xml.body(
-    xml.element("user",
+    xml.element(
+        "user",
         xml.element("id", match.int(123)),
         xml.element("name", match.str("Alice")),
     )

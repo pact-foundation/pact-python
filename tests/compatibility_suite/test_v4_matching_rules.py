@@ -416,23 +416,31 @@ def the_mismatches_will_contain_a_mismatch_with_error(
         ): ("/", "Expected body Present(28058 bytes, image/jpeg) but was empty"),
         (
             "$.actions",
-            'Variant at index 1 ({\\"href\\":\\"http://api.x.io/orders/42/items\\",'
-            '\\"method\\":\\"DELETE\\",\\"name\\":\\"delete-item\\",'
-            '\\"title\\":\\"Delete Item\\"}) was not found in the actual list',
+            (
+                'Variant at index 1 ({\\"href\\":\\"http://api.x.io/orders/42/items\\",'
+                '\\"method\\":\\"DELETE\\",\\"name\\":\\"delete-item\\",'
+                '\\"title\\":\\"Delete Item\\"}) was not found in the actual list'
+            ),
         ): (
             "$.actions",
-            'Variant at index 1 ({"href":"http://api.x.io/orders/42/items",'
-            '"method":"DELETE","name":"delete-item","title":"Delete Item"}) was '
-            "not found in the actual list",
+            (
+                'Variant at index 1 ({"href":"http://api.x.io/orders/42/items",'
+                '"method":"DELETE","name":"delete-item","title":"Delete Item"}) was '
+                "not found in the actual list"
+            ),
         ),
         (
             "$.two",
-            "Type mismatch: Expected 'b' (String) "
-            'to be the same type as [\\"b\\"] (Array)',
+            (
+                "Type mismatch: Expected 'b' (String) "
+                'to be the same type as [\\"b\\"] (Array)'
+            ),
         ): (
             "$.two",
-            "Type mismatch: Expected 'b' (String) "
-            'to be the same type as ["b"] (Array)',
+            (
+                "Type mismatch: Expected 'b' (String) "
+                'to be the same type as ["b"] (Array)'
+            ),
         ),
     }.get((path, message), (path, message))
     logger.info("Searching for mismatch with path=%r, error=%r", path, message)

@@ -55,16 +55,16 @@ The `Consumer` and `Provider` classes have been removed. Instead, a single `Pact
 ```python title="v2"
 from pact.v2 import Consumer, Provider
 
-consumer = Consumer('my-web-front-end')
-provider = Provider('my-backend-service')
+consumer = Consumer("my-web-front-end")
+provider = Provider("my-backend-service")
 
-pact = consumer.has_pact_with(provider, pact_dir='/path/to/pacts')
+pact = consumer.has_pact_with(provider, pact_dir="/path/to/pacts")
 ```
 
 ```python title="v3"
 from pact import Pact
 
-pact = Pact('my-web-front-end', 'my-backend-service')
+pact = Pact("my-web-front-end", "my-backend-service")
 ```
 
 #### Defining Interactions
@@ -74,18 +74,18 @@ The v3 interface favours method chaining and provides more granular control over
 ```python title="v2"
 (
     pact
-    .given('user exists')
-    .upon_receiving('a request for user data')
+    .given("user exists")
+    .upon_receiving("a request for user data")
     .with_request(
-        'GET',
-        '/users/123',
-        headers={'Accept': 'application/json'},
-        query={'include': 'profile'}
+        "GET",
+        "/users/123",
+        headers={"Accept": "application/json"},
+        query={"include": "profile"},
     )
     .will_respond_with(
         200,
-        headers={'Content-Type': 'application/json'},
-        body={'id': 123, 'name': 'Alice'}
+        headers={"Content-Type": "application/json"},
+        body={"id": 123, "name": "Alice"},
     )
 )
 ```
@@ -93,14 +93,15 @@ The v3 interface favours method chaining and provides more granular control over
 ```python title="v3"
 (
     pact
-    .upon_receiving('a request for user data')
-    .given('user exists', id=123, name='Alice')  # (1)
-    .with_request('GET', '/users/123')
-    .with_header('Accept', 'application/json')
-    .with_query_parameter('include', 'profile')
+    .upon_receiving("a request for user data")
+    .given("user exists", id=123, name="Alice")  # (1)
+    .with_request("GET", "/users/123")
+    .with_header("Accept", "application/json")
+    .with_query_parameter("include", "profile")
     .will_respond_with(200)
-    .with_header('Content-Type', 'application/json')
-    .with_body({'id': 123, 'name': 'Alice'}, content_type='application/json'))
+    .with_header("Content-Type", "application/json")
+    .with_body({"id": 123, "name": "Alice"}, content_type="application/json")
+)
 ```
 
 1.  In v2, there was limited support for parameterizing provider states, and each state variation often required a separate definition. For example, `given("user Alice exists with id 123")` and `given("user Bob exists with id 456")` would be two distinct states, which would then need to be handled separately in the provider state setup.
@@ -122,7 +123,7 @@ pact = Consumer("my-consumer").has_pact_with(
 
 # Context manager automatically calls setup() and verify()
 with pact:
-    response = requests.get(pact.uri + '/users/123')
+    response = requests.get(pact.uri + "/users/123")
 # Pact file written automatically on exit
 ```
 
@@ -138,7 +139,7 @@ pact.start_service()
 pact.setup()  # Configure interactions
 
 # Make requests
-response = requests.get(pact.uri + '/users/123')
+response = requests.get(pact.uri + "/users/123")
 # Assertions...
 
 # Verify and stop
@@ -168,9 +169,9 @@ with pact:
 ```
 
 ```python title="v3"
-pact = Pact('consumer', 'provider')
+pact = Pact("consumer", "provider")
 # Define interactions and run tests...
-pact.write_file('/path/to/pacts')
+pact.write_file("/path/to/pacts")
 ```
 
 #### Matchers
@@ -181,18 +182,18 @@ Support for matchers has been greatly expanded and improved in the v3 API. The o
 from pact.v2.matchers import Like, EachLike, Regex, Term
 
 # Usage:
-Like({'id': 123})
-EachLike({'item': 'value'})
-Regex('hello world', r'^hello')
+Like({"id": 123})
+EachLike({"item": "value"})
+Regex("hello world", r"^hello")
 ```
 
 ```python title="v3"
 from pact import match
 
 # Usage:
-match.like({'id': 123})
-match.each_like({'item': 'value'})
-match.regex('hello world', r'^hello')
+match.like({"id": 123})
+match.each_like({"item": "value"})
+match.regex("hello world", r"^hello")
 ```
 
 For a full list of available matchers and their usage, refer to the [API documentation][pact.match].
@@ -207,34 +208,29 @@ The provider verification API has been completely redesigned in v3 to provide a 
 from pact.v2 import Provider, Verifier
 
 # Create separate Provider and Verifier instances
-provider = Provider('my-provider')
-verifier = Verifier(provider, 'http://localhost:8080')
+provider = Provider("my-provider")
+verifier = Verifier(provider, "http://localhost:8080")
 ```
 
 ```python title="v3"
 from pact import Verifier
 
 # Single Verifier instance with provider name
-verifier = Verifier('my-provider')
+verifier = Verifier("my-provider")
 ```
 
 The protocol specification is now done through the `add_transport` method, which allows for more flexible configuration and supports multiple transports if needed.
 
 ```python title="v2"
-verifier = Verifier(provider, 'http://localhost:8080')
+verifier = Verifier(provider, "http://localhost:8080")
 ```
 
 ```python title="v3"
 verifier = (
-    Verifier('my-provider')
-    .add_transport(url='http://localhost:8080')
+    Verifier("my-provider")
+    .add_transport(url="http://localhost:8080")
     # Or more granular control:
-    .add_transport(
-        protocol='http',
-        port=8080,
-        path='/api/v1',
-        scheme='https'
-    )
+    .add_transport(protocol="http", port=8080, path="/api/v1", scheme="https")
 )
 ```
 
@@ -246,18 +242,17 @@ Support for both local files and Pact Brokers is retained in v3, with the `verif
 
 ```python title="v2"
 success, logs = verifier.verify_pacts(
-    './pacts/consumer1-provider.json',
-    './pacts/consumer2-provider.json'
+    "./pacts/consumer1-provider.json", "./pacts/consumer2-provider.json"
 )
 ```
 
 ```python title="v3"
 verifier = (
-    Verifier('my-provider')
+    Verifier("my-provider")
     # It can discover all Pact files in a directory
-    .add_source('./pacts/')
+    .add_source("./pacts/")
     # Or read individual files
-    .add_source('./pacts/specific-consumer.json')
+    .add_source("./pacts/specific-consumer.json")
 )
 ```
 
@@ -267,33 +262,25 @@ verifier = (
 
 ```python title="v2"
 success, logs = verifier.verify_with_broker(
-    broker_url='https://pact-broker.example.com',
-    broker_username='username',
-    broker_password='password'
+    broker_url="https://pact-broker.example.com",
+    broker_username="username",
+    broker_password="password",
 )
 ```
 
 ```python title="v3"
-verifier = (
-    Verifier('my-provider')
-    .broker_source(
-        'https://pact-broker.example.com',
-        username='username',
-        password='password'
-    )
+verifier = Verifier("my-provider").broker_source(
+    "https://pact-broker.example.com", username="username", password="password"
 )
 
 # Or with selectors for more control
 broker_builder = (
     verifier
-    .broker_source(
-        'https://pact-broker.example.com',
-        selector=True
-    )
+    .broker_source("https://pact-broker.example.com", selector=True)
     .include_pending()
-    .provider_branch('main')
-    .consumer_version(branch='main')
-    .consumer_version(branch='develop')
+    .provider_branch("main")
+    .consumer_version(branch="main")
+    .consumer_version(branch="develop")
     .build()
 )
 ```
@@ -312,21 +299,21 @@ The old v2 API required the provider to expose an HTTP endpoint dedicated to han
 
 ```python title="v2"
 success, logs = verifier.verify_pacts(
-    './pacts/consumer-provider.json',
-    provider_states_setup_url='http://localhost:8080/_pact/provider_states'
+    "./pacts/consumer-provider.json",
+    provider_states_setup_url="http://localhost:8080/_pact/provider_states",
 )
 ```
 
 ```python title="v3"
 # Option 1: URL-based (similar to v2)
 verifier = (
-    Verifier('my-provider')
-    .add_transport(url='http://localhost:8080')
+    Verifier("my-provider")
+    .add_transport(url="http://localhost:8080")
     .state_handler(
-        'http://localhost:8080/_pact/provider_states',
-        body=True  # (1)
+        "http://localhost:8080/_pact/provider_states",
+        body=True,  # (1)
     )
-    .add_source('./pacts/')
+    .add_source("./pacts/")
 )
 ```
 
@@ -342,32 +329,32 @@ verifier = (
 
 ```python title="v3 - Function"
 def handler(name, params=None):
-    if name == 'user exists':
+    if name == "user exists":
         # Set up user in database/mock
-        create_user(params.get('id', 123))
-    elif name == 'no users exist':
+        create_user(params.get("id", 123))
+    elif name == "no users exist":
         # Clear users
         clear_users()
 
     verifier = (
-        Verifier('my-provider')
-        .add_transport(url='http://localhost:8080')
+        Verifier("my-provider")
+        .add_transport(url="http://localhost:8080")
         .state_handler(handler)
-        .add_source('./pacts/')
+        .add_source("./pacts/")
     )
 ```
 
 ```python title="v3 - Mapping"
 state_handlers = {
-    'user exists': lambda name, params: create_user(params.get('id', 123)),
-    'no users exist': lambda name, params: clear_users(),
+    "user exists": lambda name, params: create_user(params.get("id", 123)),
+    "no users exist": lambda name, params: clear_users(),
 }
 
 verifier = (
-    Verifier('my-provider')
-    .add_transport(url='http://localhost:8080')
+    Verifier("my-provider")
+    .add_transport(url="http://localhost:8080")
     .state_handler(state_handlers)
-    .add_source('./pacts/')
+    .add_source("./pacts/")
 )
 ```
 
@@ -385,33 +372,24 @@ Message verification is now much more straightforward in v3, with a a similar in
 
 ```python title="v3 - Functional Handler"
 def message_handler(description, metadata):
-    if description == 'user created event':
-        return {
-            'id': 123,
-            'name': 'Alice',
-            'event': 'created'
-        }
-    elif description == 'user deleted event':
-        return {'id': 123, 'event': 'deleted'}
+    if description == "user created event":
+        return {"id": 123, "name": "Alice", "event": "created"}
+    elif description == "user deleted event":
+        return {"id": 123, "event": "deleted"}
+
 
 verifier = (
-    Verifier('my-provider')
-    .message_handler(message_handler)
-    .add_source('./pacts/')
+    Verifier("my-provider").message_handler(message_handler).add_source("./pacts/")
 )
 ```
 
 ```python title="v3 - Dictionary Mapping"
 messages = {
-    'user created event': {'id': 123, 'name': 'Alice', 'event': 'created'},
-    'user deleted event': lambda desc, meta: {'id': 123, 'event': 'deleted'}
+    "user created event": {"id": 123, "name": "Alice", "event": "created"},
+    "user deleted event": lambda desc, meta: {"id": 123, "event": "deleted"},
 }
 
-verifier = (
-    Verifier('my-provider')
-    .message_handler(messages)
-    .add_source('./pacts/')
-)
+verifier = Verifier("my-provider").message_handler(messages).add_source("./pacts/")
 ```
 
 #### Running Verification
@@ -419,7 +397,7 @@ verifier = (
 Verification has been simplified and no longer requires checking return codes. Instead, the `verify()` method raises an exception on failure, or returns normally on success.
 
 ```python title="v2"
-success, logs = verifier.verify_pacts('./pacts/consumer-provider.json')
+success, logs = verifier.verify_pacts("./pacts/consumer-provider.json")
 if not success:
     print(logs)
     raise AssertionError("Verification failed!")
