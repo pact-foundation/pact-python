@@ -37,12 +37,12 @@ hooks = [
 
 [[repos]]
 repo = "https://github.com/biomejs/pre-commit"
-rev = "v2.4.12"
+rev = "v2.5.6"
 hooks = [{ id = "biome-check" }]
 
 [[repos]]
 repo = "https://github.com/astral-sh/ruff-pre-commit"
-rev = "v0.15.11"
+rev = "v0.16.1"
 
   [[repos.hooks]]
   id = "ruff-check"
@@ -60,12 +60,12 @@ hooks = [{ id = "committed" }]
 
 [[repos]]
 repo = "https://github.com/DavidAnson/markdownlint-cli2"
-rev = "v0.22.0"
+rev = "v0.23.2"
 hooks = [{ id = "markdownlint-cli2" }]
 
 [[repos]]
 repo = "https://github.com/crate-ci/typos"
-rev = "v1.45.1"
+rev = "v1.48.0"
 
   [[repos.hooks]]
   id = "typos"
@@ -73,7 +73,7 @@ rev = "v1.45.1"
 
 [[repos]]
 repo = "https://github.com/tombi-toml/tombi-pre-commit"
-rev = "v0.9.20"
+rev = "v1.2.6"
 hooks = [{ id = "tombi-format" }, { id = "tombi-lint" }]
 
 [[repos]]
