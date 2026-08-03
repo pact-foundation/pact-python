@@ -82,10 +82,19 @@ repo = "local"
   [[repos.hooks]]
   # Mypy is difficult to run pre-commit's isolated environment as it needs
   # to be able to find dependencies.
+  #
+  # This runs in the root environment, so the sub-projects are excluded as
+  # their dependencies are only present in their own environments. Generated
+  # protobuf modules are excluded as passing them explicitly makes mypy read
+  # the module instead of its accompanying stub.
   id = "mypy"
   name = "mypy"
   entry = "hatch run mypy"
   language = "system"
   types = ["python"]
-  exclude = '(src/pact|tests|examples)/v2/.*\.pyi?'
+  exclude = '''(?x)(
+    ^(src/pact|tests|examples)/v2/.*\.pyi?
+    | ^pact-python-(cli|ffi)/
+    | ^examples/plugins/proto/.*_pb2(_grpc)?\.py
+  )'''
   stages = ["pre-push"]
