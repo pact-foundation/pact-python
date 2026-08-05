@@ -8,6 +8,20 @@ Note that this _only_ includes changes to the Python re-packaging of the Pact CL
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-cli/2.6.4.0] _2026-08-05_
+
+### 🐛 Bug Fixes
+
+-   _(cli)_ Improve bin dirs search
+
+### ⚙️ Miscellaneous Tasks
+
+-   _(ci)_ Skip generic linux_ tags
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-cli/2.6.0.1] _2026-06-02_
 
 ### 🚀 Features
