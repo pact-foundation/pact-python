@@ -135,8 +135,22 @@ class PactBuildHook(BuildHookInterface[Any]):
         Get the platform tag from the current system tags.
 
         This is used to determine the target platform for the Pact library.
+
+        On Linux, the generic `linux_{arch}` tag conveys no information about
+        the platform's C library, so the more specific `manylinux`/`musllinux`
+        tag is preferred when one is available.
+
+        Returns:
+            The most specific platform tag supported by the current system.
         """
-        return next(t.platform for t in sys_tags())
+        platforms = (t.platform for t in sys_tags())
+        preferred = next(platforms)
+        if preferred.startswith("linux_"):
+            return next(
+                (p for p in platforms if not p.startswith("linux_")),
+                preferred,
+            )
+        return preferred
 
     def _install(self, version: str) -> Mapping[str, str]:
         """
