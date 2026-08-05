@@ -73,6 +73,30 @@ async def test_message_post_http() -> None:
     assert handler.call_args.args == ("A simple message", {})
 
 
+@pytest.mark.asyncio
+async def test_message_post_handler_raises() -> None:
+    """
+    A failing handler must produce a 500, not a truncated 200.
+
+    The response line used to be sent before the handler was called, so any
+    exception left the client with a half-written response and the Pact core
+    reported it as `error sending request for url`. See #1665.
+    """
+    handler = MagicMock(side_effect=RuntimeError("handler is broken"))
+    server = MessageProducer(handler)
+
+    with server:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                server.url,
+                data=json.dumps({"description": "A simple message"}),
+            ) as response:
+                assert response.status == 500
+                assert "handler is broken" in await response.text()
+
+    handler.assert_called_once()
+
+
 def test_callback_default_init() -> None:
     handler = MagicMock()
     server = StateCallback(handler)
@@ -132,3 +156,21 @@ async def test_callback_post() -> None:
         "setup",
         {"id": 123},
     )
+
+
+@pytest.mark.asyncio
+async def test_callback_post_handler_raises() -> None:
+    """A failing state handler must produce a 500."""
+    handler = MagicMock(side_effect=RuntimeError("state setup is broken"))
+    server = StateCallback(handler)
+
+    with server:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                server.url,
+                json={"state": "user exists", "action": "setup", "params": {}},
+            ) as response:
+                assert response.status == 500
+                assert "state setup is broken" in await response.text()
+
+    handler.assert_called_once()
