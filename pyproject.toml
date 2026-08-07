@@ -201,14 +201,6 @@ build-backend = "hatchling.build"
         [[tool.hatch.envs.test.matrix]]
         python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
-      [tool.hatch.envs.example]
-      installer = "uv"
-      path = ".venv/example"
-      dependency-groups = ["example"]
-
-        [[tool.hatch.envs.example.matrix]]
-        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-
       [tool.hatch.envs.v2-test]
       features = ["compat-v2"]
       installer = "uv"
