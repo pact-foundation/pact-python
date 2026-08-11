@@ -5,6 +5,7 @@ Tests for `pact._server` module.
 from __future__ import annotations
 
 import json
+from typing import Any
 from unittest.mock import MagicMock
 
 import aiohttp
@@ -93,6 +94,47 @@ async def test_message_post_handler_raises() -> None:
             ) as response:
                 assert response.status == 500
                 assert "handler is broken" in await response.text()
+
+    handler.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("message", "match"),
+    [
+        pytest.param(
+            {"contents": "not bytes", "metadata": None, "content_type": None},
+            "expected bytes",
+            id="str_contents",
+        ),
+        pytest.param(
+            {"contents": b"", "metadata": {"key": object()}, "content_type": None},
+            "TypeError",
+            id="unserialisable_metadata",
+        ),
+    ],
+)
+@pytest.mark.asyncio
+async def test_message_post_unserialisable_message(
+    message: dict[str, Any],
+    match: str,
+) -> None:
+    """
+    A message which cannot be serialised must produce a 500.
+
+    The handler itself succeeds here; it is the response which cannot be built,
+    and that must not leave the client with a truncated 200 either.
+    """
+    handler = MagicMock(return_value=message)
+    server = MessageProducer(handler)
+
+    with server:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                server.url,
+                data=json.dumps({"description": "A simple message"}),
+            ) as response:
+                assert response.status == 500
+                assert match in await response.text()
 
     handler.assert_called_once()
 
