@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -271,7 +272,9 @@ def test_message_handler_invalid_dict_value(
 def test_message_handler_unknown_message(verifier: Verifier) -> None:
     """A message with no handler must name the messages which do have one."""
     verifier.message_handler({"a-message": b"", "b-message": b""})
-    handler = verifier._message_producer._handler  # noqa: SLF001
+    producer = verifier._message_producer  # noqa: SLF001
+    assert not isinstance(producer, nullcontext)
+    handler = producer._handler  # noqa: SLF001
 
     with pytest.raises(KeyError, match=r"Known messages: a-message, b-message"):
         handler("c-message", None)
