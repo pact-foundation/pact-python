@@ -296,21 +296,44 @@ class MessageProducerHandler(SimpleHTTPRequestHandler, Generic[_CM]):
             )
             return
 
-        self.send_response(200, "OK")
+        # The response is serialised in full before the response line is sent,
+        # for the same reason: a malformed message must be reported as a 500,
+        # and not leave the client with a truncated 200 response.
+        try:
+            contents = message.get("contents") or b""
+            if not isinstance(contents, (bytes, bytearray)):
+                msg = (
+                    f"Message handler for {description!r} returned contents of "
+                    f"type {type(contents).__name__}, expected bytes."
+                )
+                raise TypeError(msg)  # noqa: TRY301
 
-        metadata = message.get("metadata") or {}
-        if content_type := message.get("content_type"):
-            self.send_header("Content-Type", content_type)
-            if "contentType" not in metadata:
+            metadata = message.get("metadata") or {}
+            content_type = message.get("content_type")
+            if content_type and "contentType" not in metadata:
                 metadata["contentType"] = content_type
-
-        if metadata:
-            self.send_header(
-                "Pact-Message-Metadata",
-                base64.b64encode(json.dumps(metadata).encode()).decode(),
+            encoded_metadata = (
+                base64.b64encode(json.dumps(metadata).encode()).decode()
+                if metadata
+                else None
             )
+        except Exception as e:
+            logger.exception(
+                "Message from handler for %s could not be serialised.",
+                description,
+            )
+            self.send_error(
+                500,
+                "Message handler failed",
+                f"{type(e).__name__}: {e}",
+            )
+            return
 
-        contents = message.get("contents", b"")
+        self.send_response(200, "OK")
+        if content_type:
+            self.send_header("Content-Type", content_type)
+        if encoded_metadata:
+            self.send_header("Pact-Message-Metadata", encoded_metadata)
         self.send_header("Content-Length", str(len(contents)))
         self.end_headers()
         self.wfile.write(contents)
