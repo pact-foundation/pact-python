@@ -46,6 +46,10 @@ def test_convert_python_to_java_datetime_format_with_single_quote() -> None:
     assert strftime_to_simple_date_format("%Y'%m'%d") == "yyyy''MM''dd"
 
 
+def test_convert_python_to_java_datetime_format_with_utc_offset_with_colon() -> None:
+    assert strftime_to_simple_date_format("%:z") == "XXX"
+
+
 class Args(NamedTuple):
     """
     Named tuple to hold the arguments passed to a function.
