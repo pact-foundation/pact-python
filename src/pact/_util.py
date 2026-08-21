@@ -109,8 +109,6 @@ def strftime_to_simple_date_format(python_format: str) -> str:
     Returns:
         The equivalent Java SimpleDateFormat format string.
     """
-    # Each Python format code is exactly two characters long, so we can
-    # safely iterate through the string.
     idx = 0
     result: str = ""
     escaped = False
@@ -121,13 +119,17 @@ def strftime_to_simple_date_format(python_format: str) -> str:
 
         if c == "%":
             c = python_format[idx]
+            # Increment another time to skip the second character of the
+            # Python format code.
+            idx += 1
+            if c == ":":
+                # This is a three character code.
+                c += python_format[idx]
+                idx += 1
             if escaped:
                 result += "'"
                 escaped = False
             result += format_code_to_java_format(c)
-            # Increment another time to skip the second character of the
-            # Python format code.
-            idx += 1
             continue
 
         if c == "'":
