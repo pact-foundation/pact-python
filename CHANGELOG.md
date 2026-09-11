@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.4.1] _2026-09-11_
+
+### 🐛 Bug Fixes
+
+-   Pass http transport first to ffi
+-   Report message handler failures instead of transport errors
+-   Report unserialisable messages instead of transport errors
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(ci)_ Handle version degeneracy nicely
+-   Set user agent
+-   _(ci)_ Use GitHub App token
+-   Replace deprecated codecov action
+-   _(tests)_ Narrow message producer before accessing its handler
+
+### Contributors
+
+-   @JP-Ellis
+-   @Endika
+
 ## [pact-python/3.4.0] _2026-05-04_
 
 ### 🚀 Features
