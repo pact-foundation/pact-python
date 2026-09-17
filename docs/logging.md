@@ -36,20 +36,37 @@ logging.basicConfig(handlers=[handler])
 
 ## Verbosity
 
-The library forwards events at the most verbose level set explicitly on the
-`pact.ffi` and `pact.plugins` loggers, or at
-[`DEFAULT_LEVEL`][pact.logging.DEFAULT_LEVEL] when neither is set:
+By default, the library forwards events at `INFO` and above
+([`DEFAULT_LEVEL`][pact.logging.DEFAULT_LEVEL]). Its `DEBUG` output is much
+noisier: it traces every FFI call, dumps each request as it is matched and,
+once a plugin is loaded, includes the transport logs of `hyper`, `rustls` and
+`reqwest`. To see it when debugging a failure, set the level of the `pact.ffi`
+logger:
 
 ```python
 import logging
 
-logging.getLogger("pact.ffi").setLevel(logging.INFO)
+logging.getLogger("pact.ffi").setLevel(logging.DEBUG)
 ```
 
-That level is fixed when the FFI is initialised, so set it before creating the
-first `Pact` or `Verifier`, for example at the top of `conftest.py`. Standard
-`logging` configuration then decides what is shown; under pytest, `log_level`
-and `log_cli_level` apply as usual.
+/// warning | Set the Level Before the First `Pact`
+The forwarding level is fixed when the first `Pact` or `Verifier` is created,
+and cannot be changed afterwards. Set it before then, for example at the top of
+`conftest.py`. A more verbose level set later only logs a warning on the `pact`
+logger, once. In particular, `caplog.set_level` within a test cannot show
+records which were never forwarded.
+///
+
+Forwarded records are handled like any others, so the `logging` configuration
+decides which are shown. Under pytest, `log_level` and `log_cli_level` apply as
+usual. With no logging configured at all, Python's last-resort handler writes
+warnings and errors to stderr. To silence them, add a handler such as
+`logging.NullHandler()` to the `pact` logger.
+
+The `pact.ffi` and `pact.plugins` loggers share a single forwarding level: the
+more verbose of the levels set on them. Setting only `pact.plugins` to `DEBUG`
+therefore forwards the library's `DEBUG` events as well. Python discards them,
+but only after each one has been passed from the library to the interpreter.
 
 The library's `TRACE` level sits below `logging.DEBUG` and is exposed as
 [`pact.logging.TRACE`][pact.logging.TRACE]:
