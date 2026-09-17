@@ -6,6 +6,35 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.4.1] _2026-09-17_
+
+### 🐛 Bug Fixes
+
+-   Pass http transport first to ffi
+-   Report message handler failures instead of transport errors
+-   Report unserialisable messages instead of transport errors
+-   Properly handle three character date time format codes.
+-   Avoid index error on trailing datetime fmt
+
+### 🧪 Testing
+
+-   Add failing three-character datetime test
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(ci)_ Handle version degeneracy nicely
+-   Set user agent
+-   _(ci)_ Use GitHub App token
+-   Replace deprecated codecov action
+-   _(tests)_ Narrow message producer before accessing its handler
+-   _(renovate)_ Rebase PRs only when conflicted
+
+### Contributors
+
+-   @JP-Ellis
+-   @kaos
+-   @Endika
+
 ## [pact-python/3.4.0] _2026-05-04_
 
 ### 🚀 Features
