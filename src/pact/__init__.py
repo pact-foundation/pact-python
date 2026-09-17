@@ -117,6 +117,7 @@ from __future__ import annotations
 # submodule has loaded.
 import pact.__version__ as _version_module
 from pact import generate as generate
+from pact import logging as logging
 from pact import match as match
 from pact import xml as xml
 from pact.pact import Pact
@@ -134,5 +135,6 @@ __all__ = [
     "Verifier",
     "__version__",
     "__version_tuple__",
+    "logging",
     "xml",
 ]

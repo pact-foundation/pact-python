@@ -25,16 +25,6 @@ if sys.version_info >= (3, 15) and os.environ.get("PACT_TEST_LAZY_IMPORTS"):
 
 import pytest
 
-import pact_ffi
-
-
-@pytest.fixture(scope="session", autouse=True)
-def _setup_pact_logging() -> None:
-    """
-    Set up logging for the pact package.
-    """
-    pact_ffi.log_to_stderr("INFO")
-
 
 @pytest.fixture
 def temp_assets(tmp_path: Path) -> Path:
