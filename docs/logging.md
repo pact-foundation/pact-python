@@ -37,12 +37,15 @@ logging.basicConfig(handlers=[handler])
 
 The library forwards events at the most verbose level set explicitly on the
 `pact.ffi` and `pact.plugins` loggers, or at
-[`DEFAULT_LEVEL`][pact.logging.DEFAULT_LEVEL] when neither is set:
+[`DEFAULT_LEVEL`][pact.logging.DEFAULT_LEVEL] (`logging.INFO`) when neither is
+set. `DEBUG` and below add per-FFI-call tracing, per-request matching dumps
+and, once a plugin is loaded, transport chatter from `hyper`, `rustls` and
+`reqwest`; opt into that detail explicitly when debugging a failure:
 
 ```python
 import logging
 
-logging.getLogger("pact.ffi").setLevel(logging.INFO)
+logging.getLogger("pact.ffi").setLevel(logging.DEBUG)
 ```
 
 That level is fixed when the FFI is initialised, so set it before creating the

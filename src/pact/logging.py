@@ -69,10 +69,15 @@ Level of the Pact library's `TRACE` events, below `logging.DEBUG`.
 
 logging.addLevelName(TRACE, "TRACE")
 
-DEFAULT_LEVEL = logging.DEBUG
+DEFAULT_LEVEL = logging.INFO
 """
 Level at which the Pact library forwards events when neither the `pact.ffi` nor
 the `pact.plugins` logger has an explicit level.
+
+`INFO` is the default because the library's `DEBUG` output is dominated by
+per-FFI-call tracing, per-request matching dumps and, when a plugin is
+loaded, transport chatter from `hyper`, `rustls` and `reqwest`, none of
+which helps once a test has already passed.
 """
 
 _TO_FFI: list[tuple[int, pact_ffi.LevelFilter]] = [
