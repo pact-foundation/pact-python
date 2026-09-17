@@ -334,12 +334,12 @@ class PactBuildHook(BuildHookInterface[Any]):
         else:
             extra_libs = []
 
+        source = self._patch_header(header.read_text())
+
         ffibuilder = cffi.FFI()
         ffibuilder.cdef(
             "\n".join(
-                line
-                for line in header.read_text().splitlines()
-                if not line.strip().startswith("#")
+                line for line in source.splitlines() if not line.strip().startswith("#")
             )
         )
 
@@ -362,7 +362,7 @@ class PactBuildHook(BuildHookInterface[Any]):
 
         ffibuilder.set_source(
             "ffi",
-            header.read_text(),
+            source,
             libraries=["pact_ffi", *extra_libs],
             library_dirs=[str(lib.parent)],
             extra_link_args=linker_args,
@@ -381,6 +381,42 @@ class PactBuildHook(BuildHookInterface[Any]):
 
         self.app.display_debug(f"Compiled CFFI bindings to {extension}")
         return extension
+
+    def _patch_header(self, source: str) -> str:
+        """
+        Patch the upstream header so that CFFI can compile it.
+
+        The upstream `pact.h` emits the callback parameter of
+        `pactffi_register_plugin_log_callback` as an opaque struct passed by
+        value, which cannot be compiled. The Rust signature is
+        `Option<extern "C" fn(...)>`, whose ABI is a nullable function pointer.
+        See https://github.com/pact-foundation/pact-reference/issues/544.
+
+        Args:
+            source:
+                The contents of the upstream `pact.h`.
+
+        Returns:
+            The header contents with the callback declared as a function
+            pointer.
+        """
+        opaque = "typedef struct Option_PluginLogCallback Option_PluginLogCallback;"
+        if opaque not in source:
+            return source
+        self.app.display_debug("Patching Option_PluginLogCallback in pact.h")
+        return source.replace(
+            opaque,
+            "typedef void (*PluginLogCallback)("
+            "const char *plugin_instance_id, "
+            "const char *test_run_id, "
+            "const char *level, "
+            "const char *target, "
+            "const char *message);",
+        ).replace(
+            "void pactffi_register_plugin_log_callback("
+            "struct Option_PluginLogCallback callback);",
+            "void pactffi_register_plugin_log_callback(PluginLogCallback callback);",
+        )
 
     def _download(self, url: str) -> Path:
         """
