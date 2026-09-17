@@ -8,9 +8,11 @@ import atexit
 import logging
 from typing import TYPE_CHECKING
 
+import aiohttp
 import pytest
 
 import pact_ffi
+from pact import Pact
 from pact import logging as pact_logging
 
 if TYPE_CHECKING:
@@ -348,6 +350,31 @@ class TestCallbacks:
         pact_logging._core_callback("", "", "INFO", "x", "hello")  # noqa: SLF001
         pact_logging._plugin_callback("instance", "", "INFO", "", "hello")  # noqa: SLF001
         assert capsys.readouterr().err == ""
+
+
+class TestEndToEnd:
+    """Records forwarded from the Pact library during a consumer test."""
+
+    @pytest.mark.asyncio
+    async def test_mock_server_records(self, caplog: pytest.LogCaptureFixture) -> None:
+        caplog.set_level(logging.INFO, logger="pact.ffi")
+        pact = Pact("consumer", "provider")
+        (
+            pact
+            .upon_receiving("a request")
+            .with_request("GET", "/")
+            .will_respond_with(200)
+        )
+        with pact.serve() as srv:
+            async with (
+                aiohttp.ClientSession(srv.url) as session,
+                session.get("/") as resp,
+            ):
+                assert resp.status == 200
+
+        records = [r for r in caplog.records if r.name.startswith("pact.ffi.")]
+        assert records
+        assert any(r.__dict__.get("log_id") is not None for r in records)
 
 
 class TestSetTestRunId:
