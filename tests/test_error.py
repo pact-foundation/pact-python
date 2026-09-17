@@ -38,13 +38,15 @@ async def test_missing_request(pact: Pact) -> None:
         .with_request("GET", "/")
         .will_respond_with(200)
     )
-    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/nonexistent",
-            ):
-                pass
+            ),
+        ):
+            pass
 
     assert len(exc.value.mismatches) == 2
     missing_request, request_not_found = sorted(
@@ -74,13 +76,15 @@ async def test_query_mismatch_value(pact: Pact) -> None:
         .with_query_parameter("param", "expected")
         .will_respond_with(200)
     )
-    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/resource?param=actual",
-            ):
-                pass
+            ),
+        ):
+            pass
 
     assert len(exc.value.mismatches) == 1
     request_mismatch = exc.value.mismatches[0]
@@ -115,13 +119,15 @@ async def test_query_mismatch_different_keys(pact: Pact) -> None:
         .with_query_parameter("key", "value")
         .will_respond_with(200)
     )
-    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/resource?foo=bar",
-            ):
-                pass
+            ),
+        ):
+            pass
 
     assert len(exc.value.mismatches) == 1
     request_mismatch = exc.value.mismatches[0]
@@ -157,14 +163,16 @@ async def test_header_mismatch(pact: Pact) -> None:
         .with_header("X-Foo", "expected")
         .will_respond_with(200)
     )
-    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/",
                 headers={"X-Foo": "unexpected"},
-            ):
-                pass
+            ),
+        ):
+            pass
 
     assert len(exc.value.mismatches) == 1
     request_mismatch = exc.value.mismatches[0]
@@ -193,15 +201,17 @@ async def test_body_type_mismatch(pact: Pact) -> None:
         .with_body("{}", "application/json")
         .will_respond_with(200)
     )
-    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "POST",
                 "/",
                 headers={"Content-Type": "text/plain"},
                 data="plain text",
-            ):
-                pass
+            ),
+        ):
+            pass
 
     assert len(exc.value.mismatches) == 1
     request_mismatch = exc.value.mismatches[0]
@@ -239,14 +249,16 @@ async def test_body_mismatch(pact: Pact) -> None:
         .with_body("expected")
         .will_respond_with(200)
     )
-    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+    with pytest.raises(MismatchesError) as exc, pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "POST",
                 "/",
                 data="unexpected",
-            ):
-                pass
+            ),
+        ):
+            pass
 
     assert len(exc.value.mismatches) == 1
     request_mismatch = exc.value.mismatches[0]
