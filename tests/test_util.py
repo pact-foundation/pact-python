@@ -48,6 +48,18 @@ def test_convert_python_to_java_datetime_format_with_single_quote() -> None:
 
 def test_convert_python_to_java_datetime_format_with_utc_offset_with_colon() -> None:
     assert strftime_to_simple_date_format("%:z") == "XXX"
+    assert (
+        strftime_to_simple_date_format("%Y-%m-%dT%H:%M:%S%:z")
+        == "yyyy-MM-dd'T'HH:mm:ssXXX"
+    )
+
+
+@pytest.mark.parametrize("python_format", ["%", "%Y-%m-%d%", "%:", "%Y%:"])
+def test_convert_python_to_java_datetime_format_with_incomplete_code(
+    python_format: str,
+) -> None:
+    with pytest.raises(ValueError, match="Incomplete Python format code"):
+        strftime_to_simple_date_format(python_format)
 
 
 class Args(NamedTuple):
