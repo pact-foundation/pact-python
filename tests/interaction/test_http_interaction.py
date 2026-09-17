@@ -701,7 +701,10 @@ async def test_pact_server_verbose(
         ):
             assert resp.status == 500
 
-    assert len(caplog.records) == 1
-    for record in caplog.records:
+    # Pact FFI events also propagate to the root logger, on their own
+    # `pact.ffi.*` loggers, so caplog captures those too.
+    records = [record for record in caplog.records if record.name == "pact.pact"]
+    assert len(records) == 1
+    for record in records:
         assert record.levelname == "ERROR"
         assert record.message.startswith("Mismatches:\n")
