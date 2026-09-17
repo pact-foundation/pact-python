@@ -88,9 +88,11 @@ async def test_basic_response_status(pact: Pact, status: int) -> None:
         .will_respond_with(status)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/") as resp:
-                assert resp.status == status
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/") as resp,
+        ):
+            assert resp.status == status
 
 
 @pytest.mark.parametrize(
@@ -114,9 +116,11 @@ async def test_with_header_request(
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/", headers=headers) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", headers=headers) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.parametrize(
@@ -140,12 +144,14 @@ async def test_with_header_response(
         .with_headers(headers)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/") as resp:
-                assert resp.status == 200
-                response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
-                for header, value in headers:
-                    assert (header.lower(), value) in response_headers
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/") as resp,
+        ):
+            assert resp.status == 200
+            response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
+            for header, value in headers:
+                assert (header.lower(), value) in response_headers
 
 
 @pytest.mark.asyncio
@@ -158,13 +164,15 @@ async def test_with_header_dict(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/",
                 headers={"X-Test": "true", "X-Foo": "bar"},
-            ) as resp:
-                assert resp.status == 200
+            ) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.parametrize(
@@ -187,9 +195,11 @@ async def test_set_header_request(
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/", headers=headers) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", headers=headers) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.asyncio
@@ -241,12 +251,14 @@ async def test_set_header_response(
         .set_headers(headers)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/") as resp:
-                assert resp.status == 200
-                response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
-                for header, value in headers:
-                    assert (header.lower(), value) in response_headers
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/") as resp,
+        ):
+            assert resp.status == 200
+            response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
+            for header, value in headers:
+                assert (header.lower(), value) in response_headers
 
 
 @pytest.mark.asyncio
@@ -264,12 +276,14 @@ async def test_set_header_response_repeat(
         .set_headers(headers)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request("GET", "/", headers=headers) as resp:
-                assert resp.status == 200
-                response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
-                assert ("x-test", "2") in response_headers
-                assert ("x-test", "1") not in response_headers
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", headers=headers) as resp,
+        ):
+            assert resp.status == 200
+            response_headers = [(h.lower(), v) for h, v in resp.headers.items()]
+            assert ("x-test", "2") in response_headers
+            assert ("x-test", "1") not in response_headers
 
 
 @pytest.mark.asyncio
@@ -282,13 +296,15 @@ async def test_set_header_dict(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/",
                 headers={"X-Test": "true", "X-Foo": "bar"},
-            ) as resp:
-                assert resp.status == 200
+            ) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.parametrize(
@@ -382,13 +398,15 @@ async def test_with_body_request(pact: Pact, method: str) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 method,
                 "/",
                 json={"test": True},
-            ) as resp:
-                assert resp.status == 200
+            ) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.parametrize(
@@ -407,14 +425,16 @@ async def test_with_body_response(pact: Pact, method: str) -> None:
         .with_body(json.dumps({"test": True}), "application/json")
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 method,
                 "/",
                 json={"test": True},
-            ) as resp:
-                assert resp.status == 200
-                assert json.loads(await resp.content.read()) == {"test": True}
+            ) as resp,
+        ):
+            assert resp.status == 200
+            assert json.loads(await resp.content.read()) == {"test": True}
 
 
 @pytest.mark.asyncio
@@ -428,14 +448,16 @@ async def test_with_body_explicit(pact: Pact) -> None:
         .with_body(json.dumps({"response": True}), "application/json", "Response")
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.request(
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request(
                 "GET",
                 "/",
                 json={"request": True},
-            ) as resp:
-                assert resp.status == 200
-                assert json.loads(await resp.content.read()) == {"response": True}
+            ) as resp,
+        ):
+            assert resp.status == 200
+            assert json.loads(await resp.content.read()) == {"response": True}
 
 
 def test_with_body_invalid(pact: Pact) -> None:
@@ -499,14 +521,18 @@ async def test_binary_file_request(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.post("/", data=payload) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.post("/", data=payload) as resp,
+        ):
+            assert resp.status == 200
 
-    with pytest.raises(MismatchesError), pact.serve() as srv:  # noqa: PT012
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.post("/", data=payload[:2]) as resp:
-                assert resp.status == 200
+    with pytest.raises(MismatchesError), pact.serve() as srv:
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.post("/", data=payload[:2]) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.asyncio
@@ -520,12 +546,14 @@ async def test_binary_file_response(pact: Pact) -> None:
         .with_binary_body(payload, "application/bytes")
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.get("/") as resp:
-                assert resp.status == 200
-                assert await resp.read() == payload
-                assert payload == bytes(range(5))  # to make sure it's not mutated
-                assert resp.headers["Content-Type"] == "application/bytes"
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.get("/") as resp,
+        ):
+            assert resp.status == 200
+            assert await resp.read() == payload
+            assert payload == bytes(range(5))  # to make sure it's not mutated
+            assert resp.headers["Content-Type"] == "application/bytes"
 
 
 @pytest.mark.skip(reason="Not working yet")
@@ -583,10 +611,12 @@ async def test_name(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.get("/") as resp:
-                assert resp.status == 200
-                assert await resp.read() == b""
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.get("/") as resp,
+        ):
+            assert resp.status == 200
+            assert await resp.read() == b""
 
 
 def test_add_external_reference(pact: Pact, tmp_path: Path) -> None:
@@ -638,10 +668,12 @@ async def test_with_plugin(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.get("/") as resp:
-                assert resp.status == 200
-                assert await resp.read() == b""
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.get("/") as resp,
+        ):
+            assert resp.status == 200
+            assert await resp.read() == b""
 
 
 @pytest.mark.asyncio
@@ -659,9 +691,11 @@ async def test_pact_server_verbose(
         caplog.at_level(logging.WARNING, logger="pact.pact"),
         pact.serve(raises=False, verbose=True) as srv,
     ):
-        async with aiohttp.ClientSession(srv.url) as session:
-            async with session.get("/bar") as resp:
-                assert resp.status == 500
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.get("/bar") as resp,
+        ):
+            assert resp.status == 500
 
     assert len(caplog.records) == 1
     for record in caplog.records:

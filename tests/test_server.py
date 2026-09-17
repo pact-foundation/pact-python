@@ -29,9 +29,11 @@ async def test_message_invalid_path_http() -> None:
     server = MessageProducer(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(server.url) as response:
-                assert response.status == 404
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(server.url) as response,
+        ):
+            assert response.status == 404
     handler.assert_not_called()
 
 
@@ -41,9 +43,11 @@ async def test_message_get_http() -> None:
     server = MessageProducer(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(server.url) as response:
-                assert response.status == 404
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(server.url) as response,
+        ):
+            assert response.status == 404
 
     handler.assert_not_called()
 
@@ -60,15 +64,17 @@ async def test_message_post_http() -> None:
     server = MessageProducer(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
                 server.url,
                 data=json.dumps({
                     "description": "A simple message",
                 }),
-            ) as response:
-                assert response.status == 200
-                assert await response.text() == '{"hello": "world"}'
+            ) as response,
+        ):
+            assert response.status == 200
+            assert await response.text() == '{"hello": "world"}'
 
     handler.assert_called_once()
     assert handler.call_args.args == ("A simple message", {})
@@ -87,13 +93,15 @@ async def test_message_post_handler_raises() -> None:
     server = MessageProducer(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
                 server.url,
                 data=json.dumps({"description": "A simple message"}),
-            ) as response:
-                assert response.status == 500
-                assert "handler is broken" in await response.text()
+            ) as response,
+        ):
+            assert response.status == 500
+            assert "handler is broken" in await response.text()
 
     handler.assert_called_once()
 
@@ -128,13 +136,15 @@ async def test_message_post_unserialisable_message(
     server = MessageProducer(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
                 server.url,
                 data=json.dumps({"description": "A simple message"}),
-            ) as response:
-                assert response.status == 500
-                assert match in await response.text()
+            ) as response,
+        ):
+            assert response.status == 500
+            assert match in await response.text()
 
     handler.assert_called_once()
 
@@ -154,9 +164,11 @@ async def test_callback_invalid_http() -> None:
     server = StateCallback(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(server.url) as response:
-                assert response.status == 404
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(server.url) as response,
+        ):
+            assert response.status == 404
     handler.assert_not_called()
 
 
@@ -166,9 +178,11 @@ async def test_callback_get_http() -> None:
     server = StateCallback(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(server.url) as response:
-                assert response.status == 404
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(server.url) as response,
+        ):
+            assert response.status == 404
 
     handler.assert_not_called()
 
@@ -179,8 +193,9 @@ async def test_callback_post() -> None:
     server = StateCallback(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
                 server.url,
                 json={
                     "state": "user exists",
@@ -189,8 +204,9 @@ async def test_callback_post() -> None:
                         "id": 123,
                     },
                 },
-            ) as response:
-                assert response.status == 200
+            ) as response,
+        ):
+            assert response.status == 200
 
     handler.assert_called_once()
     assert handler.call_args.args == (
@@ -207,12 +223,14 @@ async def test_callback_post_handler_raises() -> None:
     server = StateCallback(handler)
 
     with server:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
                 server.url,
                 json={"state": "user exists", "action": "setup", "params": {}},
-            ) as response:
-                assert response.status == 500
-                assert "state setup is broken" in await response.text()
+            ) as response,
+        ):
+            assert response.status == 500
+            assert "state setup is broken" in await response.text()
 
     handler.assert_called_once()
