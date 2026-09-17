@@ -118,14 +118,17 @@ def strftime_to_simple_date_format(python_format: str) -> str:
         idx += 1
 
         if c == "%":
-            c = python_format[idx]
-            # Increment another time to skip the second character of the
-            # Python format code.
-            idx += 1
-            if c == ":":
-                # This is a three character code.
-                c += python_format[idx]
-                idx += 1
+            # Format codes are two characters long, or three characters for
+            # `%:z`. Consume the remaining characters of the code.
+            code_len = 2 if python_format[idx : idx + 1] == ":" else 1
+            c = python_format[idx : idx + code_len]
+            idx += code_len
+            if len(c) < code_len:
+                msg = (
+                    f"Incomplete Python format code `%{c}` at end of "
+                    f"format string {python_format!r}"
+                )
+                raise ValueError(msg)
             if escaped:
                 result += "'"
                 escaped = False
