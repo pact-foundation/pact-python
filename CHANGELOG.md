@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/3.4.2] _2026-09-22_
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(ci)_ Standardize renovate config
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/3.4.1] _2026-09-17_
 
 ### 🐛 Bug Fixes
