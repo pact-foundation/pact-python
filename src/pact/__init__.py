@@ -111,6 +111,7 @@ For more detailed usage examples, see the
 
 from __future__ import annotations
 
+from pact import plugins as plugins
 from pact import xml as xml
 from pact.__version__ import __version__, __version_tuple__
 from pact.pact import Pact
@@ -125,5 +126,6 @@ __all__ = [
     "Verifier",
     "__version__",
     "__version_tuple__",
+    "plugins",
     "xml",
 ]
