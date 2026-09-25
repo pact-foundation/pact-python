@@ -17,7 +17,7 @@ Pact simplifies this process by focusing on the content of the messages rather t
 
 We are thrilled about this new feature and eager to see how our community will leverage it in their projects! Please try out asynchronous message support while it's still in preview mode, as your feedback is invaluable in shaping its final release.
 
-Your feedback will help us refine and prefect this feature. You can provide feedback through any of these channels:
+Your feedback will help us refine and perfect this feature. You can provide feedback through any of these channels:
 
 -   Report issues on our GitHub page: [Pact Python Issues](https://github.com/pact-foundation/pact-python/issues).
 -   Join discussions on GitHub: [Pact Python Discussions](https://github.com/pact-foundation/pact-python/discussions).
@@ -32,6 +32,7 @@ Pact is a consumer-driven contract testing tool, and so the consumer defines the
 Consider an example where a consumer service is responsible for asynchronously processing requests to delete a user from the database and delete associated files. The Python client might listen for messages from AWS SQS and process them using a function like this:
 
 ```python
+import json
 from typing import Any
 
 import boto3
@@ -55,21 +56,22 @@ def process_message(message: dict[str, Any]) -> bool:
 def main():
     sqs = boto3.client("sqs")
 
-    response = sqs.receive_message(QueueUrl=queue_url)
+    response = sqs.receive_message(QueueUrl=QUEUE_URL)
     for message in response.get("Messages", []):
-        if process_message(message):
+        if process_message(json.loads(message["Body"])):
             sqs.delete_message(
-                QueueUrl=queue_url,
+                QueueUrl=QUEUE_URL,
                 ReceiptHandle=message["ReceiptHandle"],
             )
 ```
 
-In this example, the `process_message` function processes messages from an SQS queue and calls the `delete_user` function to delete the user from the database and associated files. The `main` function listens for messages from the SQS queue and processes them using the `process_message` function.
+In this example, the `process_message` function processes the decoded body of each message from an SQS queue and calls the `delete_user` function to delete the user from the database and associated files. The `main` function listens for messages from the SQS queue and processes them using the `process_message` function.
 
 Here’s an example of a Pact test for this consumer:
 
 ```python
 import json
+from typing import Any
 
 from pact import Pact
 
@@ -107,7 +109,7 @@ The `handler` would also typically be responsible for mocking the underlying sys
 
 ## Provider Example
 
-For context of asynchronous messages, the provider is the service that sends the message and might be referred to as the _publisher_ or _producer_. Since the contract is defined by the consumer, the Pact provider test simply has to verify that the messages it sends meet the expectations of the consumer.
+In the context of asynchronous messages, the provider is the service that sends the message and might be referred to as the _publisher_ or _producer_. Since the contract is defined by the consumer, the Pact provider test simply has to verify that the messages it sends meet the expectations of the consumer.
 
 As the underlying protocol is abstracted away, Pact uses a local HTTP server to receive the messages that the provider sends. The provider test for the above consumer might look something like this:
 
@@ -126,10 +128,10 @@ class Provider:
 provider = Provider()
 
 (
-    Verifier()
-    .set_info("someProvider", url=provider.url)  # (1)
-    .set_source("/path/to/pacts")
-    .set_state(provider.state_url)  # (2)
+    Verifier("someProvider")
+    .add_transport(url=provider.url)  # (1)
+    .add_source("/path/to/pacts")
+    .state_handler(provider.state_url, body=False)  # (2)
     .add_transport(  # (3)
         protocol="message",
         path="/_pact/message",
@@ -137,9 +139,9 @@ provider = Provider()
 )
 ```
 
-1.  The provider URL is required, but is only used if the Pact being verified contains both HTTP and message interactions. It is not used for message interactions, and should the Pact not contain any HTTP interactions, the endpoint need not be active.
+1.  The provider URL is only used for HTTP interactions. Should the Pact not contain any HTTP interactions, the endpoint need not be active.
 2.  The provider state URL is required to ensure the provider is in the correct state. If the provider is entirely stateless, this can be omitted.
-3.  This path is used by Pact to ensure that the provider is in the correct state before sending the message.
+3.  This path is used by Pact to request a specific message from the provider.
 
 Those familiar with HTTP interactions will notice that the process is very similar, with the key difference of the additional `add_transport` method. This configures a simple HTTP endpoint which Pact can use to prompt the provider to send a specific message. The following sequence diagram illustrates the flow of the provider test:
 
@@ -167,7 +169,7 @@ At present, it is the responsibility of the end user to set up the provider endp
     Content-Type: application/json
 
     {
-        "description": "a request to delete a user",
+        "description": "a request to delete a user"
     }
     ```
 
@@ -180,7 +182,7 @@ At present, it is the responsibility of the end user to set up the provider endp
 
     {
         "action": "delete_user",
-        "user_id": "123",
+        "user_id": "123"
     }
     ```
 
@@ -192,4 +194,8 @@ At present, it is the responsibility of the end user to set up the provider endp
 1 August 2025
 
 -   With the release of Pact Python `v3` and the splitting of the CLI and FFI into standalone packages, some hyperlinks and code snippets have been updated to point to the new locations. The _text_ has been kept unchanged to preserve the original context and intent of the post.
+
+September 2026
+
+-   The code examples in this post were updated in September 2026 to the current Pact Python API. The provider example now uses `Verifier.add_transport`, `add_source` and `state_handler`, which replaced `set_info`, `set_source` and `set_state`. Pact Python can now also run the message endpoint itself through `Verifier.message_handler`, as described in [Functional Arguments](./12-30 functional arguments.md). The annotations on the provider example and a few typos were also corrected.
 ///
