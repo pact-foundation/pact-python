@@ -358,7 +358,7 @@ def test_provider():
 /// define
 28 March 2025
 
--   This blog post was updated on 28 March 2025 to reflect changes to the way functional arguments are handled. Instead of requiring positional arguments, Pact Python now inspects the function signature in order to determine whether to pass the arguments as positional or keyword arguments. It will fallback to passing the arguments through variadic arguments (`*args` and `**kwargs`) if present. This was done specific to allow for functions with optional arguments.
+-   This blog post was updated on 28 March 2025 to reflect changes to the way functional arguments are handled. Instead of requiring positional arguments, Pact Python now inspects the function signature in order to determine whether to pass the arguments as positional or keyword arguments. It will fall back to passing the arguments through variadic arguments (`*args` and `**kwargs`) if present. This was done specifically to allow for functions with optional arguments.
 
     For this added flexibility, the function signatures must have parameters that align with the [`StateHandlerArgs`][pact.types.StateHandlerArgs] and [`MessageProducerArgs`][pact.types.MessageProducerArgs] typed dictionaries. This allows Pact Python to match a `parameters=...` argument with the `parameters` key in the dictionary. Using an alternative name (e.g., `params`) will not work.
 
