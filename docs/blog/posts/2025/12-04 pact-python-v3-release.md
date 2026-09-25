@@ -21,7 +21,7 @@ This came with a few problems:
 
 1.  The reference implementation of Pact moved to [Rust](https://github.com/pact-foundation/pact-reference), and development for versions 3 and 4 of the Pact specification took place there, with limited features being backported to Pact Ruby.
 2.  It required bundling Ruby as part of the Python wheels, which significantly bloated distributions and slowed down Pact Python.
-3.  The Python code served primarily as a wrapper to calling the Ruby-based CLIs, and some aspects of that implementation were exposed to end-users, such as manually checking process exit codes, resulting in a non-"pythonic" experience.
+3.  The Python code served primarily as a wrapper around the Ruby-based CLIs, and some aspects of that implementation were exposed to end-users, such as manually checking process exit codes, resulting in a non-"pythonic" experience.
 
 As the Pact specification evolved and the needs of our users grew, it became clear that the old architecture was starting to show its age. Supporting new features, keeping up with upstream changes, and maintaining compatibility across platforms was becoming increasingly difficult.
 
@@ -82,7 +82,11 @@ pact = consumer.has_pact_with(provider, pact_dir="/path/to/pacts")
 
 pact.start_service()  # (2)
 pact.setup()
-response = requests.get(pact.uri + "/users/123")
+response = requests.get(
+    pact.uri + "/users/123",
+    headers={"Accept": "application/json"},
+    params={"include": "profile"},
+)
 assert response.json() == {"id": 123, "name": "Alice"}
 pact.verify()  # (3)
 pact.stop_service()  # (4)
@@ -111,7 +115,11 @@ pact = Pact("my-web-front-end", "my-backend-service")
 )
 
 with pact.serve() as srv:  # (2)
-    response = requests.get(f"{srv.url}/users/123")
+    response = requests.get(
+        f"{srv.url}/users/123",
+        headers={"Accept": "application/json"},
+        params={"include": "profile"},
+    )
     assert response.json() == {"id": 123, "name": "Alice"}
 pact.write_file("/path/to/pacts")  # (3)
 ```
@@ -122,7 +130,7 @@ pact.write_file("/path/to/pacts")  # (3)
 
 ### Migration, with You in Mind
 
-We know big upgrades can be daunting, especially for teams with large codebases. That's why v3 includes a backwards compatibility module: you can keep your old tests running while you gradually adopt the new API, at your own pace. Many of the changes in v3 came directly from user feedback; feature requests, bug reports, and discussions on Slack have all shaped this release. The transition is designed to be as smooth as possible, so you can take advantage of new features without disrupting your workflow.
+We know big upgrades can be daunting, especially for teams with large codebases. That's why v3 includes a backwards compatibility module: you can keep your old tests running while you gradually adopt the new API, at your own pace. Many of the changes in v3 came directly from user feedback: feature requests, bug reports, and discussions on Slack have all shaped this release. The transition is designed to be as smooth as possible, so you can take advantage of new features without disrupting your workflow.
 
 ## Reflections and Gratitude
 
@@ -133,7 +141,7 @@ No open source project is a solo effort, and Pact Python v3 is no exception. Thi
 -   **[valkolovos](https://github.com/valkolovos):** for his work on matchers, generators, asynchronous message support, and being an early adopter of Pact Python v3.
 -   **[Nikhil Arora](https://github.com/Nikhil172913832):** for a number of recent improvements, including improvements to the developer experience.
 -   **[Amit Singh](https://github.com/amit828as):** for expanding v3 HTTP interaction examples and real-world testing.
--   **[Kevin Rohan Vaz](https://github.com/kevinrvaz):** For fixing and improving the v3 verifier.
+-   **[Kevin Rohan Vaz](https://github.com/kevinrvaz):** for fixing and improving the v3 verifier.
 
 I would also like to acknowledge contributors to the (now legacy) v2 codebase and the original project:
 
@@ -155,3 +163,11 @@ With v3 as our new foundation, we are already seeing new features and integratio
 If you are ready to get started, you will find everything you need in the [documentation](https://pact-foundation.github.io/pact-python/), including a [migration guide](https://pact-foundation.github.io/pact-python/MIGRATION/) for those moving from v2. The [GitHub repository](https://github.com/pact-foundation/pact-python) is always open for issues, discussions, and contributions. If you are new to Pact entirely, you can read more about it on [`pact.io`](https://pact.io/).
 
 Thank you for being part of this journey. Here's to a new chapter in contract testing for Python. Happy testing!
+
+----
+
+/// define
+September 2026
+
+-   The code examples in this post were updated in September 2026 to the current Pact Python API. Both examples now send the `Accept` header and `include` query parameter that the interaction declares, so that the request matches the Pact.
+///
