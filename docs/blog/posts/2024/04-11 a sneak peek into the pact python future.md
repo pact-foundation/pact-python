@@ -11,7 +11,7 @@ We are thrilled to announce the release of [Pact Python `v2.2`](https://github.c
 
 ## A Glimpse Ahead with `pact.v3`
 
-The work is taking shape in a branch-new module – `pact.v3` – that serves as an early preview of what will become Pact Python `v3`. This will provide full support for Pact Specifications `v3` and `v4`.
+The work is taking shape in a brand-new module – `pact.v3` – that serves as an early preview of what will become Pact Python `v3`. This will provide full support for Pact Specifications `v3` and `v4`.
 
 This new version harnesses the power of Rust's foreign function interface (FFI) library, promising enhanced performance and reliability. It will also make it easier to incorporate upstream changes in the future. Although it's just a sneak peek, it's an open invitation for you to explore what's coming and contribute to shaping its final form.
 
