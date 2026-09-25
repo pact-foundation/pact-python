@@ -9,7 +9,7 @@ date:
 
 In the [forthcoming release of Pact Python version 3](./04-11 a sneak peek into the pact python future.md), we're excited to be integrating our library with the ['Rust core'](https://github.com/pact-foundation/pact-reference), a Rust-based library that encapsulates Pact's fundamental operations for both consumers and providers. Known for its high performance and safety guarantees, [Rust](https://rust-lang.org) enables us to enhance the robustness and efficiency of our implementation. This move also promises simplified maintenance and scalability for future iterations of both the Pact Python library, and the [broader Pact ecosystem](https://docs.pact.io/diagrams/ecosystem).
 
-At its essence, this Rust-powered engine handles critical tasks such as parsing and serializing Pact files, matching requests with responses, and generating new Pact contracts. It provides mocking capabilities to simulate a provider when verifying a consumer, and equally acts in reverse when replaying consumer requests against a provider. By adopting this shared core logic from Rust, we will achieve uniformity across all languages implementing Pact while streamlining the integration of enhancements or bug fixes-benefits across our diverse ecosystem.
+At its essence, this Rust-powered engine handles critical tasks such as parsing and serializing Pact files, matching requests with responses, and generating new Pact contracts. It provides mocking capabilities to simulate a provider when verifying a consumer, and equally acts in reverse when replaying consumer requests against a provider. By adopting this shared core logic from Rust, we will achieve uniformity across all languages implementing Pact while streamlining the integration of enhancements and bug fixes across our diverse ecosystem.
 
 In this blog post, I will delve into how this is all achieved. From explaining how [Hatch](https://hatch.pypa.io) is used to compile a binary extension and generate wheels for all supported platforms, to the intricacies of interfacing with the binary library. This information is not required to use Pact Python, but hopes to provide a deeper understanding of the inner workings of the library.
 
@@ -24,7 +24,7 @@ Python, known for its dynamic typing and automated memory management, is fundame
 
 However, each interpreter has a distinct API tailored for crafting these binary extensions, which unfortunately leads to a lack of universal solutions across different environments. Furthermore, interpreters like [Jython](https://jython.org) and [Pyodide](https://pyodide.org/en/stable/), which are based on Java and WebAssembly respectively, present unique challenges that often preclude the straightforward use of such extensions due to their distinct runtime architectures.[^pyodide]
 
-[^pyodide]: It would appear that Pyodide [can support C extensions](https://pyodide.org/en/stable/development/new-packages.html), though by and large Pyodide appears to be intended for pure Python packages.
+[^pyodide]: It would appear that Pyodide [can support C extensions](https://pyodide.org/en/stable/development/building-packages.html), though by and large Pyodide appears to be intended for pure Python packages.
 
 While it is possible for the extension to contain all the logic, our specific requirement is merely to provide a bridge between Python and the Rust core library. This is the niche that [Python C Foreign Function Interface (CFFI)](https://cffi.readthedocs.io/en/stable/) fills. By parsing a C header file, CFFI automates the generation of extension code needed for Python to interface with the binary library. Consequently, this library can be imported into Python as if it were any standard module—streamlining development and potentially improving performance by leveraging optimized native code.
 
@@ -32,34 +32,36 @@ Moreover, CFFI offers a simpler and more maintainable approach compared to other
 
 ## Building the Python Extension
 
-Pact Python uses the fantastic [Hatch](https://hatch.pypa.io) project management and build system for handling dependencies, project metadata, and generate wheels across all supported platforms. Hatch can be extensively customised to suit the needs of each project through its configuration, plugin system, and ability to define custom interfaces.
+Pact Python uses the fantastic [Hatch](https://hatch.pypa.io) project management and build system for handling dependencies, project metadata, and generating wheels across all supported platforms. Hatch can be extensively customised to suit the needs of each project through its configuration, plugin system, and ability to define custom interfaces.
 
-In the case of Pact Python, a [`BuildHookInterface`](https://hatch.pypa.io/1.9/plugins/build-hook/reference/) is defined in [`hatch_build.py`](https://github.com/pact-foundation/pact-python/blob/d6869797b52429252b5d0da4d0fc0079f9d3671c/hatch_build.py) which executes several crucial tasks:
+In the case of Pact Python, a [`BuildHookInterface`](https://hatch.pypa.io/1.9/plugins/build-hook/reference/) is defined in [`hatch_build.py`](https://github.com/pact-foundation/pact-python/blob/8c85586d5af61a8b7a3d7450b5c0d323bee90136/pact-python-ffi/hatch_build.py) which executes several crucial tasks:
 
 1.  Downloads a specified version of the Rust core library from a designated release on the Pact Foundation's GitHub repository, including the accompanying `pact.h` header file.
 2.  Utilizes CFFI to create a Python extension module that encapsulates the Rust core library:
 
     ```python
+    source = header.read_text()
     ffibuilder = cffi.FFI()
-    with (self.tmpdir / "pact.h").open("r", encoding="utf-8") as f:
-        ffibuilder.cdef(f.read())  # (1)
-    ffibuilder.set_source(
-        "_ffi",  # (2)
-        "\n".join([*includes, '#include "pact.h"']),
-        libraries=["pact_ffi", *extra_libs],  # (3)
-        library_dirs=[str(self.tmpdir)],  # (4)
+    ffibuilder.cdef(  # (1)
+        "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
     )
-    output = Path(ffibuilder.compile(verbose=True, tmpdir=str(self.tmpdir)))  # (5)
-    shutil.copy(output, PACT_ROOT_DIR / "v3")
+    ffibuilder.set_source(
+        "ffi",  # (2)
+        source,
+        libraries=["pact_ffi", *extra_libs],  # (3)
+        library_dirs=[str(lib.parent)],  # (4)
+    )
+    extension = Path(ffibuilder.compile(verbose=True, tmpdir=str(self.tmpdir)))  # (5)
+    shutil.copy(extension, PKG_DIR / extension_dest)
     ```
 
-    1.  The `cdef` method processes the contents of `pact.h`, creating necessary declarations for the Python extension.
-    2.  Names the extension module `_ffi`, which is subsequently importable in Python via `import _ffi`.
+    1.  The `cdef` method processes the contents of `pact.h` (without its preprocessor directives), creating necessary declarations for the Python extension.
+    2.  Names the extension module `ffi`. As it is placed in the `pact_ffi` package, it is subsequently importable in Python via `import pact_ffi.ffi`.
     3.  Details libraries to be linked, including `pact_ffi` and platform-specific additional libraries (`extra_libs`) as needed.
-    4.  Defines the directory that holds the Rust code library.
-    5.  Compiles the extension module and then relocates it to the Pact Python project directory.
+    4.  Defines the directory that holds the Rust core library.
+    5.  Compiles the extension module and then relocates it to the `pact_ffi` package directory.
 
-Upon completion of these steps, Hatch produces a Python extension module that interfaces seamlessly with the Rust core library. It will have a filename like `src/pact/v3/_ffi.cpython-312-darwin.so` (for CPython 3.12 on macOS) which can be used just as any other Python module. That is, the binary `_ffi` file can be imported in the same way as one would import a regular `.py` file.
+Upon completion of these steps, Hatch produces a Python extension module that interfaces seamlessly with the Rust core library. It will have a filename like `src/pact_ffi/ffi.abi3.so` (on macOS and Linux) which can be used just as any other Python module. That is, the binary `ffi` file can be imported in the same way as one would import a regular `.py` file.
 
 ## Using the CFFI Extension
 
@@ -71,7 +73,7 @@ With the Python extension module built, developers have direct access to interac
 Let's look at a simple example of using the CFFI extension to invoke the `pactffi_version` function from the Rust core library:
 
 ```python
-from _ffi import lib, ffi
+from pact_ffi.ffi import ffi, lib
 
 version = lib.pactffi_version()  # (1)
 version = ffi.string(version)  # (2)
@@ -83,14 +85,14 @@ if isinstance(version, bytes):  # (3)
 2.  Convert the pointer to a Python string, or bytes if necessary, using the `ffi.string` method.
 3.  Decode the bytes to a string if needed.
 
-While the process is reasonably straightforward, it does require some boilerplate code to handle the type conversions. To simplify this, we've wrapped each function from the Rust core library in a simple Python function that performs these conversion automatically. You can find these wrapper functions in the [`ffi` module](https://github.com/pact-foundation/pact-python/blob/d6869797b52429252b5d0da4d0fc0079f9d3671c/src/pact/v3/ffi.py). For example, the `version` function is implemented as follows:
+While the process is reasonably straightforward, it does require some boilerplate code to handle the type conversions. To simplify this, we've wrapped each function from the Rust core library in a simple Python function that performs these conversions automatically. You can find these wrapper functions in the [`pact_ffi` module](https://github.com/pact-foundation/pact-python/blob/8c85586d5af61a8b7a3d7450b5c0d323bee90136/pact-python-ffi/src/pact_ffi/__init__.py). For example, the `version` function is implemented as follows:
 
 ```python
 def version() -> str:
     """
     Return the version of the pact_ffi library.
 
-    [Rust `pactffi_version`](https://docs.rs/pact_ffi/0.4.19/pact_ffi/?search=pactffi_version)
+    [Rust `pactffi_version`](https://docs.rs/pact_ffi/0.5.8/pact_ffi/fn.pactffi_version.html)
 
     Returns:
         The version of the pact_ffi library as a string, in the form of `x.y.z`.
@@ -114,11 +116,11 @@ def foobar(value: str | None) -> bool:
 
 Handling errors across programming languages can be challenging due to differences in error handling mechanisms. The Rust programming language has two methods of handling unexpected errors:
 
-1.  **Panicking**: This typically occurs when a function encounters an unrecoverable error and terminates the program. The Rust core library handles panics by catching them before they propagate to the Python interpreter, and therefore they can be safely ignored.
+1.  **Panicking**: This typically occurs when a function encounters an unrecoverable error and terminates the program. The Rust core library catches panics before they propagate to the Python interpreter, and reports them through the function's return value, as shown below.
 
 2.  **Result**: This is a more structured approach whereby a function can return either `Ok(value)` or `Err(error)` to indicate success or failure.
 
-It is unfortunately difficult for the C foreign function interface to handle Rust's `Result` type directly. Instead, we've opted to using return codes, either in the form of a boolean or an integer, to indicate success or failure. This is a common pattern in C libraries and is easily translated into Python:
+It is unfortunately difficult for the C foreign function interface to handle Rust's `Result` type directly. Instead, we've opted for return codes, either in the form of a boolean or an integer, to indicate success or failure. This is a common pattern in C libraries and is easily translated into Python:
 
 ```python
 def write_pact_file(
@@ -158,9 +160,9 @@ By ensuring that the return codes are correctly handled, we can ensure that end-
 
 ### Memory Management
 
-Memory management is another critical aspect to consider when interfacing with binary libraries. Rust's memory model is based on ownership and borrowing, which ensures memory safety and eliminates the need for manual memory management. When interfacing with other languages though, Rust cannot guarantee memory safety, and additional care must be taken to prevent memory leaks. Python, on the other hand, relies on garbage collection to manage memory automatically, which works by checking whether an object is still reachable and deallocating it if not.
+Memory management is another critical aspect to consider when interfacing with binary libraries. Rust's memory model is based on ownership and borrowing, which ensures memory safety and eliminates the need for manual memory management. When interfacing with other languages though, Rust cannot guarantee memory safety, and additional care must be taken to prevent memory leaks. Python, on the other hand, manages memory automatically. CPython primarily uses reference counting, deallocating an object as soon as nothing refers to it, and supplements this with a garbage collector that reclaims reference cycles.
 
-In the case of the Rust core library, the ability to deallocate memory is provided by specific functions such as `pactffi_string_delete`. Python also offers a mechanism to hook into the garbage collection process using the `__del__` method. A good example of this is the `OwnedString` class from the `ffi` module, which automatically deallocates memory when the object is no longer reachable:
+In the case of the Rust core library, the ability to deallocate memory is provided by specific functions such as `pactffi_string_delete`. Python also offers a mechanism to hook into the deallocation of an object using the `__del__` method. A good example of this is the `OwnedString` class from the `pact_ffi` module, which automatically deallocates memory when the object is no longer referenced:
 
 ```python
 class OwnedString(str):
@@ -170,6 +172,9 @@ class OwnedString(str):
             cls,
             s if isinstance(s, str) else s.decode("utf-8"),
         )
+
+    def __init__(self, ptr: cffi.FFI.CData) -> None:
+        self._ptr = ptr
 
     def __del__(self) -> None:
         lib.pactffi_string_delete(self._ptr)
@@ -185,3 +190,11 @@ The `__del__` method is called[^del_exceptions] when the object is about to be d
 Integrating Pact Python with the Rust FFI represents a significant step towards enhancing the robustness and efficiency of our library. With the release of version 3 of Pact Python, it is our hope that the community will greatly benefit from the improved performance provided by the Rust core library.
 
 It is our hope that this blog post also helps to shed some light on the inner workings of the library, whether you are a Pact user who is curious about how the library functions, or a developer looking to contribute to the project.
+
+----
+
+/// define
+September 2026
+
+-   The code examples in this post were updated in September 2026 to the current Pact Python API. The FFI bindings now live in the standalone `pact-python-ffi` package, and the extension module is imported as `pact_ffi.ffi`. The `OwnedString` example now stores the pointer that `__del__` frees. Two claims in the text were also corrected: Rust panics are reported through return codes, and CPython frees most memory through reference counting.
+///
