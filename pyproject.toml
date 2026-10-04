@@ -116,7 +116,7 @@ test = [
   "pact-python-cli",
   "pytest~=9.0",
   "pytest-asyncio~=1.0",
-  "pytest-bdd~=8.0",
+  "pytest-bdd~=9.0",
   "pytest-cov~=7.0",
   "pytest-rerunfailures~=16.0",
   "requests~=2.0",
