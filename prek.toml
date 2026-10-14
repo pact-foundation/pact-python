@@ -46,12 +46,10 @@ rev = "v0.16.1"
 
   [[repos.hooks]]
   id = "ruff-check"
-  exclude = '(src/pact|tests|examples)/v2/.*\.pyi?'
   args = ["--fix", "--exit-non-zero-on-fix"]
 
   [[repos.hooks]]
   id = "ruff-format"
-  exclude = '(src/pact|tests|examples)/v2/.*\.pyi?'
 
 [[repos]]
 repo = "https://github.com/crate-ci/committed"
@@ -93,8 +91,7 @@ repo = "local"
   language = "system"
   types = ["python"]
   exclude = '''(?x)(
-    ^(src/pact|tests|examples)/v2/.*\.pyi?
-    | ^pact-python-(cli|ffi)/
+    ^pact-python-(cli|ffi)/
     | ^examples/plugins/proto/.*_pb2(_grpc)?\.py
   )'''
   stages = ["pre-push"]

@@ -1,10 +1,22 @@
 # Migration Guide
 
+<!-- markdownlint-disable no-duplicate-heading -->
+
 > [!INFO]
 >
 > This document is best viewed on the [Pact Python docs site](https://pact-foundation.github.io/pact-python/MIGRATION/).
 
 This document outlines the key changes and migration steps for users transitioning between major Pact Python versions. It focuses on breaking changes, new features, and best practices to ensure a smooth upgrade.
+
+## Migrating from `3.x` to `4.x`
+
+### Key Changes
+
+-   The `pact.v2` compatibility module and the `compat-v2` extra have been removed, along with the `pact-verifier` console script. Code still importing from `pact.v2` must move to the `3.x` API described in [Migrating from `2.x` to `3.x`](#migrating-from-2x-to-3x).
+-   Python 3.11 or newer is required.
+-   The `compat-v2` extra used to install [`pact-python-cli`](https://pypi.org/project/pact-python-cli/). Install it directly if you rely on the Pact CLI (for example, `pact broker` to publish contracts).
+
+Projects that cannot migrate yet should pin `pact-python<4`, which still provides `pact.v2` through `pact-python[compat-v2]`.
 
 ## Migrating from `2.x` to `3.x`
 
@@ -14,35 +26,7 @@ This document outlines the key changes and migration steps for users transitioni
     -   This will help ensure feature parity between different language implementations and improve performance and reliability. This also brings compatibility with the latest Pact Specification (v4).
 -   The bundled CLI is now a separate package: [`pact-python-cli`](https://pypi.org/project/pact-python-cli/).
 -   The programmatic API has been completely overhauled to be more Pythonic and easier to use. Legacy process calls and return code checks have been removed in favour of proper exception handling.
--   The old programmatic interface is available in the `pact.v2` module for backwards compatibility. This is deprecated, will not receive new features, and will be removed in a future release.
-
-### Using the `pact.v2` Compatibility Module
-
-For teams with larger codebases that need time to fully migrate to the new v3 API, a backwards compatibility module is provided at `pact.v2`. This module contains the same API as Pact Python v2.x and serves as an interim measure to assist gradual migration.
-
-To use the v2 compatibility module, you must install pact-python with the `compat-v2` feature enabled:
-
-```bash
-pip install pact-python[compat-v2]
-```
-
-All existing `pact.*` imports need to be updated to use `pact.v2.*` instead. Here are some common examples:
-
-```python
-# Old v2.x imports
-from pact import Consumer, Provider
-from pact.matchers import Like, EachLike
-from pact.verifier import Verifier
-
-# New v3.x imports using the v2 compatibility module
-from pact.v2 import Consumer, Provider
-from pact.v2.matchers import Like, EachLike
-from pact.v2.verifier import Verifier
-```
-
-Please note that this compatibility module is intended as a temporary solution. A full migration to the new v3 API is strongly recommended as soon as feasible. The compatibility module will only receive critical bug fixes and no new features.
-
-Pact, by default, updates existing Pact contracts in place, so migrating consumer tests incrementally should be feasible. However, newer features (e.g., message pacts) will likely require a full migration, and mixed usage of v2 and v3 APIs is not officially supported.
+-   The old programmatic interface was available in the `pact.v2` module during the `3.x` series. It was removed in `4.0.0`; see [Migrating from `3.x` to `4.x`](#migrating-from-3x-to-4x).
 
 ### Consumer Changes
 

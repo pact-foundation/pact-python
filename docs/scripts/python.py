@@ -211,7 +211,6 @@ if __name__ == "<run_path>":
             ("src/pact", "api"),
         ],
         python_mapping=[("src.pact", "pact")],
-        ignore=["src/pact/v2"],
     )
     process_python(
         "pact-python-cli/src/pact_cli",
@@ -227,7 +226,4 @@ if __name__ == "<run_path>":
             ("pact-python-ffi/src/pact_ffi", "pact-python-ffi/api"),
         ],
     )
-    process_python(
-        "examples",
-        ignore=["examples/v2"],
-    )
+    process_python("examples")

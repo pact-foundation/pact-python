@@ -54,21 +54,6 @@ dependencies = [
   issues = "https://github.com/pact-foundation/pact-python/issues"
   source = "https://github.com/pact-foundation/pact-python"
 
-  [project.scripts]
-  pact-verifier = "pact.v2.cli.verify:main"
-
-  [project.optional-dependencies]
-  # Dependencies required for v2 only
-  compat-v2 = [
-    # Pact dependencies
-    "pact-python-cli~=2.5",
-    # External dependencies
-    "click~=8.0",
-    "psutil~=7.0",
-    "requests~=2.0",
-    "six~=1.0",
-  ]
-
 [dependency-groups]
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
@@ -76,9 +61,7 @@ dev = [
   "ruff==0.17.0",
   { include-group = "docs" },
   { include-group = "example" },
-  { include-group = "example-v2" },
   { include-group = "test" },
-  { include-group = "test-v2" },
   { include-group = "types" },
 ]
 
@@ -129,26 +112,6 @@ types = [
   "types-requests~=2.0",
 ]
 
-# Dependencies for v2 example and test environments
-example-v2 = [
-  "fastapi~=0.0",
-  "flask[async]~=3.0",
-  "pytest~=9.0",
-  "pytest-cov~=7.0",
-  "pytest-rerunfailures~=16.0",
-  "testcontainers~=4.0",
-  "uvicorn[standard]~=0.0",
-]
-test-v2 = [
-  "fastapi~=0.0",
-  "httpx~=0.0",
-  "mock~=5.0",
-  "pytest~=9.0",
-  "pytest-cov~=7.0",
-  "pytest-rerunfailures~=16.0",
-  "uvicorn[standard]~=0.0",
-]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -182,10 +145,10 @@ build-backend = "hatchling.build"
         all = ["example", "format", "lint", "test", "typecheck"]
         docs = "mkdocs serve {args}"
         docs-build = "mkdocs build {args}"
-        example = "pytest --ignore=examples/v2 examples/ {args}"
+        example = "pytest examples/ {args}"
         format = "ruff format {args}"
         lint = "ruff check --output-format=full --show-fixes {args}"
-        test = "pytest --ignore=tests/v2 tests/ {args}"
+        test = "pytest tests/ {args}"
         typecheck = ["typecheck-examples", "typecheck-src", "typecheck-tests"]
         typecheck-examples = "mypy examples/ {args}"
         typecheck-src = "mypy src/ {args}"
@@ -207,37 +170,6 @@ build-backend = "hatchling.build"
 
         [[tool.hatch.envs.example.matrix]]
         python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
-
-      [tool.hatch.envs.v2-test]
-      features = ["compat-v2"]
-      installer = "uv"
-      path = ".venv/v2-test"
-      pre-install-commands = ["uv pip install --group test-v2 -e ."]
-
-        [tool.hatch.envs.v2-test.scripts]
-        all = ["test"]
-        test = "pytest tests/v2 {args}"
-
-        [[tool.hatch.envs.v2-test.matrix]]
-        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
-
-      [tool.hatch.envs.v2-example]
-      features = ["compat-v2"]
-      installer = "uv"
-      path = ".venv/v2-example"
-      pre-install-commands = ["uv pip install --group example-v2 -e ."]
-
-        [tool.hatch.envs.v2-example.scripts]
-        all = ["example"]
-        example = "pytest examples/v2 {args}"
-
-        [[tool.hatch.envs.v2-example.matrix]]
-        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
-
-  [tool.mypy]
-  exclude = """(?x)^(
-    (src/pact|tests|examples)/v2/.*\\.pyi?
-  )$"""
 
   [tool.pytest]
   addopts = [
@@ -273,8 +205,6 @@ build-backend = "hatchling.build"
   ]
 
   [tool.ruff]
-  extend-exclude = ["src/pact/v2/*", "tests/v2/*", "examples/v2/*"]
-
     [tool.ruff.lint]
     select = ["ALL"]
 

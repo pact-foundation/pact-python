@@ -7,7 +7,6 @@
 -   **Typecheck**: `hatch run typecheck` (all)
 -   **Examples**: `hatch run example` (run example tests)
 -   **All checks**: `hatch run all` (format, lint, test, typecheck)
--   **V2 tests**: `hatch run v2-test:test` (legacy v2 compatibility tests)
 
 ## Code Style
 
@@ -29,6 +28,5 @@
 ## Project Structure
 
 -   `src/pact/`: Main V3+ codebase (active development)
--   `src/pact/v2/`: Legacy V2 code (maintenance only - no new features)
 -   `pact-python-ffi/`: Low-level FFI bindings (memory management, type conversion only)
 -   `pact-python-cli/`: CLI wrapper (bundled binaries with system fallback)
