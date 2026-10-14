@@ -16,7 +16,7 @@ section of the Pact documentation.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -125,7 +125,7 @@ def test_create_user(pact: Pact) -> None:
     response: dict[str, Any] = {
         "id": match.int(1000),
         "name": "Bob",
-        "created_on": match.datetime(datetime.now(tz=timezone.utc)),
+        "created_on": match.datetime(datetime.now(tz=UTC)),
     }
 
     (

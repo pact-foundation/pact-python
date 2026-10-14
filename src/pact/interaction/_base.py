@@ -20,8 +20,7 @@ from pact.match.matcher import IntegrationJSONEncoder, MatchingRuleJSONEncoder
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from typing_extensions import Self
+    from typing import Self
 
     from pact.match import AbstractMatcher
 

@@ -27,7 +27,6 @@ is because the consumer is not concerned with Pact, only the tests are.
 from __future__ import annotations
 
 import logging
-import sys
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -36,8 +35,7 @@ import requests
 
 if TYPE_CHECKING:
     from types import TracebackType
-
-    from typing_extensions import Self
+    from typing import Self
 
 logger = logging.getLogger(__name__)
 
@@ -197,9 +195,6 @@ class UserClient:
         response.raise_for_status()
         data: dict[str, Any] = response.json()
 
-        # Python < 3.11 don't support ISO 8601 offsets without a colon
-        if sys.version_info < (3, 11) and data["created_on"][-4:].isdigit():
-            data["created_on"] = data["created_on"][:-2] + ":" + data["created_on"][-2:]
         return User(
             id=data["id"],
             name=data["name"],
@@ -233,9 +228,6 @@ class UserClient:
         response.raise_for_status()
         data = response.json()
 
-        # Python < 3.11 don't support ISO 8601 offsets without a colon
-        if sys.version_info < (3, 11) and data["created_on"][-4:].isdigit():
-            data["created_on"] = data["created_on"][:-2] + ":" + data["created_on"][-2:]
         logger.debug("Created user %s", data["id"])
         return User(
             id=data["id"],

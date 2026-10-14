@@ -6,8 +6,8 @@ name = "example-aiohttp-and-flask"
 description = "Example of using an aiohttp client and Flask server with Pact Python"
 
 version = "1.0.0"
-requires-python = ">=3.10"
-dependencies = ["aiohttp~=3.0", "flask~=3.0", "typing-extensions~=4.0"]
+requires-python = ">=3.11"
+dependencies = ["aiohttp~=3.0", "flask~=3.0"]
 
 [dependency-groups]
 test = ["pact-python", "pytest~=9.0", "pytest-asyncio~=1.0"]

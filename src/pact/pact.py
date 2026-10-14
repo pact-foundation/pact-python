@@ -89,8 +89,7 @@ from pact.interaction._sync_message_interaction import SyncMessageInteraction
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
     from types import TracebackType
-
-    from typing_extensions import Self
+    from typing import Self
 
     from pact.interaction import Interaction
 

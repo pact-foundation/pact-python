@@ -6,8 +6,8 @@ name = "example-service-consumer-provider"
 description = "Example of a service acting as both a Pact consumer and provider"
 
 version = "1.0.0"
-requires-python = ">=3.10"
-dependencies = ["fastapi~=0.0", "requests~=2.0", "typing-extensions~=4.0"]
+requires-python = ">=3.11"
+dependencies = ["fastapi~=0.0", "requests~=2.0"]
 
 [dependency-groups]
 test = ["pact-python", "pytest~=9.0", "uvicorn~=0.29"]

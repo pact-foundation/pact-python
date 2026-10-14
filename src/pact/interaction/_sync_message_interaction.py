@@ -10,7 +10,7 @@ import pact_ffi
 from pact.interaction._base import Interaction
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class SyncMessageInteraction(Interaction):

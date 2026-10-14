@@ -51,8 +51,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from pathlib import Path
     from types import TracebackType
-
-    from typing_extensions import Self
+    from typing import Self
 
     from pact.types import Message
     from pact.verifier import Verifier

@@ -94,7 +94,7 @@ For JSON-based examples using the same matchers, see
 
 ## Prerequisites
 
--   Python 3.10 or higher
+-   Python 3.11 or higher
 -   A dependency manager ([uv](https://docs.astral.sh/uv/) recommended,
     [pip](https://pip.pypa.io/en/stable/) also works)
 
