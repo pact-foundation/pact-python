@@ -8,6 +8,17 @@ Note that this _only_ includes changes to the Python re-packaging of the Pact CL
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-cli/2.6.4.1] _2026-10-14_
+
+### 🚀 Features
+
+-   [**breaking**] Remove pact.v2 compatibility module
+    > `pact.v2`, the `compat-v2` extra and the `pact-verifier` console script are removed. Migrate to the `pact` API (see MIGRATION.md) or pin `pact-python<4`.
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-cli/2.6.4.0] _2026-10-14_
 
 ### 🐛 Bug Fixes
