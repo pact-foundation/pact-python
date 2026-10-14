@@ -84,6 +84,7 @@ example = [
   "fastapi~=0.0",
   "flask[async]~=3.0",
   "grpcio~=1.0",
+  "httpx~=0.0",
   "protobuf~=7.34",
   "pydantic~=2.0",
   "pytest~=9.0",
