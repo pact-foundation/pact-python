@@ -235,12 +235,12 @@ The above example showed how to test a single consumer; however, without also te
 
 Once the tests are complete (and successful), the contracts can be uploaded to the Pact Broker. The provider can then download the contracts and run its own tests to ensure it meets the consumer's expectations.
 
-The Broker CLI is a command-line tool that can be installed through the `pact-python-cli` package, or directly from the [Pact Standalone](https://github.com/pact-foundation/pact-standalone) releases page. It bundles several standalone CLI tools, including the `pact-broker` CLI client.
+The [Pact CLI](https://github.com/pact-foundation/pact-cli) is a single `pact` executable whose `broker` subcommand publishes contracts. See its [installation instructions](https://github.com/pact-foundation/pact-cli#installation).
 
 The general syntax for the CLI is:
 
 ```console
-pact-broker publish \
+pact broker publish \
     /path/to/pacts/consumer-provider.json \
     --consumer-app-version 1.0.0 \
     --auto-detect-version-properties

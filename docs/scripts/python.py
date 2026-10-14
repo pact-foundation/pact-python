@@ -213,13 +213,6 @@ if __name__ == "<run_path>":
         python_mapping=[("src.pact", "pact")],
     )
     process_python(
-        "pact-python-cli/src/pact_cli",
-        python_mapping=[("pact-python-cli.src.pact_cli", "pact_cli")],
-        destination_mapping=[
-            ("pact-python-cli/src/pact_cli", "pact-python-cli/api"),
-        ],
-    )
-    process_python(
         "pact-python-ffi/src/pact_ffi",
         python_mapping=[("pact-python-ffi.src.pact_ffi", "pact_ffi")],
         destination_mapping=[

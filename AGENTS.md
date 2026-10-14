@@ -29,4 +29,3 @@
 
 -   `src/pact/`: Main V3+ codebase (active development)
 -   `pact-python-ffi/`: Low-level FFI bindings (memory management, type conversion only)
--   `pact-python-cli/`: CLI wrapper (bundled binaries with system fallback)

@@ -103,10 +103,6 @@ jobs:
       - name: Run tests
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-tests.xml
 
-      - name: Run tests (CLI)
-        working-directory: pact-python-cli
-        run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-cli.xml
-
       - name: Run tests (FFI)
         working-directory: pact-python-ffi
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-ffi.xml
@@ -117,7 +113,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: tests
-          files: coverage-tests.xml,pact-python-cli/coverage-cli.xml,pact-python-ffi/coverage-ffi.xml
+          files: coverage-tests.xml,pact-python-ffi/coverage-ffi.xml
 
       - name: Upload test results
         if: ${{ !cancelled() }}
@@ -213,10 +209,6 @@ jobs:
       - name: Format
         run: hatch run format --check --output-format github
 
-      - name: Format (CLI)
-        working-directory: pact-python-cli
-        run: hatch run format --check --output-format github
-
       - name: Format (FFI)
         working-directory: pact-python-ffi
         run: hatch run format --check --output-format github
@@ -243,10 +235,6 @@ jobs:
         run: uv tool install hatch
 
       - name: Lint
-        run: hatch run lint
-
-      - name: Lint (CLI)
-        working-directory: pact-python-cli
         run: hatch run lint
 
       - name: Lint (FFI)
@@ -276,10 +264,6 @@ jobs:
         run: uv tool install hatch
 
       - name: Typecheck
-        run: hatch run typecheck
-
-      - name: Typecheck (CLI)
-        working-directory: pact-python-cli
         run: hatch run typecheck
 
   prek:

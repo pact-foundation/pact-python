@@ -5,11 +5,9 @@
 Usage:
     python scripts/release.py prepare core [--dry-run]
     python scripts/release.py prepare ffi  [--dry-run]
-    python scripts/release.py prepare cli  [--dry-run]
 
     python scripts/release.py tag core
     python scripts/release.py tag ffi
-    python scripts/release.py tag cli
 """
 
 from __future__ import annotations
@@ -203,7 +201,7 @@ class Package:
         - **Core** (`upstream_repo` is `None`): asks git cliff for the next
           semver implied by unreleased conventional commits; returns `None` when
           there is nothing to release.
-        - **FFI / CLI** (`upstream_repo` set): fetches the latest upstream GitHub
+        - **FFI** (`upstream_repo` set): fetches the latest upstream GitHub
           release and derives the 4-part version via `compute_wrapper_version`.
 
         Returns:
@@ -516,7 +514,6 @@ class Package:
 # Each package uses a different versioning strategy:
 #   core  — git cliff --bumped-version derives the next semver from commit history.
 #   ffi   — tracks pact-foundation/pact-reference; version is {upstream}.{N}.
-#   cli   — tracks pact-foundation/pact-standalone; version is {upstream}.{N}.
 # The {N} suffix increments when the upstream semver is unchanged, resets to 0
 # on a new upstream release (see compute_wrapper_version).
 PACKAGES: dict[str, Package] = {
@@ -538,15 +535,6 @@ PACKAGES: dict[str, Package] = {
         # Filter to libpact_ffi releases only — pact-reference hosts many crates
         upstream_tag_prefix="libpact_ffi-v",
         release_branch="release/pact-python-ffi",
-    ),
-    "cli": Package(
-        name="pact-python-cli",
-        key="cli",
-        directory=ROOT / "pact-python-cli",
-        tag_prefix="pact-python-cli/",
-        upstream_repo="pact-foundation/pact-standalone",
-        upstream_tag_prefix="v",
-        release_branch="release/pact-python-cli",
     ),
 }
 
@@ -649,7 +637,7 @@ def main() -> None:
         description="Release management for pact-python packages"
     )
     parser.add_argument("command", choices=["prepare", "tag"])
-    parser.add_argument("package", choices=["core", "ffi", "cli"])
+    parser.add_argument("package", choices=["core", "ffi"])
     parser.add_argument(
         "--dry-run",
         action="store_true",

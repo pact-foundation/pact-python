@@ -97,7 +97,6 @@ example = [
 test = [
   "aiohttp~=3.0",
   "flask~=3.0",
-  "pact-python-cli",
   "pytest~=9.0",
   "pytest-asyncio~=1.0",
   "pytest-bdd~=9.0",
@@ -229,7 +228,7 @@ build-backend = "hatchling.build"
       convention = "google"
 
       [tool.ruff.lint.isort]
-      known-first-party = ["pact", "pact_cli", "pact_ffi"]
+      known-first-party = ["pact", "pact_ffi"]
 
       [tool.ruff.lint.flake8-tidy-imports]
       ban-relative-imports = "all"
@@ -263,11 +262,10 @@ build-backend = "hatchling.build"
 
   [tool.uv]
     [tool.uv.sources]
-    pact-python-cli = { workspace = true }
     pact-python-ffi = { workspace = true }
 
     [tool.uv.workspace]
-    members = ["pact-python-cli", "pact-python-ffi"]
+    members = ["pact-python-ffi"]
 
   [tool.yamlfix]
   line_length = 100

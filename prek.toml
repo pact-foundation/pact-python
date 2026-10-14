@@ -91,7 +91,7 @@ repo = "local"
   language = "system"
   types = ["python"]
   exclude = '''(?x)(
-    ^pact-python-(cli|ffi)/
+    ^pact-python-ffi/
     | ^examples/plugins/proto/.*_pb2(_grpc)?\.py
   )'''
   stages = ["pre-push"]
