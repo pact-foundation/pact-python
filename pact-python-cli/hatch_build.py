@@ -205,7 +205,7 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         platform = self._sys_tag_platform()
 
         if platform.startswith("macosx"):
-            os_name = "osx"
+            os_name = "macos"
             ext = "tar.gz"
         elif "linux" in platform:
             os_name = "linux"
