@@ -126,7 +126,6 @@ if __name__ == "<run_path>":
         ".",
         ignore=[
             "docs",
-            "pact-python-cli",
             "pact-python-ffi",
             ".github",
         ],
@@ -136,12 +135,5 @@ if __name__ == "<run_path>":
         mapping=[
             ("pact-python-ffi/docs", "pact-python-ffi"),
             ("pact-python-ffi", "pact-python-ffi"),
-        ],
-    )
-    process_markdown(
-        "pact-python-cli",
-        mapping=[
-            ("pact-python-cli/docs", "pact-python-cli"),
-            ("pact-python-cli", "pact-python-cli"),
         ],
     )

@@ -3,7 +3,6 @@
     "--reruns=0",
     "--no-cov",
     "examples/",
-    "pact-python-cli/tests/",
     "pact-python-ffi/tests/",
     "tests/"
   ],

@@ -102,7 +102,7 @@ topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
 # Ignore any changes from the CLI and FFI sub-projects
-exclude_paths = ["pact-python-cli/", "pact-python-ffi/"]
+exclude_paths = ["pact-python-ffi/"]
 
 [remote.github]
 owner = "pact-foundation"

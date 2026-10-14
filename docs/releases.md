@@ -2,15 +2,16 @@
 
 Pact Python is made available through both GitHub releases and PyPI. The GitHub releases also come with a summary of changes and contributions since the last release.
 
-The entire process is automated through three GitHub Actions workflows (one per package), each running a three-stage pipeline. A description of the process is provided [below](#release-pipeline).
+The entire process is automated through two GitHub Actions workflows (one per package), each running a three-stage pipeline. A description of the process is provided [below](#release-pipeline).
 
 ## Packages
 
-Pact Python is split into three independently versioned packages:
+Pact Python is split into two independently versioned packages:
 
 -   **[`pact-python`](https://pypi.org/p/pact-python)**: the core library. Versioned with [semantic versioning](https://semver.org/), derived from conventional commits via [git-cliff](https://git-cliff.org/).
 -   **[`pact-python-ffi`](https://pypi.org/p/pact-python-ffi)**: Python bindings for the [pact-reference](https://github.com/pact-foundation/pact-reference) Rust library. Versioned as `{upstream}.{N}` (e.g. `0.4.28.0`), tracking upstream `libpact_ffi` releases.
--   **[`pact-python-cli`](https://pypi.org/p/pact-python-cli)**: Python wrapper for the [pact-standalone](https://github.com/pact-foundation/pact-standalone) CLI tools. Versioned as `{upstream}.{N}` (e.g. `2.4.0.0`), tracking upstream releases.
+
+The [`pact-python-cli`](https://pypi.org/p/pact-python-cli) package, which distributes the [Pact CLI](https://github.com/pact-foundation/pact-cli) through PyPI, is released from the [`pact-cli`](https://github.com/pact-foundation/pact-cli) repository.
 
 ## Versioning
 
@@ -29,9 +30,9 @@ Any deviation from the standard semantic versioning rules will be clearly docume
 
 The next version is computed automatically by [git-cliff](https://git-cliff.org/) from the [conventional commit](https://www.conventionalcommits.org/) history since the last release tag.
 
-### pact-python-ffi and pact-python-cli
+### pact-python-ffi
 
-These packages follow their upstream projects' versioning, extended with a fourth component `N` that starts at `0` for each new upstream version and increments with each packaging-only release. When a new upstream version is released, `N` resets to `0`.
+This package follows its upstream project's versioning, extended with a fourth component `N` that starts at `0` for each new upstream version and increments with each packaging-only release. When a new upstream version is released, `N` resets to `0`.
 
 ### Version storage
 
@@ -39,7 +40,7 @@ Each package stores its version as a static string in its `pyproject.toml`. The 
 
 ## Release Pipeline
 
-Each package has its own release workflow (`.github/workflows/release-{core,ffi,cli}.yml`). All three follow the same three-stage process:
+Each package has its own release workflow (`.github/workflows/release-{core,ffi}.yml`). Both follow the same three-stage process:
 
 ### Stage 1: Prepare
 
@@ -47,7 +48,7 @@ Triggered by every push to `main`.
 
 The `prepare` job runs `scripts/release.py prepare <package>`, which:
 
-1.  Computes the next version (via git-cliff for core; by fetching the latest upstream release for ffi/cli).
+1.  Computes the next version (via git-cliff for core; by fetching the latest upstream release for ffi).
 2.  Updates `pyproject.toml` with the new version.
 3.  Prepends the new release entry to `CHANGELOG.md` using git-cliff, preserving all previous entries (including any manual edits).
 4.  Force-pushes those changes to a fixed release branch (e.g. `release/pact-python`).
