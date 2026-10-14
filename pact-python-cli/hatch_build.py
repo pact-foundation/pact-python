@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from packaging.tags import sys_tags
+from packaging.version import Version
 
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_cli"
 
@@ -205,7 +206,8 @@ class PactCliBuildHook(BuildHookInterface[BuilderConfig]):
         platform = self._sys_tag_platform()
 
         if platform.startswith("macosx"):
-            os_name = "macos"
+            # Upstream renamed the macOS assets from `osx` to `macos` in 2.6.1.
+            os_name = "macos" if Version(version) >= Version("2.6.1") else "osx"
             ext = "tar.gz"
         elif "linux" in platform:
             os_name = "linux"
