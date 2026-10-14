@@ -198,7 +198,7 @@ jobs:
         run: hatch build --target sdist
 
       - name: Upload sdist
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: wheels-sdist
           path: pact-python-cli/dist/*.tar*
@@ -243,7 +243,7 @@ jobs:
           CIBW_BUILD: cp${{ env.STABLE_PYTHON_VERSION }}-*
 
       - name: Upload wheels
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
