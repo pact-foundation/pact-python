@@ -101,7 +101,7 @@ from pact_ffi.__version__ import __version_tuple__ as __version_tuple__
 from pact_ffi.ffi import ffi, lib  # type: ignore[import]
 
 if TYPE_CHECKING:
-    import datetime
+    import datetime as dt
     from collections.abc import Collection
     from collections.abc import Generator as GeneratorType
     from pathlib import Path
@@ -7508,7 +7508,7 @@ def verifier_broker_source_with_selectors(  # noqa: PLR0913, PLR0917
     password: str | None,
     token: str | None,
     enable_pending: int,
-    include_wip_pacts_since: datetime.date | None,
+    include_wip_pacts_since: dt.date | None,
     provider_tags: list[str],
     provider_branch: str | None,
     consumer_version_selectors: list[str],
