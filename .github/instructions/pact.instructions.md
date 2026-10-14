@@ -13,9 +13,3 @@ applyTo: "/src/pact/**"
     -   `match/` - Matching rules and matchers
     -   `generate/` - Value generators
     -   `interaction/` - Interaction building blocks
-
-## V2 Legacy Code
-
--   Files in `v2/` subdirectories implement the legacy version of Pact Python
--   This version is in maintenance mode with only critical bug fixes being applied
--   New features and active development should focus on the main codebase

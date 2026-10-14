@@ -122,10 +122,6 @@ build-backend = "hatchling.build"
         [[tool.hatch.envs.test.matrix]]
         python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 
-  [tool.mypy]
-  # Overwrite the exclusions from the root pyproject.toml.
-  exclude = ""
-
   ## PyTest Configuration
   [tool.pytest]
   addopts = [
@@ -143,5 +139,3 @@ build-backend = "hatchling.build"
   ## Ruff Configuration
   [tool.ruff]
   extend = "../pyproject.toml"
-
-  exclude = []

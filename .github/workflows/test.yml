@@ -100,9 +100,6 @@ jobs:
       - name: Run tests
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-tests.xml
 
-      - name: Run tests (v2)
-        run: hatch run v2-test.py${{ matrix.python-version }}:test --junit-xml=v2-junit.xml --cov-report=xml:coverage-v2.xml
-
       - name: Run tests (CLI)
         working-directory: pact-python-cli
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-cli.xml
@@ -117,7 +114,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: tests
-          files: coverage-tests.xml,coverage-v2.xml,pact-python-cli/coverage-cli.xml,pact-python-ffi/coverage-ffi.xml
+          files: coverage-tests.xml,pact-python-cli/coverage-cli.xml,pact-python-ffi/coverage-ffi.xml
 
       - name: Upload test results
         if: ${{ !cancelled() }}
