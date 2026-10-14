@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from flask import Flask, Response, abort, jsonify, request
@@ -273,7 +273,7 @@ def create_user() -> tuple[Response, int]:
     new_user = User(
         id=UserDb.new_user_id(),
         name=user["name"],
-        created_on=datetime.now(tz=timezone.utc),
+        created_on=datetime.now(tz=UTC),
         email=user.get("email"),
         ip_address=user.get("ip_address"),
         hobbies=user.get("hobbies", []),

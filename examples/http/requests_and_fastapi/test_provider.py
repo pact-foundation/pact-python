@@ -19,7 +19,7 @@ from __future__ import annotations
 import contextlib
 import dataclasses
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -114,7 +114,7 @@ def default_mock_db() -> dict[int, User]:
             id=1,
             name="Alice",
             email="alice@example.com",
-            created_on=datetime(2020, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+            created_on=datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC),
             ip_address="1.2.3.4",
             hobbies=["pact testing", "programming", "qa"],
             admin=False,
@@ -123,7 +123,7 @@ def default_mock_db() -> dict[int, User]:
             id=2,
             name="Bob",
             email=None,  # Edge case: email is None
-            created_on=datetime(1999, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
+            created_on=datetime(1999, 12, 31, 23, 59, 59, tzinfo=UTC),
             ip_address="",
             hobbies=[],
             admin=True,
@@ -132,7 +132,7 @@ def default_mock_db() -> dict[int, User]:
             id=10,
             name="Charlie",
             email="charlie@example.com",
-            created_on=datetime(2025, 8, 8, 8, 8, 8, tzinfo=timezone.utc),
+            created_on=datetime(2025, 8, 8, 8, 8, 8, tzinfo=UTC),
             ip_address="3.4.5.6",
             hobbies=[""],
             admin=False,
@@ -141,7 +141,7 @@ def default_mock_db() -> dict[int, User]:
             id=42,
             name="Dana",
             email="dana+test@example.com",
-            created_on=datetime(2022, 2, 22, 2, 22, 22, tzinfo=timezone.utc),
+            created_on=datetime(2022, 2, 22, 2, 22, 22, tzinfo=UTC),
             ip_address="255.255.255.255",
             hobbies=["edge", "case", "testing"],
             admin=False,

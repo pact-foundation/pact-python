@@ -105,9 +105,9 @@ if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Generator as GeneratorType
     from pathlib import Path
+    from typing import Self
 
     import cffi
-    from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
 

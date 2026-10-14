@@ -11,7 +11,7 @@ dependencies = [
   "python-multipart~=0.0",
 ]
 description = "Pact Python catalog: Well-documented patterns and use cases"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [dependency-groups]
 test = ["pact-python", "pytest~=9.0", "uvicorn~=0.30"]

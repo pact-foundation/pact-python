@@ -24,15 +24,15 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Software Development :: Testing",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 # Dependencies of Pact Python should be specified using the broadest range
 # compatible version unless:
@@ -127,7 +127,6 @@ types = [
   "types-grpcio~=1.0",
   "types-protobuf~=7.34",
   "types-requests~=2.0",
-  "typing-extensions~=4.0",  # For Python 3.10 support
 ]
 
 # Dependencies for v2 example and test environments
@@ -199,7 +198,7 @@ build-backend = "hatchling.build"
       dependency-groups = ["test"]
 
         [[tool.hatch.envs.test.matrix]]
-        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 
       [tool.hatch.envs.example]
       installer = "uv"
@@ -207,7 +206,7 @@ build-backend = "hatchling.build"
       dependency-groups = ["example"]
 
         [[tool.hatch.envs.example.matrix]]
-        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 
       [tool.hatch.envs.v2-test]
       features = ["compat-v2"]
@@ -220,7 +219,7 @@ build-backend = "hatchling.build"
         test = "pytest tests/v2 {args}"
 
         [[tool.hatch.envs.v2-test.matrix]]
-        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 
       [tool.hatch.envs.v2-example]
       features = ["compat-v2"]
@@ -233,7 +232,7 @@ build-backend = "hatchling.build"
         example = "pytest examples/v2 {args}"
 
         [[tool.hatch.envs.v2-example.matrix]]
-        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 
   [tool.mypy]
   exclude = """(?x)^(

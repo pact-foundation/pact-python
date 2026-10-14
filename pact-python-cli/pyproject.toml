@@ -21,15 +21,15 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Software Development :: Testing",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
   [project.urls]
   "Bug Tracker" = "https://github.com/pact-foundation/pact-python/issues"
@@ -120,7 +120,7 @@ build-backend = "hatchling.build"
       dependency-groups = ["test"]
 
         [[tool.hatch.envs.test.matrix]]
-        python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 
   [tool.mypy]
   # Overwrite the exclusions from the root pyproject.toml.

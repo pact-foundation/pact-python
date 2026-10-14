@@ -21,10 +21,9 @@ import os
 import re
 import subprocess
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-
-import tomllib
 
 ROOT = Path(__file__).parent.parent
 logger = logging.getLogger(__name__)

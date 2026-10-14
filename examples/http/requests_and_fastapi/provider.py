@@ -29,7 +29,7 @@ is because the consumer is not concerned with Pact, only the tests are.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, ClassVar
 
 from fastapi import FastAPI, HTTPException, status
@@ -52,7 +52,7 @@ class User(BaseModel):
 
     id: int
     name: str
-    created_on: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    created_on: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
     email: str | None = None
     ip_address: str | None = None
     hobbies: list[str] = Field(default_factory=list)
@@ -195,7 +195,7 @@ async def create_user(data: dict[str, Any]) -> User:
     user = User(
         id=UserDb.new_user_id(),
         name=data["name"],
-        created_on=datetime.now(tz=timezone.utc),
+        created_on=datetime.now(tz=UTC),
         email=data.get("email"),
         ip_address=data.get("ip_address"),
         hobbies=data.get("hobbies", []),
