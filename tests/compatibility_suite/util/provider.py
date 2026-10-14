@@ -19,6 +19,7 @@ import inspect
 import json
 import logging
 import re
+import shutil
 import subprocess
 import warnings
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -33,7 +34,6 @@ from multidict import CIMultiDict
 from pytest_bdd import given, parsers, then, when
 from yarl import URL
 
-import pact_cli
 from pact import __version__
 from pact._server import MessageProducer
 from pact._util import find_free_port
@@ -341,10 +341,10 @@ class PactBroker:
         self.provider = provider
         self.consumer = consumer
 
-        if bin_path := pact_cli.BROKER_CLIENT_PATH:
-            self.broker_bin = bin_path
+        if bin_path := shutil.which("pact"):
+            self.pact_bin = bin_path
         else:
-            msg = "pact-broker not found"
+            msg = "pact not found; run `mise install` to install the Pact CLI"
             raise RuntimeError(msg)
 
     def reset(self) -> None:
@@ -378,7 +378,8 @@ class PactBroker:
                 The version of the consumer application.
         """
         cmd = [
-            self.broker_bin,
+            self.pact_bin,
+            "broker",
             "publish",
             str(directory),
             "--broker-base-url",
