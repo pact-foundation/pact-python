@@ -2013,10 +2013,6 @@ class StringResult:
         Raises:
             RuntimeError:
                 If the result is an error.
-
-        Raises:
-            RuntimeError:
-                If the result is an error.
         """
         if self.is_failed:
             raise RuntimeError(self.text)
@@ -6902,21 +6898,6 @@ def add_interaction_reference(
         value:
             Value of the reference, typically an ID (e.g., `"TICKET-123"`,
             `"getUserById"`, `"#123"`).
-
-
-
-    Args:
-        interaction:
-            Interaction handle to modify.
-
-        group:
-            Group or system the reference belongs to (e.g. ``"Jira"``).
-
-        name:
-            Name or identifier of the reference (e.g. ``"TICKET-123"``).
-
-        value:
-            Value of the reference, typically an ID.
 
     Raises:
         RuntimeError:
