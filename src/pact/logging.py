@@ -3,7 +3,7 @@ Logging integration between the Pact library and the standard `logging` module.
 
 The Pact FFI and Pact plugins run outside the Python interpreter, so their log
 output does not reach `logging` on its own. This module initialises the FFI
-once, on the first use of [`Pact`][pact.Pact] or [`Verifier`][pact.Verifier],
+once, on the first use of [`Pact`][pact.Pact] or [`Verifier`][verifier.Verifier],
 and re-emits every event through `logging`:
 
 -   Events from the Pact library are emitted on the `pact.ffi` logger, with
@@ -25,14 +25,13 @@ logging.getLogger("pact.ffi").setLevel(logging.DEBUG)
 ```
 
 The FFI forwards events at the most verbose level set explicitly on the
-`pact.ffi` and `pact.plugins` loggers, or at
-[`DEFAULT_LEVEL`][logging.DEFAULT_LEVEL] when neither is set. That level is
-fixed when the FFI is initialised, so set logger levels before creating the
-first `Pact` or `Verifier`. The Pact library's `TRACE` level is exposed as
-[`TRACE`][logging.TRACE], below `logging.DEBUG`.
+`pact.ffi` and `pact.plugins` loggers, or at [`DEFAULT_LEVEL`][DEFAULT_LEVEL]
+when neither is set. That level is fixed when the FFI is initialised, so set
+logger levels before creating the first `Pact` or `Verifier`. The Pact
+library's `TRACE` level is exposed as [`TRACE`][TRACE], below `logging.DEBUG`.
 
 Log records can be attributed to the test which caused them by setting a test
-run ID with [`set_test_run_id`][logging.set_test_run_id].
+run ID with [`set_test_run_id`][set_test_run_id].
 
 Calling one of the `pact_ffi.log_to_*` functions before the first `Pact` or
 `Verifier` configures the FFI's own sink instead. Events are still forwarded
