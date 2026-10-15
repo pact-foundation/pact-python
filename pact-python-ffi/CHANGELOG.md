@@ -8,6 +8,26 @@ Note that this _only_ includes changes to the Python FFI interface. For changes 
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-ffi/0.5.10.0] _2026-10-15_
+
+### 🚀 Features
+
+-   [**breaking**] Remove pact.v2 compatibility module
+    > `pact.v2`, the `compat-v2` extra and the `pact-verifier` console script are removed. Migrate to the `pact` API (see MIGRATION.md) or pin `pact-python<4`.
+-   Update bindings to Pact FFI 0.5.10
+
+### 📚 Documentation
+
+-   _(ffi)_ Remove duplicated docstring sections
+
+### ⚙️ Miscellaneous Tasks
+
+-   Require python 3.11 or newer
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-ffi/0.5.8.0] _2026-09-17_
 
 ### 🚀 Features
