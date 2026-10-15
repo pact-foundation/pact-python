@@ -85,6 +85,7 @@ from pact.error import (
 from pact.interaction._async_message_interaction import AsyncMessageInteraction
 from pact.interaction._http_interaction import HttpInteraction
 from pact.interaction._sync_message_interaction import SyncMessageInteraction
+from pact.logging import ensure_initialised
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -140,6 +141,8 @@ class Pact:
         if not provider:
             msg = "Provider name cannot be empty."
             raise ValueError(msg)
+
+        ensure_initialised()
 
         self._consumer = consumer
         self._provider = provider
