@@ -84,6 +84,7 @@ from pact.error import (
 from pact.interaction._async_message_interaction import AsyncMessageInteraction
 from pact.interaction._http_interaction import HttpInteraction
 from pact.interaction._sync_message_interaction import SyncMessageInteraction
+from pact.logging import ensure_initialised
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -139,6 +140,8 @@ class Pact:
         if not provider:
             msg = "Provider name cannot be empty."
             raise ValueError(msg)
+
+        ensure_initialised()
 
         self._consumer = consumer
         self._provider = provider
@@ -756,8 +759,14 @@ class PactServer:
         Logs from the server.
 
         This is a string containing the logs from the server. If there are no
-        logs, then this is `None`. For this to be populated, the logging must
-        be configured to make use of the internal buffer.
+        logs, then this is `None`.
+
+        Pact Python forwards the server's logs to the `logging` module, where
+        the records of one server share a `log_id` attribute. It applies the
+        library's in-memory buffer at `OFF`, so this is normally `None`. The
+        buffer is only populated when
+        [`pact_ffi.log_to_buffer`][pact_ffi.log_to_buffer] is called before
+        the first `Pact` is created.
 
         Raises:
             RuntimeError:
