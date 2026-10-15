@@ -1,124 +1,95 @@
-# Logging Configuration
+# Logging
 
-Pact Python uses the Rust FFI (Foreign Function Interface) library for its core functionality. While the Python code uses the standard library `logging` module, the underlying FFI cannot interface with that directly. This page explains how to configure FFI logging for debugging and troubleshooting.
+Pact Python is built on the Pact FFI, a Rust library, and Pact plugins run as
+separate processes. Neither writes to Python's `logging` module on its own, so
+Pact Python forwards their log events for them. Nothing needs to be
+configured: the first [`Pact`][pact.Pact] or [`Verifier`][pact.Verifier]
+created in a process initialises the FFI and registers the forwarding.
 
-## Basic Configuration
+## Loggers
 
-The simplest way to configure FFI logging is to use the [`log_to_stderr`][pact_ffi.log_to_stderr] function from the `pact_ffi` module. This directs all FFI log output to standard error.
+| Logger                | Source                                                          |
+| --------------------- | --------------------------------------------------------------- |
+| `pact.ffi.<target>`   | The Pact library, where `<target>` is the Rust module path      |
+| `pact.plugins`        | Plugins, whether written to their stderr or sent over the RPC   |
+| `pact`                | Pact Python itself                                              |
 
-```python
-import pact_ffi
-
-pact_ffi.log_to_stderr("INFO")
-```
-
-### Log Levels
-
-The following log levels are available (from least to most verbose):
-
--   `"OFF"` - Disable all logging
--   `"ERROR"` - Only error messages
--   `"WARN"` - Warnings and errors
--   `"INFO"` - Informational messages, warnings, and errors
--   `"DEBUG"` - Debug messages and above
--   `"TRACE"` - All messages including trace-level details
-
-## Recommended Setup with Pytest
-
-/// warning | One-time Initialization
-The FFI logging can only be initialized **once** per process. Attempting to configure it multiple times will result in an error. For this reason, it's recommended to set up logging in a session-scoped fixture.
-///
-
-The recommended way to configure FFI logging in your test suite is to use a pytest fixture with `autouse=True` and `scope="session"` in your `conftest.py` file:
+Each record from the library carries `test_run_id` and `log_id` as
+attributes. `test_run_id` is set on records emitted from the thread which
+called into the library; `log_id` is the mock server ID, set on records
+emitted while the server handles a request on one of its own threads, where
+`test_run_id` is `None`. Each plugin record carries `plugin_instance_id`,
+`test_run_id` and `plugin_target`. They can be included in a formatter.
+Records from other loggers do not have them, so give the formatter a default:
 
 ```python
-import pytest
-import pact_ffi
-
-
-@pytest.fixture(autouse=True, scope="session")
-def pact_logging():
-    """Configure Pact FFI logging for the test session."""
-    pact_ffi.log_to_stderr("INFO")
+handler = logging.StreamHandler()
+handler.setFormatter(
+    logging.Formatter(
+        "%(levelname)s %(name)s [%(test_run_id)s] %(message)s",
+        defaults={"test_run_id": "-"},
+    )
+)
+logging.basicConfig(handlers=[handler])
 ```
 
-This ensures that:
+## Verbosity
 
-1.  Logging is configured automatically for all tests
-2.  It's only initialized once at the start of the test session
-3.  All test output includes relevant Pact FFI logs
+The library forwards events at the most verbose level set explicitly on the
+`pact.ffi` and `pact.plugins` loggers, or at
+[`DEFAULT_LEVEL`][pact.logging.DEFAULT_LEVEL] when neither is set:
 
-## Advanced Configuration
+```python
+import logging
 
-For more advanced use cases, the `pact_ffi` module provides additional logging functions:
+logging.getLogger("pact.ffi").setLevel(logging.INFO)
+```
 
-### Logging to a File
+That level is fixed when the FFI is initialised, so set it before creating the
+first `Pact` or `Verifier`, for example at the top of `conftest.py`. Standard
+`logging` configuration then decides what is shown; under pytest, `log_level`
+and `log_cli_level` apply as usual.
+
+The library's `TRACE` level sits below `logging.DEBUG` and is exposed as
+[`pact.logging.TRACE`][pact.logging.TRACE]:
+
+```python
+from pact.logging import TRACE
+
+logging.getLogger("pact.ffi").setLevel(TRACE)
+```
+
+## Correlating Logs with Tests
+
+Plugins serve every test in the process, so their records do not identify
+the test which triggered them on their own.
+[`set_test_run_id`][pact.logging.set_test_run_id] sets an identifier for the
+current thread which is reported as `test_run_id` on the library's records
+from that thread and, because it is attached to every plugin request the
+thread makes, on every plugin record. This keeps records apart when tests run
+in parallel, or when a plugin's clean-up overlaps the start of the next test.
+Mock server records carry `log_id` instead.
+
+## Configuring the FFI Directly
+
+The `pact_ffi` module exposes the library's own sinks. Calling
+[`log_to_stderr`][pact_ffi.log_to_stderr] or
+[`log_to_buffer`][pact_ffi.log_to_buffer] before the first `Pact` or
+`Verifier` applies that sink instead of the silent one Pact Python uses.
+Events are still forwarded to `logging`, at the more restrictive of the
+sink's level and the level described under [Verbosity](#verbosity), and a
+warning is logged on the `pact` logger. The library's logger can be applied
+once per process, so calling these after a `Pact` or `Verifier` exists fails
+with "Logger already initialized".
 
 /// note | Not Yet Implemented
-The `log_to_file` function is currently not implemented in the Python bindings. If you need this feature, please open an issue on the [Pact Python GitHub repository](https://github.com/pact-foundation/pact-python/issues).
+`log_to_file`, `fetch_log_buffer`, `logger_init`, `logger_attach_sink` and
+`logger_apply` are not implemented in the Python bindings. If you need one,
+open an issue on the [Pact Python GitHub
+repository](https://github.com/pact-foundation/pact-python/issues).
 ///
-
-To direct logs to a file instead of stderr, you would use:
-
-```python
-import pact_ffi
-
-# This will be available in a future release
-pact_ffi.log_to_file("/path/to/logfile.log", pact_ffi.LevelFilter.DEBUG)
-```
-
-### Logging to a Buffer
-
-For applications that need to capture and process logs programmatically, you can use [`log_to_buffer`][pact_ffi.log_to_buffer]:
-
-```python
-import pact_ffi
-
-# Configure logging to an internal buffer
-pact_ffi.log_to_buffer("DEBUG")
-```
-
-This is particularly useful for:
-
--   Capturing logs in CI/CD environments
--   Including logs in test failure reports
--   Processing or filtering log messages programmatically
-
-/// note | Retrieving Buffer Contents
-The `fetch_log_buffer` function for retrieving buffered logs is currently not implemented in the Python bindings. If you need this feature, please open an issue on the [Pact Python GitHub repository](https://github.com/pact-foundation/pact-python/issues).
-///
-
-### Multiple Sinks
-
-/// note | Advanced Usage
-The functions `logger_init`, `logger_attach_sink`, and `logger_apply` are currently not implemented in the Python bindings. If you need these features, please open an issue on the [Pact Python GitHub repository](https://github.com/pact-foundation/pact-python/issues).
-///
-
-For the most advanced scenarios, the FFI supports configuring multiple log sinks simultaneously (e.g., logging to both stderr and a file). This requires using the lower-level `logger_init`, `logger_attach_sink`, and `logger_apply` functions, which are planned for future implementation.
-
-## Troubleshooting
-
-### "Logger already initialized" Error
-
-If you see an error about the logger already being initialized, it means you're trying to configure FFI logging more than once. Ensure that:
-
-1.  You're using a session-scoped fixture as shown above
-2.  You're not calling any of the `log_to_*` functions multiple times in your code
-3.  If running tests multiple times in the same process (e.g., with pytest-xdist), the fixture scope is set correctly
-
-### No Log Output
-
-If you're not seeing any log output:
-
-1.  Check that the log level is appropriate - `"ERROR"` will only show errors, while `"INFO"` or `"DEBUG"` will show more information
-2.  Verify that the logging is configured before any Pact operations are performed
-3.  For `log_to_file`, ensure the file path is writable and the directory exists
 
 ## Further Information
 
-For complete API documentation, see:
-
--   [`pact_ffi.log_to_stderr`][pact_ffi.log_to_stderr]
--   [`pact_ffi.log_to_file`][pact_ffi.log_to_file]
--   [`pact_ffi.log_to_buffer`][pact_ffi.log_to_buffer]
+-   [`pact.logging`][pact.logging]
 -   [`pact_ffi.LevelFilter`][pact_ffi.LevelFilter]
