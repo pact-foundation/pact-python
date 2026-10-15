@@ -6,6 +6,43 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/4.0.0] _2026-10-15_
+
+### 🚀 Features
+
+-   [**breaking**] Remove pact.v2 compatibility module
+    > `pact.v2`, the `compat-v2` extra and the `pact-verifier` console script are removed. Migrate to the `pact` API (see MIGRATION.md) or pin `pact-python<4`.
+
+### 🐛 Bug Fixes
+
+-   _(cli)_ Use renamed macOS standalone assets
+
+### 📚 Documentation
+
+-   Add pact-python-cli 1!x migration guide
+-   _(blog)_ Fix functional arguments examples
+-   _(blog)_ Fix asynchronous message examples
+-   _(blog)_ Update rust ffi post to pact-python-ffi
+-   _(blog)_ Fix v3 release examples
+-   _(blog)_ Fix typo in sneak peek post
+-   _(blog)_ Fix grammar in functional arguments note
+-   _(blog)_ Note the removal of pact.v2 in v4
+
+### 🧪 Testing
+
+-   Get the Pact CLI for the compatibility suite from mise
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(ci)_ Standardize renovate config
+-   Require python 3.11 or newer
+-   _(release)_ Pact-python-cli v2.6.4.0
+-   _(cli)_ Remove pact-python-cli
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/3.4.1] _2026-09-17_
 
 ### 🐛 Bug Fixes
