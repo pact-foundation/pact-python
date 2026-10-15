@@ -386,37 +386,46 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         Patch the upstream header so that CFFI can compile it.
 
-        The upstream `pact.h` emits the callback parameter of
-        `pactffi_register_plugin_log_callback` as an opaque struct passed by
-        value, which cannot be compiled. The Rust signature is
-        `Option<extern "C" fn(...)>`, whose ABI is a nullable function pointer.
-        See https://github.com/pact-foundation/pact-reference/issues/544.
+        The upstream `pact.h` emits the callback parameters of
+        `pactffi_register_plugin_log_callback` and
+        `pactffi_register_log_callback` as opaque structs passed by value, which
+        cannot be compiled. The Rust signatures are `Option<extern "C" fn(...)>`,
+        whose ABI is a nullable function pointer. See
+        https://github.com/pact-foundation/pact-reference/issues/544.
 
         Args:
             source:
                 The contents of the upstream `pact.h`.
 
         Returns:
-            The header contents with the callback declared as a function
-            pointer.
+            The header contents with the callbacks declared as function
+            pointers.
         """
-        opaque = "typedef struct Option_PluginLogCallback Option_PluginLogCallback;"
-        if opaque not in source:
-            return source
-        self.app.display_debug("Patching Option_PluginLogCallback in pact.h")
-        return source.replace(
-            opaque,
-            "typedef void (*PluginLogCallback)("
-            "const char *plugin_instance_id, "
-            "const char *test_run_id, "
-            "const char *level, "
-            "const char *target, "
-            "const char *message);",
-        ).replace(
-            "void pactffi_register_plugin_log_callback("
-            "struct Option_PluginLogCallback callback);",
-            "void pactffi_register_plugin_log_callback(PluginLogCallback callback);",
-        )
+        for callback, register, first_arg in (
+            (
+                "PluginLogCallback",
+                "pactffi_register_plugin_log_callback",
+                "plugin_instance_id",
+            ),
+            ("LogCallback", "pactffi_register_log_callback", "log_id"),
+        ):
+            opaque = f"typedef struct Option_{callback} Option_{callback};"
+            if opaque not in source:
+                continue
+            self.app.display_debug(f"Patching Option_{callback} in pact.h")
+            source = source.replace(
+                opaque,
+                f"typedef void (*{callback})("
+                f"const char *{first_arg}, "
+                "const char *test_run_id, "
+                "const char *level, "
+                "const char *target, "
+                "const char *message);",
+            ).replace(
+                f"void {register}(struct Option_{callback} callback);",
+                f"void {register}({callback} callback);",
+            )
+        return source
 
     def _download(self, url: str) -> Path:
         """

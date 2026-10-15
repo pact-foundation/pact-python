@@ -13,7 +13,11 @@ Instead, these tests fall under two broad categories:
 
 from __future__ import annotations
 
+import json
 import re
+import subprocess
+import sys
+import textwrap
 
 import pytest
 
@@ -259,3 +263,68 @@ class TestPactInteractionCasting:
             interaction.as_synchronous_http()
         with pytest.raises(TypeError):
             interaction.as_asynchronous_message()
+
+
+def test_sync_message_generate_contents() -> None:
+    pact = pact_ffi.new_pact("consumer", "provider")
+    interaction = pact_ffi.new_sync_message_interaction(pact, "sync")
+    pact_ffi.with_body(
+        interaction,
+        pact_ffi.InteractionPart.REQUEST,
+        "application/json",
+        json.dumps({
+            "id": {
+                "value": 100,
+                "pact:matcher:type": "integer",
+                "pact:generator:type": "RandomInt",
+                "min": 1,
+                "max": 99,
+            }
+        }),
+    )
+    pact_ffi.with_body(
+        interaction,
+        pact_ffi.InteractionPart.RESPONSE,
+        "application/json",
+        json.dumps({"result": "ok"}),
+    )
+
+    contents = pact_ffi.sync_message_generate_contents(interaction)
+
+    assert 1 <= contents["request"]["contents"]["content"]["id"] <= 99
+    assert "matchingRules" not in contents["request"]
+    assert "generators" not in contents["request"]
+    assert contents["response"][0]["contents"]["content"] == {"result": "ok"}
+
+
+def test_sync_message_generate_contents_http() -> None:
+    pact = pact_ffi.new_pact("consumer", "provider")
+    interaction = pact_ffi.new_interaction(pact, "http")
+    with pytest.raises(RuntimeError, match="not a synchronous message"):
+        pact_ffi.sync_message_generate_contents(interaction)
+
+
+def test_log_callback() -> None:
+    # Applying a logger installs a process-wide subscriber, so the test runs in
+    # a separate interpreter.
+    script = textwrap.dedent(
+        """
+        import pact_ffi
+
+        events = []
+        pact_ffi.set_log_callback_level("INFO")
+        pact_ffi.register_log_callback(lambda *args: events.append(args))
+        pact_ffi.log_to_buffer("ERROR")
+        pact_ffi.log_message("received", "INFO", "test")
+        pact_ffi.register_log_callback(None)
+        pact_ffi.log_message("dropped", "INFO", "test")
+        print([e[2:] for e in events])
+        """
+    )
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-c", script],
+        capture_output=True,
+        check=True,
+        text=True,
+    )
+    assert result.stdout.strip() == "[('INFO', 'pact_ffi', 'received source=test')]"
