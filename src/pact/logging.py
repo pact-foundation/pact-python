@@ -33,10 +33,13 @@ library's `TRACE` level is exposed as [`TRACE`][TRACE], below `logging.DEBUG`.
 Log records can be attributed to the test which caused them by setting a test
 run ID with [`set_test_run_id`][set_test_run_id].
 
-Calling one of the `pact_ffi.log_to_*` functions before the first `Pact` or
-`Verifier` configures the FFI's own sink instead. Events are still forwarded
-to `logging`, at the more restrictive of that sink's level and the level
-above, and a warning is emitted on the `pact` logger.
+Importing `pact` replaces `pact_ffi.init`, `pact_ffi.init_with_log_level`,
+`pact_ffi.log_to_stderr`, `pact_ffi.log_to_stdout` and `pact_ffi.log_to_file`
+with functions which emit a `UserWarning` and do nothing else. A logger
+applied through `pact_ffi.init`, `pact_ffi.init_with_log_level` or
+`pact_ffi.log_to_stderr` before `pact` was imported is kept: events are
+still forwarded to `logging`, at the more restrictive of that sink's level and
+the forwarding level, and a warning is emitted on the `pact` logger.
 """
 
 from __future__ import annotations
@@ -45,8 +48,13 @@ import atexit
 import contextlib
 import logging
 import threading
+import warnings
+from typing import TYPE_CHECKING
 
 import pact_ffi
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 __all__ = [
     "DEFAULT_LEVEL",
@@ -233,8 +241,9 @@ def ensure_initialised() -> None:
     `pact.plugins` logger logs a warning on the `pact` logger, once.
 
     If a logger was already applied, through one of the `pact_ffi.log_to_*`
-    functions, a warning is logged on the `pact` logger and the callbacks are
-    registered against that logger instead.
+    functions called before `pact` was imported, a warning is logged on the
+    `pact` logger and the callbacks are registered against that logger
+    instead.
     """
     global _initialised, _applied_level, _level_warned  # noqa: PLW0603
 
@@ -284,6 +293,52 @@ def _shutdown() -> None:
         pact_ffi.register_log_callback(None)
     with contextlib.suppress(Exception):
         pact_ffi.register_plugin_log_callback(None)
+
+
+# MARK: FFI logger stand-ins
+
+_REPLACED_FFI_FUNCTIONS = (
+    "init",
+    "init_with_log_level",
+    "log_to_stderr",
+    "log_to_stdout",
+    "log_to_file",
+)
+
+
+def _stand_in(name: str) -> Callable[..., None]:
+    """
+    Create a replacement for a `pact_ffi` function which applies a logger.
+
+    Pact Python applies the FFI logger itself, and the logger can be applied
+    once per process. A suite which still calls one of these functions after
+    `pact` is imported gets a warning in place of the FFI's "Logger already
+    initialized" error.
+
+    Args:
+        name:
+            Name of the `pact_ffi` function being replaced.
+
+    Returns:
+        A function accepting any arguments, which emits a `UserWarning` and
+        returns `None`.
+    """
+
+    def stand_in(*_args: object, **_kwargs: object) -> None:
+        warnings.warn(
+            f"pact_ffi.{name} has no effect: Pact Python forwards the Pact "
+            "library's logs to the logging module. Remove the call and set the "
+            "levels of the 'pact.ffi' and 'pact.plugins' loggers instead.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+    stand_in.__name__ = stand_in.__qualname__ = name
+    return stand_in
+
+
+for _name in _REPLACED_FFI_FUNCTIONS:
+    setattr(pact_ffi, _name, _stand_in(_name))
 
 
 # MARK: Test Run ID
