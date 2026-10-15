@@ -11,6 +11,10 @@ It's been a couple of months since we released Pact Python v3, and after ironing
 
 <!-- more -->
 
+/// warning | `pact.v2` removed in Pact Python v4
+Pact Python v4 removed the `pact.v2` compatibility module described in this post. The v2 example below runs only on Pact Python v3. Projects still using the v2 API must migrate to the `pact` API, or pin `pact-python<4` in the meantime. The [migration guide](https://pact-foundation.github.io/pact-python/MIGRATION/#migrating-from-3x-to-4x) covers both steps.
+///
+
 Pact is an approach to contract testing that sits neatly between traditional unit tests (which check individual components) and end-to-end tests (which exercise the whole system). With Pact, you can verify that your services communicate correctly, without needing to spin up every dependency. By capturing the expected interactions between consumer and provider, Pact allows you to test each side in isolation and replay those interactions, giving you fast, reliable feedback and confidence that your APIs and microservices will work together in the real world. Pact Python brings this powerful workflow to the Python ecosystem, making it easy to test everything from REST APIs to event-driven systems.
 
 ## Looking Back: Why v3?
@@ -169,5 +173,5 @@ Thank you for being part of this journey. Here's to a new chapter in contract te
 /// define
 September 2026
 
--   The code examples in this post were updated in September 2026 to the current Pact Python API. Both examples now send the `Accept` header and `include` query parameter that the interaction declares, so that the request matches the Pact.
+-   The code examples in this post were corrected in September 2026. Both examples now send the `Accept` header and `include` query parameter that the interaction declares, so that the request matches the Pact.
 ///
