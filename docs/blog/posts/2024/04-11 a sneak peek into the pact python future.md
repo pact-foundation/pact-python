@@ -53,7 +53,7 @@ Transitioning to a new version can be daunting; thus, we've planned a staged mig
 -   The original library moves under the `pact.v2` umbrella.
     -   This significant shift means that code written for Pact Python v2 will require attention to function with `v3`.
     -   Users loyal to `v2` must update their imports to accommodate the new `pact.v2` scope.
-    -   With its move, `pact.v2` steps into the sunset of its lifecycle, focusing on critical fixes until its eventual retirement.
+    -   With its move, `pact.v2` steps into the sunset of its lifecycle, focusing on critical fixes until its eventual retirement.[^v2-removal]
 
 ## Embrace the Evolution
 
@@ -66,6 +66,8 @@ Stay tuned for more updates as we progress through each stage of this exciting j
 Lastly, a big thank you to all our contributors!
 
 Happy testing!
+
+[^v2-removal]: The `pact.v2` module was removed in Pact Python v4. The [migration guide](https://pact-foundation.github.io/pact-python/MIGRATION/#migrating-from-3x-to-4x) describes how to move to the `pact` API.
 
 ----
 
