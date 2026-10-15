@@ -268,6 +268,12 @@ class TestCallbacks:
     @pytest.fixture(autouse=True)
     def _initialised(self) -> None:
         pact_logging.ensure_initialised()
+        # ensure_initialised() is a no-op past the first call in the process,
+        # so another test module may have since replaced the FFI callbacks
+        # with its own (e.g. to assert on deregistration). Re-register the
+        # module's own callbacks so these tests do not depend on suite order.
+        pact_ffi.register_log_callback(pact_logging._core_callback)  # noqa: SLF001
+        pact_ffi.register_plugin_log_callback(pact_logging._plugin_callback)  # noqa: SLF001
 
     def test_core_record(self, caplog: pytest.LogCaptureFixture) -> None:
         with caplog.at_level(pact_logging.TRACE, logger="pact.ffi"):
