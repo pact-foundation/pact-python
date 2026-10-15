@@ -18,6 +18,29 @@ This document outlines the key changes and migration steps for users transitioni
 
 Projects that cannot migrate yet should pin `pact-python<4`, which still provides `pact.v2` through `pact-python[compat-v2]`.
 
+## Migrating `pact-python-cli` from `2.x` to `1!x`
+
+`pact-python-cli` is now published from [`pact-foundation/pact-cli`](https://github.com/pact-foundation/pact-cli) and ships its Rust `pact` binary. Its versions follow that project under PEP 440 epoch 1 (`1!0.10.10`, for example), so they sort above the `2.x` releases.
+
+### Key Changes
+
+-   The Ruby standalone tools are gone. Each command maps to a `pact` subcommand:
+
+    | `2.x` command                                 | `1!x` command   |
+    | --------------------------------------------- | --------------- |
+    | `pact-broker`                                 | `pact broker`   |
+    | `pactflow`                                    | `pact pactflow` |
+    | `pact-mock-service`, `pact_mock_server_cli`   | `pact mock`     |
+    | `pact-provider-verifier`, `pact_verifier_cli` | `pact verifier` |
+    | `pact-stub-service`, `pact-stub-server`       | `pact stub`     |
+    | `pact-plugin-cli`                             | `pact plugin`   |
+    | `pact-message`                                | No equivalent   |
+
+-   The `pact_cli` Python module is gone, along with `PACT_USE_SYSTEM_BINS` and the `*_PATH` constants. Find the binary with `shutil.which("pact")`.
+-   Linux with glibc older than 2.34 has no `1!x` wheel, so pip installs `2.6.4.0` there. Install `pact` with the [Pact CLI installers](https://github.com/pact-foundation/pact-cli#install) instead.
+
+Projects that still need the Ruby tools should pin `pact-python-cli<1!0`.
+
 ## Migrating from `2.x` to `3.x`
 
 ### Key Changes
