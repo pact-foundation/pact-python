@@ -73,24 +73,31 @@ thread makes, on every plugin record. This keeps records apart when tests run
 in parallel, or when a plugin's clean-up overlaps the start of the next test.
 Mock server records carry `log_id` instead.
 
-## Configuring the FFI Directly
+## Migrating from `pact_ffi.log_to_stderr`
 
-The `pact_ffi` module exposes the library's own sinks. Calling
-[`log_to_stderr`][pact_ffi.log_to_stderr] or
-[`log_to_buffer`][pact_ffi.log_to_buffer] before the first `Pact` or
-`Verifier` applies that sink instead of the silent one Pact Python uses.
-Events are still forwarded to `logging`, at the more restrictive of the
-sink's level and the level described under [Verbosity](#verbosity), and a
-warning is logged on the `pact` logger. The library's logger can be applied
-once per process, so calling these after a `Pact` or `Verifier` exists fails
-with "Logger already initialized".
+Earlier releases left the library's logging unconfigured, and test suites
+called [`pact_ffi.log_to_stderr`][pact_ffi.log_to_stderr], typically from a
+session-scoped fixture in `conftest.py`, to see the library's output. Pact
+Python now applies the library's logger itself and forwards every event to
+`logging`, so remove the call.
 
-/// note | Not Yet Implemented
-`log_to_file`, `fetch_log_buffer`, `logger_init`, `logger_attach_sink` and
-`logger_apply` are not implemented in the Python bindings. If you need one,
-open an issue on the [Pact Python GitHub
-repository](https://github.com/pact-foundation/pact-python/issues).
-///
+Once `pact` is imported, `log_to_stderr`, `log_to_stdout`, `log_to_file`,
+`init` and `init_with_log_level` on `pact_ffi` emit a `UserWarning` and do
+nothing else. A call made before `pact` is imported still applies the
+library's own sink, and Pact Python keeps it: events are still forwarded to
+`logging`, at the more restrictive of the sink's level and the level described
+under [Verbosity](#verbosity), and a warning is logged on the `pact` logger.
+
+To keep seeing the library's output on stderr, attach a handler through
+`logging`:
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)
+```
+
+Under pytest, `--log-cli-level=INFO` shows the records as each test runs.
 
 ## Further Information
 

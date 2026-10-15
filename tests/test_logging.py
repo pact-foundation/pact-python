@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import atexit
 import logging
+import subprocess
+import sys
+import textwrap
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -291,6 +294,43 @@ class TestCallbacks:
         pact_logging._core_callback("", "", "INFO", "x", "hello")  # noqa: SLF001
         pact_logging._plugin_callback("instance", "", "INFO", "", "hello")  # noqa: SLF001
         assert capsys.readouterr().err == ""
+
+
+class TestFfiStandIns:
+    """The `pact_ffi` functions which apply a logger, once `pact` is imported."""
+
+    @pytest.mark.parametrize("name", pact_logging._REPLACED_FFI_FUNCTIONS)  # noqa: SLF001
+    def test_warns_at_caller(self, name: str) -> None:
+        with pytest.warns(UserWarning, match=rf"pact_ffi\.{name} has no effect") as w:
+            result = getattr(pact_ffi, name)("INFO")
+
+        assert result is None
+        assert w[0].filename == __file__
+
+    def test_does_not_apply_a_logger(self) -> None:
+        # Applying a logger is permanent for the process, so the test runs in a
+        # separate interpreter. The logger can be applied once, so the final
+        # `log_to_buffer` only succeeds if the stand-ins applied nothing.
+        script = textwrap.dedent(
+            """
+            import warnings
+
+            import pact_ffi
+            import pact
+
+            warnings.simplefilter("ignore")
+            pact_ffi.log_to_stderr("INFO")
+            pact_ffi.init_with_log_level("INFO")
+            pact_ffi.init("LOG_LEVEL")
+            pact_ffi.log_to_buffer("OFF")
+            """
+        )
+        subprocess.run(  # noqa: S603
+            [sys.executable, "-c", script],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
 
 class TestEndToEnd:

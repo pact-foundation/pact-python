@@ -194,22 +194,15 @@ When the mock service is started with `pact.serve()`, it will handle requests fo
 
 ## Logging
 
-To enable logging for debugging and troubleshooting, configure the FFI (Foreign Function Interface) logging using [`pact_ffi.log_to_stderr`][pact_ffi.log_to_stderr]. This is particularly useful when you need to understand what's happening inside the mock service or diagnose issues with your tests.
-
-The recommended approach is to set up logging in a pytest fixture within your `conftest.py`:
+Logs from the mock server and from plugins go to Python's `logging` module, on the `pact.ffi` and `pact.plugins` loggers. No set-up is needed; under pytest, they appear in the captured log of a failing test. To see more detail when diagnosing a failure, lower the level before creating the first `Pact`:
 
 ```python
-import pytest
-import pact_ffi
+import logging
 
-
-@pytest.fixture(autouse=True, scope="session")
-def pact_logging():
-    """Configure Pact FFI logging for the test session."""
-    pact_ffi.log_to_stderr("INFO")
+logging.getLogger("pact.ffi").setLevel(logging.DEBUG)
 ```
 
-For more information on logging configuration, including advanced options and troubleshooting, see the [Logging Configuration](logging.md) page.
+See [Logging](logging.md) for the loggers, the attributes on each record, and how to migrate from `pact_ffi.log_to_stderr`.
 
 ## Mock Service
 
