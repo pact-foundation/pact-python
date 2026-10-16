@@ -7,8 +7,8 @@ once, on the first use of [`Pact`][pact.Pact] or [`Verifier`][verifier.Verifier]
 and re-emits every event through `logging`:
 
 -   Events from the Pact library are emitted on the `pact.ffi` logger, with
-    the Rust module path appended (for example
-    `pact.ffi.pact_matching::matchers`). Each record carries
+    the Rust module path appended and its `::` separators replaced by `.`
+    (for example `pact.ffi.pact_matching.matchers`). Each record carries
     `log_id` and `test_run_id` as extra attributes. `log_id` identifies the
     operation which emitted the event: the mock server ID while the server
     handles a request, or `verify:<provider name>` while verifying a
@@ -190,7 +190,8 @@ def _core_callback(
     # Runs on a thread owned by the Pact library; an exception here has nowhere
     # to go, so it is discarded.
     with contextlib.suppress(Exception):
-        logging.getLogger(f"pact.ffi.{target}" if target else "pact.ffi").log(
+        name = f"pact.ffi.{target.replace('::', '.')}" if target else "pact.ffi"
+        logging.getLogger(name).log(
             from_ffi_level(level),
             "%s",
             message,
