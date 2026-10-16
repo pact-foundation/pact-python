@@ -96,6 +96,70 @@ The functions `logger_init`, `logger_attach_sink`, and `logger_apply` are curren
 
 For the most advanced scenarios, the FFI supports configuring multiple log sinks simultaneously (e.g., logging to both stderr and a file). This requires using the lower-level `logger_init`, `logger_attach_sink`, and `logger_apply` functions, which are planned for future implementation.
 
+## Plugin Logs
+
+Pact plugins (such as the protobuf and gRPC plugins) run as separate processes, so their log output is not part of the FFI logging configured above. The [`pact.plugins`][pact.plugins] module exposes the plugin observability features of the Pact FFI.
+
+/// warning | Initialisation
+The FFI only captures plugin log entries once it has been initialised with [`init_with_log_level`][pact_ffi.init_with_log_level] (or [`init`][pact_ffi.init]). These initialise the FFI logger to stderr in the same way as `log_to_stderr`, so use one in its place; calling both results in the "Logger already initialized" error.
+///
+
+### Forwarding to `logging`
+
+[`forward_to_logging`][pact.plugins.forward_to_logging] delivers every plugin log entry through the standard library `logging` module, at the equivalent level, via the `pact.plugins` logger by default:
+
+```python
+import pact_ffi
+from pact import plugins
+
+pact_ffi.init_with_log_level("INFO")
+plugins.forward_to_logging()
+```
+
+The plugin instance ID, test run ID and plugin-side logger target are attached to each log record as `plugin_instance_id`, `test_run_id` and `plugin_target`, so they can be included in a formatter:
+
+```python
+logging.basicConfig(
+    format="%(levelname)s %(name)s [%(plugin_instance_id)s] %(message)s",
+)
+```
+
+Unlike the FFI logger, the plugin log callback can be replaced at any time. [`register_log_callback`][pact.plugins.register_log_callback] accepts any callable taking a [`PluginLogEntry`][pact.plugins.PluginLogEntry] for custom handling.
+
+### Correlating Logs with Tests
+
+Plugins serve every test in the process, so their log entries do not identify the test which triggered them. [`set_test_run_id`][pact.plugins.set_test_run_id] tags requests made from the current thread with an identifier which the plugin reports back on each log entry. Using the pytest node ID is the natural choice:
+
+```python
+import pytest
+
+import pact_ffi
+from pact import plugins
+
+
+@pytest.fixture(autouse=True, scope="session")
+def plugin_logging():
+    pact_ffi.init_with_log_level("INFO")
+    plugins.forward_to_logging()
+
+
+@pytest.fixture(autouse=True)
+def plugin_test_run_id(request):
+    plugins.set_test_run_id(request.node.nodeid)
+    yield request.node.nodeid
+    plugins.set_test_run_id(None)
+```
+
+### Retrieving Buffered Logs
+
+Every plugin log entry is also buffered by the Pact library for the lifetime of the process. [`get_logs`][pact.plugins.get_logs] returns the entries for a plugin instance, whose ID is reported on each [`PluginLogEntry`][pact.plugins.PluginLogEntry] received through the callback:
+
+```python
+entries = plugins.get_logs(plugin_instance_id)
+for entry in entries:
+    print(entry.timestamp, entry.level, entry.message)
+```
+
 ## Troubleshooting
 
 ### "Logger already initialized" Error
@@ -122,3 +186,4 @@ For complete API documentation, see:
 -   [`pact_ffi.log_to_file`][pact_ffi.log_to_file]
 -   [`pact_ffi.log_to_buffer`][pact_ffi.log_to_buffer]
 -   [`pact_ffi.LevelFilter`][pact_ffi.LevelFilter]
+-   [`pact.plugins`][pact.plugins]
