@@ -234,7 +234,7 @@ class TestCallbacks:
 
         assert len(caplog.records) == 1
         record = caplog.records[0]
-        assert record.name == "pact.ffi.pact_matching::matchers"
+        assert record.name == "pact.ffi.pact_matching.matchers"
         assert record.levelno == logging.WARNING
         assert record.getMessage() == "careful"
         assert record.__dict__["test_run_id"] == "run-1"

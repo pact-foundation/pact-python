@@ -14,6 +14,12 @@ created in a process initialises the FFI and registers the forwarding.
 | `pact.plugins`        | Plugins, whether written to their stderr or sent over the RPC   |
 | `pact`                | Pact Python itself                                              |
 
+The Rust module path's `::` separators become `.`, so the records from
+`pact_matching::matchers` are emitted on `pact.ffi.pact_matching.matchers`,
+and a level set on `pact.ffi.pact_matching` filters them. Which events the
+library forwards at all is decided by the levels of `pact.ffi` and
+`pact.plugins`, as described under [Verbosity](#verbosity).
+
 Each record from the library carries `log_id` and `test_run_id` as
 attributes:
 
