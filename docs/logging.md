@@ -93,6 +93,34 @@ Records from the library's own threads do not carry this ID. Group them by
 `log_id` instead: the records of one mock server share its ID, and the records
 of one provider verification share `verify:<provider name>`.
 
+### Pytest
+
+The pytest plugin in [`pact.testing.pytest`][pact.testing.pytest] is enabled
+automatically. Its autouse fixture
+[`pact_test_run_id`][pact.testing.pytest.pact_test_run_id] sets each test's
+node ID as the run ID. Pytest's own log capture then shows Pact records in the
+"Captured log call" section of a failing test. Disable the plugin with `-p
+no:pact`.
+
+### Unittest
+
+Use [`PactTestMixin`][pact.testing.unittest.PactTestMixin] on test cases which
+use Pact. It sets the test ID as the run ID and, when a test fails or errors,
+writes the Pact records collected during the test to stderr. While the test
+runs, the `pact` logger is lowered to the forwarding level
+([`forwarding_level`][pact.logging.forwarding_level]) if it has no explicit
+level of its own, so records below the root logger's level are collected too:
+
+```python
+import unittest
+
+from pact.testing.unittest import PactTestMixin
+
+
+class ConsumerTest(PactTestMixin, unittest.TestCase):
+    def test_something(self) -> None: ...
+```
+
 ## Migrating from `pact_ffi.log_to_stderr`
 
 Earlier releases left the library's logging unconfigured, and test suites
@@ -122,4 +150,6 @@ Under pytest, `--log-cli-level=INFO` shows the records as each test runs.
 ## Further Information
 
 -   [`pact.logging`][pact.logging]
+-   [`pact.testing.pytest`][pact.testing.pytest]
+-   [`pact.testing.unittest`][pact.testing.unittest]
 -   [`pact_ffi.LevelFilter`][pact_ffi.LevelFilter]
