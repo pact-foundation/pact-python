@@ -111,10 +111,19 @@ For more detailed usage examples, see the
 
 from __future__ import annotations
 
+# The `__version__` submodule shares its name with the attribute. Under PEP 810
+# lazy imports, a submodule loaded after its attribute is bound replaces that
+# attribute. Assigning from an aliased module binds the attribute after the
+# submodule has loaded.
+import pact.__version__ as _version_module
+from pact import generate as generate
+from pact import match as match
 from pact import xml as xml
-from pact.__version__ import __version__, __version_tuple__
 from pact.pact import Pact
 from pact.verifier import Verifier
+
+__version__ = _version_module.__version__
+__version_tuple__ = _version_module.__version_tuple__
 
 __url__ = "https://github.com/pact-foundation/pact-python"
 __license__ = "MIT"
