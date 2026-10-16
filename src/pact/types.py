@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypeAlias, TypedDict
 
-from yarl import URL
+import yarl
+
+from pact._url import URL
 
 Matchable: TypeAlias = Any
 """
@@ -132,7 +134,7 @@ class StateHandlerArgs(TypedDict, total=False):
     """
 
 
-StateHandlerUrl: TypeAlias = str | URL
+StateHandlerUrl: TypeAlias = str | yarl.URL
 """
 State handler URL signature.
 
@@ -173,3 +175,17 @@ Instance of the `Unset` class.
 This is used to provide a default value for an optional argument that needs to
 differentiate between a `None` value and an unset value.
 """
+
+
+__all__ = [
+    "UNSET",
+    "URL",
+    "GeneratorType",
+    "Matchable",
+    "MatcherType",
+    "Message",
+    "MessageProducerArgs",
+    "StateHandlerArgs",
+    "StateHandlerUrl",
+    "Unset",
+]
