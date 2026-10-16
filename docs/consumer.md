@@ -144,7 +144,7 @@ def test_get_user(pact: Pact) -> None:
 
 9.  The `pact.serve()` method starts the mock service, and the `srv` object provides the URL of the mock service. Within this context, any requests made to the mock service will be handled according to the interactions defined on the `pact` object. Once the context is exited, the mock service is stopped, and the interactions are verified to ensure all expected requests were made.
 
-10.  The `UserClient` is instantiated with this URL, and the `get_user` method is called to retrieve the user data. The test asserts that the returned user's name is "Alice".
+10.  The `UserClient` is instantiated with this URL, and the `get_user` method is called to retrieve the user data. The test asserts that the returned user's name is "Alice". `srv.url` is a [`URL`][pact.types.URL], which is a `str`; `str()` is optional, and `srv.url / "users" / "123"` appends path segments.
 
 The test begins with a Pytest fixture that creates a reusable Pact instance representing the contract between `"user-consumer"` and `"user-provider"`. The expected response is defined using flexible matchers (`match.int()`, `match.str()`, `match.datetime()`) to validate data types rather than exact values, making the test more robust against varying response data.
 

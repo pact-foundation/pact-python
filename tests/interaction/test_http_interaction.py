@@ -328,10 +328,11 @@ async def test_with_query_parameter_request(
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            url = srv.url.with_query(query)
-            async with session.request("GET", url.path_qs) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", params=query) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.asyncio
@@ -346,10 +347,11 @@ async def test_with_query_parameter_with_matcher(
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            url = srv.url.with_query([("test", "true")])
-            async with session.request("GET", url.path_qs) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", params=[("test", "true")]) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.asyncio
@@ -362,10 +364,11 @@ async def test_with_query_parameter_dict(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            url = srv.url.with_query({"test": "true", "foo": "bar"})
-            async with session.request("GET", url.path_qs) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", params={"test": "true", "foo": "bar"}) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.asyncio
@@ -378,10 +381,11 @@ async def test_with_query_parameter_tuple_list(pact: Pact) -> None:
         .will_respond_with(200)
     )
     with pact.serve() as srv:
-        async with aiohttp.ClientSession(srv.url) as session:
-            url = srv.url.with_query({"test": "true", "foo": "bar"})
-            async with session.request("GET", url.path_qs) as resp:
-                assert resp.status == 200
+        async with (
+            aiohttp.ClientSession(srv.url) as session,
+            session.request("GET", "/", params={"test": "true", "foo": "bar"}) as resp,
+        ):
+            assert resp.status == 200
 
 
 @pytest.mark.parametrize(

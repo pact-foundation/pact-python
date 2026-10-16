@@ -73,9 +73,8 @@ from typing import (
     overload,
 )
 
-from yarl import URL
-
 import pact_ffi
+from pact._url import URL
 from pact.error import (
     InteractionVerificationError,
     Mismatch,
@@ -704,6 +703,9 @@ class PactServer:
     def url(self) -> URL:
         """
         Base URL for the server.
+
+        A [`URL`][types.URL] is a `str`, so it can be passed directly to
+        an HTTP client. Path segments can be appended with `/`.
         """
         return URL(str(self))
 

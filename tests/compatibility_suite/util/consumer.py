@@ -8,11 +8,11 @@ import json
 import logging
 import re
 from typing import TYPE_CHECKING, Any, TypeGuard
+from urllib.parse import parse_qsl
 
 import pytest
 import requests
 from pytest_bdd import given, parsers, then, when
-from yarl import URL
 
 from pact import Pact
 from pact.error import (
@@ -233,9 +233,9 @@ def request_n_is_made_to_the_mock_server(stacklevel: int = 1) -> None:
 
         return requests.request(
             definition.method,
-            str(srv.url.with_path(definition.path)),
+            str(srv.url / definition.path.lstrip("/")),
             params=(
-                URL.build(query_string=definition.query).query
+                parse_qsl(definition.query, keep_blank_values=True)
                 if definition.query
                 else None
             ),
@@ -287,9 +287,9 @@ def request_n_is_made_to_the_mock_server_with_the_following_changes(
 
         return requests.request(
             definition.method,
-            str(srv.url.with_path(definition.path)),
+            str(srv.url / definition.path.lstrip("/")),
             params=(
-                URL.build(query_string=definition.query).query
+                parse_qsl(definition.query, keep_blank_values=True)
                 if definition.query
                 else None
             ),

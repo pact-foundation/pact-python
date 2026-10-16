@@ -14,10 +14,10 @@ import logging
 import typing
 import warnings
 from typing import Any, Literal
+from urllib.parse import parse_qsl
 from xml.etree import ElementTree as ET
 
 from multidict import MultiDict
-from yarl import URL
 
 from pact.interaction import HttpInteraction, Interaction
 from tests.compatibility_suite.util import (
@@ -37,6 +37,16 @@ if typing.TYPE_CHECKING:
     from pact.types import Message
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_query(query: str) -> dict[str, list[str]]:
+    """
+    Group query parameters by name, keeping the order of repeated names.
+    """
+    grouped: dict[str, list[str]] = {}
+    for key, value in parse_qsl(query, keep_blank_values=True):
+        grouped.setdefault(key, []).append(value)
+    return grouped
 
 
 class InteractionBody:
@@ -557,9 +567,9 @@ class InteractionDefinition:
             assert isinstance(interaction, HttpInteraction), (
                 "Query parameters require an HTTP interaction"
             )
-            query = URL.build(query_string=self.query).query
-            logger.info("with_query_parameters(%r)", query.items())
-            interaction.with_query_parameters(query.items())
+            query = parse_qsl(self.query, keep_blank_values=True)
+            logger.info("with_query_parameters(%r)", query)
+            interaction.with_query_parameters(query)
 
         if self.headers:
             assert isinstance(interaction, HttpInteraction), (
@@ -696,10 +706,10 @@ class InteractionDefinition:
         # We expect an exact match of the query parameters (unlike the headers)
         if self.query:
             logger.info("Checking request query parameters")
-            expected_query = URL.build(query_string=self.query).query
-            request_query = URL.build(
-                query_string=request.path.split("?")[1] if "?" in request.path else ""
-            ).query
+            expected_query = _parse_query(self.query)
+            request_query = _parse_query(
+                request.path.split("?")[1] if "?" in request.path else ""
+            )
             if (expected_keys := set(expected_query.keys())) != (
                 request_keys := set(request_query.keys())
             ):
@@ -712,8 +722,8 @@ class InteractionDefinition:
                 return
 
             for k in expected_query:
-                if (request_vals := request_query.getall(k)) != (
-                    expected_vals := expected_query.getall(k)
+                if (request_vals := request_query[k]) != (
+                    expected_vals := expected_query[k]
                 ):
                     logger.error(
                         "Query parameter mismatch: %s != %s",
