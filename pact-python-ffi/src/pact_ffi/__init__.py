@@ -96,9 +96,17 @@ from collections.abc import Callable
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
-from pact_ffi.__version__ import __version__ as __version__
-from pact_ffi.__version__ import __version_tuple__ as __version_tuple__
-from pact_ffi.ffi import ffi, lib  # type: ignore[import]
+# The `__version__` and `ffi` submodules share their names with attributes of
+# this package. Under PEP 810 lazy imports, a submodule loaded after its
+# attribute is bound replaces that attribute. Assigning from an aliased module
+# binds the attribute after the submodule has loaded.
+import pact_ffi.__version__ as _version_module
+import pact_ffi.ffi as _ffi_module  # type: ignore[import]
+
+__version__ = _version_module.__version__
+__version_tuple__ = _version_module.__version_tuple__
+ffi = _ffi_module.ffi
+lib = _ffi_module.lib
 
 if TYPE_CHECKING:
     import datetime as dt
