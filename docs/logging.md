@@ -92,6 +92,12 @@ logging.getLogger("pact.ffi").setLevel(TRACE)
 
 ## Correlating Logs with Tests
 
+/// note | Set Automatically
+Most test suites never call `set_test_run_id` themselves. The
+[pytest plugin](#pytest) and the [`unittest` mixin](#unittest) described below
+set the run ID for every test.
+///
+
 Plugins serve every test in the process, so their records do not identify
 the test which triggered them on their own.
 [`set_test_run_id`][pact.logging.set_test_run_id] sets an identifier for the
@@ -106,6 +112,37 @@ the start of the next test.
 Records from the library's own threads do not carry this ID. Group them by
 `log_id` instead: the records of one mock server share its ID, and the records
 of one provider verification share `verify:<provider name>`.
+
+### Pytest
+
+The pytest plugin in [`pact.testing.pytest`][pact.testing.pytest] is enabled
+automatically. Its autouse fixture
+[`pact_test_run_id`][pact.testing.pytest.pact_test_run_id] sets each test's
+node ID as the run ID. Pytest's own log capture then shows Pact records in the
+"Captured log call" section of a failing test. By default, pytest only captures
+warnings and errors; set its `log_level` to `INFO` to capture the other
+records too. Disable the plugin with `-p no:pact`.
+
+### Unittest
+
+Use [`PactTestMixin`][pact.testing.unittest.PactTestMixin] on test cases which
+use Pact. It sets the test ID as the run ID and, when a test fails or errors,
+writes the Pact records collected during the test to stderr. While the test
+runs, the `pact` logger is lowered to the forwarding level
+([`forwarding_level`][pact.logging.forwarding_level]) if it has no explicit
+level of its own, so records below the root logger's level are collected too.
+Handlers on the root logger still receive only the records at or above its
+level:
+
+```python
+import unittest
+
+from pact.testing.unittest import PactTestMixin
+
+
+class ConsumerTest(PactTestMixin, unittest.TestCase):
+    def test_something(self) -> None: ...
+```
 
 ## Migrating from `pact_ffi.log_to_stderr`
 
@@ -137,4 +174,6 @@ Under pytest, `--log-cli-level=INFO` shows the records as each test runs.
 ## Further Information
 
 -   [`pact.logging`][pact.logging]
+-   [`pact.testing.pytest`][pact.testing.pytest]
+-   [`pact.testing.unittest`][pact.testing.unittest]
 -   [`pact_ffi.LevelFilter`][pact_ffi.LevelFilter]

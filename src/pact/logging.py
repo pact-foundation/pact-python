@@ -34,7 +34,9 @@ the `pact.plugins` logger filters them like any other records. The Pact
 library's `TRACE` level is exposed as [`TRACE`][TRACE], below `logging.DEBUG`.
 
 Log records can be attributed to the test which caused them by setting a test
-run ID with [`set_test_run_id`][set_test_run_id].
+run ID with [`set_test_run_id`][set_test_run_id]. The pytest plugin in
+[`pact.testing.pytest`][testing.pytest] and the `unittest` mixin in
+[`pact.testing.unittest`][testing.unittest] do this automatically.
 
 Importing `pact` replaces `pact_ffi.init`, `pact_ffi.init_with_log_level`,
 `pact_ffi.log_to_stderr`, `pact_ffi.log_to_stdout` and `pact_ffi.log_to_file`
