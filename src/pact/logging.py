@@ -322,8 +322,9 @@ def set_test_run_id(test_run_id: str | None) -> None:
 
     The ID is reported as the `test_run_id` attribute on the records the Pact
     library emits from the current thread. It is also attached to every
-    request sent to a plugin from the current thread, so every plugin record
-    carries it.
+    request sent to a plugin from the current thread, so the log entries the
+    plugin sends back while handling that request carry it too. Lines a
+    plugin writes to its stderr do not.
 
     Records from the library's own threads do not carry this ID, and are
     identified by their `log_id` instead. While the mock server handles a

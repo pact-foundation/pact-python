@@ -82,9 +82,12 @@ Plugins serve every test in the process, so their records do not identify
 the test which triggered them on their own.
 [`set_test_run_id`][pact.logging.set_test_run_id] sets an identifier for the
 current thread which is reported as `test_run_id` on the library's records
-from that thread and, because it is attached to every plugin request the
-thread makes, on every plugin record. This keeps records apart when tests run
-in parallel, or when a plugin's clean-up overlaps the start of the next test.
+from that thread. It is also attached to every plugin request the thread
+makes, so the log entries a plugin sends back while handling that request
+carry it too. Lines a plugin writes to its stderr carry no `test_run_id`;
+`plugin_instance_id` identifies the plugin which wrote them. This keeps
+records apart when tests run in parallel, or when a plugin's clean-up overlaps
+the start of the next test.
 
 Records from the library's own threads do not carry this ID. Group them by
 `log_id` instead: the records of one mock server share its ID, and the records
