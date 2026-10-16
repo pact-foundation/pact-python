@@ -1,7 +1,7 @@
 """
 `unittest` integration for Pact logs.
 
-[`PactTestMixin`][pact.testing.unittest.PactTestMixin] scopes the Pact test run
+[`PactTestMixin`][testing.unittest.PactTestMixin] scopes the Pact test run
 ID to each test and prints the Pact log records collected during a test to
 stderr when the test fails or errors:
 
