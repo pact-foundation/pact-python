@@ -8,10 +8,12 @@ and re-emits every event through `logging`:
 
 -   Events from the Pact library are emitted on the `pact.ffi` logger, with
     the Rust module path appended (for example
-    `pact.ffi.pact_matching::matchers`). Each record carries `test_run_id`
-    (for events emitted from the calling thread) and `log_id` (the mock
-    server ID, for events emitted while handling a request) as extra
-    attributes.
+    `pact.ffi.pact_matching::matchers`). Each record carries
+    `log_id` and `test_run_id` as extra attributes. `log_id` identifies the
+    operation which emitted the event: the mock server ID while the server
+    handles a request, or `verify:<provider name>` while verifying a
+    provider. `test_run_id` is the ID set on the emitting thread with
+    [`set_test_run_id`][set_test_run_id].
 -   Events from plugins are emitted on the `pact.plugins` logger, with
     `plugin_instance_id`, `test_run_id` and `plugin_target` as extra
     attributes.
@@ -351,9 +353,14 @@ def set_test_run_id(test_run_id: str | None) -> None:
     The ID is reported as the `test_run_id` attribute on the records the Pact
     library emits from the current thread. It is also attached to every
     request sent to a plugin from the current thread, so every plugin record
-    carries it. Records emitted while the mock server handles a request come
-    from the server's own threads; they carry the mock server ID as `log_id`
-    and no `test_run_id`.
+    carries it.
+
+    Records from the library's own threads do not carry this ID, and are
+    identified by their `log_id` instead. While the mock server handles a
+    request, `log_id` is the mock server ID and `test_run_id` is `None`.
+    While a provider is verified, `log_id` is `verify:<provider name>` and
+    most records carry an ID which the verifier generates for the run as
+    `test_run_id`.
 
     Args:
         test_run_id:
