@@ -14,13 +14,21 @@ created in a process initialises the FFI and registers the forwarding.
 | `pact.plugins`        | Plugins, whether written to their stderr or sent over the RPC   |
 | `pact`                | Pact Python itself                                              |
 
-Each record from the library carries `test_run_id` and `log_id` as
-attributes. `test_run_id` is set on records emitted from the thread which
-called into the library; `log_id` is the mock server ID, set on records
-emitted while the server handles a request on one of its own threads, where
-`test_run_id` is `None`. Each plugin record carries `plugin_instance_id`,
-`test_run_id` and `plugin_target`. They can be included in a formatter.
-Records from other loggers do not have them, so give the formatter a default:
+Each record from the library carries `log_id` and `test_run_id` as
+attributes:
+
+-   `log_id` identifies the operation which emitted the event: the mock
+    server ID while the server handles a request, or `verify:<provider name>`
+    while verifying a provider. It is `None` otherwise.
+-   `test_run_id` is the ID set with
+    [`set_test_run_id`][pact.logging.set_test_run_id] on the thread which
+    emitted the event. Records from the mock server's threads have none.
+    While a provider is verified, most records carry an ID which the
+    verifier generates for the run.
+
+Each plugin record carries `plugin_instance_id`, `test_run_id` and
+`plugin_target`. These attributes can be included in a formatter. Records from
+other loggers do not have them, so give the formatter a default:
 
 ```python
 handler = logging.StreamHandler()
@@ -71,7 +79,10 @@ current thread which is reported as `test_run_id` on the library's records
 from that thread and, because it is attached to every plugin request the
 thread makes, on every plugin record. This keeps records apart when tests run
 in parallel, or when a plugin's clean-up overlaps the start of the next test.
-Mock server records carry `log_id` instead.
+
+Records from the library's own threads do not carry this ID. Group them by
+`log_id` instead: the records of one mock server share its ID, and the records
+of one provider verification share `verify:<provider name>`.
 
 ## Migrating from `pact_ffi.log_to_stderr`
 

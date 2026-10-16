@@ -15,11 +15,12 @@ import aiohttp
 import pytest
 
 import pact_ffi
-from pact import Pact
+from pact import Pact, Verifier
 from pact import logging as pact_logging
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from pathlib import Path
 
 
 def emit_core(
@@ -356,6 +357,37 @@ class TestEndToEnd:
         records = [r for r in caplog.records if r.name.startswith("pact.ffi.")]
         assert records
         assert any(r.__dict__.get("log_id") is not None for r in records)
+
+    def test_verifier_records(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        tmp_path: Path,
+    ) -> None:
+        caplog.set_level(logging.INFO, logger="pact.ffi")
+        pact = Pact("consumer", "provider")
+        (
+            pact
+            .upon_receiving("a request")
+            .with_request("GET", "/")
+            .will_respond_with(200)
+        )
+        pact.write_file(tmp_path)
+
+        # The mock server stands in for the provider, so it satisfies the
+        # interaction it was built from.
+        with pact.serve() as srv:
+            (
+                Verifier("provider")
+                .add_transport(url=srv.url)
+                .add_source(tmp_path / "consumer-provider.json")
+                .verify()
+            )
+
+        assert any(
+            r.name.startswith("pact.ffi.")
+            and r.__dict__.get("log_id") == "verify:provider"
+            for r in caplog.records
+        )
 
 
 class TestSetTestRunId:
