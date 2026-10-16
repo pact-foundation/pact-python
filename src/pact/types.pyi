@@ -11,8 +11,10 @@ from decimal import Decimal
 from fractions import Fraction
 from typing import Any, Literal, TypeAlias, TypedDict
 
+import yarl
 from pydantic import BaseModel
-from yarl import URL
+
+from pact._url import URL
 
 _BaseMatchable: TypeAlias = (
     int | float | complex | bool | str | bytes | bytearray | memoryview | None
@@ -130,7 +132,7 @@ class StateHandlerArgs(TypedDict, total=False):
     action: Literal["setup", "teardown"]
     parameters: dict[str, Any] | None
 
-StateHandlerUrl: TypeAlias = str | URL
+StateHandlerUrl: TypeAlias = str | yarl.URL
 """
 State handler URL signature.
 
@@ -141,3 +143,16 @@ provide a URL endpoint to which the request should be made.
 class Unset: ...
 
 UNSET = Unset()
+
+__all__ = [
+    "UNSET",
+    "URL",
+    "GeneratorType",
+    "Matchable",
+    "MatcherType",
+    "Message",
+    "MessageProducerArgs",
+    "StateHandlerArgs",
+    "StateHandlerUrl",
+    "Unset",
+]
