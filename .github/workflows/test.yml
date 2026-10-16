@@ -107,6 +107,12 @@ jobs:
         working-directory: pact-python-ffi
         run: hatch run test.py${{ matrix.python-version }}:test --junit-xml=junit.xml --cov-report=xml:coverage-ffi.xml
 
+      - name: Run tests (lazy imports)
+        if: matrix.python-version == '3.15' && matrix.os == 'ubuntu-latest'
+        env:
+          PACT_TEST_LAZY_IMPORTS: '1'
+        run: hatch run test.py${{ matrix.python-version }}:test --no-cov
+
       - name: Upload coverage
         if: matrix.python-version == env.STABLE_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
