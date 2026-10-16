@@ -125,6 +125,7 @@ from pact import xml as xml
 
 if TYPE_CHECKING:
     from pact import logging as logging
+    from pact import plugins as plugins
     from pact import testing as testing
     from pact.pact import Pact
     from pact.verifier import Verifier
@@ -151,6 +152,7 @@ _LAZY_ATTRIBUTES: dict[str, tuple[str, str | None]] = {
     "Pact": ("pact.pact", "Pact"),
     "Verifier": ("pact.verifier", "Verifier"),
     "logging": ("pact.logging", None),
+    "plugins": ("pact.plugins", None),
     "testing": ("pact.testing", None),
 }
 

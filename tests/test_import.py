@@ -45,6 +45,7 @@ def test_import_does_not_load(module: str) -> None:
         pytest.param("Pact", "pact.pact", "Pact", id="Pact"),
         pytest.param("Verifier", "pact.verifier", "Verifier", id="Verifier"),
         pytest.param("logging", "pact.logging", None, id="logging"),
+        pytest.param("plugins", "pact.plugins", None, id="plugins"),
         pytest.param("testing", "pact.testing", None, id="testing"),
     ],
 )
@@ -69,7 +70,8 @@ def test_dir_lists_lazy_attributes() -> None:
         text=True,
         check=True,
     )
-    assert {"Pact", "Verifier", "logging", "testing"} <= set(result.stdout.split())
+    names = set(result.stdout.split())
+    assert {"Pact", "Verifier", "logging", "plugins", "testing"} <= names
 
 
 def test_state_handler_url_alias() -> None:
