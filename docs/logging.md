@@ -148,6 +148,42 @@ class ConsumerTest(PactTestMixin, unittest.TestCase):
     def test_something(self) -> None: ...
 ```
 
+## Buffered Plugin Logs
+
+Every plugin log entry is also buffered by the library for the lifetime of the
+process. [`get_logs`][pact.plugins.get_logs] returns the entries for a plugin
+instance, whose ID is the `plugin_instance_id` attribute of the forwarded
+records. The buffered entries include the plugin name, a timestamp and the
+entry's source.
+
+A filter on the `pact.plugins` logger can collect the instance IDs as records
+arrive:
+
+```python
+import logging
+
+from pact import plugins
+
+instance_ids: set[str] = set()
+
+
+class CollectInstanceIds(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        instance_ids.add(record.plugin_instance_id)
+        return True
+
+
+logging.getLogger("pact.plugins").addFilter(CollectInstanceIds())
+
+# Later, once the plugin has been used:
+for instance_id in instance_ids:
+    for entry in plugins.get_logs(instance_id):
+        print(entry.timestamp, entry.level, entry.message)
+```
+
+Call `get_logs` outside the filter. Filters and handlers on `pact.plugins` run
+on the library's own thread, which must not call back into the library.
+
 ## Migrating from `pact_ffi.log_to_stderr`
 
 Earlier releases left the library's logging unconfigured, and test suites
@@ -179,6 +215,7 @@ Under pytest, `--log-cli-level=INFO` shows the records as each test runs.
 ## Further Information
 
 -   [`pact.logging`][pact.logging]
+-   [`pact.plugins`][pact.plugins]
 -   [`pact.testing.pytest`][pact.testing.pytest]
 -   [`pact.testing.unittest`][pact.testing.unittest]
 -   [`pact_ffi.LevelFilter`][pact_ffi.LevelFilter]
