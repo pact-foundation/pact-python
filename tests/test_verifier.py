@@ -9,6 +9,7 @@ that is handled by the compatibility suite.
 from __future__ import annotations
 
 import json
+import nturl2path
 import re
 from contextlib import nullcontext
 from pathlib import Path
@@ -17,7 +18,7 @@ from unittest.mock import patch
 
 import pytest
 
-from pact.types import Message
+from pact.types import URL, Message
 from pact.verifier import Verifier
 
 ASSETS_DIR = Path(__file__).parent / "assets"
@@ -40,6 +41,136 @@ def test_set_provider_info(verifier: Verifier) -> None:
     url = "http://localhost:8888/api"
     verifier.add_transport(url=url)
     verifier.verify()
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        pytest.param(
+            "http://localhost:8888/api",
+            {"transport": "http", "port": 8888, "path": "/api", "scheme": "http"},
+            id="http",
+        ),
+        pytest.param(
+            "https://localhost",
+            {"transport": "http", "port": 443, "path": "/", "scheme": "https"},
+            id="https-default-port",
+        ),
+        pytest.param(
+            URL("http://LocalHost/a%20b"),
+            {"transport": "http", "port": 80, "path": "/a b", "scheme": "http"},
+            id="pact-url",
+        ),
+        pytest.param(
+            "grpc://localhost:50051",
+            {"transport": "grpc", "port": 50051, "path": "/", "scheme": "grpc"},
+            id="grpc",
+        ),
+    ],
+)
+def test_add_transport_from_url(
+    verifier: Verifier,
+    url: str | URL,
+    expected: dict[str, Any],
+) -> None:
+    verifier.add_transport(url=url)
+    assert verifier._transports[-1] == expected  # noqa: SLF001
+
+
+def test_add_transport_host_mismatch(verifier: Verifier) -> None:
+    with pytest.raises(ValueError, match="Host mismatch"):
+        verifier.add_transport(url="http://example.com:8080")
+
+
+@pytest.mark.parametrize("method", ["add_source", "broker_source"])
+@pytest.mark.parametrize(
+    ("url", "credential"),
+    [
+        pytest.param("http://user@localhost:8080/pact.json", "username", id="username"),
+        pytest.param(
+            "http://user:pass@localhost:8080/pact.json",
+            "password",
+            id="password",
+        ),
+        pytest.param(
+            URL("http://user@localhost:8080/pact.json"),
+            "username",
+            id="pact-url-username",
+        ),
+    ],
+)
+def test_rejects_credentials_in_url_and_arguments(
+    verifier: Verifier,
+    method: str,
+    url: str | URL,
+    credential: str,
+) -> None:
+    with pytest.raises(ValueError, match=f"both `{credential}` and a {credential}"):
+        getattr(verifier, method)(url, **{credential: "other"})
+
+
+class _StrOnly:
+    def __init__(self, value: str) -> None:
+        self._value = value
+
+    def __str__(self) -> str:
+        return self._value
+
+
+def test_add_source_file_url_missing(verifier: Verifier) -> None:
+    with pytest.raises(ValueError, match="Invalid source"):
+        verifier.add_source("file:///nonexistent/pact.json")
+
+
+def test_add_source_file_url(verifier: Verifier, tmp_path: Path) -> None:
+    pact_file = tmp_path / "a pact.json"
+    pact_file.write_text("{}")
+    with patch("pact_ffi.verifier_add_file_source") as mock_add:
+        verifier.add_source(pact_file.as_uri())
+    mock_add.assert_called_once_with(verifier._handle, str(pact_file))  # noqa: SLF001
+
+
+def test_add_source_windows_file_url(verifier: Verifier) -> None:
+    # `nturl2path` is the Windows implementation of `url2pathname`.
+    with (
+        patch("urllib.request.url2pathname", nturl2path.url2pathname),
+        patch.object(verifier, "_add_source_local") as mock_local,
+    ):
+        verifier.add_source("file:///C:/pacts/a%20pact.json")
+    mock_local.assert_called_once_with("C:\\pacts\\a pact.json")
+
+
+def test_add_source_windows_path_is_local(verifier: Verifier) -> None:
+    with patch.object(verifier, "_add_source_local") as mock_local:
+        verifier.add_source("C:\\pacts")
+    mock_local.assert_called_once_with("C:\\pacts")
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param(42, id="int"),
+        pytest.param(b"http://localhost/pact.json", id="bytes"),
+        pytest.param(_StrOnly("http://localhost/pact.json"), id="custom-str"),
+    ],
+)
+def test_add_source_invalid_type(verifier: Verifier, source: object) -> None:
+    with pytest.raises(TypeError, match="Invalid source type"):
+        verifier.add_source(source)  # type: ignore[call-overload]
+
+
+@pytest.mark.parametrize(
+    "handler",
+    [
+        pytest.param(42, id="int"),
+        pytest.param(b"http://localhost", id="bytes"),
+        pytest.param(Path("pacts/state"), id="path"),
+        pytest.param(_StrOnly("http://localhost/_pact/state"), id="custom-str"),
+    ],
+)
+def test_state_handler_invalid_type(verifier: Verifier, handler: object) -> None:
+    with pytest.raises(TypeError, match="Invalid handler type"):
+        verifier.state_handler(handler, body=True)  # type: ignore[call-overload]
 
 
 def test_add_provider_transport(verifier: Verifier) -> None:

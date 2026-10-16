@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
-from yarl import URL
 
 from pact.verifier import Verifier
 
@@ -54,7 +53,7 @@ def verifier() -> Verifier:
 
 
 @pytest.fixture(scope="session")
-def broker_url(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
+def broker_url(request: pytest.FixtureRequest) -> Generator[str, Any, None]:
     """
     Yield the Pact Broker URL, starting a container when required.
 
@@ -74,7 +73,7 @@ def broker_url(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
     # If we have been given a broker URL, there's nothing more to do here and we
     # can return early.
     if broker_url:
-        yield URL(broker_url)
+        yield broker_url
         return
 
     with DockerCompose(
@@ -82,5 +81,5 @@ def broker_url(request: pytest.FixtureRequest) -> Generator[URL, Any, None]:
         compose_file_name="pact-broker.yml",
         pull=True,
     ) as _:
-        yield URL("http://pactbroker:pactbroker@localhost:9292")
+        yield "http://pactbroker:pactbroker@localhost:9292"
     return

@@ -32,12 +32,12 @@ import pytest
 import requests
 from multidict import CIMultiDict
 from pytest_bdd import given, parsers, then, when
-from yarl import URL
 
 from pact import __version__
 from pact._server import MessageProducer
-from pact._util import find_free_port
+from pact._util import find_free_port, strip_url_credentials
 from pact.pact import Pact
+from pact.types import URL
 from tests.compatibility_suite.util import (
     parse_headers,
     parse_horizontal_table,
@@ -325,7 +325,7 @@ class PactBroker:
 
     def __init__(
         self,
-        broker_url: URL,
+        broker_url: str,
         *,
         username: str | None = None,
         password: str | None = None,
@@ -335,9 +335,11 @@ class PactBroker:
         """
         Instantiate a new Pact Broker interface.
         """
-        self.url = broker_url
-        self.username = broker_url.user or username
-        self.password = broker_url.password or password
+        self.url = URL(broker_url)
+        bare_url, url_username, url_password = strip_url_credentials(broker_url)
+        self.bare_url = bare_url
+        self.username = url_username or username
+        self.password = url_password or password
         self.provider = provider
         self.consumer = consumer
 
@@ -383,7 +385,7 @@ class PactBroker:
             "publish",
             str(directory),
             "--broker-base-url",
-            str(self.url.with_user(None).with_password(None)),
+            self.bare_url,
         ]
         if self.username:
             cmd.extend(["--broker-username", self.username])
@@ -812,7 +814,7 @@ def a_pact_file_for_interaction_is_to_be_verified_from_a_pact_broker(
     )
     def _(
         interaction_definitions: dict[int, InteractionDefinition],
-        broker_url: URL,
+        broker_url: str,
         verifier: Verifier,
         interaction: int,
         tmp_path: Path,

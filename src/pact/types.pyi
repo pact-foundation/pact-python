@@ -11,10 +11,9 @@ from decimal import Decimal
 from fractions import Fraction
 from typing import Any, Literal, TypeAlias, TypedDict
 
-import yarl
 from pydantic import BaseModel
 
-from pact._url import URL
+from pact._url import URL as URL
 
 _BaseMatchable: TypeAlias = (
     int | float | complex | bool | str | bytes | bytearray | memoryview | None
@@ -132,7 +131,7 @@ class StateHandlerArgs(TypedDict, total=False):
     action: Literal["setup", "teardown"]
     parameters: dict[str, Any] | None
 
-StateHandlerUrl: TypeAlias = str | yarl.URL
+StateHandlerUrl: TypeAlias = str
 """
 State handler URL signature.
 

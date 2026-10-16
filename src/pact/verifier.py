@@ -82,17 +82,15 @@ from contextlib import nullcontext
 from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
-
-from yarl import URL
+from urllib.parse import unquote, urlsplit
 
 import pact_ffi
-from pact._util import apply_args
+from pact._util import apply_args, strip_url_credentials
 from pact.types import (
     UNSET,
     Message,
     MessageProducerArgs,
     StateHandlerArgs,
-    StateHandlerUrl,
     Unset,
 )
 
@@ -109,6 +107,7 @@ if TYPE_CHECKING:
     # Imported at runtime only by the handler methods: `pact._server` pulls in
     # `http.server`, which most verifications never need.
     from pact._server import MessageProducer, StateCallback
+    from pact.types import StateHandlerUrl
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +276,7 @@ class Verifier:
     def add_transport(
         self,
         *,
-        url: str | URL | None = None,
+        url: str | None = None,
         protocol: str | None = None,
         port: int | None = None,
         path: str | None = None,
@@ -353,16 +352,16 @@ class Verifier:
             raise ValueError(msg)
 
         if url:
-            url = URL(url)
-            if url.host != self._host:
-                msg = f"Host mismatch: {url.host} != {self._host}"
+            parts = urlsplit(str(url))
+            if parts.hostname != self._host:
+                msg = f"Host mismatch: {parts.hostname} != {self._host}"
                 raise ValueError(msg)
-            protocol = url.scheme
+            protocol = parts.scheme
             if protocol == "https":
                 protocol = "http"
-            port = url.port
-            path = url.path
-            scheme = url.scheme
+            port = parts.port
+            path = unquote(parts.path) or "/"
+            scheme = parts.scheme
             return self.add_transport(
                 protocol=protocol,
                 port=port,
@@ -672,7 +671,7 @@ class Verifier:
             TypeError:
                 If the handler type is invalid.
         """
-        if isinstance(handler, StateHandlerUrl):
+        if isinstance(handler, str):
             if body is None:
                 msg = "The `body` parameter must be a boolean when providing a URL"
                 raise ValueError(msg)
@@ -1041,21 +1040,21 @@ class Verifier:
     @overload
     def add_source(
         self,
-        source: str | URL,
+        source: str,
         *,
         username: str | None = None,
         password: str | None = None,
     ) -> Self: ...
 
     @overload
-    def add_source(self, source: str | URL, *, token: str | None = None) -> Self: ...
+    def add_source(self, source: str, *, token: str | None = None) -> Self: ...
 
     @overload
     def add_source(self, source: str | Path) -> Self: ...
 
     def add_source(
         self,
-        source: str | Path | URL,
+        source: str | Path,
         *,
         username: str | None = None,
         password: str | None = None,
@@ -1073,6 +1072,7 @@ class Verifier:
 
                 -   A local file path to a Pact file.
                 -   A local file path to a directory containing Pact files.
+                -   A `file://` URL to a local Pact file or directory.
                 -   A URL to a Pact file.
 
                 If using a URL, the `username` and `password` parameters can be
@@ -1096,31 +1096,30 @@ class Verifier:
 
         Raises:
             ValueError:
-                If the source scheme is invalid.
+                If a local source is not a file or directory, or if
+                credentials are given both in the URL and as arguments.
+
+            TypeError:
+                If the source type is invalid.
         """
         if isinstance(source, Path):
             return self._add_source_local(source)
 
-        if isinstance(source, URL):
-            if source.scheme == "file":
-                return self._add_source_local(source.path)
+        if not isinstance(source, str):
+            msg = f"Invalid source type: {type(source).__name__}"
+            raise TypeError(msg)
 
-            if source.scheme in ("http", "https"):
-                return self._add_source_remote(
-                    source,
-                    username=username,
-                    password=password,
-                    token=token,
-                )
+        if source.startswith("file://"):
+            # `urllib.request` is slow to import, and only `file://` sources need it.
+            from urllib.request import url2pathname  # noqa: PLC0415
 
-            msg = f"Invalid source scheme: {source.scheme}"
-            raise ValueError(msg)
+            return self._add_source_local(url2pathname(urlsplit(source).path))
 
         # Strings are ambiguous, so we need identify them as either local or
         # remote.
         if "://" in source:
             return self._add_source_remote(
-                URL(source),
+                source,
                 username=username,
                 password=password,
                 token=token,
@@ -1158,7 +1157,7 @@ class Verifier:
 
     def _add_source_remote(
         self,
-        url: str | URL,
+        url: str,
         *,
         username: str | None = None,
         password: str | None = None,
@@ -1193,17 +1192,17 @@ class Verifier:
             ValueError:
                 If mutually exclusive authentication parameters are provided.
         """
-        url = URL(url)
+        bare_url, url_username, url_password = strip_url_credentials(str(url))
 
-        if url.user and username:
+        if url_username and username:
             msg = "Cannot specify both `username` and a username in the URL"
             raise ValueError(msg)
-        username = url.user or username
+        username = url_username or username
 
-        if url.password and password:
+        if url_password and password:
             msg = "Cannot specify both `password` and a password in the URL"
             raise ValueError(msg)
-        password = url.password or password
+        password = url_password or password
 
         if token and (username or password):
             msg = "Cannot specify both `token` and `username`/`password`"
@@ -1211,7 +1210,7 @@ class Verifier:
 
         pact_ffi.verifier_url_source(
             self._handle,
-            str(url.with_user(None).with_password(None)),
+            bare_url,
             username,
             password,
             token,
@@ -1221,7 +1220,7 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | Unset = UNSET,
+        url: str | Unset = UNSET,
         *,
         username: str | Unset = UNSET,
         password: str | Unset = UNSET,
@@ -1232,7 +1231,7 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | Unset | None = UNSET,
+        url: str | Unset | None = UNSET,
         *,
         token: str | Unset | None = UNSET,
         selector: Literal[False] = False,
@@ -1242,7 +1241,7 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | Unset | None = UNSET,
+        url: str | Unset | None = UNSET,
         *,
         username: str | Unset | None = UNSET,
         password: str | Unset | None = UNSET,
@@ -1253,7 +1252,7 @@ class Verifier:
     @overload
     def broker_source(
         self,
-        url: str | URL | Unset | None = UNSET,
+        url: str | Unset | None = UNSET,
         *,
         token: str | Unset | None = UNSET,
         selector: Literal[True],
@@ -1262,7 +1261,7 @@ class Verifier:
 
     def broker_source(  # noqa: PLR0913
         self,
-        url: str | URL | Unset | None = UNSET,
+        url: str | Unset | None = UNSET,
         *,
         username: str | Unset | None = UNSET,
         password: str | Unset | None = UNSET,
@@ -1336,15 +1335,15 @@ class Verifier:
         if not url:
             msg = "A broker URL must be provided"
             raise ValueError(msg)
-        url = URL(url)
+        bare_url, url_username, url_password = strip_url_credentials(str(url))
 
         username = maybe_var(username, "PACT_BROKER_USERNAME")
-        if url.user and username:
+        if url_username and username:
             msg = "Cannot specify both `username` and a username in the URL"
             raise ValueError(msg)
 
         password = maybe_var(password, "PACT_BROKER_PASSWORD")
-        if url.password and password:
+        if url_password and password:
             msg = "Cannot specify both `password` and a password in the URL"
             raise ValueError(msg)
 
@@ -1356,7 +1355,7 @@ class Verifier:
         if selector:
             return BrokerSelectorBuilder(
                 self,
-                str(url.with_user(None).with_password(None)),
+                bare_url,
                 username,
                 password,
                 token,
@@ -1364,7 +1363,7 @@ class Verifier:
 
         self._broker_source_hook = lambda: pact_ffi.verifier_broker_source(
             self._handle,
-            str(url.with_user(None).with_password(None)),
+            bare_url,
             username,
             password,
             token,

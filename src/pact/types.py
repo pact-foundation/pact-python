@@ -10,8 +10,6 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypeAlias, TypedDict
 
-import yarl
-
 from pact._url import URL
 
 Matchable: TypeAlias = Any
@@ -134,7 +132,7 @@ class StateHandlerArgs(TypedDict, total=False):
     """
 
 
-StateHandlerUrl: TypeAlias = str | yarl.URL
+StateHandlerUrl: TypeAlias = str
 """
 State handler URL signature.
 

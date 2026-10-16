@@ -8,10 +8,66 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 
 import pytest
 
-from pact._util import apply_args, strftime_to_simple_date_format
+from pact._util import (
+    apply_args,
+    strftime_to_simple_date_format,
+    strip_url_credentials,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        pytest.param(
+            "http://localhost:8080",
+            ("http://localhost:8080", None, None),
+            id="no-credentials",
+        ),
+        pytest.param(
+            "http://user@broker:9292",
+            ("http://broker:9292", "user", None),
+            id="username",
+        ),
+        pytest.param(
+            "http://user:pass@broker:9292/",
+            ("http://broker:9292/", "user", "pass"),
+            id="username-password",
+        ),
+        pytest.param(
+            "http://:pass@broker/",
+            ("http://broker/", None, "pass"),
+            id="password-only",
+        ),
+        pytest.param(
+            "https://us%40er:p%3Ass@broker.example.com/pacts?latest=true",
+            ("https://broker.example.com/pacts?latest=true", "us@er", "p:ss"),
+            id="percent-encoded",
+        ),
+        pytest.param(
+            "http://LocalHost:8000/api/v1",
+            ("http://localhost:8000/api/v1", None, None),
+            id="uppercase-host",
+        ),
+        pytest.param(
+            "https://example.com:443/a%20b/c",
+            ("https://example.com/a%20b/c", None, None),
+            id="default-port",
+        ),
+        pytest.param(
+            "http://user:pass@[::1]:8080/",
+            ("http://[::1]:8080/", "user", "pass"),
+            id="ipv6",
+        ),
+    ],
+)
+def test_strip_url_credentials(
+    url: str,
+    expected: tuple[str, str | None, str | None],
+) -> None:
+    assert strip_url_credentials(url) == expected
 
 
 def test_convert_python_to_java_datetime_format_basic() -> None:

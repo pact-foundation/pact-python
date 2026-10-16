@@ -16,10 +16,10 @@ from typing import TYPE_CHECKING
 
 import requests
 from flask import Flask, Response, make_response
-from yarl import URL
 
 import pact._util
 from pact import Pact, Verifier, generate, match
+from pact.types import URL
 
 if TYPE_CHECKING:
     from collections.abc import Generator
