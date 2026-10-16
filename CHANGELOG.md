@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/4.1.0] _2026-10-16_
+
+### 🚀 Features
+
+-   _(types)_ Add a str-based URL type
+
+### 🐛 Bug Fixes
+
+-   Keep `pact` attributes bound under lazy imports
+
+### 🚜 Refactor
+
+-   _(verifier)_ [**breaking**] Accept only str URLs
+    > `Verifier.state_handler` and `Verifier.add_source` accept only `str` URLs, and raise `TypeError` for a `yarl.URL`; pass `str(url)` instead. `pact.types.StateHandlerUrl` is now an alias of `str`.
+-   [**breaking**] Replace yarl.URL with a str-based URL
+    > `PactServer.url` and `PactServer / str` return `pact.types.URL`, a `str` subclass that supports `/` and the `scheme`, `host`, `port` and `path` attributes. Other `yarl.URL` methods, such as `with_query`, are gone; pass query parameters to the HTTP client instead. `yarl` is no longer a dependency.
+
+### ⚡️ Performance
+
+-   Write the version file at build time
+-   Import the message and state servers on demand
+
+### 🧪 Testing
+
+-   Run the suite with lazy Pact imports on Python 3.15
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/4.0.0] _2026-10-15_
 
 ### 🚀 Features
@@ -16,6 +46,13 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 -   _(cli)_ Use renamed macOS standalone assets
+
+### 🚜 Refactor
+
+-   _(verifier)_ [**breaking**] Accept only str URLs[^yarl-in-4.1.0]
+    > `Verifier.state_handler` and `Verifier.add_source` accept only `str` URLs, and raise `TypeError` for a `yarl.URL`; pass `str(url)` instead. `pact.types.StateHandlerUrl` is now an alias of `str`.
+-   [**breaking**] Replace yarl.URL with a str-based URL[^yarl-in-4.1.0]
+    > `PactServer.url` and `PactServer / str` return `pact.types.URL`, a `str` subclass that supports `/` and the `scheme`, `host`, `port` and `path` attributes. Other `yarl.URL` methods, such as `with_query`, are gone; pass query parameters to the HTTP client instead. `yarl` is no longer a dependency.
 
 ### 📚 Documentation
 
@@ -42,6 +79,8 @@ All notable changes to this project will be documented in this file.
 ### Contributors
 
 -   @JP-Ellis
+
+[^yarl-in-4.1.0]: These changes were released in [4.1.0](https://github.com/pact-foundation/pact-python/releases/tag/pact-python%2F4.1.0), but were meant to be part of 4.0.0.
 
 ## [pact-python/3.4.1] _2026-09-17_
 
