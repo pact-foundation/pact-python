@@ -8,8 +8,20 @@ directory.
 from __future__ import annotations
 
 import json
+import os
+import sys
 import tempfile
 from pathlib import Path
+
+if sys.version_info >= (3, 15) and os.environ.get("PACT_TEST_LAZY_IMPORTS"):
+    # Approximates a user running with `PYTHON_LAZY_IMPORTS=all`, which pytest
+    # itself does not support: only imports made by Pact's modules are lazy.
+    sys.set_lazy_imports("all")
+    sys.set_lazy_imports_filter(
+        lambda importer, _name, _fromlist: (
+            importer is not None and importer.split(".")[0] in {"pact", "pact_ffi"}
+        )
+    )
 
 import pytest
 
