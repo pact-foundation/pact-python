@@ -6,6 +6,40 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/5.0.0] _2026-10-16_
+
+### 🚀 Features
+
+-   _(types)_ Add a str-based URL type
+
+### 🐛 Bug Fixes
+
+-   Keep `pact` attributes bound under lazy imports
+
+### 🚜 Refactor
+
+-   _(verifier)_ [**breaking**] Accept only str URLs
+    > Accept only str URLs
+-   [**breaking**] Replace yarl.URL with a str-based URL
+    > Replace yarl.URL with a str-based URL
+
+### ⚡️ Performance
+
+-   Write the version file at build time
+-   Import the message and state servers on demand
+
+### 🧪 Testing
+
+-   Run the suite with lazy Pact imports on Python 3.15
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(release)_ Pact-python v4.1.0
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/4.1.0] _2026-10-16_
 
 ### 🚀 Features
