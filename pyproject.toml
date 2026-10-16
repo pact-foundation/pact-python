@@ -53,6 +53,9 @@ dependencies = [
   issues = "https://github.com/pact-foundation/pact-python/issues"
   source = "https://github.com/pact-foundation/pact-python"
 
+  [project.entry-points.pytest11]
+  pact = "pact.testing.pytest"
+
 [dependency-groups]
 # Linting and formatting tools use a more narrow specification to ensure
 # developper consistency. All other dependencies are as above.
