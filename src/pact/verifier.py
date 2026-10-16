@@ -86,7 +86,6 @@ from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
 from yarl import URL
 
 import pact_ffi
-from pact._server import MessageProducer, StateCallback
 from pact._util import apply_args
 from pact.types import (
     UNSET,
@@ -106,6 +105,10 @@ else:
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Self
+
+    # Imported at runtime only by the handler methods: `pact._server` pulls in
+    # `http.server`, which most verifications never need.
+    from pact._server import MessageProducer, StateCallback
 
 logger = logging.getLogger(__name__)
 
@@ -450,6 +453,8 @@ class Verifier:
                 is raised within the message relay server and surfaces as a
                 failed interaction.
         """
+        from pact._server import MessageProducer  # noqa: PLC0415
+
         logger.debug(
             "Setting message handler for verifier",
             extra={
@@ -770,6 +775,8 @@ class Verifier:
             TypeError:
                 If any value in the dictionary is not callable.
         """
+        from pact._server import StateCallback  # noqa: PLC0415
+
         if any(not callable(f) for f in handler.values()):
             msg = "All values in the dictionary must be callable"
             raise TypeError(msg)
@@ -845,6 +852,8 @@ class Verifier:
             TypeError:
                 If the handler is not callable.
         """
+        from pact._server import StateCallback  # noqa: PLC0415
+
         logger.debug(
             "Setting function state handler for verifier",
             extra={
