@@ -15,6 +15,7 @@ import pytest
     [
         pytest.param("http.server", id="http.server"),
         pytest.param("pact._server", id="pact._server"),
+        pytest.param("yarl", id="yarl"),
     ],
 )
 def test_import_does_not_load(module: str) -> None:

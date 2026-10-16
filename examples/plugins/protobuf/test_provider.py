@@ -28,7 +28,6 @@ import pytest
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
-from yarl import URL
 
 from examples.plugins.proto.person_pb2 import AddressBook
 from examples.plugins.protobuf import address_book
@@ -38,7 +37,8 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from pathlib import Path
 
-PROVIDER_URL = URL("http://localhost:8001")
+PROVIDER_HOST = "localhost"
+PROVIDER_PORT = 8001
 
 # Global variable to hold our mock address book data
 # In a real application, this would be a database or other data store
@@ -130,13 +130,11 @@ def server() -> Generator[str, None, None]:
     Yields:
         The URL of the running server.
     """
-    assert PROVIDER_URL.host is not None
-    assert PROVIDER_URL.port is not None
     server = Server(
         uvicorn.Config(
             app,
-            host=PROVIDER_URL.host,
-            port=PROVIDER_URL.port,
+            host=PROVIDER_HOST,
+            port=PROVIDER_PORT,
         )
     )
     with server.run_in_thread() as url:

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Literal
 import pytest
 
 from pact import Pact
+from pact.types import URL
 from pact_ffi import PactSpecification
 
 if TYPE_CHECKING:
@@ -49,6 +50,8 @@ def test_serve(pact: Pact) -> None:
         assert srv.port > 0
         assert srv.host == "localhost"
         assert str(srv).startswith("http://localhost")
+        assert isinstance(srv.url, URL)
+        assert isinstance(srv / "foo", URL)
         assert srv.url.scheme == "http"
         assert srv.url.host == "localhost"
         assert srv.url.path == "/"
