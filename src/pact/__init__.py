@@ -112,6 +112,7 @@ For more detailed usage examples, see the
 from __future__ import annotations
 
 from pact import logging as logging
+from pact import testing as testing
 from pact import xml as xml
 from pact.__version__ import __version__, __version_tuple__
 from pact.pact import Pact
@@ -127,5 +128,6 @@ __all__ = [
     "__version__",
     "__version_tuple__",
     "logging",
+    "testing",
     "xml",
 ]

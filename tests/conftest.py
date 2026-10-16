@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+pytest_plugins = ["pytester"]
+
 
 @pytest.fixture
 def temp_assets(tmp_path: Path) -> Path:
