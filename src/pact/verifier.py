@@ -88,6 +88,7 @@ from yarl import URL
 import pact_ffi
 from pact._server import MessageProducer, StateCallback
 from pact._util import apply_args
+from pact.logging import ensure_initialised
 from pact.types import (
     UNSET,
     Message,
@@ -235,6 +236,8 @@ class Verifier:
                 communicate with the provider. If not specified, the default
                 value is `localhost`.
         """
+        ensure_initialised()
+
         self._name = name
         self._host = host or "localhost"
         self._handle = pact_ffi.verifier_new_for_application()

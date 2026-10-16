@@ -41,7 +41,7 @@ requires-python = ">=3.11"
 # - A minor version address vulnerability which directly impacts Pact Python
 dependencies = [
   # Pact dependencies
-  "pact-python-ffi~=0.5.0",
+  "pact-python-ffi~=0.5.12",
   "typing-extensions~=4.0 ; python_version < '3.13'",
   # External dependencies
   "yarl~=1.0",
