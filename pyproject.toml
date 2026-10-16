@@ -134,6 +134,16 @@ build-backend = "hatchling.build"
     [tool.hatch.build]
     packages = ["src/pact"]
 
+      [tool.hatch.build.hooks.version]
+      path = "src/pact/__version__.py"
+      template = """\
+# Generated at build time from the project version. Do not edit.
+__version__ = version = {version!r}
+__version_tuple__ = version_tuple = tuple(
+    int(part) if part.isdigit() else part for part in __version__.split(".")
+)
+"""
+
     [tool.hatch.envs]
       [tool.hatch.envs.default]
       installer = "uv"

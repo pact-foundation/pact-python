@@ -5,6 +5,9 @@
 # Test outputs
 examples/tests/pacts
 
+# Version file generated at build time
+src/pact/__version__.py
+
 # Wheels from CIBuildWheel
 wheelhouse/
 

@@ -15,9 +15,10 @@ import socket
 import sys
 import warnings
 from functools import partial
-from importlib.metadata import PackageNotFoundError, version
 from inspect import Parameter, _ParameterKind
 from typing import TYPE_CHECKING, TypeVar
+
+from pact.__version__ import __version__
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -35,10 +36,8 @@ def user_agent() -> str:
     Returns:
         The formatted `User-Agent` string.
     """
-    try:
-        pact_ver = version("pact-python")
-    except PackageNotFoundError:
-        pact_ver = "unknown"
+    # Deferred as `importlib.metadata` is slow to import and rarely needed.
+    from importlib.metadata import PackageNotFoundError, version  # noqa: PLC0415
 
     try:
         requests_ver = version("requests")
@@ -46,7 +45,7 @@ def user_agent() -> str:
         requests_ver = "unknown"
 
     py_ver = "{}.{}.{}".format(*sys.version_info[:3])
-    return f"pact-python/{pact_ver} requests/{requests_ver} python/{py_ver}"
+    return f"pact-python/{__version__} requests/{requests_ver} python/{py_ver}"
 
 
 _PYTHON_FORMAT_TO_JAVA_DATETIME = {
