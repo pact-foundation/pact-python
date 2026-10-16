@@ -5,10 +5,12 @@ Unit tests for [`pact.logging`][pact.logging].
 from __future__ import annotations
 
 import atexit
+import json
 import logging
 import subprocess
 import sys
 import textwrap
+import time
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -445,6 +447,63 @@ class TestEndToEnd:
         assert any(
             r.name.startswith("pact.ffi.")
             and r.__dict__.get("log_id") == "verify:provider"
+            for r in caplog.records
+        )
+
+    @pytest.mark.skipif(sys.platform == "win32", reason="fake plugin is a shell script")
+    def test_plugin_records(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        # A plugin which writes to stderr and exits without completing the
+        # handshake. The driver forwards its output before reporting the
+        # failed load.
+        plugin_dir = tmp_path / "fake-0.0.1"
+        plugin_dir.mkdir()
+        (plugin_dir / "pact-plugin.json").write_text(
+            json.dumps({
+                "pluginInterfaceVersion": 1,
+                "name": "fake",
+                "version": "0.0.1",
+                "executableType": "exec",
+                "entryPoint": "fake-plugin",
+            })
+        )
+        entry_point = plugin_dir / "fake-plugin"
+        entry_point.write_text("#!/bin/sh\necho 'fake plugin starting' >&2\nexit 1\n")
+        entry_point.chmod(0o755)
+        monkeypatch.setenv("PACT_PLUGIN_DIR", str(tmp_path))
+        monkeypatch.setenv("PACT_DO_NOT_TRACK", "true")
+
+        pact = Pact("consumer", "provider").with_specification("V4")
+        pact_logging.set_test_run_id("test-plugin-records")
+        try:
+            with pytest.raises(RuntimeError, match="Failed to load the plugin fake"):
+                pact.using_plugin("fake", "0.0.1")
+        finally:
+            pact_logging.set_test_run_id(None)
+
+        # The plugin's output is read on a separate thread, which may lag
+        # behind the failed load.
+        plugin_records: list[logging.LogRecord] = []
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            plugin_records = [
+                r
+                for r in caplog.records
+                if r.name == "pact.plugins" and r.getMessage() == "fake plugin starting"
+            ]
+            if plugin_records:
+                break
+            time.sleep(0.05)
+
+        assert plugin_records
+        assert plugin_records[0].__dict__["plugin_instance_id"]
+        assert any(
+            r.name.startswith("pact.ffi.pact_plugin_driver.")
+            and r.__dict__.get("test_run_id") == "test-plugin-records"
             for r in caplog.records
         )
 
