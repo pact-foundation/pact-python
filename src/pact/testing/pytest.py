@@ -3,7 +3,7 @@ Pytest plugin scoping the Pact test run ID to each test.
 
 The plugin is registered through the `pytest11` entry point and is active
 whenever `pact-python` is installed. It provides one autouse fixture,
-[`pact_test_run_id`][pact.testing.pytest.pact_test_run_id], which sets the
+[`pact_test_run_id`][testing.pytest.pact_test_run_id], which sets the
 test's node ID as the Pact test run ID for the test's duration. The Pact
 library's records from the test's thread, and the log entries a plugin sends
 back for the test's requests, then carry the test which caused them.
