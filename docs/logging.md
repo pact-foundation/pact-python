@@ -121,6 +121,21 @@ class ConsumerTest(PactTestMixin, unittest.TestCase):
     def test_something(self) -> None: ...
 ```
 
+## Buffered Plugin Logs
+
+Every plugin log entry is also buffered by the library for the lifetime of the
+process. [`get_logs`][pact.plugins.get_logs] returns the entries for a plugin
+instance, whose ID is the `plugin_instance_id` attribute of the forwarded
+records. The buffered entries include the plugin name, a timestamp and the
+entry's source:
+
+```python
+from pact import plugins
+
+for entry in plugins.get_logs(plugin_instance_id):
+    print(entry.timestamp, entry.level, entry.message)
+```
+
 ## Migrating from `pact_ffi.log_to_stderr`
 
 Earlier releases left the library's logging unconfigured, and test suites
@@ -150,6 +165,7 @@ Under pytest, `--log-cli-level=INFO` shows the records as each test runs.
 ## Further Information
 
 -   [`pact.logging`][pact.logging]
+-   [`pact.plugins`][pact.plugins]
 -   [`pact.testing.pytest`][pact.testing.pytest]
 -   [`pact.testing.unittest`][pact.testing.unittest]
 -   [`pact_ffi.LevelFilter`][pact_ffi.LevelFilter]
