@@ -65,8 +65,8 @@ class Package:
     Releases whose `tagName` does not start with this prefix are ignored, and
     the prefix is stripped to produce the bare version string.  Examples:
 
-    - `"libpact_ffi-v"` for `pact-foundation/pact-reference` (only libpact_ffi
-      releases, not mock_server / verifier / etc.)
+    - `"pact_ffi-v"` for `pact-foundation/pact-reference` (only pact_ffi
+      releases, not pact_models / pact_verifier / etc.)
     - `"v"` for `pact-foundation/pact-standalone`
 
     `None` when `upstream_repo` is `None` (i.e., the core package).
@@ -532,8 +532,8 @@ PACKAGES: dict[str, Package] = {
         directory=ROOT / "pact-python-ffi",
         tag_prefix="pact-python-ffi/",
         upstream_repo="pact-foundation/pact-reference",
-        # Filter to libpact_ffi releases only — pact-reference hosts many crates
-        upstream_tag_prefix="libpact_ffi-v",
+        # Filter to pact_ffi releases only — pact-reference hosts many crates
+        upstream_tag_prefix="pact_ffi-v",
         release_branch="release/pact-python-ffi",
     ),
 }

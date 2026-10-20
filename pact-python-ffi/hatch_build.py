@@ -7,13 +7,15 @@ CFFI bindings for it.
 
 from __future__ import annotations
 
-import gzip
+import hashlib
 import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import urllib.request
+import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -25,7 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, MutableMapping, Sequence
 
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_ffi"
-PACT_LIB_URL = "https://github.com/pact-foundation/pact-reference/releases/download/libpact_ffi-v{version}/{prefix}pact_ffi-{os}-{platform}{suffix}.{ext}"
+PACT_RELEASE_URL = "https://github.com/pact-foundation/pact-reference/releases/download/pact_ffi-v{version}"
 
 
 class UnsupportedPlatformError(RuntimeError):
@@ -169,15 +171,30 @@ class PactBuildHook(BuildHookInterface[Any]):
             `dst` is the corresponding path within the wheel.
         """
         # Download the Pact library binary and header file
-        lib_url = self._lib_url(version)
-        header = self._download(lib_url.rsplit("/", 1)[0] + "/pact.h")
-        lib = self._extract_lib(self._download(lib_url))
-        if lib.suffix == ".dll":
-            dll_lib = self._extract_lib(
-                self._download(lib_url.replace(".dll.gz", ".dll.lib.gz"))
-            )
+        release_url = PACT_RELEASE_URL.format(version=version)
+        target = self._target()
+        header = self._download(f"{release_url}/pact.h")
+        if "windows" in target:
+            archive_url = f"{release_url}/pact_ffi-{target}.zip"
         else:
-            dll_lib = None
+            archive_url = f"{release_url}/pact_ffi-{target}.tar.xz"
+        archive = self._download(archive_url)
+        self._verify(archive, self._download(f"{archive_url}.sha256"))
+
+        dll_lib: Path | None = None
+        if "windows" in target:
+            lib = self._extract_lib(archive, "pact_ffi.dll", "pact_ffi.dll")
+            # MSVC resolves `pact_ffi` to `pact_ffi.lib`. The archive's own
+            # `pact_ffi.lib` is the static library, so the import library
+            # takes its name.
+            dll_lib = self._extract_lib(archive, "pact_ffi.dll.lib", "pact_ffi.lib")
+        elif "darwin" in target:
+            lib = self._extract_lib(archive, "libpact_ffi.dylib", "libpact_ffi.dylib")
+        elif "musl" in target:
+            # MUSL uses static library
+            lib = self._extract_lib(archive, "libpact_ffi.a", "libpact_ffi.a")
+        else:
+            lib = self._extract_lib(archive, "libpact_ffi.so", "libpact_ffi.so")
 
         # Compile the FFI extension
         extension = self._compile(lib, header)
@@ -204,16 +221,12 @@ class PactBuildHook(BuildHookInterface[Any]):
 
         return {str(extension): f"pact_ffi/{extension_dest}"}
 
-    def _lib_url(self, version: str) -> str:  # noqa: C901, PLR0912
+    def _target(self) -> str:
         """
-        Generate the download URL for the Pact library.
-
-        Args:
-            version:
-                The upstream Pact version.
+        Determine the Rust target triple matching the wheel platform.
 
         Returns:
-            The URL to download the Pact library from.
+            The Rust target triple of the upstream Pact library archive.
 
         Raises:
             UnsupportedPlatformError:
@@ -221,83 +234,96 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         wheel_platform = self._sys_tag_platform()
 
-        aarch64 = ("_arm64", "_aarch64")
-        x86_64 = ("_x86_64", "_amd64")
-
-        # Simplified platform and architecture detection
-        if wheel_platform.startswith("macosx"):
-            os, ext = "macos", "dylib.gz"
-            prefix = "lib"
-            suffix = ""
-            if wheel_platform.endswith(aarch64):
-                platform = "aarch64"
-            elif wheel_platform.endswith(x86_64):
-                platform = "x86_64"
-            else:
-                raise UnsupportedPlatformError(wheel_platform)
-
-        elif wheel_platform.startswith("musllinux"):
-            os, ext = "linux", "a.gz"  # MUSL uses static library
-            prefix = "lib"
-            suffix = "-musl"
-            if wheel_platform.endswith(aarch64):
-                platform = "aarch64"
-            elif wheel_platform.endswith(x86_64):
-                platform = "x86_64"
-            else:
-                raise UnsupportedPlatformError(wheel_platform)
-
-        elif wheel_platform.startswith("manylinux"):
-            os, ext = "linux", "so.gz"
-            prefix = "lib"
-            suffix = ""
-            if wheel_platform.endswith(aarch64):
-                platform = "aarch64"
-            elif wheel_platform.endswith(x86_64):
-                platform = "x86_64"
-            else:
-                raise UnsupportedPlatformError(wheel_platform)
-
-        elif wheel_platform.startswith("win"):
-            # TODO: Switch to using `dll.gz`
-            # https://github.com/python-cffi/cffi/issues/182
-            os, ext = "windows", "dll.gz"
-            prefix = ""
-            suffix = ""
-            if wheel_platform.endswith(aarch64):
-                platform = "aarch64"
-            elif wheel_platform.endswith(x86_64):
-                platform = "x86_64"
-            else:
-                raise UnsupportedPlatformError(wheel_platform)
-
+        if wheel_platform.endswith(("_arm64", "_aarch64")):
+            arch = "aarch64"
+        elif wheel_platform.endswith(("_x86_64", "_amd64")):
+            arch = "x86_64"
         else:
             raise UnsupportedPlatformError(wheel_platform)
 
-        return PACT_LIB_URL.format(
-            version=version,
-            prefix=prefix,
-            os=os,
-            platform=platform,
-            suffix=suffix,
-            ext=ext,
-        )
+        if wheel_platform.startswith("macosx"):
+            return f"{arch}-apple-darwin"
+        if wheel_platform.startswith("musllinux"):
+            return f"{arch}-unknown-linux-musl"
+        if wheel_platform.startswith("manylinux"):
+            return f"{arch}-unknown-linux-gnu"
+        if wheel_platform.startswith("win"):
+            return f"{arch}-pc-windows-msvc"
+        raise UnsupportedPlatformError(wheel_platform)
 
-    def _extract_lib(self, artefact: Path) -> Path:
+    def _verify(self, artefact: Path, checksum: Path) -> None:
         """
-        Extract the Pact library.
+        Verify an artefact against its SHA-256 checksum file.
+
+        A mismatched artefact is removed so that the next build downloads it
+        again.
 
         Args:
             artefact:
-                The URL to download the Pact binaries from.
+                The path to the downloaded artefact.
+
+            checksum:
+                The path to the checksum file, in the `sha256sum` format
+                `<hex> *<filename>`.
+
+        Raises:
+            ValueError:
+                If the checksum does not match.
         """
-        target = PKG_DIR / (artefact.name.split("-")[0] + artefact.suffixes[-2])
-        with (
-            gzip.open(artefact, "rb") as f_in,
-            target.open("wb") as f_out,
-        ):
-            shutil.copyfileobj(f_in, f_out)
-        self.app.display_debug(f"Extracted Pact library to {target}")
+        expected = checksum.read_text().split()[0].lower()
+        digest = hashlib.sha256()
+        with artefact.open("rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                digest.update(chunk)
+        if digest.hexdigest() != expected:
+            artefact.unlink()
+            checksum.unlink()
+            msg = (
+                f"Checksum mismatch for {artefact.name}: "
+                f"expected {expected}, got {digest.hexdigest()}"
+            )
+            self.app.display_error(msg)
+            raise ValueError(msg)
+        self.app.display_debug(f"Verified checksum of {artefact.name}")
+
+    def _extract_lib(self, archive: Path, member: str, name: str) -> Path:
+        """
+        Extract a file from the Pact library archive.
+
+        The `.tar.xz` archives nest their files under a `pact_ffi-<target>`
+        directory, while the `.zip` archives keep them at the root.
+
+        Args:
+            archive:
+                The path to the downloaded archive.
+
+            member:
+                The file name within the archive.
+
+            name:
+                The file name to extract to within the package directory.
+
+        Returns:
+            The path to the extracted file.
+        """
+        target = PKG_DIR / name
+        if archive.suffix == ".zip":
+            with (
+                zipfile.ZipFile(archive) as zf,
+                zf.open(member) as f_in,
+                target.open("wb") as f_out,
+            ):
+                shutil.copyfileobj(f_in, f_out)
+        else:
+            prefix = archive.name.removesuffix(".tar.xz")
+            with tarfile.open(archive, "r:xz") as tf:
+                f_tar = tf.extractfile(f"{prefix}/{member}")
+                if f_tar is None:
+                    msg = f"{member} in {archive.name} is not a regular file"
+                    raise ValueError(msg)
+                with f_tar, target.open("wb") as f_out:
+                    shutil.copyfileobj(f_tar, f_out)
+        self.app.display_debug(f"Extracted {member} from {archive.name} to {target}")
         return target
 
     def _compile(self, lib: Path, header: Path) -> Path:

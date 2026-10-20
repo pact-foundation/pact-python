@@ -7,7 +7,7 @@
 #
 # Stage 1: Prepare (trigger: push to main)
 #   The `prepare` job runs `scripts/release.py prepare ffi`, which fetches the
-#   latest `libpact_ffi-v*` release from pact-foundation/pact-reference,
+#   latest `pact_ffi-v*` release from pact-foundation/pact-reference,
 #   computes the next wrapper version, updates pyproject.toml and CHANGELOG.md,
 #   and force-pushes those changes to the fixed branch `release/pact-python-ffi`.
 #   It then creates (or updates the title and body of) the release PR targeting
