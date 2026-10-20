@@ -9,7 +9,7 @@ The entire process is automated through two GitHub Actions workflows (one per pa
 Pact Python is split into two independently versioned packages:
 
 -   **[`pact-python`](https://pypi.org/p/pact-python)**: the core library. Versioned with [semantic versioning](https://semver.org/), derived from conventional commits via [git-cliff](https://git-cliff.org/).
--   **[`pact-python-ffi`](https://pypi.org/p/pact-python-ffi)**: Python bindings for the [pact-reference](https://github.com/pact-foundation/pact-reference) Rust library. Versioned as `{upstream}.{N}` (e.g. `0.4.28.0`), tracking upstream `libpact_ffi` releases.
+-   **[`pact-python-ffi`](https://pypi.org/p/pact-python-ffi)**: Python bindings for the [pact-reference](https://github.com/pact-foundation/pact-reference) Rust library. Versioned as `{upstream}.{N}` (e.g. `0.4.28.0`), tracking upstream `pact_ffi` releases.
 
 The [`pact-python-cli`](https://pypi.org/p/pact-python-cli) package, which distributes the [Pact CLI](https://github.com/pact-foundation/pact-cli) through PyPI, is released from the [`pact-cli`](https://github.com/pact-foundation/pact-cli) repository.
 
