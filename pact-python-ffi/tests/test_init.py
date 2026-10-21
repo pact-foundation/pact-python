@@ -304,6 +304,60 @@ def test_sync_message_generate_contents_http() -> None:
         pact_ffi.sync_message_generate_contents(interaction)
 
 
+@pytest.mark.parametrize(
+    ("actual", "mismatched"),
+    [
+        pytest.param({"id": 7, "extra": True}, False, id="match"),
+        pytest.param({"id": "7"}, True, id="mismatch"),
+    ],
+)
+def test_sync_message_match_response_contents(
+    actual: dict[str, object],
+    *,
+    mismatched: bool,
+) -> None:
+    pact = pact_ffi.new_pact("consumer", "provider")
+    interaction = pact_ffi.new_sync_message_interaction(pact, "sync")
+    pact_ffi.with_body(
+        interaction,
+        pact_ffi.InteractionPart.RESPONSE,
+        "application/json",
+        json.dumps({"id": {"value": 100, "pact:matcher:type": "integer"}}),
+    )
+
+    mismatches = pact_ffi.sync_message_match_response_contents(
+        interaction,
+        0,
+        None,
+        json.dumps(actual),
+    )
+
+    assert bool(mismatches) == mismatched
+
+
+@pytest.mark.parametrize(
+    ("kind", "index"),
+    [
+        pytest.param("http", 0, id="http"),
+        pytest.param("sync", 1, id="index"),
+    ],
+)
+def test_sync_message_match_response_contents_invalid(kind: str, index: int) -> None:
+    pact = pact_ffi.new_pact("consumer", "provider")
+    if kind == "http":
+        interaction = pact_ffi.new_interaction(pact, "http")
+    else:
+        interaction = pact_ffi.new_sync_message_interaction(pact, "sync")
+        pact_ffi.with_body(
+            interaction,
+            pact_ffi.InteractionPart.RESPONSE,
+            "application/json",
+            json.dumps({"result": "ok"}),
+        )
+    with pytest.raises(RuntimeError, match="not a synchronous message"):
+        pact_ffi.sync_message_match_response_contents(interaction, index, None, "{}")
+
+
 def test_log_callback() -> None:
     # Applying a logger installs a process-wide subscriber, so the test runs in
     # a separate interpreter.
@@ -328,3 +382,10 @@ def test_log_callback() -> None:
         text=True,
     )
     assert result.stdout.strip() == "[('INFO', 'pact_ffi', 'received source=test')]"
+
+
+def test_register_plugin_log_callback() -> None:
+    # Entries only arrive from a running plugin, so this covers registration.
+    pact_ffi.register_plugin_log_callback(lambda *_: None)
+    pact_ffi.register_plugin_log_callback(lambda *_: None)
+    pact_ffi.register_plugin_log_callback(None)
