@@ -1,0 +1,88 @@
+/* Colours for `ansi-color` code blocks, highlighted by pygments-ansi-color. */
+
+:root {
+  --ansi-black: #424242;
+  --ansi-red: #c62828;
+  --ansi-green: #2e7d32;
+  --ansi-yellow: #9a6700;
+  --ansi-blue: #1565c0;
+  --ansi-magenta: #8e24aa;
+  --ansi-cyan: #00838f;
+  --ansi-white: #757575;
+  --ansi-bright-black: #757575;
+  --ansi-bright-blue: #1e88e5;
+  --ansi-bright-cyan: #0097a7;
+}
+
+[data-md-color-scheme="slate"] {
+  --ansi-black: #9e9e9e;
+  --ansi-red: #ef6b6b;
+  --ansi-green: #7bc67e;
+  --ansi-yellow: #e0b44c;
+  --ansi-blue: #6fa8ef;
+  --ansi-magenta: #c98bdb;
+  --ansi-cyan: #4dc4cf;
+  --ansi-white: #e0e0e0;
+  --ansi-bright-black: #8a8a8a;
+  --ansi-bright-blue: #90c2ff;
+  --ansi-bright-cyan: #7fdbe3;
+}
+
+.highlight .-Color-Bold {
+  font-weight: bold;
+}
+
+.highlight .-Color-Black,
+.highlight .-Color-Bold-Black {
+  color: var(--ansi-black);
+}
+
+.highlight .-Color-Red,
+.highlight .-Color-Bold-Red {
+  color: var(--ansi-red);
+}
+
+.highlight .-Color-Green,
+.highlight .-Color-Bold-Green {
+  color: var(--ansi-green);
+}
+
+.highlight .-Color-Yellow,
+.highlight .-Color-Bold-Yellow {
+  color: var(--ansi-yellow);
+}
+
+.highlight .-Color-Blue,
+.highlight .-Color-Bold-Blue {
+  color: var(--ansi-blue);
+}
+
+.highlight .-Color-Magenta,
+.highlight .-Color-Bold-Magenta {
+  color: var(--ansi-magenta);
+}
+
+.highlight .-Color-Cyan,
+.highlight .-Color-Bold-Cyan {
+  color: var(--ansi-cyan);
+}
+
+.highlight .-Color-White,
+.highlight .-Color-Bold-White {
+  color: var(--ansi-white);
+}
+
+.highlight .-Color-BrightBlack,
+.highlight .-Color-Bold-BrightBlack {
+  color: var(--ansi-bright-black);
+}
+
+.highlight .-Color-BrightBlue,
+.highlight .-Color-Bold-BrightBlue {
+  color: var(--ansi-bright-blue);
+}
+
+.highlight .-Color-BrightCyan,
+.highlight .-Color-Bold-BrightCyan {
+  color: var(--ansi-bright-cyan);
+}
