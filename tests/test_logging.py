@@ -517,3 +517,61 @@ class TestSetTestRunId:
         pact_logging.set_test_run_id("tests/test_x.py::test_y")
         pact_logging.set_test_run_id(None)
         assert calls == ["tests/test_x.py::test_y", None]
+
+
+class TestProcessLifetime:
+    """
+    Behaviour which depends on the state of the whole process.
+
+    Applying the FFI logger cannot be undone, so each test runs in a separate
+    interpreter.
+    """
+
+    @staticmethod
+    def run_script(script: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(  # noqa: S603
+            [sys.executable, "-c", textwrap.dedent(script)],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+    def test_forwards_with_externally_applied_logger(self) -> None:
+        result = self.run_script(
+            """
+            import logging
+            import urllib.request
+
+            import pact_ffi
+
+            pact_ffi.log_to_stderr("INFO")
+
+            from pact import Pact
+
+            records = []
+
+            class Collect(logging.Handler):
+                def emit(self, record):
+                    records.append(record)
+
+            logging.getLogger("pact").addHandler(Collect())
+            logging.getLogger("pact").setLevel(logging.INFO)
+
+            pact = Pact("consumer", "provider")
+            (
+                pact.upon_receiving("a request")
+                .with_request("GET", "/")
+                .will_respond_with(200)
+            )
+            with pact.serve() as srv:
+                urllib.request.urlopen(f"{srv.url}/").read()
+
+            assert any(
+                r.name == "pact" and "configured externally" in r.getMessage()
+                for r in records
+            ), records
+            assert any(r.name.startswith("pact.ffi.") for r in records), records
+            """
+        )
+        assert result.returncode == 0, result.stderr
