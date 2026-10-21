@@ -111,18 +111,23 @@ For more detailed usage examples, see the
 
 from __future__ import annotations
 
+import importlib
+from typing import TYPE_CHECKING
+
 # The `__version__` submodule shares its name with the attribute. Under PEP 810
 # lazy imports, a submodule loaded after its attribute is bound replaces that
 # attribute. Assigning from an aliased module binds the attribute after the
 # submodule has loaded.
 import pact.__version__ as _version_module
 from pact import generate as generate
-from pact import logging as logging
 from pact import match as match
-from pact import testing as testing
 from pact import xml as xml
-from pact.pact import Pact
-from pact.verifier import Verifier
+
+if TYPE_CHECKING:
+    from pact import logging as logging
+    from pact import testing as testing
+    from pact.pact import Pact
+    from pact.verifier import Verifier
 
 __version__ = _version_module.__version__
 __version_tuple__ = _version_module.__version_tuple__
@@ -136,7 +141,51 @@ __all__ = [
     "Verifier",
     "__version__",
     "__version_tuple__",
-    "logging",
-    "testing",
     "xml",
 ]
+
+# Attributes imported on first access. `Pact`, `Verifier` and `logging` load the
+# Pact FFI shared library, and the pytest plugin imports `pact.testing.pytest`,
+# which runs this module in every pytest session.
+_LAZY_ATTRIBUTES: dict[str, tuple[str, str | None]] = {
+    "Pact": ("pact.pact", "Pact"),
+    "Verifier": ("pact.verifier", "Verifier"),
+    "logging": ("pact.logging", None),
+    "testing": ("pact.testing", None),
+}
+
+
+def __getattr__(name: str) -> object:
+    """
+    Import an attribute listed in `_LAZY_ATTRIBUTES` on first access.
+
+    Args:
+        name:
+            The attribute name.
+
+    Returns:
+        The attribute's value.
+
+    Raises:
+        AttributeError:
+            If `name` is not a lazily imported attribute.
+    """
+    try:
+        module_name, attribute = _LAZY_ATTRIBUTES[name]
+    except KeyError:
+        msg = f"module {__name__!r} has no attribute {name!r}"
+        raise AttributeError(msg) from None
+    module = importlib.import_module(module_name)
+    value = module if attribute is None else getattr(module, attribute)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    """
+    List the module's attributes, including those not yet imported.
+
+    Returns:
+        The sorted attribute names.
+    """
+    return sorted({*globals(), *_LAZY_ATTRIBUTES})
