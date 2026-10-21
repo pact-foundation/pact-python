@@ -38,13 +38,14 @@ run ID with [`set_test_run_id`][set_test_run_id]. The pytest plugin in
 [`pact.testing.pytest`][testing.pytest] and the `unittest` mixin in
 [`pact.testing.unittest`][testing.unittest] do this automatically.
 
-Importing `pact` replaces `pact_ffi.init`, `pact_ffi.init_with_log_level`,
-`pact_ffi.log_to_stderr`, `pact_ffi.log_to_stdout` and `pact_ffi.log_to_file`
-with functions which emit a `UserWarning` and do nothing else. A logger
-applied through `pact_ffi.init`, `pact_ffi.init_with_log_level` or
-`pact_ffi.log_to_stderr` before `pact` was imported is kept: events are
-still forwarded to `logging`, at the more restrictive of that sink's level and
-the forwarding level, and a warning is emitted on the `pact` logger.
+Importing this module, which importing `Pact` or `Verifier` does, replaces
+`pact_ffi.init`, `pact_ffi.init_with_log_level`, `pact_ffi.log_to_stderr`,
+`pact_ffi.log_to_stdout` and `pact_ffi.log_to_file` with functions which emit
+a `UserWarning` and do nothing else. A logger applied through `pact_ffi.init`,
+`pact_ffi.init_with_log_level` or `pact_ffi.log_to_stderr` before this module
+was imported is kept: events are still forwarded to `logging`, at the more
+restrictive of that sink's level and the forwarding level, and a warning is
+emitted on the `pact` logger.
 """
 
 from __future__ import annotations
@@ -52,6 +53,7 @@ from __future__ import annotations
 import atexit
 import contextlib
 import logging
+import sys
 import threading
 import warnings
 from typing import TYPE_CHECKING
@@ -245,7 +247,7 @@ def ensure_initialised() -> None:
     warning on the `pact` logger, once.
 
     If a logger was already applied, through one of the `pact_ffi.log_to_*`
-    functions called before `pact` was imported, a warning is logged on the
+    functions called before this module was imported, a warning is logged on the
     `pact` logger and the callbacks are registered against that logger
     instead.
     """
@@ -316,7 +318,7 @@ def _stand_in(name: str) -> Callable[..., None]:
 
     Pact Python applies the FFI logger itself, and the logger can be applied
     once per process. A suite which still calls one of these functions after
-    `pact` is imported gets a warning in place of the FFI's "Logger already
+    this module is imported gets a warning in place of the FFI's "Logger already
     initialized" error.
 
     Args:
@@ -371,3 +373,9 @@ def set_test_run_id(test_run_id: str | None) -> None:
             or `None` to clear a previously set ID.
     """
     pact_ffi.set_test_run_id(test_run_id)
+
+
+# A test which imports `pact` while it runs loads this module after the pytest
+# plugin has set the test's run ID.
+if (_pytest_plugin := sys.modules.get("pact.testing.pytest")) is not None:
+    set_test_run_id(_pytest_plugin.current_test_run_id())

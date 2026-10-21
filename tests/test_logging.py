@@ -379,7 +379,7 @@ class TestFfiStandIns:
             import warnings
 
             import pact_ffi
-            import pact
+            import pact.logging
 
             warnings.simplefilter("ignore")
             pact_ffi.log_to_stderr("INFO")

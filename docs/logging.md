@@ -123,6 +123,10 @@ node ID as the run ID. Pytest's own log capture then shows Pact records in the
 warnings and errors; set its `log_level` to `INFO` to capture the other
 records too. Disable the plugin with `-p no:pact`.
 
+The plugin does not load the Pact FFI. A session which never uses Pact Python
+does not load the library, and a test which first imports `pact` while it runs
+still has its run ID applied.
+
 ### Unittest
 
 Use [`PactTestMixin`][pact.testing.unittest.PactTestMixin] on test cases which
@@ -152,13 +156,14 @@ session-scoped fixture in `conftest.py`, to see the library's output. Pact
 Python now applies the library's logger itself and forwards every event to
 `logging`, so remove the call.
 
-Once `pact` is imported, `log_to_stderr`, `log_to_stdout`, `log_to_file`,
-`init` and `init_with_log_level` on `pact_ffi` emit a `UserWarning` and do
-nothing else. A call to `log_to_stderr`, `init` or `init_with_log_level` made
-before `pact` is imported still applies the library's own sink, and Pact Python
-keeps it: events are still forwarded to
-`logging`, at the more restrictive of the sink's level and the level described
-under [Verbosity](#verbosity), and a warning is logged on the `pact` logger.
+Once [`pact.logging`][pact.logging] is imported, which importing `Pact` or
+`Verifier` does, `log_to_stderr`, `log_to_stdout`, `log_to_file`, `init` and
+`init_with_log_level` on `pact_ffi` emit a `UserWarning` and do nothing else.
+A call to `log_to_stderr`, `init` or `init_with_log_level` made before then
+still applies the library's own sink, and Pact Python keeps it: events are
+still forwarded to `logging`, at the more restrictive of the sink's level and
+the level described under [Verbosity](#verbosity), and a warning is logged on
+the `pact` logger.
 
 To keep seeing the library's output on stderr, attach a handler through
 `logging`:
