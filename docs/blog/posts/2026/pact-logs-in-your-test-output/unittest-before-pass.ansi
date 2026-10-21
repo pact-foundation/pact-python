@@ -1,0 +1,11 @@
+2026-10-21T05:19:10.320806Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request POST /users
+2026-10-21T05:19:10.321924Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:19:10.328264Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request GET /users/999
+2026-10-21T05:19:10.328375Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:19:10.335144Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request GET /users/123
+2026-10-21T05:19:10.335271Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m
+----------------------------------------------------------------------
+Ran 3 tests in 0.032s
+
+[32mOK[0m[0m

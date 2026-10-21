@@ -1,0 +1,20 @@
+------------------------------ Captured log call -------------------------------
+[35mDEBUG   [0m urllib3.connectionpool:connectionpool.py:247 Starting new HTTP connection (1): localhost:62806
+[35mDEBUG   [0m pact.ffi.pact_mock_server.hyper_server:logging.py:197 Received connection from remote [::1]:62807
+[35mDEBUG   [0m pact.ffi.pact_mock_server.hyper_server:logging.py:197 Creating pact request from hyper request path=/user/123
+[35mDEBUG   [0m pact.ffi.pact_mock_server.hyper_server:logging.py:197 Extracting query from uri /user/123
+[32mINFO    [0m pact.ffi.pact_mock_server.hyper_server:logging.py:197 Received request DELETE /user/123
+[0m[...]
+[35mDEBUG   [0m pact.ffi.pact_matching:logging.py:197 comparing to expected HTTP Request ( method: DELETE, path: /users/123, query: None, headers: None, body: Missing )
+[0m[...]
+[35mDEBUG   [0m pact.ffi.pact_matching.matchingrules:logging.py:197 String -> String: comparing '/users/123' to '/user/123' ==> false cascaded=false matcher=Equality
+[35mDEBUG   [0m pact.ffi.pact_matching:logging.py:197 expected content type = '*/*', actual content type = '*/*'
+[35mDEBUG   [0m pact.ffi.pact_matching:logging.py:197 content type header matcher = 'RuleList { rules: [], rule_logic: And, cascaded: false }'
+[35mDEBUG   [0m pact.ffi.pact_matching:logging.py:197 --> Mismatches: [PathMismatch { expected: "/users/123", actual: "/user/123", mismatch: "Expected '/user/123' to be equal to '/users/123'" }]
+[35mDEBUG   [0m pact.ffi.pact_mock_server.hyper_server:logging.py:197 Request did not match: Request was not expected - HTTP Request ( method: DELETE, path: /user/123, query: None, headers: Some({"accept-encoding": ["gzip", "deflate", "zstd"], "accept": ["application/json"], "connection": ["keep-alive"], "content-length": ["0"], "host": ["localhost:62806"], "user-agent": ["python-requests/2.34.2"]}), body: Empty )
+[35mDEBUG   [0m urllib3.connectionpool:connectionpool.py:550 http://localhost:62806 "DELETE /user/123 HTTP/1.1" 500 453
+[31m[1mERROR   [0m pact.pact:pact.py:843 Mismatches:
+  (1) Request not found: DELETE /user/123: {'body': '', 'headers': {'accept': 'application/json', 'accept-encoding': 'gzip, deflate, zstd', 'connection': 'keep-alive', 'content-length': '0', 'host': 'localhost:62806', 'user-agent': 'python-requests/2.34.2'}}
+  (2) Missing request: DELETE /users/123: {}
+---------------------------- Captured log teardown -----------------------------
+[35mDEBUG   [0m pact.ffi.pact_models.pact:logging.py:197 Merging pact with file "~/src/user-web/pacts/user-web-user-service.json"[0m

@@ -1,0 +1,4 @@
+[33m=============================== warnings summary ===============================[0m
+test_user_client.py::test_get_user
+  ~/src/user-web/conftest.py:7: UserWarning: pact_ffi.log_to_stderr has no effect: Pact Python forwards the Pact library's logs to the logging module. Remove the call and set the levels of the 'pact.ffi' and 'pact.plugins' loggers instead.
+    pact_ffi.log_to_stderr("INFO")[0m
