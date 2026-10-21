@@ -132,10 +132,11 @@ class TestFfiLevel:
             pact_logging.DEFAULT_LEVEL
         )
 
-    def test_most_verbose_explicit_level_wins(self) -> None:
-        logging.getLogger("pact.ffi").setLevel(logging.ERROR)
+    def test_ignores_plugins_level(self) -> None:
         logging.getLogger("pact.plugins").setLevel(pact_logging.TRACE)
-        assert pact_logging._ffi_level() == pact_ffi.LevelFilter.TRACE  # noqa: SLF001
+        assert pact_logging._ffi_level() == pact_logging.to_ffi_level(  # noqa: SLF001
+            pact_logging.DEFAULT_LEVEL
+        )
 
     def test_single_explicit_level(self) -> None:
         logging.getLogger("pact.ffi").setLevel(logging.ERROR)
@@ -536,6 +537,63 @@ class TestProcessLifetime:
             text=True,
             timeout=60,
         )
+
+    @pytest.mark.skipif(sys.platform == "win32", reason="fake plugin is a shell script")
+    def test_plugin_records_ignore_forwarding_level(self, tmp_path: Path) -> None:
+        # The plugin's stderr lines are reported at `DEBUG`, below the
+        # forwarding level applied from `pact.ffi`.
+        plugin_dir = tmp_path / "fake-0.0.1"
+        plugin_dir.mkdir()
+        (plugin_dir / "pact-plugin.json").write_text(
+            json.dumps({
+                "pluginInterfaceVersion": 1,
+                "name": "fake",
+                "version": "0.0.1",
+                "executableType": "exec",
+                "entryPoint": "fake-plugin",
+            })
+        )
+        entry_point = plugin_dir / "fake-plugin"
+        entry_point.write_text("#!/bin/sh\necho 'fake plugin starting' >&2\nexit 1\n")
+        entry_point.chmod(0o755)
+
+        result = self.run_script(
+            f"""
+            import logging
+            import os
+            import time
+
+            os.environ["PACT_PLUGIN_DIR"] = {str(tmp_path)!r}
+            os.environ["PACT_DO_NOT_TRACK"] = "true"
+            logging.getLogger("pact.ffi").setLevel(logging.ERROR)
+            logging.getLogger("pact.plugins").setLevel(logging.DEBUG)
+
+            import pact.logging
+            from pact import Pact
+
+            assert pact.logging.forwarding_level() == logging.ERROR
+            records = []
+
+            class Collect(logging.Handler):
+                def emit(self, record):
+                    records.append(record)
+
+            logging.getLogger("pact.plugins").addHandler(Collect())
+
+            pact = Pact("consumer", "provider").with_specification("V4")
+            try:
+                pact.using_plugin("fake", "0.0.1")
+            except RuntimeError:
+                pass
+
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline and not records:
+                time.sleep(0.05)
+            assert [r.getMessage() for r in records] == ["fake plugin starting"]
+            assert records[0].levelno < logging.ERROR, records[0].levelname
+            """
+        )
+        assert result.returncode == 0, result.stderr
 
     def test_forwards_with_externally_applied_logger(self) -> None:
         result = self.run_script(

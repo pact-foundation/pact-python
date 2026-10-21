@@ -18,8 +18,8 @@ created in a process initialises the FFI and registers the forwarding.
 The Rust module path's `::` separators become `.`, so the records from
 `pact_matching::matchers` are emitted on `pact.ffi.pact_matching.matchers`,
 and a level set on `pact.ffi.pact_matching` filters them. Which events the
-library forwards at all is decided by the levels of `pact.ffi` and
-`pact.plugins`, as described under [Verbosity](#verbosity).
+library forwards at all is decided by the level of `pact.ffi`, as described
+under [Verbosity](#verbosity).
 
 Each record from the library carries `log_id` and `test_run_id` as
 attributes:
@@ -77,10 +77,9 @@ usual. With no logging configured at all, Python's last-resort handler writes
 warnings and errors to stderr. To silence them, add a handler such as
 `logging.NullHandler()` to the `pact` logger.
 
-The `pact.ffi` and `pact.plugins` loggers share a single forwarding level: the
-more verbose of the levels set on them. Setting only `pact.plugins` to `DEBUG`
-therefore forwards the library's `DEBUG` events as well. Python discards them,
-but only after each one has been passed from the library to the interpreter.
+Plugin events do not depend on the forwarding level. Every one of them is
+forwarded to the `pact.plugins` logger, and its level filters them like any
+other logger's. That level can be changed at any time.
 
 The library's `TRACE` level sits below `logging.DEBUG` and is exposed as
 [`pact.logging.TRACE`][pact.logging.TRACE]:
