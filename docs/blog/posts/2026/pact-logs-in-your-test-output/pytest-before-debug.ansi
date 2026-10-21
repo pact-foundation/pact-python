@@ -1,0 +1,33 @@
+test_user_client.py [32m.[0m2026-10-21T05:19:00.884736Z DEBUG ThreadId(01) pact_ffi::plugins: pact_ffi::plugins::pactffi_cleanup_plugins FFI function invoked
+[32m.[0m2026-10-21T05:19:00.891625Z DEBUG ThreadId(01) pact_ffi::plugins: pact_ffi::plugins::pactffi_cleanup_plugins FFI function invoked
+[32m.[0m2026-10-21T05:19:00.898938Z DEBUG ThreadId(01) pact_ffi::plugins: pact_ffi::plugins::pactffi_cleanup_plugins FFI function invoked
+[31mF[0m[31m                                                 [100%][0m
+
+=================================== FAILURES ===================================
+[31m[1m_______________________________ test_delete_user _______________________________[0m
+[0m[...]
+----------------------------- Captured stderr call -----------------------------
+2026-10-21T05:19:00.899490Z DEBUG ThreadId(01) pact_ffi::mock_server::handles: Failed to parse the value, treating it as a plain string: expected value at line 1 column 1
+2026-10-21T05:19:00.899526Z DEBUG ThreadId(01) pact_ffi::mock_server: pact_ffi::mock_server::pactffi_create_mock_server_for_transport FFI function invoked
+2026-10-21T05:19:00.906081Z DEBUG tokio-rt-worker pact_mock_server::hyper_server: Received connection from remote [::1]:62763
+[0m[...]
+2026-10-21T05:19:00.906443Z DEBUG tokio-rt-worker pact_matching: --> Mismatches: [PathMismatch { expected: "/users/123", actual: "/user/123", mismatch: "Expected '/user/123' to be equal to '/users/123'" }]
+2026-10-21T05:19:00.906467Z DEBUG tokio-rt-worker pact_mock_server::hyper_server: Request did not match: Request was not expected - HTTP Request ( method: DELETE, path: /user/123, query: None, headers: Some({"connection": ["keep-alive"], "host": ["localhost:62762"], "user-agent": ["python-requests/2.34.2"], "accept-encoding": ["gzip", "deflate", "zstd"], "accept": ["application/json"], "content-length": ["0"]}), body: Empty )
+2026-10-21T05:19:00.906892Z DEBUG ThreadId(01) pact_ffi::mock_server: pact_ffi::mock_server::pactffi_mock_server_matched FFI function invoked
+2026-10-21T05:19:00.906932Z DEBUG ThreadId(01) pact_ffi::mock_server: pact_ffi::mock_server::pactffi_mock_server_mismatches FFI function invoked
+2026-10-21T05:19:00.907148Z DEBUG ThreadId(01) pact_ffi::mock_server: pact_ffi::mock_server::pactffi_mock_server_mismatches FFI function invoked
+------------------------------ Captured log call -------------------------------
+[1m[31mERROR   [0m pact.pact:pact.py:834 Mismatches:
+  (1) Request not found: DELETE /user/123: {'body': '', 'headers': {'accept': 'application/json', 'accept-encoding': 'gzip, deflate, zstd', 'connection': 'keep-alive', 'content-length': '0', 'host': 'localhost:62762', 'user-agent': 'python-requests/2.34.2'}}
+  (2) Missing request: DELETE /users/123: {}
+--------------------------- Captured stderr teardown ---------------------------
+2026-10-21T05:19:01.005709Z DEBUG ThreadId(01) pact_ffi::mock_server::handles: pact_ffi::mock_server::handles::pactffi_pact_handle_write_file FFI function invoked
+2026-10-21T05:19:01.010873Z DEBUG ThreadId(01) pact_models::pact: Merging pact with file "~/src/user-web/pacts/user-web-user-service.json"
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m test_user_client.py::[1mtest_delete_user[0m - pact.error.MismatchesError: Mismatches:
+[31m========================= [31m[1m1 failed[0m, [32m3 passed[0m[31m in 0.35s[0m[31m ==========================[0m
+2026-10-21T05:19:01.112666Z DEBUG ThreadId(01) pact_ffi::mock_server: pact_ffi::mock_server::pactffi_cleanup_mock_server FFI function invoked
+2026-10-21T05:19:01.112742Z DEBUG ThreadId(01) pact_matching::metrics: Could not get the tokio runtime, will not send metrics - there is no reactor running, must be called from the context of a Tokio 1.x runtime
+2026-10-21T05:19:01.113247Z DEBUG ThreadId(01) pact_mock_server::mock_server: Mock server 54e16c07-d609-462e-a9fd-5a4cdb71a231 shutdown - MockServerMetrics { requests: 1, requests_by_path: {"/user/123": 1} }
+2026-10-21T05:19:01.113291Z DEBUG ThreadId(01) pact_mock_server::server_manager: Shutting down mock server with ID 54e16c07-d609-462e-a9fd-5a4cdb71a231 - MockServerMetrics { requests: 1, requests_by_path: {"/user/123": 1} }
+2026-10-21T05:19:01.113327Z DEBUG ThreadId(01) pact_ffi::plugins: pact_ffi::plugins::pactffi_cleanup_plugins FFI function invoked[0m

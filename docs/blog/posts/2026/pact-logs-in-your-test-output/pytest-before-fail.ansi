@@ -1,0 +1,22 @@
+test_user_client.py 2026-10-21T05:18:58.982371Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request GET /users/123
+2026-10-21T05:18:58.982807Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:18:58.991686Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request GET /users/999
+2026-10-21T05:18:58.991906Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:18:58.999285Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request POST /users
+2026-10-21T05:18:59.000479Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:18:59.006995Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request DELETE /user/123
+[31mF[0m
+
+=================================== FAILURES ===================================
+[31m[1m_______________________________ test_delete_user _______________________________[0m
+[0m[...]
+[1m[31mE   pact.error.MismatchesError: Mismatches:[0m
+[1m[31mE     (1) Request not found: DELETE /user/123: {'body': '', 'headers': {'accept': 'application/json', 'accept-encoding': 'gzip, deflate, zstd', 'connection': 'keep-alive', 'content-length': '0', 'host': 'localhost:62741', 'user-agent': 'python-requests/2.34.2'}}[0m
+[1m[31mE     (2) Missing request: DELETE /users/123: {}[0m
+------------------------------ Captured log call -------------------------------
+[1m[31mERROR   [0m pact.pact:pact.py:834 Mismatches:
+  (1) Request not found: DELETE /user/123: {'body': '', 'headers': {'accept': 'application/json', 'accept-encoding': 'gzip, deflate, zstd', 'connection': 'keep-alive', 'content-length': '0', 'host': 'localhost:62741', 'user-agent': 'python-requests/2.34.2'}}
+  (2) Missing request: DELETE /users/123: {}
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m test_user_client.py::[1mtest_delete_user[0m - pact.error.MismatchesError: Mismatches:
+[31m========================= [31m[1m1 failed[0m, [32m3 passed[0m[31m in 0.31s[0m[31m ==========================[0m[0m

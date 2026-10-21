@@ -1,0 +1,23 @@
+2026-10-21T05:19:09.317645Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request POST /users
+2026-10-21T05:19:09.318428Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:19:09.324581Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request DELETE /user/123
+Mismatches:
+  (1) Request not found: DELETE /user/123: {'body': '', 'headers': {'accept': 'application/json', 'accept-encoding': 'gzip, deflate, zstd', 'connection': 'keep-alive', 'content-length': '0', 'host': 'localhost:62820', 'user-agent': 'python-requests/2.34.2'}}
+  (2) Missing request: DELETE /users/123: {}
+[31mE[0m2026-10-21T05:19:09.333387Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request GET /users/999
+2026-10-21T05:19:09.333539Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m2026-10-21T05:19:09.340749Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Received request GET /users/123
+2026-10-21T05:19:09.340867Z  INFO tokio-rt-worker pact_mock_server::hyper_server: Request matched, sending response
+[32m.[0m
+======================================================================
+[31mERROR[0m[1;31m: test_delete_user (test_user_client.UserClientTest.test_delete_user)[0m
+----------------------------------------------------------------------
+[0m[...]
+[1;35mpact.error.MismatchesError[0m: [35mMismatches:
+  (1) Request not found: DELETE /user/123: {'body': '', 'headers': {'accept': 'application/json', 'accept-encoding': 'gzip, deflate, zstd', 'connection': 'keep-alive', 'content-length': '0', 'host': 'localhost:62820', 'user-agent': 'python-requests/2.34.2'}}
+  (2) Missing request: DELETE /users/123: {}[0m
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.121s
+
+[1;31mFAILED[0m ([1;31merrors=1[0m)[0m
