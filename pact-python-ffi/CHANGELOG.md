@@ -8,6 +8,28 @@ Note that this _only_ includes changes to the Python FFI interface. For changes 
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-ffi/0.5.12.0] _2026-10-21_
+
+### 🚀 Features
+
+-   Update bindings to Pact FFI 0.5.12
+
+### 🐛 Bug Fixes
+
+-   _(ffi)_ Keep `ffi` and `__version__` bound under lazy imports
+
+### ⚡ Performance
+
+-   _(ffi)_ Write the version file at build time
+
+### ⚙️ Miscellaneous Tasks
+
+-   _(ffi)_ Download pact_ffi from the dist-built release
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-ffi/0.5.10.0] _2026-10-15_
 
 ### 🚀 Features
