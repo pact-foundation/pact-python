@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import sys
 import unittest
 from typing import TYPE_CHECKING
 
@@ -54,9 +55,22 @@ def run(name: str) -> unittest.TestResult:
     return result
 
 
-def test_sets_and_clears_run_id(run_ids: list[str | None]) -> None:
+def test_sets_and_clears_run_id(
+    run_ids: list[str | None], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delitem(sys.modules, "pact.testing.pytest")
     run("test_passes")
     assert run_ids == [f"{Example.__module__}.Example.test_passes", None]
+
+
+def test_restores_pytest_run_id(
+    run_ids: list[str | None], request: pytest.FixtureRequest
+) -> None:
+    run("test_passes")
+    assert run_ids == [
+        f"{Example.__module__}.Example.test_passes",
+        request.node.nodeid,
+    ]
 
 
 def test_silent_on_success(capsys: pytest.CaptureFixture[str]) -> None:
