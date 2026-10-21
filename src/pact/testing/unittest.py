@@ -83,6 +83,15 @@ class _ResultProxy:
         return record
 
 
+def _enclosing_test_run_id() -> str | None:
+    # Looked up, never imported: `unittest` suites need not have pytest
+    # installed.
+    pytest_plugin = sys.modules.get("pact.testing.pytest")
+    if pytest_plugin is None:
+        return None
+    return pytest_plugin.current_test_run_id()
+
+
 class PactTestMixin:
     """
     Mixin for `unittest.TestCase` subclasses using Pact.
@@ -90,6 +99,8 @@ class PactTestMixin:
     While a test runs, its `id()` is set as the Pact test run ID and every
     record on the `pact` logger is buffered. If the test fails or errors, the
     buffered records are written to stderr under a banner naming the test.
+    Afterwards, the run ID is cleared or, when pytest runs the test case, set
+    back to the test's node ID.
 
     A logger only hands records at or above its effective level to its
     handlers, so when the `pact` logger has no explicit level it is lowered to
@@ -147,7 +158,7 @@ class PactTestMixin:
                 pact_logger.setLevel(logging.NOTSET)
                 pact_logger.propagate = propagate
             pact_logger.removeHandler(handler)
-            pact_logging.set_test_run_id(None)
+            pact_logging.set_test_run_id(_enclosing_test_run_id())
             if owns_result:
                 result.stopTestRun()
 
