@@ -181,3 +181,6 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/pact-foundation/pact-python
+
+extra_css:
+  - stylesheets/ansi.css

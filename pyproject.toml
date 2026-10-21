@@ -81,6 +81,7 @@ docs = [
   "mkdocs-section-index==0.3.12",
   "mkdocstrings[python]==1.0.8",
   "pathspec==1.1.1",
+  "pygments-ansi-color==0.3.0",
 ]
 example = [
   "fastapi~=0.0",
@@ -270,7 +271,7 @@ __version_tuple__ = version_tuple = tuple(
     ]
 
     [tool.typos.files]
-    extend-exclude = ["*.svg"]
+    extend-exclude = ["*.ansi", "*.svg"]
 
   [tool.uv]
     [tool.uv.sources]
