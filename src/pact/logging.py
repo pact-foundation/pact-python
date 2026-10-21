@@ -26,10 +26,11 @@ import logging
 logging.getLogger("pact.ffi").setLevel(logging.DEBUG)
 ```
 
-The FFI forwards events at the most verbose level set explicitly on the
-`pact.ffi` and `pact.plugins` loggers, or at [`DEFAULT_LEVEL`][DEFAULT_LEVEL]
-when neither is set. That level is fixed when the FFI is initialised, so set
-logger levels before creating the first `Pact` or `Verifier`. The Pact
+The FFI forwards the library's events at the level set explicitly on the
+`pact.ffi` logger, or at [`DEFAULT_LEVEL`][DEFAULT_LEVEL] when it has none.
+That level is fixed when the FFI is initialised, so set it before creating the
+first `Pact` or `Verifier`. Every plugin event is forwarded, and the level of
+the `pact.plugins` logger filters them like any other records. The Pact
 library's `TRACE` level is exposed as [`TRACE`][TRACE], below `logging.DEBUG`.
 
 Log records can be attributed to the test which caused them by setting a test
@@ -90,8 +91,8 @@ if (
 
 DEFAULT_LEVEL = logging.INFO
 """
-Level at which the Pact library forwards events when neither the `pact.ffi` nor
-the `pact.plugins` logger has an explicit level.
+Level at which the Pact library forwards events when the `pact.ffi` logger has
+no explicit level.
 
 `INFO` is the default because the library's `DEBUG` output is dominated by
 per-FFI-call tracing, per-request matching dumps and, when a plugin is
@@ -153,17 +154,15 @@ def forwarding_level() -> int:
     """
     `logging` level at which the Pact library forwards events.
 
+    Plugin events are not filtered by this level: the FFI hands every one of
+    them to the plugin log callback.
+
     Returns:
-        The most verbose level set explicitly on the `pact.ffi` and
-        `pact.plugins` loggers, or [`DEFAULT_LEVEL`][DEFAULT_LEVEL] when
-        neither has one.
+        The level set explicitly on the `pact.ffi` logger, or
+        [`DEFAULT_LEVEL`][DEFAULT_LEVEL] when it has none.
     """
-    explicit = [
-        lg.level
-        for lg in (logging.getLogger("pact.ffi"), logging.getLogger("pact.plugins"))
-        if lg.level != logging.NOTSET
-    ]
-    return min(explicit) if explicit else DEFAULT_LEVEL
+    level = logging.getLogger("pact.ffi").level
+    return level if level != logging.NOTSET else DEFAULT_LEVEL
 
 
 def _ffi_level() -> pact_ffi.LevelFilter:
@@ -240,8 +239,8 @@ def ensure_initialised() -> None:
     deregisters them again.
 
     The forwarding level cannot be raised once the logger is applied. A later
-    call which finds a more verbose level set on the `pact.ffi` or
-    `pact.plugins` logger logs a warning on the `pact` logger, once.
+    call which finds a more verbose level set on the `pact.ffi` logger logs a
+    warning on the `pact` logger, once.
 
     If a logger was already applied, through one of the `pact_ffi.log_to_*`
     functions called before `pact` was imported, a warning is logged on the
@@ -262,8 +261,8 @@ def ensure_initialised() -> None:
                 _level_warned = True
                 logger.warning(
                     "Pact library events are forwarded at %s, fixed when the "
-                    "first Pact or Verifier was created. Set the levels of the "
-                    "'pact.ffi' and 'pact.plugins' loggers before then.",
+                    "first Pact or Verifier was created. Set the level of the "
+                    "'pact.ffi' logger before then.",
                     applied.name,
                 )
             return
