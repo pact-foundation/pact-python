@@ -72,6 +72,10 @@ build-backend = "hatchling.build"
     pact-ffi = ["/src/pact_ffi"]
     tests = ["/tests"]
 
+    [tool.coverage.run]
+    # Tests which apply a process-wide logger run in a separate interpreter.
+    patch = ["subprocess"]
+
     [tool.coverage.report]
     exclude_lines = [
       "@(abc\\.)?abstractmethod",  # Ignore abstract methods
