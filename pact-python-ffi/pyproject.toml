@@ -31,7 +31,11 @@ classifiers = [
 
 requires-python = ">=3.11"
 
-dependencies = ["cffi~=2.0"]
+dependencies = [
+  # Earlier releases do not support Python 3.15.
+  "cffi>=2.1.1 ; python_version >= '3.15'",
+  "cffi~=2.0",
+]
 
   [project.urls]
   "Bug Tracker" = "https://github.com/pact-foundation/pact-python/issues"
@@ -46,7 +50,7 @@ test = ["pytest~=9.0", "pytest-cov~=7.0"]
 types = ["mypy==2.4.0"]
 
 [build-system]
-requires = ["cffi", "hatchling", "packaging", "setuptools"]
+requires = ["cffi>=2.1.1", "hatchling", "packaging", "setuptools"]
 build-backend = "hatchling.build"
 
 [tool]
