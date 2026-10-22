@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from testcontainers.compose import DockerCompose  # type: ignore[import-untyped]
 
 from pact.verifier import Verifier
 
@@ -75,6 +74,13 @@ def broker_url(request: pytest.FixtureRequest) -> Generator[str, Any, None]:
     if broker_url:
         yield broker_url
         return
+
+    # On Windows, free-threaded builds have no `pywin32` wheels, so the
+    # resolver falls back to a `docker` release which imports `distutils`.
+    # Importing here keeps the rest of the suite collectable.
+    from testcontainers.compose import (  # noqa: PLC0415
+        DockerCompose,  # type: ignore[import-untyped]
+    )
 
     with DockerCompose(
         Path(__file__).parent / "util",
