@@ -90,6 +90,7 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+import threading
 import typing
 import warnings
 from collections.abc import Callable
@@ -2522,8 +2523,10 @@ def logger_apply() -> int:
 
 
 # The CFFI callback must outlive the registration, as the Pact library holds a
-# raw function pointer to it.
+# raw function pointer to it. The lock keeps the registered callback and the
+# stored reference in step when several threads register at once.
 _log_callback: Callable[..., None] | None = None
+_log_callback_lock = threading.Lock()
 
 
 def register_log_callback(callback: LogCallback | None) -> None:
@@ -2556,8 +2559,9 @@ def register_log_callback(callback: LogCallback | None) -> None:
     global _log_callback  # noqa: PLW0603
 
     if callback is None:
-        lib.pactffi_register_log_callback(ffi.NULL)
-        _log_callback = None
+        with _log_callback_lock:
+            lib.pactffi_register_log_callback(ffi.NULL)
+            _log_callback = None
         return
 
     def _decode(ptr: cffi.FFI.CData) -> str:
@@ -2580,8 +2584,9 @@ def register_log_callback(callback: LogCallback | None) -> None:
         )
 
     new_callback = ffi.callback("LogCallback", _callback)
-    lib.pactffi_register_log_callback(new_callback)
-    _log_callback = new_callback
+    with _log_callback_lock:
+        lib.pactffi_register_log_callback(new_callback)
+        _log_callback = new_callback
 
 
 def set_log_callback_level(level_filter: LevelFilter | str) -> None:
@@ -8028,8 +8033,10 @@ def set_test_run_id(test_run_id: str | None) -> None:
 
 
 # The CFFI callback must outlive the registration, as the Pact library holds a
-# raw function pointer to it.
+# raw function pointer to it. The lock keeps the registered callback and the
+# stored reference in step when several threads register at once.
 _plugin_log_callback: Callable[..., None] | None = None
+_plugin_log_callback_lock = threading.Lock()
 
 
 def register_plugin_log_callback(callback: PluginLogCallback | None) -> None:
@@ -8056,8 +8063,9 @@ def register_plugin_log_callback(callback: PluginLogCallback | None) -> None:
     global _plugin_log_callback  # noqa: PLW0603
 
     if callback is None:
-        lib.pactffi_register_plugin_log_callback(ffi.NULL)
-        _plugin_log_callback = None
+        with _plugin_log_callback_lock:
+            lib.pactffi_register_plugin_log_callback(ffi.NULL)
+            _plugin_log_callback = None
         return
 
     def _decode(ptr: cffi.FFI.CData) -> str:
@@ -8083,8 +8091,9 @@ def register_plugin_log_callback(callback: PluginLogCallback | None) -> None:
         "void(*)(const char *, const char *, const char *, const char *, const char *)",
         _callback,
     )
-    lib.pactffi_register_plugin_log_callback(new_callback)
-    _plugin_log_callback = new_callback
+    with _plugin_log_callback_lock:
+        lib.pactffi_register_plugin_log_callback(new_callback)
+        _plugin_log_callback = new_callback
 
 
 def get_plugin_logs(plugin_instance_id: str) -> list[dict[str, Any]]:

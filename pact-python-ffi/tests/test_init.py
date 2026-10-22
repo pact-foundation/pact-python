@@ -384,6 +384,49 @@ def test_log_callback() -> None:
     assert result.stdout.strip() == "[('INFO', 'pact_ffi', 'received source=test')]"
 
 
+def test_log_callback_concurrent_registration() -> None:
+    # Unsynchronised registration left the library calling a collected CFFI
+    # callback, which crashes the interpreter, so the test runs in a separate
+    # interpreter.
+    script = textwrap.dedent(
+        """
+        import gc
+        import threading
+
+        import pact_ffi
+
+        stop = threading.Event()
+
+        def register() -> None:
+            while not stop.is_set():
+                pact_ffi.register_log_callback(lambda *_: None)
+                gc.collect()
+
+        def emit() -> None:
+            for _ in range(2000):
+                pact_ffi.log_message("message", "INFO", "test")
+
+        pact_ffi.set_log_callback_level("INFO")
+        pact_ffi.log_to_buffer("OFF")
+        registrars = [threading.Thread(target=register) for _ in range(4)]
+        emitters = [threading.Thread(target=emit) for _ in range(4)]
+        for thread in registrars + emitters:
+            thread.start()
+        for thread in emitters:
+            thread.join()
+        stop.set()
+        for thread in registrars:
+            thread.join()
+        pact_ffi.register_log_callback(None)
+        """
+    )
+    subprocess.run(  # noqa: S603
+        [sys.executable, "-c", script],
+        check=True,
+        timeout=120,
+    )
+
+
 def test_register_plugin_log_callback() -> None:
     # Entries only arrive from a running plugin, so this covers registration.
     pact_ffi.register_plugin_log_callback(lambda *_: None)
