@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tarfile
 import tempfile
 import urllib.request
@@ -28,6 +29,21 @@ if TYPE_CHECKING:
 
 PKG_DIR = Path(__file__).parent.resolve() / "src" / "pact_ffi"
 PACT_RELEASE_URL = "https://github.com/pact-foundation/pact-reference/releases/download/pact_ffi-v{version}"
+
+
+def _stable_abi() -> str:
+    """
+    Determine the stable ABI targeted by the current interpreter.
+
+    CFFI compiles against `abi3t` on free-threaded CPython 3.15+ and against
+    `abi3` otherwise. Free-threaded interpreters do not load `abi3` extensions.
+
+    Returns:
+        Either `abi3` or `abi3t`.
+    """
+    if sysconfig.get_config_var("Py_GIL_DISABLED"):
+        return "abi3t"
+    return "abi3"
 
 
 class UnsupportedPlatformError(RuntimeError):
@@ -199,12 +215,12 @@ class PactBuildHook(BuildHookInterface[Any]):
         # Compile the FFI extension
         extension = self._compile(lib, header)
 
-        # Copy into the package directory, using the ABI3 marking for broad
-        # compatibility.
+        # Copy into the package directory, using the stable ABI marking for
+        # broad compatibility.
         # NOTE: Windows does _not_ use the version infixation
         name = extension.name.split(".")[0]
         suffix = extension.suffix
-        infix = ".abi3" if os.name != "nt" else ""
+        infix = f".{_stable_abi()}" if os.name != "nt" else ""
         extension_dest = f"{name}{infix}{suffix}"
         shutil.copy(extension, PKG_DIR / extension_dest)
 
@@ -474,12 +490,16 @@ class PactBuildHook(BuildHookInterface[Any]):
         """
         Infer the tag for the current build.
 
-        The bindings are built to target ABI3, which is compatible with multiple
-        Python versions. As a result, we generate `py{version}-abi3-{platform}`
-        tags for the wheels.
+        The bindings are built to target the stable ABI, which is compatible
+        with multiple Python versions. As a result, we generate
+        `cp{version}-abi3-{platform}` tags for the wheels.
 
         While the ABI3 interface was introduced in Python 3.2, we target the
         earliest supported version of Python in the Python wrapper.
+
+        A free-threaded build targets `abi3t`, which requires Python 3.15. Its
+        wheel takes the `cp{version}-abi3.abi3t-{platform}` tag, as the
+        extension also loads on GIL-enabled builds.
 
         Returns:
             The tag for the current build.
@@ -501,4 +521,5 @@ class PactBuildHook(BuildHookInterface[Any]):
             else:
                 raise UnsupportedPlatformError(platform)
 
-        return f"cp{python_version}-abi3-{platform}"
+        abi = "abi3.abi3t" if _stable_abi() == "abi3t" else "abi3"
+        return f"cp{python_version}-{abi}-{platform}"
