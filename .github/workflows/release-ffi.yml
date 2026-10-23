@@ -155,10 +155,12 @@ jobs:
           app-id: ${{ vars.PACT_FOUNDATION_BOT_APP_ID }}
           private-key: ${{ secrets.PACT_FOUNDATION_BOT_PRIVATE_KEY }}
 
-      - name: Checkout main
+      - name: Checkout merged release commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          ref: main
+          # Tag the release PR's own commit. The tip of main may already hold
+          # later, unreleased changes.
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Configure git identity
