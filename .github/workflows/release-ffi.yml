@@ -57,12 +57,13 @@ permissions:
 # - Open or updated PR: only the verification build runs.
 #
 # Tag pushes and PR merges get a group of their own (the run ID), so nothing can
-# cancel them or hold them in the pending queue.
+# cancel them or hold them in the pending queue. The `push` check matters: a
+# `closed` PR event sets `github.ref` to the base branch, `refs/heads/main`.
 concurrency:
   group: >-
     ${{ github.workflow }}-${{
       (
-        github.ref == 'refs/heads/main' ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
         (github.event_name == 'pull_request' && github.event.action != 'closed')
       ) && github.ref || github.run_id
     }}
