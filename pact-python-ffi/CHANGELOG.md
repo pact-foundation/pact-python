@@ -8,6 +8,25 @@ Note that this _only_ includes changes to the Python FFI interface. For changes 
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-ffi/0.5.12.1] _2026-10-23_
+
+### 🚀 Features
+
+-   _(ffi)_ Build abi3t wheels for free-threaded Python
+
+### 🐛 Bug Fixes
+
+-   _(ffi)_ Serialise log callback registration
+
+### 🧪 Testing
+
+-   Run the suites on free-threaded Python 3.15
+-   _(ffi)_ Measure coverage in subprocess tests
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-ffi/0.5.12.0] _2026-10-21_
 
 ### 🚀 Features
