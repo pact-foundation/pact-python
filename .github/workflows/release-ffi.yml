@@ -49,9 +49,24 @@ on:
 permissions:
   contents: read
 
+# Only runs that a newer run fully supersedes share a group, and the newer run
+# cancels the older one:
+#
+# - Push to main: only `prepare` runs, and it rebuilds the release branch from
+#   scratch.
+# - Open or updated PR: only the verification build runs.
+#
+# Tag pushes and PR merges get a group of their own (the run ID), so nothing can
+# cancel them or hold them in the pending queue.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+  group: >-
+    ${{ github.workflow }}-${{
+      (
+        github.ref == 'refs/heads/main' ||
+        (github.event_name == 'pull_request' && github.event.action != 'closed')
+      ) && github.ref || github.run_id
+    }}
+  cancel-in-progress: true
 
 env:
   STABLE_PYTHON_VERSION: '311'
