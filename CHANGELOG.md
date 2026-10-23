@@ -6,6 +6,58 @@ All notable changes to this project will be documented in this file.
 <!-- markdownlint-disable emph-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python/4.2.0] _2026-10-23_
+
+### 🚀 Features
+
+-   Route Pact library and plugin logs through logging
+-   Initialise Pact logging from Pact and Verifier
+-   Set the default Pact log forwarding level
+-   Replace pact_ffi logger set-up with a warning
+-   Name Pact library loggers with dotted module paths
+-   Scope the Pact test run ID to each pytest test
+-   Add a unittest mixin for Pact logs
+-   Expose buffered plugin log entries
+-   _(ffi)_ Build abi3t wheels for free-threaded Python
+
+### 🐛 Bug Fixes
+
+-   Forward the Pact library at the level of pact.ffi alone
+-   Restore the pytest run ID after a unittest test case
+-   _(ci)_ Tag the merged release commit
+-   _(ci)_ Keep PR merge runs out of the main release group
+
+### ⚡️ Performance
+
+-   Defer loading the Pact FFI until Pact is used
+
+### 📚 Documentation
+
+-   Describe logging through the standard logging module
+-   Describe log_id during provider verification
+-   Describe the pytest plugin and unittest mixin
+-   Colour terminal output in code blocks
+-   Add a blog post on Pact logs in test output
+
+### 🧪 Testing
+
+-   Cover Pact library log forwarding end to end
+-   Cover plugin log forwarding end to end
+-   Cover forwarding alongside an externally applied logger
+-   Cover the lazy attributes of pact
+-   Run the suites on free-threaded Python 3.15
+-   Import testcontainers only when starting a broker
+
+### 🛠️ Miscellaneous Tasks
+
+-   _(ffi)_ Download pact_ffi from the dist-built release
+-   Require pact-python-ffi 0.5.12
+-   _(ci)_ Stop release runs on main being dropped
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python/4.1.0] _2026-10-16_
 
 ### 🚀 Features
