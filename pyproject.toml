@@ -77,7 +77,7 @@ docs = [
   "mkdocs-github-admonitions-plugin==0.1.1",
   "mkdocs-literate-nav==0.6.3",
   "mkdocs-llmstxt==0.5.1",
-  "mkdocs-material[recommended,git,imaging]==9.7.7",
+  "mkdocs-material[recommended,git,imaging]==9.8.0",
   "mkdocs-section-index==0.3.12",
   "mkdocstrings[python]==1.0.8",
   "pathspec==1.1.1",
