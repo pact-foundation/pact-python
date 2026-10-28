@@ -47,7 +47,7 @@ dependencies = [
 [dependency-groups]
 dev = ["ruff==0.17.2", { include-group = "test" }, { include-group = "types" }]
 test = ["pytest~=9.0", "pytest-cov~=7.0"]
-types = ["mypy==2.4.0"]
+types = ["mypy==2.4.1"]
 
 [build-system]
 requires = ["cffi>=2.1.1", "hatchling", "packaging", "setuptools"]
