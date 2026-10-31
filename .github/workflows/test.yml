@@ -87,7 +87,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install Pact CLI
-        uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550  # v5.2.2
+        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195  # v5.2.5
 
       - name: Set PATH on Windows
         if: startsWith(matrix.os, 'windows-')
