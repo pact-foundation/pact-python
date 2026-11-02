@@ -4,6 +4,7 @@ This catalog contains focused, well-documented code snippets demonstrating speci
 
 ## Available
 
+-   [Binary Payloads with Matching Rules](./binary_payloads/README.md)
 -   [Multipart Form Data with Matching Rules](./multipart_matching_rules/README.md)
 
 ## Using Catalog Entries
