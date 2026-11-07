@@ -74,7 +74,7 @@ docs = [
   "griffe-warnings-deprecated==1.1.2",
   "mkdocs==1.6.1",
   "mkdocs-gen-files==0.6.1",
-  "mkdocs-github-admonitions-plugin==0.1.1",
+  "mkdocs-github-admonitions-plugin==0.1.2",
   "mkdocs-literate-nav==0.6.3",
   "mkdocs-llmstxt==0.5.1",
   "mkdocs-material[recommended,git,imaging]==9.8.0",
