@@ -109,7 +109,7 @@ test = [
   "testcontainers~=4.0",
 ]
 types = [
-  "mypy==2.4.0",
+  "mypy==2.4.1",
   "types-grpcio~=1.0",
   "types-protobuf~=7.34",
   "types-requests~=2.0",
