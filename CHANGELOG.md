@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 <!-- markdownlint-disable no-duplicate-heading -->
-<!-- markdownlint-disable emph-style -->
+<!-- markdownlint-disable emphasis-style -->
 <!-- markdownlint-disable strong-style -->
 
 ## [pact-python/4.2.0] _2026-10-23_

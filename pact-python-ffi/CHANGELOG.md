@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 Note that this _only_ includes changes to the Python FFI interface. For changes to the Pact FFI itself, see the [Pact FFI changelog](https://github.com/pact-foundation/pact-reference/blob/master/rust/pact_ffi/CHANGELOG.md).
 
 <!-- markdownlint-disable no-duplicate-heading -->
-<!-- markdownlint-disable emph-style -->
+<!-- markdownlint-disable emphasis-style -->
 <!-- markdownlint-disable strong-style -->
 
 ## [pact-python-ffi/0.5.12.1] _2026-10-23_
