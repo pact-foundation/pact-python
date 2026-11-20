@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import logging
 import os
@@ -20,11 +21,28 @@ import re
 import subprocess
 import sys
 import tomllib
-from dataclasses import dataclass
+import urllib.request
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 ROOT = Path(__file__).parent.parent
 logger = logging.getLogger(__name__)
+
+PR_BODY_LIMIT = 65_000
+"""Character budget for a PR body; GitHub rejects bodies over 65,536."""
+
+FFI_DOC_LINK_PATTERNS = (
+    re.compile(r"(https://docs\.rs/pact_ffi/)\d+\.\d+\.\d+(/)"),
+    re.compile(
+        r"(https://github\.com/pact-foundation/pact-reference/blob/pact_ffi-v)"
+        r"\d+\.\d+\.\d+(/)"
+    ),
+)
+"""Versioned upstream documentation links in the FFI bindings."""
 
 
 @dataclass
@@ -74,6 +92,18 @@ class Package:
 
     release_branch: str
     """Fixed branch name for release PRs, e.g. `"release/pact-python"`."""
+
+    upstream_header_url: str | None = None
+    """URL template for the upstream C header, with a `{version}` placeholder.
+
+    When set, a release PR that moves to a new upstream version includes a
+    diff of the header between the two versions.
+    """
+
+    doc_link_files: tuple[Path, ...] = field(default_factory=tuple)
+    """Files whose versioned upstream documentation links follow the upstream
+    version. See [`FFI_DOC_LINK_PATTERNS`][scripts.release.FFI_DOC_LINK_PATTERNS].
+    """
 
     def read_version(self) -> str:
         """Read the static version from the package's pyproject.toml."""
@@ -299,11 +329,107 @@ class Package:
             cwd=self.directory,
         )
 
+    def render_header_diff(self, old: str, new: str, budget: int) -> str:
+        """
+        Render the upstream header diff between two versions as PR body Markdown.
+
+        The diff sits in a collapsed `<details>` block. A diff longer than
+        `budget` characters is cut at a line boundary, with a note saying how
+        many lines were left out.
+
+        Args:
+            old:
+                The upstream version the package currently tracks.
+
+            new:
+                The upstream version being released.
+
+            budget:
+                The maximum number of characters for the diff text.
+
+        Returns:
+            The Markdown block to append to the PR body.
+
+        Raises:
+            ValueError:
+                If this package has no
+                [`upstream_header_url`][scripts.release.Package.upstream_header_url].
+        """
+        if self.upstream_header_url is None:
+            msg = f"Package {self.name!r} has no upstream header configured"
+            raise ValueError(msg)
+
+        headers = {}
+        for version in (old, new):
+            url = self.upstream_header_url.format(version=version)
+            logger.debug("Downloading %s", url)
+            with urllib.request.urlopen(url) as response:  # noqa: S310
+                headers[version] = response.read().decode("utf-8")
+
+        lines = list(
+            difflib.unified_diff(
+                headers[old].splitlines(keepends=True),
+                headers[new].splitlines(keepends=True),
+                fromfile=f"pact.h ({old})",
+                tofile=f"pact.h ({new})",
+            )
+        )
+        if not lines:
+            return f"\n## `pact.h`\n\nNo changes between {old} and {new}.\n"
+
+        kept: list[str] = []
+        size = 0
+        for line in lines:
+            size += len(line)
+            if size > budget:
+                break
+            kept.append(line)
+        diff = "".join(kept)
+        if not diff.endswith("\n"):
+            diff += "\n"
+        note = ""
+        if len(kept) < len(lines):
+            note = f"\nDiff truncated: {len(lines) - len(kept)} lines omitted.\n"
+
+        # The header's doc comments can hold Markdown code fences, so the
+        # outer fence must be longer than any backtick run in the diff.
+        longest = max((len(m) for m in re.findall(r"`+", diff)), default=0)
+        fence = "`" * max(3, longest + 1)
+        return (
+            f"\n## `pact.h`\n\n"
+            f"<details>\n<summary>Changes between {old} and {new}</summary>\n\n"
+            f"{fence}diff\n{diff}{fence}\n{note}\n</details>\n"
+        )
+
+    def bump_doc_links(self, version: str) -> list[Path]:
+        """
+        Point versioned upstream documentation links at a new upstream version.
+
+        Args:
+            version:
+                The upstream version the links should reference.
+
+        Returns:
+            The files that changed.
+        """
+        changed = []
+        for path in self.doc_link_files:
+            content = path.read_text()
+            new_content = content
+            for pattern in FFI_DOC_LINK_PATTERNS:
+                new_content = pattern.sub(rf"\g<1>{version}\g<2>", new_content)
+            if new_content != content:
+                logger.debug("Updating documentation links in %s", path)
+                path.write_text(new_content)
+                changed.append(path)
+        return changed
+
     def _push_release_branch(
         self,
         pr_title: str,
         changelog: str,
         existing_pr: PullRequest | None,
+        extra_files: Sequence[Path] = (),
     ) -> None:
         """Create or update the fixed release branch, then create or update the PR.
 
@@ -320,11 +446,15 @@ class Package:
             existing_pr:
                 The open [`PullRequest`][scripts.release.PullRequest] to update,
                 or `None` to create a new PR.
+            extra_files:
+                Further prepared files to commit alongside `pyproject.toml` and
+                `CHANGELOG.md`.
         """
         branch = self.release_branch
         pkg_files = [
             str(self.directory / "pyproject.toml"),
             str(self.directory / "CHANGELOG.md"),
+            *map(str, extra_files),
         ]
         if existing_pr is not None:
             logger.debug(
@@ -414,19 +544,31 @@ class Package:
         changelog = self.generate_changelog_body(version)
         pr_title = f"chore(release): {self.name} v{version}"
         existing_pr = self.find_open_release_pr()
+        old_upstream = ".".join(self.read_version().split(".")[:3])
+        new_upstream = ".".join(version.split(".")[:3])
+        upstream_bump = self.upstream_repo is not None and old_upstream != new_upstream
+
+        body = changelog
+        if upstream_bump and self.upstream_header_url is not None:
+            body += self.render_header_diff(
+                old_upstream,
+                new_upstream,
+                PR_BODY_LIMIT - len(changelog) - 500,
+            )
 
         # Write version and changelog to disk.  These are always applied so the
         # result can be inspected locally; `git checkout` reverts them cleanly.
         logger.debug("Writing version and changelog to disk")
         self.write_version(version)
         self.update_changelog_file(version)
+        extra_files = self.bump_doc_links(new_upstream) if upstream_bump else []
 
         if dry_run:
             logger.info(
-                "\n--- Changelog for %s v%s ---\n%s",
+                "\n--- PR body for %s v%s ---\n%s",
                 self.name,
                 version,
-                changelog,
+                body,
             )
             if existing_pr is not None:
                 logger.info(
@@ -444,7 +586,7 @@ class Package:
             return
 
         try:
-            self._push_release_branch(pr_title, changelog, existing_pr)
+            self._push_release_branch(pr_title, body, existing_pr, extra_files)
         finally:
             # Return to main so the local repo is left in a clean state, even on failure
             logger.debug("Returning to main branch")
@@ -535,6 +677,11 @@ PACKAGES: dict[str, Package] = {
         # Filter to pact_ffi releases only — pact-reference hosts many crates
         upstream_tag_prefix="pact_ffi-v",
         release_branch="release/pact-python-ffi",
+        upstream_header_url=(
+            "https://github.com/pact-foundation/pact-reference/releases/download/"
+            "pact_ffi-v{version}/pact.h"
+        ),
+        doc_link_files=(ROOT / "pact-python-ffi" / "src" / "pact_ffi" / "__init__.py",),
     ),
 }
 
