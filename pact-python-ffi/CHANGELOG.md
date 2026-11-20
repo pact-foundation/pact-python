@@ -8,6 +8,16 @@ Note that this _only_ includes changes to the Python FFI interface. For changes 
 <!-- markdownlint-disable emphasis-style -->
 <!-- markdownlint-disable strong-style -->
 
+## [pact-python-ffi/0.5.13.0] _2026-11-20_
+
+### 📚 Documentation
+
+-   Use the emphasis-style rule name in disable comments
+
+### Contributors
+
+-   @JP-Ellis
+
 ## [pact-python-ffi/0.5.12.1] _2026-10-23_
 
 ### 🚀 Features
